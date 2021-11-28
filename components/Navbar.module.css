@@ -1,0 +1,5 @@
+.navbar {
+	height: env(safe-area-inset-top, 12px);
+	width: 100%;
+	background: white;
+}

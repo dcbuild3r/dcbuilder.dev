@@ -1,0 +1,4 @@
+videos
+screenshots
+integration/__image_snapshots__
+/snapshots/visual.test.ts/__diff_output__/
