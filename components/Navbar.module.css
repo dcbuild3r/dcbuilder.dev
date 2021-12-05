@@ -19,10 +19,3 @@
 	background-color: rgba(0, 0, 0, 0.75);
 	filter: blur(10px);
 }
-
-.modal {
-	position: fixed;
-	top: 20vh;
-	left: 5%;
-	width: 90%;
-}
