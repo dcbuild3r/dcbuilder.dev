@@ -2,9 +2,12 @@ import Layout from "components/Layout";
 import Navbar from "components/Navbar";
 
 const IndexPage = () => (
-	<Layout title="dcbuilder">
-		<Navbar />
-	</Layout>
+	<>
+		<div id="overlay"></div>
+		<Layout title="dcbuilder">
+			<Navbar />
+		</Layout>
+	</>
 );
 
 export default IndexPage;
