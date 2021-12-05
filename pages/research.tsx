@@ -1,7 +1,7 @@
 import Layout from "components/Layout";
 import Navbar from "components/Navbar";
 
-const ProjectsPage: React.FC = () => {
+const ResearchPage: React.FC = () => {
 	return (
 		<Layout title="Waifus rule">
 			<Navbar />
@@ -9,4 +9,4 @@ const ProjectsPage: React.FC = () => {
 	);
 };
 
-export default ProjectsPage;
+export default ResearchPage;

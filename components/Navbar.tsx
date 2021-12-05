@@ -17,34 +17,35 @@ import {
 	MenuList,
 	MenuItem,
 } from "@chakra-ui/react";
-import { HamburgerIcon } from "@chakra-ui/icons";
+import { CloseIcon, HamburgerIcon } from "@chakra-ui/icons";
 import { NextChakraLink } from "./NextChakraLink";
 import { FaTwitter, FaGithub } from "react-icons/fa";
 import styles from "./Navbar.module.css";
 import { MotionImage } from "./MotionImage";
 import { MotionBox } from "./MotionBox";
+import MenuOverlay from "./MenuOverlay";
 import { Fragment, useRef, useState } from "react";
 import { Portal } from "@chakra-ui/portal";
 
-const Backdrop = () => {
-	return <div className={styles.modal_overlay}></div>;
-};
-
-const MenuOverlay = (props: any) => {
-	return <></>;
-};
-
-const MenuOverlayItem = (props: any) => {
-	return <></>;
-};
-
 const Navbar: React.FC = () => {
 	const [mobileMenuShown, setMobileMenuShown] = useState(true);
-	const ref = useRef();
 
 	return (
 		<Fragment>
-			<div id="overlays" />
+			{mobileMenuShown ? (
+				<Box id="overlays">
+					<Portal>
+						<MenuOverlay
+							menuHandler={() =>
+								setMobileMenuShown(!mobileMenuShown)
+							}
+						></MenuOverlay>
+					</Portal>
+				</Box>
+			) : (
+				<></>
+			)}
+
 			<div className={styles.navbar}>
 				<Stack
 					p="10px 30px"
@@ -90,6 +91,7 @@ const Navbar: React.FC = () => {
 							w="15vw"
 							justifyContent="center"
 							alignSelf="center"
+							onClick={() => setMobileMenuShown(!mobileMenuShown)}
 						>
 							<HamburgerIcon />
 						</Button>
@@ -107,7 +109,7 @@ const Navbar: React.FC = () => {
 								whileTap={{ scale: 0.8 }}
 								height={["50px", "50px", "30px", "30px"]}
 							>
-								<FaTwitter size="auto" />
+								<FaTwitter size="auto" width={"auto"} />
 							</MotionBox>
 						</NextChakraLink>
 						<NextChakraLink href="https://opensea.io/DCBuilder">
@@ -124,7 +126,7 @@ const Navbar: React.FC = () => {
 								whileTap={{ scale: 0.8 }}
 								height={["50px", "50px", "30px", "30px"]}
 							>
-								<FaGithub size="auto" />
+								<FaGithub size="auto" width="auto" />
 							</MotionBox>
 						</NextChakraLink>
 					</HStack>
