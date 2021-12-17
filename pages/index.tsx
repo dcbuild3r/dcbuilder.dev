@@ -9,18 +9,23 @@ const IndexPage = () => {
 		<>
 			<Layout title="dcbuilder">
 				<Stack>
-					<Navbar mb="130px" />
+					<Navbar mb={["180px", "180px", "130px", "130px"]} />
 					<Stack
 						display="flex"
 						p={3}
 						pr={8}
-						flexDirection={["column", "column", "column", "row"]}
+						flexDirection={[
+							"column-reverse",
+							"column-reverse",
+							"column-reverse",
+							"row",
+						]}
 						alignItems={"center"}
 					>
 						<Box
 							display="flex"
 							justifyContent="center"
-							w="60vw"
+							w={["100vw", "100vw", "100vw", "60vw"]}
 							flexGrow={2}
 						>
 							<MotionImage
