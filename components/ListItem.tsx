@@ -12,7 +12,10 @@ const sizes = ["sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl"] as const;
 
 const ListItem = (props: ListItemProps) => {
 	return (
-		<HStack alignSelf={"flex-start"} pl={props.nest}>
+		<HStack
+			alignSelf={"flex-start"}
+			pl={["0", "0.", props.nest, props.nest]}
+		>
 			<Image src="images/arrow.png" height="1rem" />
 			<Heading
 				size={props.size}
