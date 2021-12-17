@@ -30,6 +30,7 @@ const Navbar: React.FC = (props: BoxProps) => {
 					<Stack
 						p="10px 30px"
 						ml="3"
+						mr="3"
 						justifyContent={["center", " space-between"]}
 						fontSize={[24, 28, 20, 30]}
 						display="flex"
@@ -152,9 +153,6 @@ const Navbar: React.FC = (props: BoxProps) => {
 							</NextChakraLink>
 							<NextChakraLink href="/projects">
 								Projects
-							</NextChakraLink>
-							<NextChakraLink href="/contact">
-								Contact
 							</NextChakraLink>
 						</Stack>
 					</Stack>
