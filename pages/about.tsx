@@ -30,7 +30,7 @@ const AboutPage: React.FC = () => {
 								whileHover={{ scale: 1.1 }}
 								alignSelf="center"
 								whileTap={{ scale: 0.8 }}
-								mr="100px"
+								mr={["0", "0", "100px", "100px"]}
 							/>
 						</NextChakraLink>
 					</Box>

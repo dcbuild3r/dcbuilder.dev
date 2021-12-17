@@ -50,7 +50,15 @@ const IndexPage = () => {
 								w="30vw"
 								spacing={"1.5rem"}
 							>
-								<Heading size={"lg"}>
+								<Heading
+									size={"lg"}
+									textAlign={[
+										"center",
+										"center",
+										"center",
+										"left",
+									]}
+								>
 									Fullstack Blockchain Development
 								</Heading>
 								<ListItem
@@ -107,7 +115,22 @@ const IndexPage = () => {
 								]}
 								spacing={"1.5rem"}
 							>
-								<Heading size="lg" alignSelf={"flex-start"}>
+								<Heading
+									size="lg"
+									alignSelf={[
+										"center",
+										"center",
+										"flex-start",
+										"flex-start",
+									]}
+									justifyContent={"center"}
+									textAlign={[
+										"center",
+										"center",
+										"center",
+										"left",
+									]}
+								>
 									Blockchain Research
 								</Heading>
 								<ListItem
