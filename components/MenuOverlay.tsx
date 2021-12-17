@@ -2,10 +2,19 @@ import * as React from "react";
 import { Box, Button, VStack } from "@chakra-ui/react";
 import { CloseIcon } from "@chakra-ui/icons";
 import { NextChakraLink } from "./NextChakraLink";
+interface MenuOverlayProps {
+	menuHandler: () => void;
+}
 
-const MenuOverlay = (props: any) => {
+const MenuOverlay = (props: MenuOverlayProps) => {
 	return (
-		<Box zIndex="20" w="100vw" h="100vh" backdropFilter={"blur(20px)"}>
+		<Box
+			zIndex="40"
+			position="fixed"
+			w="100%"
+			h="100vh"
+			backdropFilter={"blur(20px)"}
+		>
 			<Button
 				leftIcon={<CloseIcon h={8} w={8} />}
 				position="absolute"
@@ -25,10 +34,18 @@ const MenuOverlay = (props: any) => {
 				onClick={props.menuHandler}
 				pt="2rem"
 			>
-				<MenuOverlayItem href="/about">About</MenuOverlayItem>
-				<MenuOverlayItem href="/research">Research</MenuOverlayItem>
-				<MenuOverlayItem href="/projects">Projects</MenuOverlayItem>
-				<MenuOverlayItem href="contact">Contact</MenuOverlayItem>
+				<MenuOverlayItem href="/about" onClick={props.menuHandler}>
+					About
+				</MenuOverlayItem>
+				<MenuOverlayItem href="/research" onClick={props.menuHandler}>
+					Research
+				</MenuOverlayItem>
+				<MenuOverlayItem href="/projects" onClick={props.menuHandler}>
+					Projects
+				</MenuOverlayItem>
+				<MenuOverlayItem href="contact" onClick={props.menuHandler}>
+					Contact
+				</MenuOverlayItem>
 			</VStack>
 		</Box>
 	);

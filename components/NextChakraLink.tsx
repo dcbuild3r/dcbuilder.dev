@@ -2,9 +2,6 @@ import { PropsWithChildren } from "react";
 import NextLink from "next/link";
 import { LinkProps as NextLinkProps } from "next/dist/client/link";
 import {
-	Box,
-	BoxProps,
-	chakra,
 	Link as ChakraLink,
 	LinkProps as ChakraLinkProps,
 } from "@chakra-ui/react";
