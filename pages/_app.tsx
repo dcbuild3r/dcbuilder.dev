@@ -10,6 +10,15 @@ function MyApp({ Component, pageProps }: AppProps) {
 	return (
 		<>
 			<Head>
+				<title>DCBuilder</title>
+				<meta
+					name="viewport"
+					content="initial-scale=1.0, width=device-width"
+				/>
+				<meta
+					name="description"
+					content="DCBuilder - junior full-stack blockchain developer and researcher. Ethereum, Moralis, Waifus Anymous, BanklessDAO."
+				/>
 				<link rel="shortcut icon" href="favicon.ico" />
 			</Head>
 			<DefaultSeo {...SEO} />
