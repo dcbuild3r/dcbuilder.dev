@@ -6,6 +6,7 @@ interface ItemProps {
 	nest: string;
 	size: typeof sizes[number];
 }
+
 export type ListItemProps = PropsWithChildren<ChakraProps & ItemProps>;
 
 const sizes = ["sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl"] as const;

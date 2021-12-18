@@ -10,8 +10,8 @@ import Affiliation, { AffiliationProps } from "components/Affiliation";
 const AboutPage: React.FC = () => {
 	return (
 		<Layout title="Waifus rule">
-			<Navbar mb="100px" />
-			<Stack display="flex" flexDir="column" spacing={"100px"}>
+			<Navbar />
+			<Stack mt="100px" display="flex" flexDir="column" spacing={"100px"}>
 				<Stack
 					display="flex"
 					flexDir={["column", "column", "row", "row"]}
