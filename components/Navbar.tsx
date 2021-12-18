@@ -5,9 +5,9 @@ import { NextChakraLink } from "./NextChakraLink";
 import styles from "./Navbar.module.css";
 import { MotionImage } from "./MotionImage";
 import MenuOverlay from "./MenuOverlay";
-import { Fragment, useState } from "react";
+import { Fragment, PropsWithChildren, useState } from "react";
 
-const Navbar: React.FC = (props: BoxProps) => {
+const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 	const [mobileMenuShown, setMobileMenuShown] = useState(false);
 
 	return (
@@ -29,11 +29,12 @@ const Navbar: React.FC = (props: BoxProps) => {
 				<div className={styles.navbar}>
 					<Stack
 						p="10px 30px"
+						zIndex={"20"}
 						ml="3"
 						mr="3"
-						justifyContent={["center", " space-between"]}
 						fontSize={[24, 28, 20, 30]}
 						display="flex"
+						justifyContent={["center", " space-between"]}
 						flexDirection={["column", "column", "row", "row"]}
 					>
 						<Stack
