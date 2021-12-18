@@ -1,14 +1,15 @@
 export default {
-	description: "Meta description",
+	description:
+		"DCBuilder - junior full-stack blockchain developer and researcher. Ethereum, Moralis, Waifus Anymous, BanklessDAO.",
 	openGraph: {
 		type: "website",
-		locale: "cs_CS",
-		url: "https://example.com",
-		site_name: "example.com",
+		locale: "en_US",
+		url: "https://www.dcbuilder.dev",
+		site_name: "dcbuilder.dev",
 	},
 	twitter: {
-		handle: "@example",
-		site: "@site",
+		handle: "@dcbuild3r",
+		site: "@dcbuild3r",
 		cardType: "summary_large_image",
 	},
 };
