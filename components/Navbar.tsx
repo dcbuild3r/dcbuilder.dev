@@ -28,11 +28,11 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 			<Box w="100vw" display={"flex"} h="auto" {...props}>
 				<div className={styles.navbar}>
 					<Stack
-						p="10px 30px"
+						p={["7px 20px", "10px 30px", "10px 30px", "10px 30px"]}
 						zIndex={"20"}
 						ml="3"
 						mr="3"
-						fontSize={[24, 28, 20, 30]}
+						fontSize={[20, 28, 20, 30]}
 						display="flex"
 						justifyContent={["center", " space-between"]}
 						flexDirection={["column", "column", "row", "row"]}
@@ -97,7 +97,7 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 							>
 								<MotionImage
 									src="/images/twitter.png"
-									height={["50px", "50px", "30px", "30px"]}
+									height={["2rem", "2rem", "2rem", "2rem"]}
 									whileHover={{ scale: 1.3 }}
 									whileTap={{ scale: 0.8 }}
 								/>
@@ -105,7 +105,7 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 							<NextChakraLink href="https://opensea.io/DCBuilder">
 								<MotionImage
 									src="/images/opensea.png"
-									height={["50px", "50px", "30px", "30px"]}
+									height={["2rem", "2rem", "2rem", "2rem"]}
 									whileHover={{ scale: 1.3 }}
 									whileTap={{ scale: 0.8 }}
 								/>
@@ -113,7 +113,7 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 							<NextChakraLink href="https://mirror.xyz/dcbuilder.eth">
 								<MotionImage
 									src="/images/mirror.png"
-									height={["50px", "50px", "30px", "30px"]}
+									height={["2rem", "2rem", "2rem", "2rem"]}
 									whileHover={{ scale: 1.3 }}
 									whileTap={{ scale: 0.8 }}
 								/>
@@ -121,7 +121,7 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 							<NextChakraLink href="https://github.com/dcbuild3r">
 								<MotionImage
 									src="/images/github.png"
-									height={["50px", "50px", "30px", "30px"]}
+									height={["2rem", "2rem", "2rem", "2rem"]}
 									whileHover={{ scale: 1.3 }}
 									whileTap={{ scale: 0.8 }}
 								/>
