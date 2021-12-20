@@ -50,7 +50,14 @@ const IndexPage = () => {
 						spacing={"1.5rem"}
 					>
 						<Heading
-							size={"lg"}
+							size="lg"
+							alignSelf={[
+								"center",
+								"center",
+								"flex-start",
+								"flex-start",
+							]}
+							justifyContent={"center"}
 							textAlign={["center", "center", "center", "left"]}
 						>
 							Fullstack Blockchain Development
