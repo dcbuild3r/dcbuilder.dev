@@ -45,7 +45,7 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 							flexDirection={"row"}
 						>
 							<HStack
-								p="5"
+								p={["3", "3", "5", "5"]}
 								borderRadius="100"
 								className={styles.avatar}
 								justifyContent={[
