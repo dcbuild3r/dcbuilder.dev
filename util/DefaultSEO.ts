@@ -1,6 +1,7 @@
 export default {
 	description:
-		"DCBuilder - junior full-stack blockchain developer and researcher. Ethereum, Moralis, Waifus Anymous, BanklessDAO.",
+		"DCBuilder - junior full-stack blockchain developer and researcher. Ethereum, Moralis, Waifus Anonymous, BanklessDAO.",
+
 	openGraph: {
 		type: "website",
 		locale: "en_US",
