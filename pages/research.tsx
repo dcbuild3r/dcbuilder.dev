@@ -15,7 +15,7 @@ const ResearchPage: React.FC = () => {
 			>
 				<Text w="70vw" fontSize="3xl">
 					As a researcher for Moralis I like to have a generic
-					understand of everything that is happening in crypto and
+					understanding of everything that is happening in crypto and
 					web3 at large. The topics that interest me the most are
 					DeFi, DAOs, Ethereum core and L2 scaling, MEV and
 					NFT/metaverse.
