@@ -58,7 +58,7 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 							>
 								<NextChakraLink href="/">
 									<MotionImage
-										src="/images/dcbuilder.png"
+										src="/images/dcbuilder.webp"
 										borderRadius="50%"
 										height="60px"
 										whileHover={{ scale: 1.2 }}

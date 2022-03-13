@@ -23,7 +23,7 @@ const AboutPage: React.FC = () => {
 					<Box alignSelf="center" padding={0}>
 						<NextChakraLink href="/">
 							<MotionImage
-								src="/images/dcbuilder.png"
+								src="/images/dcbuilder.webp"
 								borderRadius="50%"
 								height={"30vh"}
 								w={"auto"}

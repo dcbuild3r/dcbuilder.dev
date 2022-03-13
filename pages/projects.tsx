@@ -7,18 +7,29 @@ const ProjectsPage: React.FC = () => {
 	return (
 		<Layout title="Waifus rule">
 			<Navbar />
-			<VStack spacing={"100px"} mt={["200px", "200px", "150px", "150px"]}>
+			<VStack
+				spacing={"100px"}
+				mt={["200px", "200px", "150px", "150px"]}
+				mb="100px"
+				textAlign="center"
+			>
 				<Text w="70vw" fontSize="3xl">
-					I've been working as a blockchain researcher for about two
-					years. In the past I worked as a front end developer and I
-					also have 2 years of experience building applications in the
-					AI, ML and data science domains. I worked with Python,
-					libraries likes Pandas, Numpy, Seaborn, scikit-learn,
-					Tensorflow, Keras, OpenCV and many more. I also coded up
-					websites using React, NextJs, Typescript and other web
-					technologies.
+					I'm currently a full-stack blockchain dev and research
+					engineer at{" "}
+					<a href="https://www.alongside.finance/">
+						Alongside Finance
+					</a>{" "}
+					and a hobby smart contract dev tinkering at Tribe DAO (
+					<a href="https://fei.money/">Fei Protocol</a> +{" "}
+					<a href="https://rari.capital">Rari Capital</a>). I worked
+					as a blockchain researcher for about two years. In the past
+					I worked as a front end developer and I also have 2 years of
+					experience building applications in the AI, ML and data
+					science domains. I worked with Python, libraries likes
+					Pandas, Numpy, Seaborn, scikit-learn, Tensorflow, Keras,
+					OpenCV and many more. I also coded up websites using React,
+					NextJs, Typescript and other web technologies.
 				</Text>
-
 				<Text w="70vw" fontSize="3xl">
 					I am currently transitioning to a full-stack blockchain
 					developer role, which means that I'm constantly improving my
