@@ -21,7 +21,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 				/>
 				<meta
 					property="og:image"
-					content="https://github.com/dcbuild3r/dcbuilder.dev/blob/master/public/images/dcbuilder.webp"
+					content="https://raw.githubusercontent.com/dcbuild3r/dcbuilder.dev/master/public/images/dcbuilder.webp"
 				/>
 				<link rel="shortcut icon" href="favicon.ico" />
 			</Head>
