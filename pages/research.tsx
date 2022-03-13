@@ -12,14 +12,8 @@ const ResearchPage: React.FC = () => {
 				spacing="100px"
 				mb="100px"
 				mt={["200px", "200px", "150px", "150px"]}
+				textAlign="center"
 			>
-				<Text w="70vw" fontSize="3xl">
-					As a researcher for Moralis I like to have a generic
-					understand of everything that is happening in crypto and
-					web3 at large. The topics that interest me the most are
-					DeFi, DAOs, Ethereum core and L2 scaling, MEV and
-					NFT/metaverse.
-				</Text>
 				<Text w="70vw" fontSize="3xl">
 					I publish some of the research I write on my {}
 					<NextChakraLink
@@ -41,6 +35,21 @@ const ResearchPage: React.FC = () => {
 					most popular L2 scaling solutions on the market and which
 					ones are yet do be deployed.
 				</Text>
+
+				<Text w="70vw" fontSize="3xl">
+					I created{" "}
+					<NextChakraLink
+						textDecoration={"underline"}
+						href="https://www.devpill.me/"
+					>
+						{`devpill.me`}
+					</NextChakraLink>
+					, which is a public good blockchain development guide aimed
+					at becoming the go-to learning resource aggregator for
+					building on Ethereum and its wider ecosystem of scaling
+					solutions and applications.
+				</Text>
+
 				<Text w="70vw" fontSize="3xl">
 					I'm constantly reading new material and deepening my
 					knowledge in all of my fields of interest. The best way to

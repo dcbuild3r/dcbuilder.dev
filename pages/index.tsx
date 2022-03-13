@@ -28,7 +28,7 @@ const IndexPage = () => {
 					flexGrow={2}
 				>
 					<MotionImage
-						src={"images/kaneki.png"}
+						src={"images/kaneki_new.png"}
 						w="80%"
 						alignSelf="center"
 					/>
@@ -72,7 +72,7 @@ const IndexPage = () => {
 							Hardhat, ethers
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							dapp.tools, Foundry
+							Foundry
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
 							Rust
@@ -113,13 +113,16 @@ const IndexPage = () => {
 							Ethereum
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
+							Scaling solutions (L2s, validiums, volitions, ...)
+						</ListItem>
+						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
+							Public goods
+						</ListItem>
+						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
+							ZK tech
+						</ListItem>
+						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
 							DeFi
-						</ListItem>
-						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							DAOs
-						</ListItem>
-						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							web3
 						</ListItem>
 					</VStack>
 				</VStack>

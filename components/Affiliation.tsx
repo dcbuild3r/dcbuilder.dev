@@ -32,7 +32,7 @@ const Affiliation = (props: AffiliationProps) => {
 					alignItems={"center"}
 					alignSelf="center"
 				>
-					<NextChakraLink href={props.imageURL}>
+					<NextChakraLink href={props.imageURL} target="_blank">
 						<MotionImage
 							src={`/images/${props.imageSource}`}
 							whileHover={{ scale: 1.2 }}
@@ -52,6 +52,7 @@ const Affiliation = (props: AffiliationProps) => {
 							"flex-start",
 							"flex-start",
 						]}
+						textAlign={["center", "center", "start", "start"]}
 					>
 						{props.title}
 					</Heading>
@@ -64,6 +65,7 @@ const Affiliation = (props: AffiliationProps) => {
 							"flex-start",
 							"flex-start",
 						]}
+						textAlign={["center", "center", "start", "start"]}
 					>
 						{props.role}
 					</Heading>
@@ -76,6 +78,7 @@ const Affiliation = (props: AffiliationProps) => {
 							"flex-start",
 							"flex-start",
 						]}
+						textAlign={["center", "center", "start", "start"]}
 					>{`${props.dateBegin} - ${props.dateEnd}`}</Heading>
 					<Text
 						color={props.bgColor === "black" ? "white" : "black"}
@@ -86,6 +89,7 @@ const Affiliation = (props: AffiliationProps) => {
 							"flex-start",
 							"flex-start",
 						]}
+						textAlign={["center", "center", "start", "start"]}
 						pr={8}
 					>
 						{props.description}

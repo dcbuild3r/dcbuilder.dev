@@ -17,7 +17,11 @@ function MyApp({ Component, pageProps }: AppProps) {
 				/>
 				<meta
 					name="description"
-					content="DCBuilder - junior full-stack blockchain developer and researcher. Ethereum, Moralis, Waifus Anymous, BanklessDAO."
+					content="dcbuilder.eth - full-stack blockchain developer and researcher engineer at Alongside Finance. Ethereum, devpill.me, TribeDAO, Waifus Anonymous."
+				/>
+				<meta
+					property="og:image"
+					content="https://github.com/dcbuild3r/dcbuilder.dev/blob/master/public/images/dcbuilder.webp"
 				/>
 				<link rel="shortcut icon" href="favicon.ico" />
 			</Head>
