@@ -2,13 +2,13 @@ import { AffiliationProps } from "./Affiliation";
 
 const affiliations: AffiliationProps[] = [
 	{
-		title: "Alongside Finance",
+		title: "Alongside",
 		role: "Research engineer",
 		dateBegin: "Mar 2022",
 		dateEnd: "Present",
 		description:
-			"I'm a full-stack blockchain developer and research engineer. I build web3 enabled parts of the core application from front end to back end to smart contracts, help design the systems that govern the market indexes, do research design and implement solutions to problems.",
-		imageURL: "https://www.alongside.finance/",
+			"Alongside is a protocol that allows anyone to get crypto market exposure in a few simple clicks. I'm a research engineer at Alongside and I take care of helping architect the technical solutions required to allow us to build our core market index product. My research focuses on decentralized custodians, secure multi-party computation, governance structures, L2 deployments, and more.",
+		imageURL: "https://www.alongside.xyz/",
 
 		//      source is name of image + format
 		imageSource: "Alongside.png",
