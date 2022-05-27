@@ -3,7 +3,7 @@ import { AffiliationProps } from "./Affiliation";
 const affiliations: AffiliationProps[] = [
 	{
 		title: "Alongside Finance",
-		role: "Full-stack blockchain dev, Research engineer",
+		role: "Research engineer",
 		dateBegin: "Mar 2022",
 		dateEnd: "Present",
 		description:
@@ -16,22 +16,36 @@ const affiliations: AffiliationProps[] = [
 		bgColor: "white",
 	},
 	{
-		title: "Tribe DAO",
-		role: "Smart contract development (DAO guest)",
-		dateBegin: "Mar 2021",
+		title: "Artemis",
+		role: "Advisor",
+		dateBegin: "March 2022",
 		dateEnd: "Present",
 		description:
-			"At Tribe DAO I'm currently building a leverage looper for Rari Capital's Fuse money market. I'm a guest smart contract developer, meaning that I write Solidity on a very part time basis within the DAO.",
-		imageURL: "https://fei.money/",
+			"I really care about education and enabling as many people as possible to have the skills and opportunities necessary to be able to thrive and build the future. At Artemis I help with providing educational resources and strategic advice to make it a great bootcamp.",
+		imageURL: "https://www.artemis.education/",
 
 		//      source is name of image + format
-		imageSource: "tribe.png",
+		imageSource: "artemis.png",
 		imageWidth: ["200px", "200px", "270px", "270px"],
-		bgColor: "black",
+		bgColor: "white",
+	},
+	{
+		title: "Crystalize",
+		role: "Advisor",
+		dateBegin: "March 2022",
+		dateEnd: "Present",
+		description:
+			"Crystalize is a web3 development bootcamp targeted at web2 workers and senior computer science students. I created the learning curriculum for Crystalize, I am helping with various operational aspects of the company like partnerships, mentors, social media outreach, etc. I also provide strategical advice.",
+		imageURL: "https://crystalize.dev/",
+
+		//      source is name of image + format
+		imageSource: "crystalize.png",
+		imageWidth: ["200px", "200px", "270px", "270px"],
+		bgColor: "white",
 	},
 	{
 		title: "devpill.me",
-		role: "Founder, core contributor",
+		role: "Founder",
 		dateBegin: "Aug 2021",
 		dateEnd: "Present",
 		description:

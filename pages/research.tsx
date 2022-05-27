@@ -18,7 +18,7 @@ const ResearchPage: React.FC = () => {
 					I publish some of the research I write on my {}
 					<NextChakraLink
 						textDecoration={"underline"}
-						href="https://mirror.xyz/dcbuilder.eth"
+						href="https://dcbuilder.mirror.xyz/"
 					>
 						{`Mirror`}
 					</NextChakraLink>
@@ -35,7 +35,24 @@ const ResearchPage: React.FC = () => {
 					most popular L2 scaling solutions on the market and which
 					ones are yet do be deployed.
 				</Text>
-
+				<Text w="70vw" fontSize="3xl">
+					I have also started learning in public, if you want to see
+					what I'm learning check out{" "}
+					<NextChakraLink
+						href="https://dcbuilder.notion.site/dcbuilder-eth-learning-board-1ee40a90e88b427e9784a33b4fe20aa7"
+						textDecoration={"underline"}
+					>
+						my learning board
+					</NextChakraLink>
+					. I have also open-sourced my Twitter bookmarks in{" "}
+					<NextChakraLink
+						href="https://dcbuilder.notion.site/73881ef94fdd43128f6a3b9a19d1433e?v=195466aa91b74fcab58f9e2bbd7ebca7"
+						textDecoration={"underline"}
+					>
+						this Notion board
+					</NextChakraLink>
+					.
+				</Text>
 				<Text w="70vw" fontSize="3xl">
 					I created{" "}
 					<NextChakraLink

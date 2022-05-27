@@ -28,7 +28,7 @@ const IndexPage = () => {
 					flexGrow={2}
 				>
 					<MotionImage
-						src={"images/kaneki_new.png"}
+						src={"images/kaneki.png"}
 						w="80%"
 						alignSelf="center"
 					/>
@@ -60,16 +60,13 @@ const IndexPage = () => {
 							justifyContent={"center"}
 							textAlign={["center", "center", "center", "left"]}
 						>
-							Fullstack Blockchain Development
+							Development
 						</Heading>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
 							React, Next.js
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							Solidity
-						</ListItem>
-						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							Hardhat, ethers
+							Solidity, Yul
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
 							Foundry
@@ -107,22 +104,23 @@ const IndexPage = () => {
 							justifyContent={"center"}
 							textAlign={["center", "center", "center", "left"]}
 						>
-							Blockchain Research
+							Research
 						</Heading>
 						<ListItem size="lg" nest="2rem" fontWeight={400}>
 							Ethereum
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							Scaling solutions (L2s, validiums, volitions, ...)
+							Scaling solutions (rollups, validiums, volitions,
+							...)
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
 							Public goods
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							ZK tech
+							ZK
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							DeFi
+							MEV (looking into marketplace design)
 						</ListItem>
 					</VStack>
 				</VStack>
