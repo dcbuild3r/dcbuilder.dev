@@ -102,15 +102,15 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 									whileTap={{ scale: 0.8 }}
 								/>
 							</NextChakraLink>
-							<NextChakraLink href="https://opensea.io/DCBuilder">
+							<NextChakraLink href="https://lenster.xyz/u/dcbuilder.lens">
 								<MotionImage
-									src="/images/opensea.png"
+									src="/images/lenster.png"
 									height={["2rem", "2rem", "2rem", "2rem"]}
 									whileHover={{ scale: 1.3 }}
 									whileTap={{ scale: 0.8 }}
 								/>
 							</NextChakraLink>
-							<NextChakraLink href="https://mirror.xyz/dcbuilder.eth">
+							<NextChakraLink href="https://dcbuilder.mirror.xyz/">
 								<MotionImage
 									src="/images/mirror.png"
 									height={["2rem", "2rem", "2rem", "2rem"]}

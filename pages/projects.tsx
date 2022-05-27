@@ -14,28 +14,64 @@ const ProjectsPage: React.FC = () => {
 				textAlign="center"
 			>
 				<Text w="70vw" fontSize="3xl">
-					I'm currently a full-stack blockchain dev and research
-					engineer at{" "}
-					<a href="https://www.alongside.finance/">
-						Alongside Finance
-					</a>{" "}
-					and a hobby smart contract dev tinkering at Tribe DAO (
-					<a href="https://fei.money/">Fei Protocol</a> +{" "}
-					<a href="https://rari.capital">Rari Capital</a>). I worked
-					as a blockchain researcher for about two years. In the past
-					I worked as a front end developer and I also have 2 years of
-					experience building applications in the AI, ML and data
+					I'm currently a research engineer at{" "}
+					<NextChakraLink
+						href="https://www.alongside.finance/"
+						textDecoration={"underline"}
+					>
+						Alongside
+					</NextChakraLink>
+					. I'm helping with designing a robust technical architecture
+					for our crypto market index product, deployment network
+					selection, governance design and other related research. On
+					the education front I'm working on creating the best
+					blockchain development guide -{" "}
+					<NextChakraLink
+						href={"https://devpill.me/"}
+						textDecoration="underline"
+					>
+						devpill.me
+					</NextChakraLink>{" "}
+					- as a public good. I'm also an advisor to two blockchain
+					development bootcamps:{" "}
+					<NextChakraLink
+						href="https://www.artemis.education/"
+						textDecoration={"underline"}
+					>
+						Artemis
+					</NextChakraLink>{" "}
+					and{" "}
+					<NextChakraLink
+						href={"https://crystalize.dev/"}
+						textDecoration={"underline"}
+					>
+						Crystalize
+					</NextChakraLink>
+					. I'm planning to start a YouTube channel to teach
+					intermediate/advanced crypto content that is technical in
+					nature, too. Stay tuned.
+				</Text>
+				<Text w="70vw" fontSize="3xl">
+					In the past, I worked as a blockchain researcher and
+					technical writer for about two years at{" "}
+					<NextChakraLink
+						href="https://moralis.io/"
+						textDecoration="underline"
+					>
+						Moralis
+					</NextChakraLink>
+					. I worked as a front end developer and I also have 2 years
+					of experience building applications in the AI, ML and data
 					science domains. I worked with Python, libraries likes
 					Pandas, Numpy, Seaborn, scikit-learn, Tensorflow, Keras,
 					OpenCV and many more. I also coded up websites using React,
 					NextJs, Typescript and other web technologies.
 				</Text>
 				<Text w="70vw" fontSize="3xl">
-					I am currently transitioning to a full-stack blockchain
-					developer role, which means that I'm constantly improving my
-					skills in Solidity, Hardhat, ethers, dapptools, Foundry,
-					Rust, and many other technologies by building demo projects
-					which will be available on{" "}
+					I'm currently exploring the blockchain development developer
+					role, which means that I'm constantly improving my skills in
+					Solidity, Rust, Cairo, Circom and many other technologies by
+					building demo projects which will be available on{" "}
 					<NextChakraLink
 						textDecoration={"underline"}
 						href="https://github.com/dcbuild3r"
