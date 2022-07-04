@@ -15,7 +15,7 @@ const ResearchPage: React.FC = () => {
 				textAlign="center"
 			>
 				<Text w="70vw" fontSize="3xl">
-					I publish some of the research I write on my {}
+					I publish some of my research on my {}
 					<NextChakraLink
 						textDecoration={"underline"}
 						href="https://dcbuilder.mirror.xyz/"
@@ -23,20 +23,33 @@ const ResearchPage: React.FC = () => {
 						{`Mirror`}
 					</NextChakraLink>
 					{` `}
-					page. My first article published on Mirror is {}
+					page. The first article I published on Mirror is {}
 					<NextChakraLink
 						textDecoration={"underline"}
 						href="https://mirror.xyz/dcbuilder.eth/QX_ELJBQBm1Iq45ktPsz8pWLZN1C52DmEtH09boZuo0"
 					>
 						The Ultimate Guide to L2s on Ethereum
 					</NextChakraLink>
-					, it lays down a comprehensive overview of what Ethereum's
+					. It lays down a comprehensive overview of what Ethereum's
 					rollup centric roadmap looks like and what are some of the
-					most popular L2 scaling solutions on the market and which
-					ones are yet do be deployed.
+					most popular L2 scaling solutions on the market at the time
+					(Oct 2021).
 				</Text>
 				<Text w="70vw" fontSize="3xl">
-					I have also started learning in public, if you want to see
+					I am constantly doing research for{" "}
+					<NextChakraLink
+						textDecoration={"underline"}
+						href="https://www.devpill.me/"
+					>
+						{`devpill.me`}
+					</NextChakraLink>
+					, which is a public good blockchain development guide aimed
+					at becoming the go-to learning resource aggregator for
+					building on Ethereum and its wider ecosystem of scaling
+					solutions and applications that I created.
+				</Text>
+				<Text w="70vw" fontSize="3xl">
+					I have also started learning in public. If you want to see
 					what I'm learning check out{" "}
 					<NextChakraLink
 						href="https://dcbuilder.notion.site/dcbuilder-eth-learning-board-1ee40a90e88b427e9784a33b4fe20aa7"
@@ -54,23 +67,9 @@ const ResearchPage: React.FC = () => {
 					.
 				</Text>
 				<Text w="70vw" fontSize="3xl">
-					I created{" "}
-					<NextChakraLink
-						textDecoration={"underline"}
-						href="https://www.devpill.me/"
-					>
-						{`devpill.me`}
-					</NextChakraLink>
-					, which is a public good blockchain development guide aimed
-					at becoming the go-to learning resource aggregator for
-					building on Ethereum and its wider ecosystem of scaling
-					solutions and applications.
-				</Text>
-
-				<Text w="70vw" fontSize="3xl">
-					I'm constantly reading new material and deepening my
-					knowledge in all of my fields of interest. The best way to
-					keep up with what I'm doing is following me on {}
+					I'm constantly learning about the things that interest me.
+					The best way to keep up with what I'm doing is following me
+					on {}
 					<NextChakraLink
 						textDecoration={"underline"}
 						href="https://twitter.com/DCbuild3r"
