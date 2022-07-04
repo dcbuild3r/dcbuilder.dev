@@ -3,6 +3,7 @@ import Layout from "components/Layout";
 import { MotionImage } from "components/MotionImage";
 import Navbar from "components/Navbar";
 import ListItem from "components/ListItem";
+import { NextChakraLink } from "components/NextChakraLink";
 
 const IndexPage = () => {
 	return (
@@ -47,38 +48,6 @@ const IndexPage = () => {
 						display={"flex"}
 						flexDirection={"column"}
 						w="30vw"
-						spacing={"1.5rem"}
-					>
-						<Heading
-							size="lg"
-							alignSelf={[
-								"center",
-								"center",
-								"flex-start",
-								"flex-start",
-							]}
-							justifyContent={"center"}
-							textAlign={["center", "center", "center", "left"]}
-						>
-							Development
-						</Heading>
-						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							React, Next.js
-						</ListItem>
-						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							Solidity, Yul
-						</ListItem>
-						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							Foundry
-						</ListItem>
-						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							Rust
-						</ListItem>
-					</VStack>
-					<VStack
-						display={"flex"}
-						flexDirection={"column"}
-						w="30vw"
 						justifyContent={[
 							"center",
 							"center",
@@ -110,6 +79,9 @@ const IndexPage = () => {
 							Ethereum
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
+							Cryptography (<b>ZK*</b>)
+						</ListItem>
+						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
 							Scaling solutions (rollups, validiums, volitions,
 							...)
 						</ListItem>
@@ -117,10 +89,43 @@ const IndexPage = () => {
 							Public goods
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							ZK
+							MEV (mitigation -{" "}
+							<NextChakraLink
+								href="https://notes.ethereum.org/@vbuterin/pbs_censorship_resistance"
+								textDecoration={"underline"}
+							>
+								PBS
+							</NextChakraLink>
+							)
+						</ListItem>
+					</VStack>
+					<VStack
+						display={"flex"}
+						flexDirection={"column"}
+						w="30vw"
+						spacing={"1.5rem"}
+					>
+						<Heading
+							size="lg"
+							alignSelf={[
+								"center",
+								"center",
+								"flex-start",
+								"flex-start",
+							]}
+							justifyContent={"center"}
+							textAlign={["center", "center", "center", "left"]}
+						>
+							Development
+						</Heading>
+						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
+							Rust
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							MEV (looking into marketplace design)
+							Solidity, Foundry
+						</ListItem>
+						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
+							React, Next.js
 						</ListItem>
 					</VStack>
 				</VStack>

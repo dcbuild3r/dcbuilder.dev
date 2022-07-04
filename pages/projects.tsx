@@ -14,7 +14,7 @@ const ProjectsPage: React.FC = () => {
 				textAlign="center"
 			>
 				<Text w="70vw" fontSize="3xl">
-					I'm currently a research engineer at{" "}
+					I'm currently a research associate at{" "}
 					<NextChakraLink
 						href="https://www.alongside.finance/"
 						textDecoration={"underline"}
@@ -22,10 +22,10 @@ const ProjectsPage: React.FC = () => {
 						Alongside
 					</NextChakraLink>
 					. I'm helping with designing a robust technical architecture
-					for our crypto market index product, deployment network
-					selection, governance design and other related research. On
-					the education front I'm working on creating the best
-					blockchain development guide -{" "}
+					for the market index product, deployment network selection,
+					governance design and other related research. On the
+					education front I'm working on creating a blockchain
+					development guide -{" "}
 					<NextChakraLink
 						href={"https://devpill.me/"}
 						textDecoration="underline"
@@ -47,7 +47,7 @@ const ProjectsPage: React.FC = () => {
 					>
 						Crystalize
 					</NextChakraLink>
-					. I'm planning to start a YouTube channel to teach
+					. I'm also thinking of starting a YouTube channel to teach
 					intermediate/advanced crypto content that is technical in
 					nature, too. Stay tuned.
 				</Text>
