@@ -25,7 +25,7 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 			) : (
 				<></>
 			)}
-			<Box w="100vw" display={"flex"} h="auto" {...props}>
+			<Box display={"flex"} h="auto" {...props}>
 				<div className={styles.navbar}>
 					<Stack
 						p={["7px 20px", "10px 30px", "10px 30px", "10px 30px"]}
