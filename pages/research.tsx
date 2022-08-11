@@ -33,7 +33,16 @@ const ResearchPage: React.FC = () => {
 					. It lays down a comprehensive overview of what Ethereum's
 					rollup centric roadmap looks like and what are some of the
 					most popular L2 scaling solutions on the market at the time
-					(Oct 2021).
+					(Oct 2021). If you are interested in a more up to date
+					version, I strongly recommend reading Jon Charbonneau's
+					awesome piece about the L2 ecosystem - {""}
+					<NextChakraLink
+						textDecoration={"underline"}
+						href="https://mirror.xyz/dcbuilder.eth/QX_ELJBQBm1Iq45ktPsz8pWLZN1C52DmEtH09boZuo0"
+					>
+						The complete Guide to Rollups
+					</NextChakraLink>
+					.
 				</Text>
 				<Text w="70vw" fontSize="3xl">
 					I am constantly doing research for{" "}

@@ -14,18 +14,31 @@ const ProjectsPage: React.FC = () => {
 				textAlign="center"
 			>
 				<Text w="70vw" fontSize="3xl">
-					I'm currently a research associate at{" "}
+					I'm a research engineer at{" "}
 					<NextChakraLink
-						href="https://www.alongside.finance/"
+						href="https://worldcoin.org/"
 						textDecoration={"underline"}
 					>
-						Alongside
+						Worldcoin
 					</NextChakraLink>
-					. I'm helping with designing a robust technical architecture
-					for the market index product, deployment network selection,
-					governance design and other related research. On the
-					education front I'm working on creating a blockchain
-					development guide -{" "}
+					. I am currently building a{" "}
+					<NextChakraLink
+						href="https://github.com/worldcoin/proto-neural-zkp"
+						textDecoration="underline"
+					>
+						zero-knowledge circuit for a neural network
+					</NextChakraLink>{" "}
+					with{" "}
+					<NextChakraLink
+						href="https://github.com/mir-protocol/plonky2"
+						textDecoration={"underline"}
+					>
+						plonky2
+					</NextChakraLink>{" "}
+					and Rust so Worldcoin users can self-host their biometric
+					data and generate their IrisHash permissionlessly. I'm also
+					passionate about education where I'm working on creating a
+					blockchain development guide -{" "}
 					<NextChakraLink
 						href={"https://devpill.me/"}
 						textDecoration="underline"
@@ -47,40 +60,35 @@ const ProjectsPage: React.FC = () => {
 					>
 						Crystalize
 					</NextChakraLink>
-					. I'm also thinking of starting a YouTube channel to teach
-					intermediate/advanced crypto content that is technical in
-					nature, too. Stay tuned.
+					. I strongly believe that great and freely available
+					education in all areas of learning is essential for humanity
+					to thrive.
+				</Text>
+				<Text w="70vw" fontSize="3xl">
+					At Worldcoin I'm able to work on very impactful work that
+					could one day improve the lives of millions and potentially
+					billions of users. After almost a year of exploring the
+					blockchain development landscape I found a role that allows
+					me to work on all of my interests: Cryptography and
+					mathematics more broadly, infrastructure, open-source
+					software, AI, Rust, Solidity, Ethereum and more!
 				</Text>
 				<Text w="70vw" fontSize="3xl">
 					In the past, I worked as a blockchain researcher and
-					technical writer for about two years at{" "}
+					technical writer at{" "}
 					<NextChakraLink
 						href="https://moralis.io/"
 						textDecoration="underline"
 					>
 						Moralis
-					</NextChakraLink>
-					. I worked as a front end developer and I also have 2 years
-					of experience building applications in the AI, ML and data
-					science domains. I worked with Python, libraries likes
-					Pandas, Numpy, Seaborn, scikit-learn, Tensorflow, Keras,
-					OpenCV and many more. I also coded up websites using React,
-					NextJs, Typescript and other web technologies.
-				</Text>
-				<Text w="70vw" fontSize="3xl">
-					I'm currently exploring the blockchain development developer
-					role, which means that I'm constantly improving my skills in
-					Solidity, Rust, Cairo, Circom and many other technologies by
-					building demo projects which will be available on{" "}
-					<NextChakraLink
-						textDecoration={"underline"}
-						href="https://github.com/dcbuild3r"
-					>
-						my GitHub
 					</NextChakraLink>{" "}
-					as I finish them. I'm looking forward to contributing to
-					open-source projects and potentially joining a team
-					full-time starting mid 2022.
+					for two years. Back when I was in high school I worked as a
+					front end developer using React, NextJs, Typescript and
+					other web technologies. I also have 2 years of experience
+					building applications in the AI, ML and data science
+					domains. I worked with Python, libraries likes Pandas,
+					Numpy, Seaborn, scikit-learn, Tensorflow, Keras, OpenCV and
+					many more.{" "}
 				</Text>
 			</VStack>
 		</Layout>
