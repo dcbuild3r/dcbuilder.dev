@@ -18,7 +18,7 @@ export interface AffiliationProps {
 
 const Affiliation = (props: AffiliationProps) => {
 	return (
-		<Stack bgColor={`${props.bgColor}`} w="100vw" p={8}>
+		<VStack bgColor={`${props.bgColor}`} w="100vw" p={8}>
 			<Stack
 				display={"flex"}
 				flexDirection={["column", "column", "row", "row"]}
@@ -90,13 +90,13 @@ const Affiliation = (props: AffiliationProps) => {
 							"flex-start",
 						]}
 						textAlign={["center", "center", "start", "start"]}
-						pr={8}
+						w="50vw"
 					>
 						{props.description}
 					</Text>
 				</VStack>
 			</Stack>
-		</Stack>
+		</VStack>
 	);
 };
 
