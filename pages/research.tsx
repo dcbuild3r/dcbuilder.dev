@@ -34,7 +34,13 @@ const ResearchPage: React.FC = () => {
 					rollup centric roadmap looks like and what are some of the
 					most popular L2 scaling solutions on the market at the time
 					(Oct 2021). If you are interested in a more up to date
-					version, I strongly recommend reading Jon Charbonneau's
+					version, I strongly recommend reading{" "}
+					<NextChakraLink
+						textDecoration={"underline"}
+						href="https://twitter.com/jon_charb"
+					>
+						Jon Charbonneau's
+					</NextChakraLink>{" "}
 					awesome piece about the L2 ecosystem - {""}
 					<NextChakraLink
 						textDecoration={"underline"}
