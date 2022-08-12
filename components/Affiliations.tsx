@@ -68,7 +68,7 @@ const affiliations: AffiliationProps[] = [
 		dateBegin: "Mar 2022",
 		dateEnd: "July 2022",
 		description:
-			"Alongside is a protocol that allows anyone to get crypto market exposure in a few simple clicks. I was a research engineer for Alongside and I help with research on the architecture of the technical solutions required to build the crypto market index. My research focuses on decentralized custodians, secure multi-party computation, governance structures, L2 deployments, and more.",
+			"Alongside is a protocol that allows anyone to get crypto market exposure in a few simple clicks. I was a research engineer for Alongside and I did research on the architecture of the technical solutions required to build the crypto market index. My research focused on decentralized custodians, secure multi-party computation, governance structures, L2 deployments, and more.",
 		imageURL: "https://www.alongside.xyz/",
 		imageSource: "Alongside.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
