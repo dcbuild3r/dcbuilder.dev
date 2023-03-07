@@ -49,8 +49,8 @@ const AboutPage: React.FC = () => {
 						</Text>
 						<Text fontSize={"3xl"}>
 							After a few years of trying out different things I
-							decided that crypto and web3 were the best tools for
-							me to accomplish this.
+							decided that cryptography and distributed systems
+							are the domains that interest me the most.
 						</Text>
 					</VStack>
 				</Stack>

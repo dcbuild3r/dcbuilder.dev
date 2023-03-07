@@ -86,15 +86,23 @@ const IndexPage = () => {
 							...)
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							Public goods
-						</ListItem>
-						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							MEV (mitigation -{" "}
+							ZKML (
 							<NextChakraLink
-								href="https://notes.ethereum.org/@vbuterin/pbs_censorship_resistance"
-								textDecoration={"underline"}
+								href={
+									"https://worldcoin.org/blog/engineering/intro-to-zkml"
+								}
+								textDecoration="underline"
 							>
-								PBS
+								intro to zkml
+							</NextChakraLink>
+							,{" "}
+							<NextChakraLink
+								href={
+									"https://github.com/zkml-community/awesome-zkml"
+								}
+								textDecoration="underline"
+							>
+								awesome-zkml
 							</NextChakraLink>
 							)
 						</ListItem>
