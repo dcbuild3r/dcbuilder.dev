@@ -25,7 +25,6 @@ const affiliations: AffiliationProps[] = [
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
 	},
-
 	{
 		title: "ETHPrague",
 		role: "Coorganizer",
@@ -36,30 +35,6 @@ const affiliations: AffiliationProps[] = [
 		imageURL: "https://ethprague.com/",
 		imageSource: "ethprague.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
-		bgColor: "white",
-	},
-	{
-		title: "Artemis",
-		role: "Advisor",
-		dateBegin: "March 2022",
-		dateEnd: "Present",
-		description:
-			"I really care about education and enabling as many people as possible to have the skills and opportunities necessary to be able to thrive and build the future. At Artemis I help with providing educational resources and strategic advice to make it a great bootcamp.",
-		imageURL: "https://www.artemis.education/",
-		imageSource: "artemis.png",
-		imageWidth: ["200px", "200px", "270px", "270px"],
-		bgColor: "white",
-	},
-	{
-		title: "Crystalize",
-		role: "Advisor",
-		dateBegin: "March 2022",
-		dateEnd: "Present",
-		description:
-			"Crystalize is a web3 development bootcamp targeted at web2 workers and senior computer science students. I created the learning curriculum for Crystalize, I am helping with various operational aspects of the company like partnerships, mentors, social media outreach, etc. I also provide strategical advice.",
-		imageURL: "https://crystalize.dev/",
-		imageSource: "crystalize.png",
-		imageWidth: ["200px", "200px", "270px", "270px"],
 		bgColor: "white",
 	},
 	{
