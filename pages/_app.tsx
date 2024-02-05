@@ -17,7 +17,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 				/>
 				<meta
 					name="description"
-					content="dcbuilder.eth - full-stack blockchain developer and researcher engineer at Alongside Finance. Ethereum, devpill.me, TribeDAO, Waifus Anonymous."
+					content="dcbuilder.eth - Worldcoin Foundation, Ethereum, ZKML, programmable cryptography, d/acc"
 				/>
 				<meta
 					property="og:image"
@@ -29,7 +29,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 				<meta name="twitter:title" content="dcbuilder" />
 				<meta
 					name="twitter:description"
-					content="dcbuilder.eth - full-stack blockchain developer and researcher engineer at Alongside Finance. Ethereum, devpill.me, TribeDAO, Waifus Anonymous."
+					content="dcbuilder.eth - Worldcoin Foundation, Ethereum, ZKML, programmable cryptography, d/acc"
 				/>
 				<meta
 					name="twitter:image"
@@ -40,7 +40,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 				<meta property="og:title" content="dcbuilder" />
 				<meta
 					property="og:description"
-					content="dcbuilder.eth - full-stack blockchain developer and researcher engineer at Alongside Finance. Ethereum, devpill.me, TribeDAO, Waifus Anonymous."
+					content="dcbuilder.eth - Worldcoin Foundation, Ethereum, ZKML, programmable cryptography, d/acc"
 				/>
 				<meta
 					property="og:image"

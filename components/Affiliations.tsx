@@ -2,14 +2,14 @@ import { AffiliationProps } from "./Affiliation";
 
 const affiliations: AffiliationProps[] = [
 	{
-		title: "Worldcoin",
+		title: "Tools For Humanity",
 		role: "Research Engineer",
 		dateBegin: "July 2022",
-		dateEnd: "Present",
+		dateEnd: "Feb 2024",
 		description:
-			"I am currently focusing on zero-knowledge machine learning (ZKML) so Worldcoin users can self-host their biometric data and generate their IrisHash permissionlessly. At Worldcoin I am able to develop my skills in all of my interests including: Rust, cryptography (ZK), blockchain engineering (Ethereum), AI, mathematics, research and more.",
+			"Tools for Humanity are the main developers of the Worldcoin project. As a research engineer on the protocol team at TfH I worked on all the core parts of World ID protocol, the Semaphore merkle tree batcher circuits (SMTB), the signup sequencer, the state bridge contracts and various other parts of the protocol. I built tooling and run the trusted setups for SMTB which are written in Go using the gnark library. Worked with Rust, Solidity, Foundry, Go, and their ecosystems of libraries and tools.",
 		imageURL: "https://worldcoin.org/",
-		imageSource: "worldcoin.png",
+		imageSource: "tfh.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
 	},
@@ -43,7 +43,7 @@ const affiliations: AffiliationProps[] = [
 		dateBegin: "Mar 2022",
 		dateEnd: "July 2022",
 		description:
-			"Alongside is a protocol that allows anyone to get crypto market exposure in a few simple clicks. I was a research engineer for Alongside and I did research on the architecture of the technical solutions required to build the crypto market index. My research focused on decentralized custodians, secure multi-party computation, governance structures, L2 deployments, and more.",
+			"Alongside is a protocol that allows anyone to get crypto market exposure in a few simple clicks. I was a research engineer for Alongside and I did research on the architecture of the technical solutions required to build the crypto market index. My research focused on decentralized custodians, secure multi-party computation, governance structures, L2s, and more.",
 		imageURL: "https://www.alongside.xyz/",
 		imageSource: "Alongside.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
@@ -55,7 +55,7 @@ const affiliations: AffiliationProps[] = [
 		dateBegin: "Jul 2020",
 		dateEnd: "Mar 2022",
 		description:
-			"Moralis is a web3 development platform that allows for an easy and simple dapp development experience. I worked as a researcher and published my work in the Ivan on Tech Blockchain review. I still occassionally research and write about DeFi, DAOs, L2s, MEV, protocols, ZK tech, etc. My research was also used internally to improve Moralis products and to help the company thrive in a web3 ecosystem.",
+			"Moralis is a web3 development platform that allows for an easy and simple dapp development experience. I worked as a researcher and writer for their weekly research publications. My research was also used internally to improve Moralis products and to help the company thrive in a web3 ecosystem.",
 		imageURL: "https://moralis.io/",
 		imageSource: "moralis.png",
 		imageWidth: ["200px", "200px", "250px", "250px"],

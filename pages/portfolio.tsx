@@ -6,7 +6,7 @@ import React from "react";
 
 const ResearchPage: React.FC = () => {
 	return (
-		<Layout title="Waifus rule">
+		<Layout title="dcbuilder.dev - Portfolio">
 			<Navbar />
 			<VStack
 				spacing="100px"

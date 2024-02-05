@@ -1,4 +1,4 @@
-import { Stack, Box, Heading, VStack } from "@chakra-ui/react";
+import { Stack, Box, Heading, VStack, Text } from "@chakra-ui/react";
 import Layout from "components/Layout";
 import { MotionImage } from "components/MotionImage";
 import Navbar from "components/Navbar";
@@ -79,23 +79,14 @@ const IndexPage = () => {
 							Ethereum
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							Cryptography (<b>ZK*</b>)
+							Programmable Cryptography <p></p> (ZK, FHE, MPC,
+							TEE, ...)
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							Scaling solutions (rollups, validiums, volitions,
-							...)
+							Distributed Systems
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							ZKML (
-							<NextChakraLink
-								href={
-									"https://worldcoin.org/blog/engineering/intro-to-zkml"
-								}
-								textDecoration="underline"
-							>
-								intro to zkml
-							</NextChakraLink>
-							,{" "}
+							Provable Decentralized AI <p></p>(
 							<NextChakraLink
 								href={
 									"https://github.com/zkml-community/awesome-zkml"
@@ -135,6 +126,39 @@ const IndexPage = () => {
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
 							React, Next.js
 						</ListItem>
+					</VStack>
+					<VStack
+						display={"flex"}
+						flexDirection={"column"}
+						w="30vw"
+						spacing={"1.5rem"}
+					>
+						<Heading
+							size="lg"
+							alignSelf={[
+								"center",
+								"center",
+								"flex-start",
+								"flex-start",
+							]}
+							justifyContent={"center"}
+							textAlign={["center", "center", "center", "left"]}
+						>
+							Angel Investing
+						</Heading>
+						<Text fontSize="3xl" fontWeight={"400"}>
+							Supporting teams building cool things in the areas
+							of programmable cryptography, distributed systems,
+							digital identity, ZKML, scalability, privacy, and
+							more. Read more in the{" "}
+							<NextChakraLink
+								href="/portfolio"
+								textDecoration={"underline"}
+							>
+								Portfolio
+							</NextChakraLink>{" "}
+							section.
+						</Text>
 					</VStack>
 				</VStack>
 			</Stack>
