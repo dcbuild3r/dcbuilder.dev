@@ -96,15 +96,15 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 								textDecoration={"none"}
 							>
 								<MotionImage
-									src="/images/twitter.png"
+									src="/images/X.png"
 									height={["2rem", "2rem", "2rem", "2rem"]}
 									whileHover={{ scale: 1.3 }}
 									whileTap={{ scale: 0.8 }}
 								/>
 							</NextChakraLink>
-							<NextChakraLink href="https://lenster.xyz/u/dcbuilder.lens">
+							<NextChakraLink href="https://warpcast.com/dcbuilder">
 								<MotionImage
-									src="/images/lenster.png"
+									src="/images/farcaster.png"
 									height={["2rem", "2rem", "2rem", "2rem"]}
 									whileHover={{ scale: 1.3 }}
 									whileTap={{ scale: 0.8 }}
@@ -131,8 +131,8 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 							<NextChakraLink href="/about" mt="8px">
 								About
 							</NextChakraLink>
-							<NextChakraLink href="/research">
-								Research
+							<NextChakraLink href="/portfolio">
+								Portfolio
 							</NextChakraLink>
 							<NextChakraLink href="/projects">
 								Projects
@@ -149,8 +149,8 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 							<NextChakraLink href="/about" mt="8px">
 								About
 							</NextChakraLink>
-							<NextChakraLink href="/research">
-								Research
+							<NextChakraLink href="/portfolio">
+								Portfolio
 							</NextChakraLink>
 							<NextChakraLink href="/projects">
 								Projects
