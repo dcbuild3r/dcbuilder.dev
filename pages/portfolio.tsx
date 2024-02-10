@@ -15,17 +15,15 @@ const ResearchPage: React.FC = () => {
 				textAlign="center"
 			>
 				<Text w="70vw" fontSize="3xl">
-					I'm constantly learning about the things that interest me.
-					The best way to keep up with what I'm doing is following me
-					on {}
+					Stay tuned for updates on the projects I have invested in. I
+					am waiting to publish an article about this on{" "}
 					<NextChakraLink
 						textDecoration={"underline"}
-						href="https://twitter.com/DCbuild3r"
+						href="https://dcbuilder.mirror.xyz/"
 					>
-						Twitter
+						{"Mirror"}
 					</NextChakraLink>{" "}
-					where I usually retweet what I'm looking into at any given
-					point in time.
+					shortly after ETHDenver 2024.
 				</Text>
 			</VStack>
 		</Layout>
