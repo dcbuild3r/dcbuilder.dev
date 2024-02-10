@@ -18,11 +18,12 @@ export interface AffiliationProps {
 
 const Affiliation = (props: AffiliationProps) => {
 	return (
-		<VStack bgColor={`${props.bgColor}`} w="100vw" p={8}>
+		<VStack bgColor={`${props.bgColor}`} display={"flex"} h="auto" pt={16}>
 			<Stack
 				display={"flex"}
 				flexDirection={["column", "column", "row", "row"]}
 				alignSelf="center"
+				flexWrap={["wrap", "wrap", "wrap", "nowrap"]}
 			>
 				<Box
 					w="40vw"
@@ -42,7 +43,7 @@ const Affiliation = (props: AffiliationProps) => {
 						/>
 					</NextChakraLink>
 				</Box>
-				<VStack w="60vw">
+				<VStack w="55vw">
 					<Heading
 						color={props.bgColor === "black" ? "white" : "black"}
 						fontSize="4xl"

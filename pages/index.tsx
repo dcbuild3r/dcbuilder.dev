@@ -123,9 +123,6 @@ const IndexPage = () => {
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
 							Solidity, Foundry
 						</ListItem>
-						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							React, Next.js
-						</ListItem>
 					</VStack>
 					<VStack
 						display={"flex"}

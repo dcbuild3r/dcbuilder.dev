@@ -2,6 +2,18 @@ import { AffiliationProps } from "./Affiliation";
 
 const affiliations: AffiliationProps[] = [
 	{
+		title: "Worldcoin Foundation",
+		role: "Research Engineer",
+		dateBegin: "Feb 2024",
+		dateEnd: "Present",
+		description:
+			"Working on the Worldcoin Foundation grants program (worldcoin.org/rfp), protocol research and development, decentralization of the Worldcoin ecosystem, and supporting the Worldcoin mission.",
+		imageURL: "https://worldcoin.org/",
+		imageSource: "worldcoin_foundation.png",
+		imageWidth: ["200px", "200px", "300px", "300px"],
+		bgColor: "white",
+	},
+	{
 		title: "Tools For Humanity",
 		role: "Research Engineer",
 		dateBegin: "July 2022",
