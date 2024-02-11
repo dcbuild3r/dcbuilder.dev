@@ -3,8 +3,8 @@
   "version": "1.1.1",
   "scripts": {
     "prepare": "husky install",
-    "dev": "next",
-    "build": "next build",
+    "dev": "NODE_OPTIONS='--openssl-legacy-provider' next",
+    "build": "NODE_OPTIONS='--openssl-legacy-provider' next build",
     "start": "next start",
     "type-check": "tsc",
     "cy:run": "yarn run cypress run",
