@@ -9,7 +9,7 @@ import Affiliation, { AffiliationProps } from "components/Affiliation";
 
 const AboutPage: React.FC = () => {
 	return (
-		<Layout title="Waifus rule">
+		<Layout title="dcbuilder.dev - About">
 			<Navbar />
 			<Stack mt="100px" display="flex" flexDir="column" spacing={"100px"}>
 				<Stack

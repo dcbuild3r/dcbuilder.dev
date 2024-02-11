@@ -1,6 +1,6 @@
 export default {
 	description:
-		"dcbuilder.eth - full-stack blockchain developer and researcher engineer at Alongside Finance. Ethereum, devpill.me, TribeDAO, Waifus Anonymous.",
+		"dcbuilder.eth - Worldcoin Foundation, Ethereum, ZKML, programmable cryptography, d/acc",
 
 	openGraph: {
 		type: "website",
