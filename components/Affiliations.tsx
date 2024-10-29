@@ -2,13 +2,13 @@ import { AffiliationProps } from "./Affiliation";
 
 const affiliations: AffiliationProps[] = [
 	{
-		title: "Worldcoin Foundation",
+		title: "World Foundation",
 		role: "Research Engineer",
 		dateBegin: "Feb 2024",
 		dateEnd: "Present",
 		description:
-			"Working on the Worldcoin Foundation grants program (worldcoin.org/rfp), protocol research and development, decentralization of the Worldcoin ecosystem, and supporting the Worldcoin mission.",
-		imageURL: "https://worldcoin.org/",
+			"Working on the World Foundation Human Collective Grants program (world.org/community-grants), protocol research and development, decentralization of the World ecosystem, and supporting the World mission.",
+		imageURL: "https://world.org/",
 		imageSource: "worldcoin_foundation.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
@@ -19,9 +19,33 @@ const affiliations: AffiliationProps[] = [
 		dateBegin: "July 2022",
 		dateEnd: "Feb 2024",
 		description:
-			"Tools for Humanity are the main developers of the Worldcoin project. As a research engineer on the protocol team at TfH I worked on all the core parts of World ID protocol, the Semaphore merkle tree batcher circuits (SMTB), the signup sequencer, the state bridge contracts and various other parts of the protocol. I built tooling and run the trusted setups for SMTB which are written in Go using the gnark library. Worked with Rust, Solidity, Foundry, Go, and their ecosystems of libraries and tools.",
-		imageURL: "https://worldcoin.org/",
+			"Tools for Humanity are the main developers of the World project. As a research engineer on the protocol team at TfH I worked on all the core parts of World ID protocol, the Semaphore merkle tree batcher circuits (SMTB), the signup sequencer, the state bridge contracts and various other parts of the protocol. I built tooling and run the trusted setups for SMTB which are written in Go using the gnark library. Worked with Rust, Solidity, Foundry, Go, and their ecosystems of libraries and tools.",
+		imageURL: "https://world.org/",
 		imageSource: "tfh.png",
+		imageWidth: ["200px", "200px", "300px", "300px"],
+		bgColor: "white",
+	},
+	{
+		title: "Bagel",
+		role: "Advisor",
+		dateBegin: "Aug 2024",
+		dateEnd: "Present",
+		description:
+			"Bagel is a machine learning and cryptography research lab building a neutral, peer-to-peer AI ecosystem that covers the complete machine learning lifecycle. The platform specializes in privacy-preserving machine learning through technologies like homomorphic encryption and zero-knowledge proofs, while also pioneering GPU restaking - a novel system that allows computational resources to be utilized across multiple platforms concurrently.",
+		imageURL: "https://bagel.net/",
+		imageSource: "bagel.png",
+		imageWidth: ["200px", "200px", "300px", "300px"],
+		bgColor: "white",
+	},
+	{
+		title: "Modulus Labs",
+		role: "Advisor",
+		dateBegin: "Oct 2023",
+		dateEnd: "Present",
+		description:
+			"Modulus specializes in making artificial intelligence accountable through the use of advanced cryptography including ZK and MPC. I've been advising Modulus on go to market, product development, and research. We also collaborate on research and development of privacy preserving digital identity together with the World Foundation and TFH.",
+		imageURL: "https://modulus.xyz/",
+		imageSource: "modulus.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
 	},

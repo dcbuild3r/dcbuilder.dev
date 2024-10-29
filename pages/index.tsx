@@ -83,19 +83,13 @@ const IndexPage = () => {
 							TEE, ...)
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
+							Digital Identity
+						</ListItem>
+						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
 							Distributed Systems
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							Provable Decentralized AI <p></p>(
-							<NextChakraLink
-								href={
-									"https://github.com/zkml-community/awesome-zkml"
-								}
-								textDecoration="underline"
-							>
-								awesome-zkml
-							</NextChakraLink>
-							)
+							Decentralized AI
 						</ListItem>
 					</VStack>
 					<VStack
@@ -121,7 +115,7 @@ const IndexPage = () => {
 							Rust
 						</ListItem>
 						<ListItem size="lg" nest="2rem" fontWeight={"400"}>
-							Solidity, Foundry
+							Solidity
 						</ListItem>
 					</VStack>
 					<VStack
@@ -146,7 +140,7 @@ const IndexPage = () => {
 						<Text fontSize="3xl" fontWeight={"400"}>
 							Supporting teams building cool things in the areas
 							of programmable cryptography, distributed systems,
-							digital identity, ZKML, scalability, privacy, and
+							digital identity, AI, scalability, privacy, and
 							more. Read more in the{" "}
 							<NextChakraLink
 								href="/portfolio"
