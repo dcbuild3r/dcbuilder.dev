@@ -1,4 +1,4 @@
-import { Heading, Stack, VStack, Text } from "@chakra-ui/layout";
+import { Heading, VStack, Text } from "@chakra-ui/layout";
 import { Box } from "@chakra-ui/react";
 import * as React from "react";
 import { MotionImage } from "./MotionImage";
