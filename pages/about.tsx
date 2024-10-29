@@ -11,7 +11,7 @@ const AboutPage: React.FC = () => {
 	return (
 		<Layout title="dcbuilder.dev - About">
 			<Navbar />
-			<Stack mt="100px" display="flex" flexDir="column" spacing={"100px"}>
+			<Stack mt="100px" display="flex" flexDir="column" gap={"100px"}>
 				<Stack
 					display="flex"
 					flexDir={["column", "column", "row", "row"]}

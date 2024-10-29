@@ -1,33 +1,63 @@
-import { VStack, Text } from "@chakra-ui/react";
+import {
+	VStack,
+	Text,
+	Heading,
+	SimpleGrid,
+	Box,
+	Container,
+} from "@chakra-ui/react";
 import Layout from "components/Layout";
 import Navbar from "components/Navbar";
-import { NextChakraLink } from "components/NextChakraLink";
 import React from "react";
+import investments from "components/Investments";
+import Investment, { InvestmentProps } from "components/Investment";
 
-const ResearchPage: React.FC = () => {
+const PortfolioPage: React.FC = () => {
 	return (
 		<Layout title="dcbuilder.dev - Portfolio">
 			<Navbar />
-			<VStack
-				spacing="100px"
-				mb="100px"
-				mt={["200px", "200px", "150px", "150px"]}
-				textAlign="center"
-			>
-				<Text w="70vw" fontSize="3xl">
-					Stay tuned for updates on the projects I have invested in. I
-					am waiting to publish an article about this on{" "}
-					<NextChakraLink
-						textDecoration={"underline"}
-						href="https://dcbuilder.mirror.xyz/"
-					>
-						{"Mirror"}
-					</NextChakraLink>{" "}
-					shortly after ETHDenver 2024.
-				</Text>
-			</VStack>
+			<Box overflowX="hidden">
+				<VStack
+					gap="100px"
+					mb="100px"
+					mt={["200px", "200px", "150px", "150px"]}
+					textAlign="center"
+				>
+					<Heading fontSize="5xl">Disclaimer</Heading>
+					<Text maxW="60vw" fontSize="2xl">
+						All information and opinions presented on this website
+						reflect only my personal views and experiences. They are
+						not intended to represent or imply the views, policies,
+						or endorsements of any organization, entity, or other
+						individuals. The investments, strategies, and opinions
+						expressed are solely my own and should not be considered
+						financial advice. Please consult a qualified financial
+						advisor before making any investment decisions.
+					</Text>
+					<Heading fontSize="5xl">Investments</Heading>
+					<Container maxW="80%">
+						<SimpleGrid
+							columns={[1, 1, 2, 3]}
+							gap="10px"
+							width="full"
+						>
+							{investments.map((investment: InvestmentProps) => (
+								<Investment
+									key={investment.title}
+									title={investment.title}
+									description={investment.description}
+									imageSource={investment.imageSource}
+									imageURL={investment.imageURL}
+									imageWidth={["225px"]}
+									bgColor={investment.bgColor}
+								/>
+							))}
+						</SimpleGrid>
+					</Container>
+				</VStack>
+			</Box>
 		</Layout>
 	);
 };
 
-export default ResearchPage;
+export default PortfolioPage;
