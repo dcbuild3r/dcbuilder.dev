@@ -30,8 +30,8 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 					<Stack
 						p={["7px 20px", "10px 30px", "10px 30px", "10px 30px"]}
 						zIndex={"20"}
-						ml="3"
-						mr="3"
+						ml="5"
+						mr="5"
 						fontSize={[20, 28, 20, 30]}
 						display="flex"
 						justifyContent={["center", " space-between"]}
@@ -43,6 +43,7 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 							alignContent="center"
 							display="flex"
 							flexDirection={"row"}
+							marginBottom={["20px", "20px", 0, 0]}
 						>
 							<HStack
 								p={["3", "3", "5", "5"]}
@@ -134,8 +135,8 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 							<NextChakraLink href="/portfolio">
 								Portfolio
 							</NextChakraLink>
-							<NextChakraLink href="/projects">
-								Projects
+							<NextChakraLink href="https://dcbuilder.mirror.xyz/">
+								Blog
 							</NextChakraLink>
 						</VStack>
 						<Stack
@@ -152,8 +153,8 @@ const Navbar: React.FC = (props: PropsWithChildren<BoxProps>) => {
 							<NextChakraLink href="/portfolio">
 								Portfolio
 							</NextChakraLink>
-							<NextChakraLink href="/projects">
-								Projects
+							<NextChakraLink href="https://dcbuilder.mirror.xyz/">
+								↗Blog
 							</NextChakraLink>
 						</Stack>
 					</Stack>
