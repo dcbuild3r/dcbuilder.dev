@@ -8,7 +8,6 @@ import {
 } from "@chakra-ui/react";
 import Layout from "components/Layout";
 import Navbar from "components/Navbar";
-import { NextChakraLink } from "components/NextChakraLink";
 import React from "react";
 import investments from "components/Investments";
 import Investment, { InvestmentProps } from "components/Investment";
@@ -19,7 +18,7 @@ const PortfolioPage: React.FC = () => {
 			<Navbar />
 			<Box overflowX="hidden">
 				<VStack
-					spacing="100px"
+					gap="100px"
 					mb="100px"
 					mt={["200px", "200px", "150px", "150px"]}
 					textAlign="center"
@@ -39,7 +38,7 @@ const PortfolioPage: React.FC = () => {
 					<Container maxW="80%">
 						<SimpleGrid
 							columns={[1, 1, 2, 3]}
-							spacing="10px"
+							gap="10px"
 							width="full"
 						>
 							{investments.map((investment: InvestmentProps) => (
@@ -49,7 +48,7 @@ const PortfolioPage: React.FC = () => {
 									description={investment.description}
 									imageSource={investment.imageSource}
 									imageURL={investment.imageURL}
-									imageWidth="225px"
+									imageWidth={["225px"]}
 									bgColor={investment.bgColor}
 								/>
 							))}
