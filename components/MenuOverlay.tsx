@@ -40,11 +40,8 @@ const MenuOverlay = (props: MenuOverlayProps) => {
 				<MenuOverlayItem href="/about" onClick={props.menuHandler}>
 					About
 				</MenuOverlayItem>
-				<MenuOverlayItem href="/research" onClick={props.menuHandler}>
-					Research
-				</MenuOverlayItem>
-				<MenuOverlayItem href="/projects" onClick={props.menuHandler}>
-					Projects
+				<MenuOverlayItem href="/portfolio" onClick={props.menuHandler}>
+					Portfolio
 				</MenuOverlayItem>
 			</VStack>
 		</Box>

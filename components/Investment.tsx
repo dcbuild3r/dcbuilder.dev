@@ -57,7 +57,7 @@ const Investment = (props: InvestmentProps) => {
 					fontSize="3xl"
 					alignSelf={["center", "center", "center", "center"]}
 					textAlign={["center", "center", "center", "center"]}
-					w="20vw"
+					w={["70vw", "70vw", "20vw", "20vw"]}
 				>
 					{props.description}
 				</Text>
