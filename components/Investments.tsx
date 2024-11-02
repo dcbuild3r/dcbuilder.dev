@@ -45,7 +45,7 @@ const investments: InvestmentProps[] = [
 		title: "Berachain",
 		description:
 			"EVM L1 Turning Liquidity into Security with Proof Of Liquidity",
-		imageURL: "/images/berachain.png",
+		imageURL: "https://www.berachain.com/",
 		imageSource: "investments/berachain.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
@@ -288,7 +288,7 @@ const investments: InvestmentProps[] = [
 	{
 		title: "PIN AI",
 		description: "The Open Platform for Personal AI",
-		imageURL: "https://www.pinai.io/",
+		imageURL: "https://pinai.io/",
 		imageSource: "investments/pinai.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
@@ -296,7 +296,7 @@ const investments: InvestmentProps[] = [
 	{
 		title: "Pluto",
 		description: "Verifiable Web Data for Applications",
-		imageURL: "/images/pluto.png",
+		imageURL: "https://pluto.xyz/",
 		imageSource: "investments/pluto.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
@@ -344,7 +344,7 @@ const investments: InvestmentProps[] = [
 	{
 		title: "Ritual",
 		description: "The World's Sovereign Chain for AI",
-		imageURL: "/images/ritual.png",
+		imageURL: "https://ritual.net/",
 		imageSource: "investments/ritual.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
@@ -352,7 +352,7 @@ const investments: InvestmentProps[] = [
 	{
 		title: "Succinct",
 		description: "Prove the World's Software",
-		imageURL: "/images/succinct.png",
+		imageURL: "https://succinct.xyz/",
 		imageSource: "investments/succinct.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
