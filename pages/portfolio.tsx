@@ -18,7 +18,7 @@ const PortfolioPage: React.FC = () => {
 			<Navbar />
 			<Box overflowX="hidden">
 				<VStack
-					gap="100px"
+					gap="200px"
 					mb="100px"
 					mt={["200px", "200px", "150px", "150px"]}
 					textAlign="center"
