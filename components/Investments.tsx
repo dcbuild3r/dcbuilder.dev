@@ -288,7 +288,7 @@ const investments: InvestmentProps[] = [
 	{
 		title: "PIN AI",
 		description: "The Open Platform for Personal AI",
-		imageURL: "https://ritual.net/",
+		imageURL: "https://pinai.io/",
 		imageSource: "investments/pinai.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
