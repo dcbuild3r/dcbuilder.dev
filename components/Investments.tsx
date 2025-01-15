@@ -51,7 +51,7 @@ const investments: InvestmentProps[] = [
 		bgColor: "white",
 	},
 	{
-		title: "Blocksense",
+		title: "blocksense",
 		description: "The ZK Rollup for Verifiable Data and Compute Services",
 		imageURL: "https://blocksense.network/",
 		imageSource: "investments/blocksense.png",
@@ -99,7 +99,7 @@ const investments: InvestmentProps[] = [
 		bgColor: "white",
 	},
 	{
-		title: "Firstbatch",
+		title: "FirstBatch",
 		description: "Enabling The Path to Safe AGI Through Collaboration",
 		imageURL: "https://www.firstbatch.xyz/",
 		imageSource: "investments/firstbatch.png",
@@ -147,10 +147,26 @@ const investments: InvestmentProps[] = [
 		bgColor: "white",
 	},
 	{
+		title: "Happy Chain",
+		description: "The Simple Happy Game Chain",
+		imageURL: "https://linktr.ee/happychaindevs",
+		imageSource: "investments/happy_chain.png",
+		imageWidth: ["200px", "200px", "300px", "300px"],
+		bgColor: "white",
+	},
+	{
 		title: "Herodotus",
 		description: "Verifiable Onchain Data and Compute",
 		imageURL: "https://herodotus.dev/",
 		imageSource: "investments/herodotus.png",
+		imageWidth: ["200px", "200px", "300px", "300px"],
+		bgColor: "white",
+	},
+	{
+		title: "Inco",
+		description: "The Confidentiality Layer",
+		imageURL: "https://www.inco.org/",
+		imageSource: "investments/inco.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
 	},
@@ -194,16 +210,14 @@ const investments: InvestmentProps[] = [
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
 	},
-	/*
-    {
-        title: "Mizu",
-        description: "Mizu description",
-        imageURL: "/images/mizu.png",
-        imageSource: "investments/mizu.png",
-        imageWidth: ["200px", "200px", "300px", "300px"],
-        bgColor: "white",
-    },
-    */
+	{
+		title: "Mizu",
+		description: "Unified Liquidity Layer",
+		imageURL: "https://mizulabs.xyz/",
+		imageSource: "investments/mizu.png",
+		imageWidth: ["200px", "200px", "300px", "300px"],
+		bgColor: "white",
+	},
 	{
 		title: "Mode",
 		description:
@@ -350,6 +364,14 @@ const investments: InvestmentProps[] = [
 		bgColor: "white",
 	},
 	{
+		title: "Sorella",
+		description: "Sustainable on-chain Markets",
+		imageURL: "https://sorellalabs.xyz/",
+		imageSource: "investments/sorella.png",
+		imageWidth: ["200px", "200px", "300px", "300px"],
+		bgColor: "white",
+	},
+	{
 		title: "Succinct",
 		description: "Prove the World's Software",
 		imageURL: "https://succinct.xyz/",
@@ -362,6 +384,15 @@ const investments: InvestmentProps[] = [
 		description: "Fixed Rates, Flexible Everything Else",
 		imageURL: "https://wildcat.finance/",
 		imageSource: "investments/wildcat.png",
+		imageWidth: ["200px", "200px", "300px", "300px"],
+		bgColor: "white",
+	},
+	{
+		title: "Zero",
+		description:
+			"Advanced Diagnostics and Tools for Health Performance and Longevity",
+		imageURL: "https://www.joinzero.co/",
+		imageSource: "investments/zero.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
 	},
