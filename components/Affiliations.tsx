@@ -41,10 +41,11 @@ const affiliations: AffiliationProps[] = [
 		title: "Modulus Labs",
 		role: "Advisor",
 		dateBegin: "Oct 2023",
-		dateEnd: "Present",
+		dateEnd: "Dec 2024",
 		description:
-			"Modulus specializes in making artificial intelligence accountable through the use of advanced cryptography including ZK and MPC. I've been advising Modulus on go to market, product development, and research. We also collaborate on research and development of privacy preserving digital identity together with the World Foundation and TFH.",
-		imageURL: "https://modulus.xyz/",
+			"Modulus specializes in making artificial intelligence accountable through the use of advanced cryptography including ZK and MPC. I advised Modulus on go to market, product development, and research. Modulus Labs was acquired by Tools For Humanity in December of 2024 and is now the Applied Research team at TFH.",
+		imageURL:
+			"https://world.org/blog/announcements/modulus-labs-joins-tfh-support-applied-research-world",
 		imageSource: "modulus.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
@@ -67,7 +68,7 @@ const affiliations: AffiliationProps[] = [
 		dateBegin: "Dec 2021",
 		dateEnd: "Present",
 		description:
-			"ETHPrague is a 3-day organized hackathon/conference by local members of the Ethereum community that took place in Jun 10-12. I secured sponsors for the event, managed Twitter communications and announcements, reviewed hacker and speaker applications, judged submissions at the hackathon and helped with other miscellaneous tasks.",
+			"ETHPrague is a 3-day organized conference by local members of the Ethereum community that takes place every year. I have historically helped by securing sponsors for the event, managed Twitter communications and announcements, reviewed hacker and speaker applications, judged submissions at the hackathon and helped with other miscellaneous tasks.",
 		imageURL: "https://ethprague.com/",
 		imageSource: "ethprague.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
