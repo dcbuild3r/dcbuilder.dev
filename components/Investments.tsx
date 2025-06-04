@@ -388,11 +388,11 @@ const investments: InvestmentProps[] = [
 		bgColor: "white",
 	},
 	{
-		title: "Zero",
+		title: "Lucis",
 		description:
 			"Advanced Diagnostics and Tools for Health Performance and Longevity",
-		imageURL: "https://www.joinzero.co/",
-		imageSource: "investments/zero.png",
+		imageURL: "https://lucis.life/",
+		imageSource: "investments/lucis.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
 	},
