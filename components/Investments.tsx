@@ -109,7 +109,7 @@ const investments: InvestmentProps[] = [
 	{
 		title: "Friend",
 		description: "AI Companions for Everyone",
-		imageURL: "https://www.friend.com/product.html",
+		imageURL: "https://friend.com",
 		imageSource: "investments/friend.png",
 		imageWidth: ["200px", "200px", "300px", "300px"],
 		bgColor: "white",
