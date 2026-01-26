@@ -4,8 +4,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
 	title: {
-		default: "dcbuilder",
-		template: "%s | dcbuilder",
+		default: "dcbuilder.eth",
+		template: "%s | dcbuilder.eth",
 	},
 	description:
 		"Research, Development, Angel Investing in cryptography, distributed systems, and AI",
