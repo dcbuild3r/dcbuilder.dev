@@ -10,7 +10,7 @@ export default function Home() {
         <div className="flex flex-col-reverse lg:flex-row items-center gap-8 py-12">
           {/* Image */}
           <div className="lg:w-[65%]">
-            <div className="bg-white dark:bg-transparent rounded-2xl p-8 w-full border border-transparent dark:border-neutral-700 dark:shadow-[0_0_40px_rgba(255,255,255,0.08)]">
+            <div className="bg-white dark:bg-[radial-gradient(circle,_rgba(120,120,120,0.25)_0%,_rgba(60,60,60,0.1)_40%,_transparent_70%)] rounded-[2.5rem] p-8 w-full overflow-hidden">
               <Image
                 src="/images/kaneki.png"
                 alt="dcbuilder"
