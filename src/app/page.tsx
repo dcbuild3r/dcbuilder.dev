@@ -6,25 +6,24 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen pt-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col-reverse lg:flex-row items-center gap-12 py-12">
-            {/* Image */}
-            <div className="lg:w-1/2 flex justify-center">
-              <div className="bg-neutral-100 rounded-2xl p-6">
-                <Image
-                  src="/images/kaneki.png"
-                  alt="dcbuilder"
-                  width={600}
-                  height={600}
-                  className="w-full"
-                  priority
-                />
-              </div>
+      <main className="min-h-screen pt-24 px-[7.5vw]">
+        <div className="flex flex-col-reverse lg:flex-row items-center gap-8 py-12">
+          {/* Image */}
+          <div className="lg:w-[65%] flex justify-center">
+            <div className="bg-neutral-100 rounded-2xl p-6">
+              <Image
+                src="/images/kaneki.png"
+                alt="dcbuilder"
+                width={700}
+                height={700}
+                className="w-full"
+                priority
+              />
             </div>
+          </div>
 
-            {/* Content */}
-            <div className="lg:w-1/2 space-y-12">
+          {/* Content */}
+          <div className="lg:w-[35%] space-y-10">
               {/* Research */}
               <section>
                 <h2 className="text-2xl font-bold mb-4">Research</h2>
@@ -59,7 +58,6 @@ export default function Home() {
                   section.
                 </p>
               </section>
-            </div>
           </div>
         </div>
       </main>
