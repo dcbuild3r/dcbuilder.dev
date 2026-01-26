@@ -10,7 +10,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col-reverse lg:flex-row items-center gap-12 py-12">
             {/* Image */}
-            <div className="lg:w-3/5 flex justify-center">
+            <div className="lg:w-1/2 flex justify-center">
               <div className="bg-neutral-100 rounded-2xl p-6">
                 <Image
                   src="/images/kaneki.png"
@@ -24,11 +24,11 @@ export default function Home() {
             </div>
 
             {/* Content */}
-            <div className="lg:w-2/5 space-y-12">
+            <div className="lg:w-1/2 space-y-12">
               {/* Research */}
               <section>
                 <h2 className="text-2xl font-bold mb-4">Research</h2>
-                <ul className="space-y-2 text-lg text-neutral-800 dark:text-neutral-300">
+                <ul className="space-y-2 text-lg text-inherit">
                   <li>• Ethereum</li>
                   <li>• Programmable Cryptography (ZK, FHE, MPC, TEE, ...)</li>
                   <li>• Digital Identity</li>
@@ -40,7 +40,7 @@ export default function Home() {
               {/* Development */}
               <section>
                 <h2 className="text-2xl font-bold mb-4">Development</h2>
-                <ul className="space-y-2 text-lg text-neutral-800 dark:text-neutral-300">
+                <ul className="space-y-2 text-lg text-inherit">
                   <li>• Rust</li>
                   <li>• Solidity</li>
                 </ul>
@@ -49,7 +49,7 @@ export default function Home() {
               {/* Angel Investing */}
               <section>
                 <h2 className="text-2xl font-bold mb-4">Angel Investing</h2>
-                <p className="text-lg text-neutral-800 dark:text-neutral-300">
+                <p className="text-lg text-inherit">
                   Supporting teams building cool things in the areas of programmable
                   cryptography, distributed systems, digital identity, AI, scalability,
                   privacy, and more. Read more in the{" "}
