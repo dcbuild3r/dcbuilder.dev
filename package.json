@@ -1,76 +1,35 @@
 {
-  "name": "dcbuilder.dev",
-  "version": "1.1.1",
+  "name": "nextjs-modernization",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "prepare": "husky install",
-    "dev": "NODE_OPTIONS='--openssl-legacy-provider' next",
-    "build": "NODE_OPTIONS='--openssl-legacy-provider' next build",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
-    "type-check": "tsc",
-    "cy:run": "yarn run cypress run",
-    "e2e": "start-server-and-test dev http://localhost:3000 cy:run",
-    "lint": "eslint components/** pages/** util/** --fix",
-    "format": "prettier --write components pages util"
+    "lint": "eslint"
   },
   "dependencies": {
-    "@chakra-ui/icon": "^1.2.1",
-    "@chakra-ui/icons": "1.1.1",
-    "@chakra-ui/layout": "^2.3.1",
-    "@chakra-ui/react": "1.6.5",
-    "@emotion/react": "11.4.0",
-    "@emotion/styled": "11.3.0",
-    "@react-icons/all-files": "^4.1.0",
-    "framer-motion": "4.1.17",
-    "next": "11.0.1",
-    "next-seo": "^6.6.0",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "react-hook-form": "^7.12.0",
-    "react-icons": "^4.3.1"
+    "next": "16.1.4",
+    "next-themes": "^0.4.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
-    "@types/next": "^9.0.0",
-    "@types/node": "16.3.3",
-    "@types/react": "17.0.2",
-    "@types/react-dom": "17.0.2",
-    "@typescript-eslint/eslint-plugin": "^4.28.4",
-    "@typescript-eslint/parser": "^4.28.4",
-    "cypress": "^8.0.0",
-    "eslint": "^7.31.0",
-    "eslint-config-next": "^11.0.1",
-    "husky": "^7.0.1",
-    "lint-staged": ">=10",
-    "prettier": "2.3.2",
-    "start-server-and-test": "^1.13.0",
-    "typescript": "4.5.5"
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   },
-  "resolutions": {
-    "@types/lodash": "4.14.171",
-    "@types/lodash.mergewith": "4.6.6",
-    "@types/node": "16.3.3",
-    "@types/react": "17.0.2",
-    "@types/react-dom": "17.0.2",
-    "next-seo": "4.24.0",
-    "@chakra-ui/react": "1.6.5",
-    "@chakra-ui/icons": "1.1.1",
-    "@chakra-ui/icon": "1.2.1",
-    "@emotion/react": "11.4.0",
-    "@emotion/styled": "11.3.0",
-    "framer-motion": "4.1.17"
-  },
-  "license": "ISC",
-  "prettier": {
-    "tabWidth": 4,
-    "useTabs": true
-  },
-  "eslintConfig": {
-    "parser": "@typescript-eslint/parser",
-    "plugins": [
-      "@typescript-eslint"
-    ]
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": "eslint --cache --fix",
-    "*.{js,jsx,ts,tsx,md,html,css}": "prettier --write"
-  }
+  "ignoreScripts": [
+    "sharp",
+    "unrs-resolver"
+  ],
+  "trustedDependencies": [
+    "sharp",
+    "unrs-resolver"
+  ]
 }
