@@ -20,6 +20,7 @@ export type JobTag =
 	| "legal"
 	| "world"
 	| "monad-ecosystem"
+	| "berachain-ecosystem"
 	| "entry-level";
 
 export const tagLabels: Record<JobTag, string> = {
@@ -40,6 +41,7 @@ export const tagLabels: Record<JobTag, string> = {
 	legal: "Legal",
 	world: "World",
 	"monad-ecosystem": "Monad Ecosystem",
+	"berachain-ecosystem": "Berachain Ecosystem",
 	"entry-level": "Entry Level",
 };
 
@@ -183,6 +185,37 @@ const companies = {
 		logo: "/images/investments/berachain.png",
 		website: "https://www.berachain.com/",
 		category: "portfolio" as const,
+	},
+	// Berachain Ecosystem Companies
+	infraredFinance: {
+		name: "Infrared Finance",
+		logo: "/images/investments/berachain.png",
+		website: "https://www.infrared.finance/",
+		category: "network" as const,
+	},
+	oogaBooga: {
+		name: "Ooga Booga",
+		logo: "/images/investments/berachain.png",
+		website: "https://oogabooga.io/",
+		category: "network" as const,
+	},
+	beraBuzz: {
+		name: "bera.buzz",
+		logo: "/images/investments/berachain.png",
+		website: "https://bera.buzz/",
+		category: "network" as const,
+	},
+	kodiakFinance: {
+		name: "Kodiak Finance",
+		logo: "/images/investments/berachain.png",
+		website: "https://kodiak.finance/",
+		category: "network" as const,
+	},
+	goldsky: {
+		name: "Goldsky",
+		logo: "/images/investments/berachain.png",
+		website: "https://goldsky.com/",
+		category: "network" as const,
 	},
 };
 
@@ -2008,5 +2041,83 @@ export const jobs: Job[] = [
 		department: "Marketing",
 		link: "https://careers.berachain.com/29948",
 		tags: ["marketing"],
+	},
+	// Berachain Ecosystem Jobs
+	{
+		id: "infrared-senior-smart-contracts-engineer",
+		title: "Senior Smart Contracts Engineer",
+		company: companies.infraredFinance,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://ecojobs.berachain.com/jobs",
+		tags: ["defi", "berachain-ecosystem"],
+	},
+	{
+		id: "infrared-senior-backend-engineer",
+		title: "Senior Backend Engineer",
+		company: companies.infraredFinance,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://ecojobs.berachain.com/jobs",
+		tags: ["defi", "infra", "berachain-ecosystem"],
+	},
+	{
+		id: "infrared-senior-frontend-engineer",
+		title: "Senior Frontend Engineer",
+		company: companies.infraredFinance,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://ecojobs.berachain.com/jobs",
+		tags: ["defi", "berachain-ecosystem"],
+	},
+	{
+		id: "ooga-booga-lead-defi-developer",
+		title: "Lead DeFi Developer",
+		company: companies.oogaBooga,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://ecojobs.berachain.com/jobs",
+		tags: ["defi", "berachain-ecosystem"],
+	},
+	{
+		id: "bera-buzz-smart-contract-developer",
+		title: "Smart Contract Developer",
+		company: companies.beraBuzz,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://ecojobs.berachain.com/jobs",
+		tags: ["defi", "berachain-ecosystem"],
+	},
+	{
+		id: "kodiak-fullstack-engineer",
+		title: "Full-Stack Engineer",
+		company: companies.kodiakFinance,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://ecojobs.berachain.com/jobs",
+		tags: ["defi", "berachain-ecosystem"],
+	},
+	{
+		id: "goldsky-solutions-engineer",
+		title: "Solutions Engineer",
+		company: companies.goldsky,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Support",
+		link: "https://ecojobs.berachain.com/jobs",
+		tags: ["infra", "berachain-ecosystem"],
 	},
 ];

@@ -32,6 +32,12 @@ const companyTiers: Record<string, number> = {
 	Perpl: 6,
 	Kuru: 6,
 	RareBetSports: 6,
+	// Tier 6 - Ecosystem (Berachain ecosystem projects)
+	"Infrared Finance": 6,
+	"Ooga Booga": 6,
+	"bera.buzz": 6,
+	"Kodiak Finance": 6,
+	Goldsky: 6,
 };
 
 interface JobsGridProps {
