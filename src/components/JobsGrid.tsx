@@ -398,7 +398,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 										alt={job.company.name}
 										width={48}
 										height={48}
-										className="object-contain bg-white rounded-lg p-1 group-hover:scale-105 transition-transform"
+										className="object-contain bg-white rounded-lg p-1 group-hover:scale-[1.08] transition-transform duration-150"
 										onError={(e) => {
 											console.warn(`[JobsGrid] Failed to load logo for ${job.company.name}`);
 											e.currentTarget.style.display = "none";

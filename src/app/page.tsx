@@ -10,7 +10,7 @@ export default function Home() {
 				<div className="flex flex-col-reverse lg:flex-row items-center gap-8 py-12">
 					{/* Image */}
 					<div className="lg:w-[65%]">
-						<div className="bg-white dark:bg-[radial-gradient(circle,_#d9d9d9_0%,_#d9d9d9_50%,_#161616_100%)] rounded-[2.5rem] p-8 w-full overflow-hidden hover:scale-[1.02] transition-transform">
+						<div className="bg-white dark:bg-[radial-gradient(circle,_#d9d9d9_0%,_#d9d9d9_50%,_#161616_100%)] rounded-[2.5rem] p-8 w-full overflow-hidden hover:scale-[1.03] transition-transform duration-150">
 							<Image
 								src="/images/kaneki.png"
 								alt="dcbuilder.eth"

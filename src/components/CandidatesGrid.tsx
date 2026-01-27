@@ -377,7 +377,7 @@ function CandidateCard({
 			{/* Header */}
 			<div className="flex items-start gap-3">
 				{/* Profile Image */}
-				<div className="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 hover:scale-105 transition-transform">
+				<div className="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 hover:scale-[1.08] transition-transform duration-150">
 					<Image
 						src={profileImage}
 						alt={displayName}
