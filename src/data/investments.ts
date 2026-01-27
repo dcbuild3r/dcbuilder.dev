@@ -18,6 +18,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/accountable.jpg",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/accountabledata",
 	},
 	{
 		title: "Agora",
