@@ -168,13 +168,23 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 		});
 	}, [jobs, filterCategory, selectedCompany, selectedLocation, searchQuery, selectedTags]);
 
-	// Sort: featured first (randomized on client), then by company tier, then alphabetically
+	// Helper to check if job is hot
+	const isHotJob = (job: Job) => job.tags?.includes("hot");
+
+	// Sort: hot first, then featured (randomized), then by company tier, then alphabetically
 	const sortedJobs = useMemo(() => {
-		const featured = filteredJobs.filter((j) => j.featured);
-		const nonFeatured = filteredJobs.filter((j) => !j.featured);
+		const hot = filteredJobs.filter((j) => isHotJob(j));
+		const featured = filteredJobs.filter((j) => j.featured && !isHotJob(j));
+		const nonFeatured = filteredJobs.filter((j) => !j.featured && !isHotJob(j));
 
 		// Only shuffle after hydration (when shuffleKey > 0)
 		if (shuffleKey > 0) {
+			// Shuffle hot jobs
+			for (let i = hot.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[hot[i], hot[j]] = [hot[j], hot[i]];
+			}
+			// Shuffle featured jobs
 			for (let i = featured.length - 1; i > 0; i--) {
 				const j = Math.floor(Math.random() * (i + 1));
 				[featured[i], featured[j]] = [featured[j], featured[i]];
@@ -193,7 +203,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 			return a.company.name.localeCompare(b.company.name);
 		});
 
-		return [...featured, ...nonFeatured];
+		return [...hot, ...featured, ...nonFeatured];
 	}, [filteredJobs, shuffleKey]);
 
 	return (
@@ -292,10 +302,14 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 						<button
 							key={tag}
 							onClick={() => toggleTag(tag)}
-							className={`px-3 py-1 text-sm rounded-full transition-colors ${
-								selectedTags.includes(tag)
-									? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-									: "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+							className={`px-3 py-1 text-sm rounded-full transition-all ${
+								tag === "hot"
+									? selectedTags.includes(tag)
+										? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_15px_rgba(251,146,60,0.6)]"
+										: "bg-gradient-to-r from-orange-400 to-amber-400 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.4)] hover:shadow-[0_0_15px_rgba(251,146,60,0.6)]"
+									: selectedTags.includes(tag)
+										? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+										: "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
 							}`}
 						>
 							{tagLabels[tag]}
@@ -325,7 +339,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 							href={job.link}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="group block p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
+							className={`group block p-4 rounded-xl border transition-all ${
+								isHotJob(job)
+									? "border-orange-400 dark:border-orange-500 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 shadow-[0_0_15px_rgba(251,146,60,0.3)] dark:shadow-[0_0_20px_rgba(251,146,60,0.2)] hover:shadow-[0_0_25px_rgba(251,146,60,0.5)] dark:hover:shadow-[0_0_30px_rgba(251,146,60,0.4)]"
+									: "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
+							}`}
 						>
 							<div className="flex items-start gap-4">
 								{/* Company Logo */}
@@ -386,7 +404,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 											{job.tags.map((tag) => (
 												<span
 													key={tag}
-													className="px-2 py-0.5 text-xs rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+													className={`px-2 py-0.5 text-xs rounded-full ${
+														tag === "hot"
+															? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.5)] animate-pulse"
+															: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+													}`}
 												>
 													{tagLabels[tag]}
 												</span>

@@ -3,6 +3,7 @@ export type RelationshipCategory = "portfolio" | "network";
 export type JobType = "full-time" | "part-time" | "contract" | "internship";
 
 export type JobTag =
+	| "hot"
 	| "ai"
 	| "mev"
 	| "health"
@@ -29,6 +30,7 @@ export type JobTag =
 	| "talent";
 
 export const tagLabels: Record<JobTag, string> = {
+	hot: "🔥 HOT",
 	ai: "AI",
 	mev: "MEV",
 	health: "Health",
@@ -2373,7 +2375,7 @@ export const jobs: Job[] = [
 		type: "internship",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/5e076db5-ef04-46d2-a586-dc7675485808",
-		tags: ["world", "entry-level"],
+		tags: ["hot", "world", "entry-level"],
 		featured: true,
 	},
 	{
