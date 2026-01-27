@@ -383,7 +383,7 @@ function CandidateCard({
 						alt={displayName}
 						width={48}
 						height={48}
-						className="object-cover w-full h-full"
+						className="object-cover w-full h-full hover:scale-110 transition-transform"
 						onError={(e) => {
 							console.warn(`[CandidatesGrid] Failed to load image for ${displayName}`);
 							e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";

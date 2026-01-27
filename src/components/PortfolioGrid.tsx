@@ -168,7 +168,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 								alt={investment.title}
 								width={80}
 								height={80}
-								className="object-contain bg-white rounded-lg p-2 group-hover:scale-105 transition-transform"
+								className="object-contain bg-white rounded-lg p-2 group-hover:scale-110 transition-transform"
 								onError={(e) => {
 									console.warn(
 										`[PortfolioGrid] Failed to load logo for ${investment.title}`
