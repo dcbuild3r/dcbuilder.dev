@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 
-export const alt = "dcbuilder.eth Blog";
+export const alt = "Blog | dcbuilder.eth";
 export const size = {
 	width: 1200,
 	height: 630,
@@ -44,18 +44,7 @@ export default async function Image() {
 						marginBottom: 16,
 					}}
 				>
-					Blog
-				</div>
-
-				{/* Subtitle */}
-				<div
-					style={{
-						fontSize: 32,
-						color: "#a0a0a0",
-						textAlign: "center",
-					}}
-				>
-					dcbuilder.eth
+					Blog | dcbuilder.eth
 				</div>
 
 				{/* Description */}

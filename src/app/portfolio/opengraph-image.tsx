@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 
-export const alt = "Portfolio - dcbuilder.eth";
+export const alt = "Portfolio | dcbuilder.eth";
 export const size = {
 	width: 1200,
 	height: 630,
@@ -25,7 +25,7 @@ export default async function Image() {
 						"radial-gradient(circle at 50% 100%, #2e2e1a 0%, #0a0a0a 50%)",
 				}}
 			>
-				<div style={{ fontSize: 80, marginBottom: 24 }}>💎</div>
+				<div style={{ fontSize: 80, marginBottom: 24 }}>📈</div>
 				<div
 					style={{
 						fontSize: 72,
@@ -34,10 +34,7 @@ export default async function Image() {
 						marginBottom: 16,
 					}}
 				>
-					Portfolio
-				</div>
-				<div style={{ fontSize: 32, color: "#a0a0a0" }}>
-					dcbuilder.eth
+					Portfolio | dcbuilder.eth
 				</div>
 				<div
 					style={{
