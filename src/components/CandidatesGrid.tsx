@@ -199,109 +199,115 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	return (
 		<div className="space-y-6">
 			{/* Filters */}
-			<div className="flex flex-wrap items-center gap-4">
-				{/* Availability Filter */}
-				<div className="flex items-center gap-2">
-					<label
-						htmlFor="availability-filter"
-						className="text-sm text-neutral-600 dark:text-neutral-400"
-					>
-						Status:
-					</label>
-					<select
-						id="availability-filter"
-						value={availabilityFilter}
-						onChange={(e) =>
-							setAvailabilityFilter(
-								e.target.value as "all" | AvailabilityStatus
-							)
-						}
-						className="px-3 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-					>
-						<option value="all">All</option>
-						<option value="looking">Actively Looking</option>
-						<option value="open">Open to Opportunities</option>
-						<option value="not-looking">Not Currently Looking</option>
-					</select>
+			<div className="space-y-4">
+				{/* Row 1: Status and Experience filters */}
+				<div className="flex flex-col sm:flex-row gap-3">
+					{/* Availability Filter */}
+					<div className="flex items-center gap-2">
+						<label
+							htmlFor="availability-filter"
+							className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
+						>
+							Status:
+						</label>
+						<select
+							id="availability-filter"
+							value={availabilityFilter}
+							onChange={(e) =>
+								setAvailabilityFilter(
+									e.target.value as "all" | AvailabilityStatus
+								)
+							}
+							className="flex-1 sm:flex-none px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+						>
+							<option value="all">All</option>
+							<option value="looking">Actively Looking</option>
+							<option value="open">Open to Opportunities</option>
+							<option value="not-looking">Not Currently Looking</option>
+						</select>
+					</div>
+
+					{/* Experience Filter */}
+					<div className="flex items-center gap-2">
+						<label
+							htmlFor="experience-filter"
+							className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
+						>
+							Experience:
+						</label>
+						<select
+							id="experience-filter"
+							value={experienceFilter}
+							onChange={(e) =>
+								setExperienceFilter(e.target.value as "all" | ExperienceLevel)
+							}
+							className="flex-1 sm:flex-none px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+						>
+							<option value="all">All Experience</option>
+							{(
+								Object.entries(experienceLabels) as [ExperienceLevel, string][]
+							).map(([value, label]) => (
+								<option key={value} value={value}>
+									{label}
+								</option>
+							))}
+						</select>
+					</div>
 				</div>
 
-				{/* Experience Filter */}
-				<div className="flex items-center gap-2">
-					<label
-						htmlFor="experience-filter"
-						className="text-sm text-neutral-600 dark:text-neutral-400"
-					>
-						Experience:
-					</label>
-					<select
-						id="experience-filter"
-						value={experienceFilter}
-						onChange={(e) =>
-							setExperienceFilter(e.target.value as "all" | ExperienceLevel)
-						}
-						className="px-3 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-					>
-						<option value="all">All Experience</option>
-						{(
-							Object.entries(experienceLabels) as [ExperienceLevel, string][]
-						).map(([value, label]) => (
-							<option key={value} value={value}>
-								{label}
-							</option>
-						))}
-					</select>
+				{/* Row 2: Search */}
+				<div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+					<div className="flex-1">
+						<input
+							type="text"
+							placeholder="Search candidates..."
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+						/>
+					</div>
+					{/* Results count */}
+					<span className="text-sm text-neutral-500 text-center sm:text-left">
+						{sortedCandidates.length}{" "}
+						{sortedCandidates.length === 1 ? "candidate" : "candidates"}
+					</span>
 				</div>
-
-				{/* Search */}
-				<div className="flex-1 min-w-[200px]">
-					<input
-						type="text"
-						placeholder="Search candidates..."
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-						className="w-full px-3 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-					/>
-				</div>
-
-				{/* Results count */}
-				<span className="text-sm text-neutral-500">
-					{sortedCandidates.length}{" "}
-					{sortedCandidates.length === 1 ? "candidate" : "candidates"}
-				</span>
 			</div>
 
-			{/* Tag Filters */}
+			{/* Tag Filters - horizontal scroll on mobile */}
 			{allTags.length > 0 && (
-				<div className="flex flex-wrap gap-2">
-					{allTags.map((tag) => (
-						<button
-							key={tag}
-							onClick={() => toggleTag(tag)}
-							className={`px-3 py-1 text-sm rounded-full transition-all ${
-								tag === "hot"
-									? selectedTags.includes(tag)
-										? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_15px_rgba(251,146,60,0.6)]"
-										: "bg-gradient-to-r from-orange-400 to-amber-400 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.4)] hover:shadow-[0_0_15px_rgba(251,146,60,0.6)]"
-									: tag === "top"
+				<div className="relative">
+					<div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible scrollbar-hide">
+						{allTags.map((tag) => (
+							<button
+								key={tag}
+								onClick={() => toggleTag(tag)}
+								className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-full transition-all ${
+									tag === "hot"
 										? selectedTags.includes(tag)
-											? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold shadow-[0_0_15px_rgba(139,92,246,0.6)]"
-											: "bg-gradient-to-r from-violet-400 to-purple-400 text-white font-semibold shadow-[0_0_10px_rgba(139,92,246,0.4)] hover:shadow-[0_0_15px_rgba(139,92,246,0.6)]"
-										: selectedTags.includes(tag)
-											? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-											: "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-							}`}
-						>
-							{tagLabels[tag] ?? tag}
-						</button>
-					))}
-					{selectedTags.length > 0 && (
-						<button
-							onClick={() => setSelectedTags([])}
-							className="px-3 py-1 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
-						>
-							Clear
-						</button>
-					)}
+											? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_15px_rgba(251,146,60,0.6)]"
+											: "bg-gradient-to-r from-orange-400 to-amber-400 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.4)] hover:shadow-[0_0_15px_rgba(251,146,60,0.6)]"
+										: tag === "top"
+											? selectedTags.includes(tag)
+												? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold shadow-[0_0_15px_rgba(139,92,246,0.6)]"
+												: "bg-gradient-to-r from-violet-400 to-purple-400 text-white font-semibold shadow-[0_0_10px_rgba(139,92,246,0.4)] hover:shadow-[0_0_15px_rgba(139,92,246,0.6)]"
+											: selectedTags.includes(tag)
+												? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+												: "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+								}`}
+							>
+								{tagLabels[tag] ?? tag}
+							</button>
+						))}
+						{selectedTags.length > 0 && (
+							<button
+								onClick={() => setSelectedTags([])}
+								className="flex-shrink-0 px-3 py-1.5 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+							>
+								Clear
+							</button>
+						)}
+					</div>
 				</div>
 			)}
 
@@ -689,24 +695,29 @@ function ExpandedCandidateView({
 
 	return (
 		<div
-			className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+			className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
 			onClick={onClose}
 		>
 			<div
-				className={`relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
+				className={`relative w-full sm:max-w-4xl h-[90vh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
 					candidate.hot
 						? "ring-2 ring-orange-400 dark:ring-orange-500"
 						: "ring-1 ring-neutral-200 dark:ring-neutral-700"
 				}`}
 				onClick={(e) => e.stopPropagation()}
 			>
-				{/* Close Button */}
+				{/* Drag handle indicator for mobile */}
+				<div className="sm:hidden flex justify-center pt-3">
+					<div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+				</div>
+
+				{/* Close Button - larger touch target on mobile */}
 				<button
 					onClick={onClose}
-					className="absolute top-4 right-4 z-10 p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
+					className="absolute top-4 right-4 z-10 p-3 sm:p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
 				>
 					<svg
-						className="w-6 h-6"
+						className="w-5 h-5 sm:w-6 sm:h-6"
 						viewBox="0 0 24 24"
 						fill="none"
 						stroke="currentColor"
@@ -721,15 +732,15 @@ function ExpandedCandidateView({
 
 				{/* Header Section */}
 				<div
-					className={`p-8 ${
+					className={`p-6 sm:p-8 ${
 						candidate.hot
 							? "bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20"
 							: "bg-neutral-50 dark:bg-neutral-800/50"
 					}`}
 				>
-					<div className="flex flex-col sm:flex-row items-start gap-6">
+					<div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
 						{/* Profile Image */}
-						<div className="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 ring-4 ring-white dark:ring-neutral-900">
+						<div className="w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 ring-4 ring-white dark:ring-neutral-900">
 							<Image
 								src={profileImage}
 								alt={displayName}
@@ -744,8 +755,8 @@ function ExpandedCandidateView({
 						</div>
 
 						<div className="flex-1">
-							<div className="flex flex-wrap items-center gap-2 mb-2">
-								<h2 className="text-2xl sm:text-3xl font-bold">{displayName}</h2>
+							<div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
+								<h2 className="text-xl sm:text-3xl font-bold">{displayName}</h2>
 								{candidate.featured && (
 									<span className="text-lg text-amber-600 dark:text-amber-400">
 										★
@@ -772,10 +783,10 @@ function ExpandedCandidateView({
 									</span>
 								)}
 							</div>
-							<p className="text-lg text-neutral-600 dark:text-neutral-400 mb-3">
+							<p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 mb-3">
 								{candidate.title}
 							</p>
-							<div className="flex flex-wrap gap-2">
+							<div className="flex flex-wrap justify-center sm:justify-start gap-2">
 								<span
 									className={`px-3 py-1 text-sm rounded-full ${availabilityColor[candidate.availability]}`}
 								>
@@ -798,7 +809,7 @@ function ExpandedCandidateView({
 				</div>
 
 				{/* Content Section */}
-				<div className="p-8 space-y-8">
+				<div className="p-6 sm:p-8 space-y-6 sm:space-y-8">
 					{/* Bio */}
 					<div>
 						<h3 className="text-lg font-semibold mb-3">About</h3>
