@@ -12,6 +12,7 @@ interface JobsGridProps {
 
 export function JobsGrid({ jobs }: JobsGridProps) {
 	const [filterCategory, setFilterCategory] = useState<FilterCategory>("all");
+	const [selectedCompany, setSelectedCompany] = useState<string>("all");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedTags, setSelectedTags] = useState<JobTag[]>([]);
 
@@ -20,6 +21,13 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 		const tags = new Set<JobTag>();
 		jobs.forEach((job) => job.tags?.forEach((tag) => tags.add(tag)));
 		return Array.from(tags).sort();
+	}, [jobs]);
+
+	// Get all unique companies from jobs
+	const allCompanies = useMemo(() => {
+		const companies = new Map<string, string>();
+		jobs.forEach((job) => companies.set(job.company.name, job.company.name));
+		return Array.from(companies.values()).sort();
 	}, [jobs]);
 
 	const toggleTag = (tag: JobTag) => {
@@ -35,6 +43,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 				filterCategory !== "all" &&
 				job.company.category !== filterCategory
 			) {
+				return false;
+			}
+
+			// Company filter
+			if (selectedCompany !== "all" && job.company.name !== selectedCompany) {
 				return false;
 			}
 
@@ -66,7 +79,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 
 			return true;
 		});
-	}, [jobs, filterCategory, searchQuery, selectedTags]);
+	}, [jobs, filterCategory, selectedCompany, searchQuery, selectedTags]);
 
 	// Sort: featured first, then alphabetically by company
 	const sortedJobs = useMemo(() => {
@@ -86,7 +99,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 						htmlFor="category-filter"
 						className="text-sm text-neutral-600 dark:text-neutral-400"
 					>
-						Show:
+						Type:
 					</label>
 					<select
 						id="category-filter"
@@ -96,9 +109,32 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 						}
 						className="px-3 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
 					>
-						<option value="all">All Companies</option>
+						<option value="all">All</option>
 						<option value="portfolio">Portfolio</option>
 						<option value="network">Network</option>
+					</select>
+				</div>
+
+				{/* Company Filter */}
+				<div className="flex items-center gap-2">
+					<label
+						htmlFor="company-filter"
+						className="text-sm text-neutral-600 dark:text-neutral-400"
+					>
+						Company:
+					</label>
+					<select
+						id="company-filter"
+						value={selectedCompany}
+						onChange={(e) => setSelectedCompany(e.target.value)}
+						className="px-3 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+					>
+						<option value="all">All Companies</option>
+						{allCompanies.map((company) => (
+							<option key={company} value={company}>
+								{company}
+							</option>
+						))}
 					</select>
 				</div>
 
