@@ -20,6 +20,7 @@ const companyTiers: Record<string, number> = {
 	Succinct: 2,
 	Sorella: 2,
 	Agora: 2,
+	Rhinestone: 2,
 	// Tier 3 - Portfolio companies
 	Ritual: 3,
 	// Tier 5 - Network/Friends

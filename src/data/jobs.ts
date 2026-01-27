@@ -172,6 +172,12 @@ const companies = {
 		website: "https://www.agora.xyz/",
 		category: "portfolio" as const,
 	},
+	rhinestone: {
+		name: "Rhinestone",
+		logo: "/images/investments/rhinestone.jpg",
+		website: "https://www.rhinestone.wtf/",
+		category: "portfolio" as const,
+	},
 };
 
 export const jobs: Job[] = [
@@ -1929,6 +1935,16 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://handpick.app/agora/18d68421-0d34-41cc-b4d7-3576bca61521",
+		tags: ["protocol", "cryptography"],
+	},
+	// Rhinestone Jobs
+	{
+		id: "rhinestone-wildcard",
+		title: "Wildcard (Open Application)",
+		company: companies.rhinestone,
+		location: "London",
+		type: "full-time",
+		link: "https://rhinestone.notion.site/Rhinestone-Job-Board-faf25f85b9244f8c81fa63387c4f910a?p=060bff1e0e9b4379800be8d06e1f22c4&pm=s",
 		tags: ["protocol", "cryptography"],
 	},
 ];
