@@ -1,0 +1,113 @@
+---
+title: "2023 recap and goals for 2024"
+date: "2024-01-05"
+description: "A reflection on 2023 at Tools For Humanity, launching Worldcoin, and my goals and predictions for 2024."
+source: "Mirror"
+sourceUrl: "https://paragraph.com/@mirror.dcbuilder/2023-recap-and-goals-for-2024"
+---
+
+![Cover photo](https://img.paragraph.com/cdn-cgi/image/format=auto,width=3840,quality=85/https://storage.googleapis.com/papyrus_images/90aa5c8c8daa8f584e741c03be5f86745e9c9d9d2b41e12ef385ad50b9e60e97.png)
+
+gm my fellow frens and readers,
+
+2023 was a year packed with action and a lot of things have happened for me and the blockchain space at large. In the first few days of the new year, I like to take a look back and reflect on where I am going, how I did over the previous year, and where I see our space heading. For those who don't know me, I'm [DC](https://twitter.com/DCbuild3r) and I am currently a research engineer on the protocol team at [Tools For Humanity (TfH)](https://www.toolsforhumanity.com/), the main developers of the [Worldcoin](https://worldcoin.org/) project, which is designed to become the world's largest digital identity and financial network, giving ownership to everyone.
+
+Last year I set out to create a stable environment for myself in Lisbon to be able to focus on growing professionally and personally. I have been able to learn a lot and grow while balancing a lot of different things at once and I'm proud of what I've able to accomplish in 2023.
+
+I spent most of the year in Lisbon and put a lot of effort into improving my work environment and seeking stability so that I could grow. I started going to the gym regularly, I got my own [home calisthenics setup](https://x.com/DCbuild3r/status/1702686719617774067?s=20), I started eating healthier, and got into learning about longevity and health optimization (Bryan Johnson + Dr. Huberman). The thing I struggled with the most was maintaining these habits as I traveled, which hurt my progress as it is a lot harder to upkeep routines when working at conferences and interacting with many people. I have decided to move to Prague in 2024 so that I can be closer to family and also won't be traveling to nearly as many events as I have throughout last year.
+
+I joined TfH in July of 2022, and one of my major goals [that year](https://dcbuilder.mirror.xyz/sLlgxVlvEc2aCVl-ziNZKkHXd9KivII_QQGTI7I9oRE) going into 2023 was to work on a project that would be shipped to production on July 24th, 2023 we [launched Worldcoin](https://worldcoin.org/blog/announcements/worldcoin-project-launches) into the wild which was one of the most exciting periods of my life and a dream come true. I flew to SF for our launch week and supported our operations there as well as the protocol and its [supporting infrastructure](https://www.youtube.com/watch?v=aM04_FB89Mg&ab_channel=Worldcoin).
+
+As I settled in Lisbon, I started working on different projects at TfH. I developed a [state bridge](https://github.com/worldcoin/world-id-state-bridge) so that Merkle tree roots from the [World ID contracts](https://github.com/worldcoin/world-id-contracts) on Ethereum mainnet can be bridged to Optimism (where we launched) and also so that anyone else can also build a World ID integration for any other networks provided that they implement their own bridging functionality. I also helped rebuild parts of our World ID contracts, built [tooling for performing](https://github.com/worldcoin/semaphore-mtb-setup) a trusted setup (including a snarkjs [.ptau deserializer for gnark](https://github.com/worldcoin/ptau-deserializer)), and coordinated one for our [Semaphore batch insertion circuits](https://github.com/worldcoin/semaphore-mtb) which I also contributed to a little bit. I also did a bunch of work in Rust working on our [signup sequencer](https://github.com/worldcoin/signup-sequencer/) and various other supporting libraries.
+
+One thing that has helped me grow as an engineer is working on projects that have to scale and are used by millions of people. I got exposed to infrastructure and DevOps through the use of Terraform, k8s, Docker, AWS, Datadog, Opsgenie, and others. I also got exposed to additional primitives within engineering that one does not usually come across unless they are building production services with integration and e2e tests that have complex on-chain interactions, complex CI/CD, monitoring, tracing, profiling, load balancing, on-chain deployments, relayers, secrets management, databases, and more.
+
+I wouldn't consider myself a senior Rust engineer yet, mostly because as I have grown I have seen what true senior engineers are capable of by seeing more senior coworkers' work, but I am a lot closer than I have ever been. I have worked on a lot of different areas like cryptography through writing circuits in gnark (ZK-SNARK library written in Go), writing trusted setup tooling (also Go), and using different cryptographic primitives in projects I worked on, I also wrote a bunch of Solidity and used foundry and various other testing tools, and wrote a bunch of Rust and got first-hand experience working on several different projects.
+
+One goal that I set out for myself which I didn't fulfill is contributing more to relevant open-source projects. I think it has been hard for me to be able to meet work obligations, travel, and grow in my personal life, and do extra work on top of that. My biggest contribution to OSS this year was maintaining the [awesome ZKML resource aggregator](https://github.com/zkml-community/awesome-zkml) up to date and giving several talks at many different conferences ([ETHDenver](https://www.youtube.com/watch?v=OOdBiKDFbX8&ab_channel=ETHDenver), [Zuzalu](https://zuzalu.streameth.org/session/752), [Zuzalu panel with Vitalik Buterin, Jason Morton, Stuti Pandey and Ryan Cao](https://zuzalu.streameth.org/session/753), [ETHCC](https://www.youtube.com/watch?v=f4X841gDnwY&t=105s), [zkWarsaw](https://www.youtube.com/watch?v=BvPBo_pqtA8)) as well as talking to investors and members of the crypto community about it and now 5 teams have either raised funding or have the necessary resources to build ZKML tooling! Namely, [Modulus Labs](https://www.modulus.xyz/), [Giza](https://gizatech.xyz/), [Ritual](https://ritual.net/), [ezkl](https://ezkl.xyz/), and [PSE](https://pse.dev/). It makes me very happy to know that ZKML is in good hands now.
+
+In 2023 I also managed to take a bunch of math and CS courses I have been meaning to take for a long time:
+
+- I read David Wong's [Real World Cryptography](https://www.manning.com/books/real-world-cryptography) Book
+- I took [nand2tetris](https://www.nand2tetris.org/) and learned how to go from building my logical gates, chips, and circuits, an ALU, and all the way to building an assembler, a VM, and a high-level language
+- I took [MIT 18.06 SC](https://www.youtube.com/playlist?list=PL221E2BBF13BECF6C) (Linear Algebra) on [MITOCW](http://ocw.mit.edu/)
+- Started learning number theory and abstract algebra
+- Started reading an [Introduction to Mathematical Cryptography](https://link.springer.com/book/10.1007/978-0-387-77993-5)
+- Started learning ZK
+	- [zk hack whiteboard sessions](https://zkhack.dev/whiteboard)
+	- [ZK MOOC](https://zk-learning.org/)
+	- [Proofs, Args, and ZK](https://people.cs.georgetown.edu/jthaler/ProofsArgsAndZK.pdf) by [Justin Thaler](http://x.com/SuccinctJT)
+	- [Succinct proofs and linear algebra](https://zkhack.dev/study-group-spla/) by [Guillermo Angueris](https://twitter.com/GuilleAngeris/)
+
+### Mr. Worldwide
+
+This year I have traveled a lot, visited many different countries, and explored different environments. I am super thankful to have been able to meet thousands of people and become friends with many of them.
+
+I have also gone to many conferences and events:
+
+- ETHDenver
+- ZKHack Lisbon and ZK Summit 9 (Lisbon)
+- Zuzalu and EDCON (Montenegro)
+	- Spent 3 weeks in Lustica Bay for Zuzalu
+	- Spent a week in Podgorica for EDCON
+- ETHPrague + Starknet Prague
+- ETHCC
+- ETHWarsaw + zkWarsaw
+- ZK Summit 10 (London)
+- [Ethaly](https://twitter.com/ethaly_io) (Puglia, Italy)
+- Devconnect Istanbul + ETHGlobal Istanbul + ZKHack Istanbul + Progcrypto
+
+I also traveled to Cuba for two weeks to visit part of my family (I am half Czech and half Cuban), I have been meaning to write an article about what life is like there, let me know if that would be interesting to you.
+
+### 2024 goals
+
+I want 2024 to be a year of peace and stability in my life, so I can focus more on growing as in many different aspects I find meaningful. Here are some of my professional and personal goals for next year:
+
+- Move to Prague and travel less
+	- will attend ZK Summits/ZK Hacks, ETHPrague, ETHBerlin, Defcon, SBC, Ethaly, Devcon, and a TBD Rust conference
+	- tunnel vision on growing professionally, improving my health, strength, and habits across many different facets of my life
+- Help organize ETHPrague 2024, help the Czech Ethereum community grow, and attract frens to visit
+- Master Rust and important libraries (serde, tokio, criterion,...) and write tons of code in it
+- Learn formal verification and theorem proving (Lean 4, and other tools for EVM and ZK circuits)
+- Get better at software security (Rust, Solidity, EVM, ZK)
+- Learn more about team management, business, and other important skills in case I ever want to become a founder or hold a leadership position
+- Take more CS (distributed systems, databases, networking, compilers, performance optimization) and math (abstract algebra, complex analysis, differential geometry) classes
+- Acquire the equivalent understanding of cryptography as an average graduate student (especially around ZK)
+- Becoming a good applied ZK researcher and engineer
+- Write more and do more technical educational content (streams, blogs, videos)
+- Learn how to use SoA AI tools (and how they work) to increase my productivity
+- Contributing more to open source projects I care about
+- Angel investing in new ideas and supporting teams I believe in
+
+I am not very knowledgeable about markets and investment theses, but I find resources like [Messari's Crypto Theses for 2024](https://resources.messari.io/pdf/crypto-theses-for-2024.pdf) to be better overviews of mainstream narratives and trends in the space. There are a lot of things happening on the tech side of things that I am super excited about:
+
+- [Vitalik's updated roadmap](https://twitter.com/VitalikButerin/status/1741190491578810445/photo/1) is a good overview of where we are currently standing in terms of the Ethereum core roadmap
+
+![The updated Ethereum core roadmap](https://img.paragraph.com/cdn-cgi/image/format=auto,width=640,quality=85/https://storage.googleapis.com/papyrus_images/a9220b37d0d1750c99fbbaa9a8a70b18c42b84a714d7ec8a3a4a198dd856eab9.png)
+
+The updated Ethereum core roadmap
+
+- [4844](https://www.eip4844.com/), [EOF](https://eips.ethereum.org/EIPS/eip-3540), [BLS12-381](https://eips.ethereum.org/EIPS/eip-2537) precompile
+- data availability and state growth stop being the bottleneck for scalability
+	- Celestia, EigenDA, and Avail + 4844 and bigger block sizes will alleviate current burdens
+	- Verkle trees and statelessness become the next frontier for L1 EVM
+- restaking ([EigenLayer](https://www.eigenlayer.xyz/))
+- better ZK schemes, optimizations, new implementations
+- [SUAVE](https://writings.flashbots.net/the-future-of-mev-is-suave/)
+- rollups starting to hit [stage 2](https://medium.com/l2beat/introducing-stages-a-framework-to-evaluate-rollups-maturity-d290bb22befe) (secured by their proof system)
+- co-processors are still cool, might get renamed as a narrative
+- digital identity primitives getting more traction
+- privacy solutions going live
+	- Penumbra, Aztec 3, Polygon Miden
+- Worldcoin scales to at least 15M orb-verified users and the World App becomes the most used wallet by a wide margin
+- account abstraction becomes commonplace
+	- secp256r1 (P256) signatures - Face/Touch ID, passkeys
+	- better recovery mechanisms, better UX flows, better paymasters and infrastructure
+- early products using intents start getting traction
+- web3 apps start having comparable UX to apps on web2 rails and the tech crowd starts to notice this
+- [d/acc](https://vitalik.eth.limo/general/2023/11/27/techno_optimism.html) and [e/acc](https://beff.substack.com/p/notes-on-eacc-principles-and-tenets) gets more traction in crypto circles
+- more first principles exploration of the limits of the blockchain as several long-running efforts come to fruition
+
+### Closing Thoughts
+
+Thank you everyone for reading and I hope all of you have a wonderful 2024. I will be focusing on creating a stable environment, learning, working, and growing as much as I can. As always I will post all my updates on [X](https://twitter.com/DCbuild3r). If you have any questions or want to talk about anything I mention feel free to DM me on [Telegram](https://t.me/dcbuild3r).

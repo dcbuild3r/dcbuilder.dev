@@ -7,6 +7,7 @@ import { ThemeToggle } from "./ThemeToggle";
 const navLinks = [
 	{ href: "/", label: "Home" },
 	{ href: "/about", label: "About" },
+	{ href: "/blog", label: "Blog" },
 	{ href: "/portfolio", label: "Portfolio" },
 ];
 
@@ -18,7 +19,7 @@ export function Navbar() {
 			<div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
 				<Link
 					href="/"
-					className="text-xl font-bold hover:opacity-70 transition-opacity"
+					className="text-xl font-bold hover:opacity-70 transition-opacity cursor-pointer"
 				>
 					dcbuilder.eth
 				</Link>
@@ -29,7 +30,7 @@ export function Navbar() {
 						href="https://x.com/DCbuild3r"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="p-2 hover:scale-110 transition-transform"
+						className="p-2 hover:scale-110 transition-transform cursor-pointer"
 						aria-label="X (Twitter)"
 					>
 						<svg
@@ -44,7 +45,7 @@ export function Navbar() {
 						href="https://github.com/dcbuild3r"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="p-2 hover:scale-110 transition-transform"
+						className="p-2 hover:scale-110 transition-transform cursor-pointer"
 						aria-label="GitHub"
 					>
 						<svg
@@ -63,7 +64,7 @@ export function Navbar() {
 						<Link
 							key={link.href}
 							href={link.href}
-							className={`hover:opacity-70 transition-opacity ${
+							className={`hover:opacity-70 transition-opacity cursor-pointer ${
 								pathname === link.href
 									? "font-medium"
 									: "text-neutral-600 dark:text-neutral-400"

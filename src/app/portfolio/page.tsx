@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { Navbar } from "@/components/Navbar";
+import { PortfolioGrid } from "@/components/PortfolioGrid";
 import { investments } from "@/data/investments";
 
 export const metadata = {
@@ -28,31 +28,7 @@ export default function Portfolio() {
           {/* Investments */}
           <section className="space-y-8">
             <h2 className="text-4xl font-bold text-center">Investments</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {investments.map((investment) => (
-                <a
-                  key={investment.title}
-                  href={investment.imageUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors flex flex-col items-center text-center"
-                >
-                  <div className="w-24 h-24 mb-4 flex items-center justify-center">
-                    <Image
-                      src={investment.logo}
-                      alt={investment.title}
-                      width={80}
-                      height={80}
-                      className="object-contain bg-white rounded-lg p-2 group-hover:scale-105 transition-transform"
-                    />
-                  </div>
-                  <h3 className="font-semibold mb-2">{investment.title}</h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                    {investment.description}
-                  </p>
-                </a>
-              ))}
-            </div>
+            <PortfolioGrid investments={investments} />
           </section>
         </div>
       </main>
