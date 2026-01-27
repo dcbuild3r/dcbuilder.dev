@@ -17,7 +17,8 @@ export type JobTag =
 	| "bd"
 	| "research"
 	| "security"
-	| "monad-ecosystem";
+	| "monad-ecosystem"
+	| "entry-level";
 
 export const tagLabels: Record<JobTag, string> = {
 	ai: "AI",
@@ -35,10 +36,11 @@ export const tagLabels: Record<JobTag, string> = {
 	research: "Research",
 	security: "Security",
 	"monad-ecosystem": "Monad Ecosystem",
+	"entry-level": "Entry Level",
 };
 
-// Job tiers: 1 = highest priority (portfolio), 2 = medium, 3 = lower (network/ecosystem)
-export type JobTier = 1 | 2 | 3;
+// Job tiers match portfolio tiers: 1-4 for portfolio companies, 5 for network, 6 for ecosystem
+export type JobTier = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface Company {
 	name: string;
@@ -140,6 +142,12 @@ const companies = {
 		name: "Flashbots",
 		logo: "/images/investments/flashbots.png",
 		website: "https://www.flashbots.net/",
+		category: "network" as const,
+	},
+	ethereumFoundation: {
+		name: "Ethereum Foundation",
+		logo: "/images/investments/ethereum.png",
+		website: "https://ethereum.foundation/",
 		category: "network" as const,
 	},
 };
@@ -451,7 +459,7 @@ export const jobs: Job[] = [
 		type: "internship",
 		department: "Engineering",
 		link: "https://ritual.net/careers/4068271007",
-		tags: ["ai", "cryptography"],
+		tags: ["ai", "cryptography", "entry-level"],
 	},
 	{
 		id: "ritual-legal-counsel",
@@ -473,7 +481,7 @@ export const jobs: Job[] = [
 		type: "internship",
 		department: "Research",
 		link: "https://ritual.net/careers/4358496007",
-		tags: ["ai", "research"],
+		tags: ["ai", "research", "entry-level"],
 	},
 	// Succinct Jobs
 	{
@@ -626,7 +634,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "internship",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect/5333dd13-eb00-4f25-b551-5040cf075398",
-		tags: ["ai", "research"],
+		tags: ["ai", "research", "entry-level"],
 	},
 	{
 		id: "prime-intellect-lead-design-engineer",
@@ -985,6 +993,109 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/flashbots.net/8fa82d12-baef-4f95-86af-a8354af820d8",
 		tags: ["protocol", "infra", "mev"],
+		featured: true,
+	},
+	// Ethereum Foundation Jobs
+	{
+		id: "ef-apac-policy-manager",
+		title: "APAC Policy Manager",
+		company: companies.ethereumFoundation,
+		location: "APAC",
+		remote: true,
+		type: "full-time",
+		department: "Global Policy Strategy",
+		link: "https://jobs.ashbyhq.com/ethereum-foundation/3e0d914c-b61c-41f4-95cd-4f2c0a816829",
+		tags: ["protocol"],
+	},
+	{
+		id: "ef-associate-global-policy",
+		title: "Associate, Global Policy Strategy",
+		company: companies.ethereumFoundation,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Global Policy Strategy",
+		link: "https://jobs.ashbyhq.com/ethereum-foundation/4c1e5368-563e-46c4-9abb-e83a0f883148",
+		tags: ["protocol"],
+	},
+	{
+		id: "ef-comms-wizard-devcon",
+		title: "Comms Wizard | Devcon 8",
+		company: companies.ethereumFoundation,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Devcon Team",
+		link: "https://jobs.ashbyhq.com/ethereum-foundation/f95a2232-6d8d-4f46-9ffb-9097e51a036d",
+		tags: ["protocol", "marketing"],
+	},
+	{
+		id: "ef-developer-tooling-coordinator",
+		title: "Developer Tooling Coordinator",
+		company: companies.ethereumFoundation,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Protocol",
+		link: "https://jobs.ashbyhq.com/ethereum-foundation/d28eebab-9ecf-43c3-89b6-54ed7394c569",
+		tags: ["protocol", "infra"],
+		featured: true,
+	},
+	{
+		id: "ef-legal-counsel",
+		title: "Legal Counsel",
+		company: companies.ethereumFoundation,
+		location: "Europe",
+		remote: false,
+		type: "full-time",
+		department: "Legal",
+		link: "https://jobs.ashbyhq.com/ethereum-foundation/46516de8-a6b9-4773-8778-006263d5165a",
+		tags: ["protocol"],
+	},
+	{
+		id: "ef-legal-operations-associate",
+		title: "Legal Operations Associate",
+		company: companies.ethereumFoundation,
+		location: "Europe",
+		remote: false,
+		type: "full-time",
+		department: "Legal",
+		link: "https://jobs.ashbyhq.com/ethereum-foundation/0cd33737-8dd8-44c7-828c-3baa6147df6a",
+		tags: ["protocol"],
+	},
+	{
+		id: "ef-local-production-devcon",
+		title: "Local Production Magician | Devcon 8",
+		company: companies.ethereumFoundation,
+		location: "APAC",
+		remote: false,
+		type: "full-time",
+		department: "Devcon Team",
+		link: "https://jobs.ashbyhq.com/ethereum-foundation/818d01b3-f0db-4b6b-9308-d49a6ad6aeb8",
+		tags: ["protocol"],
+	},
+	{
+		id: "ef-programming-lead-devcon",
+		title: "Programming Lead | Devcon 8",
+		company: companies.ethereumFoundation,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Devcon Team",
+		link: "https://jobs.ashbyhq.com/ethereum-foundation/af5f96f9-1e29-429b-b122-eacd6a72880c",
+		tags: ["protocol"],
+		featured: true,
+	},
+	{
+		id: "ef-protocol-tester-consensus",
+		title: "Protocol Tester - Consensus Layer",
+		company: companies.ethereumFoundation,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Protocol",
+		link: "https://jobs.ashbyhq.com/ethereum-foundation/ee01e980-2c00-4670-9523-7c09974c4791",
+		tags: ["protocol", "security"],
 		featured: true,
 	},
 ];

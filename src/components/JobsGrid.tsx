@@ -6,6 +6,29 @@ import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
 
 type FilterCategory = "all" | RelationshipCategory;
 
+// Company tiers matching portfolio rankings (lower = higher priority)
+const companyTiers: Record<string, number> = {
+	// Tier 1 - Top portfolio companies
+	Morpho: 1,
+	"Prime Intellect": 1,
+	Lucis: 1,
+	MegaETH: 1,
+	Monad: 1,
+	"Monad Foundation": 1,
+	// Tier 2 - Strong portfolio companies
+	Succinct: 2,
+	Sorella: 2,
+	// Tier 3 - Portfolio companies
+	Ritual: 3,
+	// Tier 5 - Network/Friends
+	Flashbots: 5,
+	"Ethereum Foundation": 5,
+	// Tier 6 - Ecosystem (Monad ecosystem projects)
+	Perpl: 6,
+	Kuru: 6,
+	RareBetSports: 6,
+};
+
 interface JobsGridProps {
 	jobs: Job[];
 }
@@ -81,12 +104,16 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 		});
 	}, [jobs, filterCategory, selectedCompany, searchQuery, selectedTags]);
 
-	// Sort: by tier (1 highest), then featured, then alphabetically by company
+	// Sort: by company tier (matching portfolio), then featured, then alphabetically
 	const sortedJobs = useMemo(() => {
 		return [...filteredJobs].sort((a, b) => {
-			// Tier sorting (default tier 1 for portfolio, 2 for network without explicit tier)
-			const tierA = a.tier ?? (a.company.category === "portfolio" ? 1 : 2);
-			const tierB = b.tier ?? (b.company.category === "portfolio" ? 1 : 2);
+			// Use company tier map, default to 4 for unknown portfolio, 5 for network
+			const tierA =
+				companyTiers[a.company.name] ??
+				(a.company.category === "portfolio" ? 4 : 5);
+			const tierB =
+				companyTiers[b.company.name] ??
+				(b.company.category === "portfolio" ? 4 : 5);
 			if (tierA !== tierB) return tierA - tierB;
 			// Featured sorting within same tier
 			if (a.featured !== b.featured) return a.featured ? -1 : 1;
