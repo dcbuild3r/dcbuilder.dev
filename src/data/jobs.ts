@@ -2,6 +2,37 @@ export type RelationshipCategory = "portfolio" | "network";
 
 export type JobType = "full-time" | "part-time" | "contract" | "internship";
 
+export type JobTag =
+	| "ai"
+	| "mev"
+	| "health"
+	| "cryptography"
+	| "protocol"
+	| "defi"
+	| "infra"
+	| "trading"
+	| "gaming"
+	| "design"
+	| "marketing"
+	| "research"
+	| "security";
+
+export const tagLabels: Record<JobTag, string> = {
+	ai: "AI",
+	mev: "MEV",
+	health: "Health",
+	cryptography: "Cryptography",
+	protocol: "Protocol",
+	defi: "DeFi",
+	infra: "Infrastructure",
+	trading: "Trading",
+	gaming: "Gaming",
+	design: "Design",
+	marketing: "Marketing",
+	research: "Research",
+	security: "Security",
+};
+
 export interface Company {
 	name: string;
 	logo: string;
@@ -20,6 +51,7 @@ export interface Job {
 	salary?: string;
 	link: string;
 	featured?: boolean;
+	tags?: JobTag[];
 }
 
 // Reusable company definitions
@@ -34,7 +66,7 @@ const companies = {
 		name: "Monad Foundation",
 		logo: "/images/investments/monad.jpg",
 		website: "https://monad.xyz/",
-		category: "network" as const,
+		category: "portfolio" as const,
 	},
 	megaeth: {
 		name: "MegaETH",
@@ -114,6 +146,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://morpho.org/jobs/integrations-engineer-apac",
+		tags: ["defi", "protocol"],
 	},
 	{
 		id: "morpho-senior-enterprise-partnerships",
@@ -124,6 +157,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Business Development",
 		link: "https://morpho.org/jobs/senior-enterprise-partnerships",
+		tags: ["defi"],
 	},
 	{
 		id: "morpho-senior-protocol-engineer",
@@ -135,6 +169,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://morpho.org/jobs/senior-protocol-engineer",
 		featured: true,
+		tags: ["defi", "protocol", "cryptography"],
 	},
 	{
 		id: "morpho-staff-senior-backend-engineer",
@@ -146,6 +181,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://morpho.org/jobs/staffsenior-backend-engineer",
 		featured: true,
+		tags: ["defi", "infra"],
 	},
 	{
 		id: "morpho-senior-frontend-engineer",
@@ -156,6 +192,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://morpho.org/jobs/senior-frontend-engineer-1",
+		tags: ["defi"],
 	},
 	{
 		id: "morpho-staff-fullstack-engineer",
@@ -167,6 +204,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://morpho.org/jobs/staff-fullstack-engineer",
 		featured: true,
+		tags: ["defi"],
 	},
 	{
 		id: "morpho-defi-business-analyst",
@@ -177,6 +215,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Business",
 		link: "https://morpho.org/jobs/defi-business-analyst",
+		tags: ["defi"],
 	},
 	{
 		id: "morpho-customer-support-specialist",
@@ -187,6 +226,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Support",
 		link: "https://morpho.org/jobs/customer-support-specialist",
+		tags: ["defi"],
 	},
 	{
 		id: "morpho-curator-market-specialist",
@@ -197,6 +237,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Markets",
 		link: "https://morpho.org/jobs/curator-market-specialist",
+		tags: ["defi", "trading"],
 	},
 	{
 		id: "morpho-risk-analyst",
@@ -207,6 +248,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Risk",
 		link: "https://morpho.org/jobs/risk-analyst",
+		tags: ["defi", "security"],
 	},
 	{
 		id: "morpho-protocol-security-engineer",
@@ -218,6 +260,7 @@ export const jobs: Job[] = [
 		department: "Security",
 		link: "https://morpho.org/jobs/protocol-security-engineer",
 		featured: true,
+		tags: ["defi", "protocol", "security"],
 	},
 	{
 		id: "morpho-infrastructure-engineer",
@@ -228,6 +271,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://morpho.org/jobs/job-dnikd63nc7",
+		tags: ["defi", "infra"],
 	},
 	{
 		id: "morpho-head-of-people",
@@ -238,6 +282,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "People",
 		link: "https://morpho.org/jobs/job-fnaegqvocu",
+		tags: ["defi"],
 	},
 	{
 		id: "morpho-technical-product-marketing-manager",
@@ -248,6 +293,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Marketing",
 		link: "https://morpho.org/jobs/job-2xuerfzdn6",
+		tags: ["defi", "marketing"],
 	},
 	{
 		id: "morpho-general-counsel",
@@ -258,6 +304,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Legal",
 		link: "https://morpho.org/jobs/job-00x52y1m34",
+		tags: ["defi"],
 	},
 	{
 		id: "ritual-ml-engineer",
@@ -269,6 +316,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers",
 		featured: true,
+		tags: ["ai", "infra", "cryptography"],
 	},
 	// Succinct Jobs
 	{
@@ -281,6 +329,7 @@ export const jobs: Job[] = [
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/succinct",
 		featured: true,
+		tags: ["cryptography", "protocol"],
 	},
 	{
 		id: "succinct-head-of-marketing",
@@ -292,6 +341,7 @@ export const jobs: Job[] = [
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/succinct",
 		featured: true,
+		tags: ["cryptography", "marketing"],
 	},
 	{
 		id: "succinct-head-of-product",
@@ -303,6 +353,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/succinct",
 		featured: true,
+		tags: ["cryptography", "protocol"],
 	},
 	// Prime Intellect Jobs
 	{
@@ -314,6 +365,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
+		tags: ["ai"],
 	},
 	{
 		id: "prime-intellect-ai-research-resident",
@@ -325,6 +377,7 @@ export const jobs: Job[] = [
 		department: "Research",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
+		tags: ["ai", "research"],
 	},
 	{
 		id: "prime-intellect-applied-research-evals",
@@ -336,6 +389,7 @@ export const jobs: Job[] = [
 		department: "Research",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
+		tags: ["ai", "research"],
 	},
 	{
 		id: "prime-intellect-applied-research-rl",
@@ -347,6 +401,7 @@ export const jobs: Job[] = [
 		department: "Research",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
+		tags: ["ai", "research"],
 	},
 	{
 		id: "prime-intellect-business-ops-lead",
@@ -357,6 +412,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
+		tags: ["ai"],
 	},
 	{
 		id: "prime-intellect-founders-associate",
@@ -367,6 +423,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
+		tags: ["ai"],
 	},
 	{
 		id: "prime-intellect-founding-gtm-lead",
@@ -378,6 +435,7 @@ export const jobs: Job[] = [
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
+		tags: ["ai"],
 	},
 	{
 		id: "prime-intellect-head-of-enterprise",
@@ -389,6 +447,7 @@ export const jobs: Job[] = [
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
+		tags: ["ai"],
 	},
 	{
 		id: "prime-intellect-head-of-growth",
@@ -400,6 +459,7 @@ export const jobs: Job[] = [
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
+		tags: ["ai"],
 	},
 	{
 		id: "prime-intellect-internship",
@@ -409,6 +469,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "internship",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
+		tags: ["ai", "research"],
 	},
 	{
 		id: "prime-intellect-lead-design-engineer",
@@ -419,6 +480,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Product",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
+		tags: ["ai", "design"],
 	},
 	{
 		id: "prime-intellect-mts-fullstack",
@@ -430,6 +492,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
+		tags: ["ai", "infra"],
 	},
 	{
 		id: "prime-intellect-mts-gpu-infra",
@@ -441,6 +504,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
+		tags: ["ai", "infra"],
 	},
 	{
 		id: "prime-intellect-mts-inference",
@@ -452,6 +516,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
+		tags: ["ai", "infra"],
 	},
 	{
 		id: "prime-intellect-research-distributed",
@@ -463,6 +528,7 @@ export const jobs: Job[] = [
 		department: "Research",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
+		tags: ["ai", "research", "infra"],
 	},
 	{
 		id: "prime-intellect-research-rl",
@@ -474,6 +540,7 @@ export const jobs: Job[] = [
 		department: "Research",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
+		tags: ["ai", "research"],
 	},
 	{
 		id: "prime-intellect-revenue-ops",
@@ -484,6 +551,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
+		tags: ["ai"],
 	},
 	// Monad Foundation Jobs
 	{
@@ -495,6 +563,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/monad.foundation/66cbe700-0039-4df3-a06f-3acb9f0b9ffb",
+		tags: ["protocol", "marketing"],
 	},
 	{
 		id: "monad-foundation-head-of-korea",
@@ -505,6 +574,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Regional",
 		link: "https://jobs.ashbyhq.com/monad.foundation/d5c22aae-9697-4077-bc4c-fa082863104f",
+		tags: ["protocol"],
 	},
 	{
 		id: "monad-foundation-technical-program-manager",
@@ -515,6 +585,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/monad.foundation/3241c294-b313-421b-8486-e55b2105ac19",
+		tags: ["protocol", "infra"],
 	},
 	{
 		id: "monad-foundation-design-engineer",
@@ -525,6 +596,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/monad.foundation/b912ec98-a4d8-43d2-ad6c-d7a3e4312c2d",
+		tags: ["protocol", "design"],
 	},
 	{
 		id: "monad-foundation-latam-bd",
@@ -535,6 +607,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Business Development",
 		link: "https://jobs.ashbyhq.com/monad.foundation/200be835-5b50-4ffd-a37c-7992a8c4f021",
+		tags: ["protocol"],
 	},
 	{
 		id: "monad-foundation-graphic-designer",
@@ -545,6 +618,7 @@ export const jobs: Job[] = [
 		type: "contract",
 		department: "Design",
 		link: "https://jobs.ashbyhq.com/monad.foundation/b4a24a16-25bd-4214-962a-78182284dbf8",
+		tags: ["protocol", "design"],
 	},
 	{
 		id: "monad-foundation-motion-designer",
@@ -555,6 +629,7 @@ export const jobs: Job[] = [
 		type: "contract",
 		department: "Design",
 		link: "https://jobs.ashbyhq.com/monad.foundation/73534b84-588b-4239-9d0d-ba218aaac365",
+		tags: ["protocol", "design"],
 	},
 	{
 		id: "monad-foundation-bd-lead-payments",
@@ -567,6 +642,7 @@ export const jobs: Job[] = [
 		salary: "$200k/year",
 		link: "https://jobs.ashbyhq.com/monad.foundation/dccd3d0f-e491-45fa-b311-980021976d62",
 		featured: true,
+		tags: ["protocol", "defi"],
 	},
 	{
 		id: "monad-foundation-ecosystem-nyc",
@@ -577,6 +653,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Ecosystem",
 		link: "https://jobs.ashbyhq.com/monad.foundation/5558059f-664c-4059-9d0d-a6dec98b34d8",
+		tags: ["protocol"],
 	},
 	// Perpl Jobs
 	{
@@ -589,6 +666,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDrmsgm_jr0vUukDYYBsb0Ss",
 		featured: true,
+		tags: ["defi", "trading", "infra"],
 	},
 	{
 		id: "perpl-founding-backend-engineer",
@@ -600,6 +678,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDqhJ9YFgDCR8KoKvrxzkLSx",
 		featured: true,
+		tags: ["defi", "trading", "infra"],
 	},
 	{
 		id: "perpl-videographer",
@@ -610,6 +689,7 @@ export const jobs: Job[] = [
 		type: "contract",
 		department: "Marketing",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDrKAWMgo2bvHF7CV1SWXewv",
+		tags: ["defi", "marketing"],
 	},
 	{
 		id: "perpl-quant-trader",
@@ -621,6 +701,7 @@ export const jobs: Job[] = [
 		department: "Trading",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDqyBNxBzKmbw_SUX-V2EJh1",
 		featured: true,
+		tags: ["defi", "trading"],
 	},
 	{
 		id: "perpl-staff-backend-engineer",
@@ -631,6 +712,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDoV4xQA7Au1gx9qORFO21J2",
+		tags: ["defi", "trading", "infra"],
 	},
 	// Kuru Jobs
 	{
@@ -642,6 +724,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/kuru-labs/ca804294-8f0c-436c-9c49-33e55d89be48",
+		tags: ["defi", "trading"],
 	},
 	// RareBetSports Jobs
 	{
@@ -654,6 +737,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://eco-jobs.monad.xyz/companies/rarebetsports/jobs/64210595-director-of-engineering",
 		featured: true,
+		tags: ["gaming", "infra"],
 	},
 	// Lucis Jobs
 	{
@@ -666,6 +750,7 @@ export const jobs: Job[] = [
 		department: "Product",
 		link: "https://lucislife.notion.site/join-lucis-team",
 		featured: true,
+		tags: ["health"],
 	},
 	{
 		id: "lucis-ai-data-engineer",
@@ -677,6 +762,7 @@ export const jobs: Job[] = [
 		department: "Product",
 		link: "https://lucislife.notion.site/join-lucis-team",
 		featured: true,
+		tags: ["health", "ai"],
 	},
 	{
 		id: "lucis-growth-acquisition-manager",
@@ -687,6 +773,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "GTM",
 		link: "https://lucislife.notion.site/join-lucis-team",
+		tags: ["health", "marketing"],
 	},
 	{
 		id: "lucis-preventive-medicine-doctor",
@@ -697,6 +784,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Medical",
 		link: "https://lucislife.notion.site/join-lucis-team",
+		tags: ["health"],
 	},
 	// Sorella Jobs
 	{
@@ -708,6 +796,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		salary: "$175k-225k + Equity",
 		link: "https://sorellalabs.xyz/careers",
+		tags: ["defi", "trading", "protocol"],
 	},
 	// Flashbots Jobs
 	{
@@ -720,6 +809,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/flashbots.net/649fc903-8345-4ddc-9535-ddce374fe23b",
 		featured: true,
+		tags: ["protocol", "infra", "security"],
 	},
 	{
 		id: "flashbots-senior-devops-engineer",
@@ -730,6 +820,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/flashbots.net/8fa82d12-baef-4f95-86af-a8354af820d8",
+		tags: ["protocol", "infra"],
 		featured: true,
 	},
 ];

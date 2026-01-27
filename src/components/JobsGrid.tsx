@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
-import { Job, RelationshipCategory } from "@/data/jobs";
+import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
 
 type FilterCategory = "all" | RelationshipCategory;
 
@@ -13,6 +13,20 @@ interface JobsGridProps {
 export function JobsGrid({ jobs }: JobsGridProps) {
 	const [filterCategory, setFilterCategory] = useState<FilterCategory>("all");
 	const [searchQuery, setSearchQuery] = useState("");
+	const [selectedTags, setSelectedTags] = useState<JobTag[]>([]);
+
+	// Get all unique tags from jobs
+	const allTags = useMemo(() => {
+		const tags = new Set<JobTag>();
+		jobs.forEach((job) => job.tags?.forEach((tag) => tags.add(tag)));
+		return Array.from(tags).sort();
+	}, [jobs]);
+
+	const toggleTag = (tag: JobTag) => {
+		setSelectedTags((prev) =>
+			prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+		);
+	};
 
 	const filteredJobs = useMemo(() => {
 		return jobs.filter((job) => {
@@ -24,14 +38,23 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 				return false;
 			}
 
-			// Search filter (title, company name, location)
+			// Tag filter (job must have ALL selected tags)
+			if (selectedTags.length > 0) {
+				if (!job.tags || !selectedTags.every((tag) => job.tags?.includes(tag))) {
+					return false;
+				}
+			}
+
+			// Search filter (title, company name, location, tags)
 			if (searchQuery) {
 				const query = searchQuery.toLowerCase();
+				const tagText = job.tags?.map((t) => tagLabels[t]).join(" ") || "";
 				const searchableText = [
 					job.title,
 					job.company.name,
 					job.location,
 					job.department,
+					tagText,
 				]
 					.filter(Boolean)
 					.join(" ")
@@ -43,7 +66,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 
 			return true;
 		});
-	}, [jobs, filterCategory, searchQuery]);
+	}, [jobs, filterCategory, searchQuery, selectedTags]);
 
 	// Sort: featured first, then alphabetically by company
 	const sortedJobs = useMemo(() => {
@@ -95,6 +118,33 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 					{sortedJobs.length} {sortedJobs.length === 1 ? "job" : "jobs"}
 				</span>
 			</div>
+
+			{/* Tag Filters */}
+			{allTags.length > 0 && (
+				<div className="flex flex-wrap gap-2">
+					{allTags.map((tag) => (
+						<button
+							key={tag}
+							onClick={() => toggleTag(tag)}
+							className={`px-3 py-1 text-sm rounded-full transition-colors ${
+								selectedTags.includes(tag)
+									? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+									: "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+							}`}
+						>
+							{tagLabels[tag]}
+						</button>
+					))}
+					{selectedTags.length > 0 && (
+						<button
+							onClick={() => setSelectedTags([])}
+							className="px-3 py-1 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+						>
+							Clear
+						</button>
+					)}
+				</div>
+			)}
 
 			{/* Jobs List */}
 			<div className="space-y-4">
@@ -163,6 +213,20 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 										{job.department && <span>{job.department}</span>}
 										{job.salary && <span>{job.salary}</span>}
 									</div>
+
+									{/* Tags */}
+									{job.tags && job.tags.length > 0 && (
+										<div className="mt-2 flex flex-wrap gap-1">
+											{job.tags.map((tag) => (
+												<span
+													key={tag}
+													className="px-2 py-0.5 text-xs rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+												>
+													{tagLabels[tag]}
+												</span>
+											))}
+										</div>
+									)}
 								</div>
 							</div>
 						</a>
