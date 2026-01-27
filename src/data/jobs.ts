@@ -1098,4 +1098,16 @@ export const jobs: Job[] = [
 		tags: ["protocol", "security"],
 		featured: true,
 	},
+	{
+		id: "ef-developer-tooling-coordinator",
+		title: "Developer Tooling Coordinator",
+		company: companies.ethereumFoundation,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Developer Experience",
+		link: "https://jobs.ashbyhq.com/ethereum-foundation/84f239ee-f61a-48d0-a28f-c95c4a0226c1",
+		tags: ["infra"],
+		featured: true,
+	},
 ];
