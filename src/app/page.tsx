@@ -32,7 +32,8 @@ export default function Home() {
 							<ul className="space-y-2 text-lg text-inherit">
 								<li>• Ethereum</li>
 								<li className="whitespace-nowrap">
-									• Programmable Cryptography (ZK, FHE, MPC, TEE)
+									• Programmable Cryptography (ZK, FHE, MPC,
+									TEE)
 								</li>
 								<li>• Digital Identity</li>
 								<li>• Distributed Systems</li>
@@ -40,10 +41,10 @@ export default function Home() {
 							</ul>
 						</section>
 
-						{/* Development */}
+						{/* Engineering */}
 						<section>
 							<h2 className="text-2xl font-bold mb-4">
-								Development
+								Engineering
 							</h2>
 							<ul className="space-y-2 text-lg text-inherit">
 								<li>• Rust</li>

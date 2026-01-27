@@ -208,8 +208,7 @@ export const investments: Investment[] = [
 	},
 	{
 		title: "Lucis",
-		description:
-			"Preventive Health Made Accessible",
+		description: "Preventive Health Made Accessible",
 		imageUrl: "https://lucis.life/",
 		logo: "/images/investments/lucis.jpg",
 		tier: 1,

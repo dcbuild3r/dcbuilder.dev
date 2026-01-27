@@ -8,11 +8,11 @@ export const metadata: Metadata = {
 		template: "%s | dcbuilder.eth",
 	},
 	description:
-		"Research, Development, Angel Investing in cryptography, distributed systems, and AI",
+		"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
 	openGraph: {
 		title: "dcbuilder.eth",
 		description:
-			"Research, Development, Angel Investing in cryptography, distributed systems, and AI",
+			"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
 		url: "https://dcbuilder.dev",
 		siteName: "dcbuilder",
 		locale: "en_US",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 	twitter: {
 		card: "summary_large_image",
 		title: "dcbuilder",
-		description: "Research, Development, Angel Investing",
+		description: "Research, Engineering, Angel Investing",
 	},
 	robots: {
 		index: true,
