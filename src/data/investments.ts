@@ -107,6 +107,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/dria.jpg",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/driaforall",
+		github: "https://github.com/firstbatchxyz",
 	},
 	{
 		title: "Eclipse",
@@ -234,6 +236,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/lighter.jpg",
 		tier: 1,
 		featured: true,
+		x: "https://x.com/Lighter_xyz",
+		github: "https://github.com/elliottech",
 	},
 	{
 		title: "Lucis",
