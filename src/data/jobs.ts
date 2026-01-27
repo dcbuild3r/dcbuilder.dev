@@ -1007,8 +1007,19 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "full-time",
 		salary: "$175k-225k + Equity",
-		link: "https://sorellalabs.xyz/careers?gh_jid=4196455007",
+		link: "https://sorellalabs.xyz/careers",
 		tags: ["defi", "trading", "protocol", "mev"],
+	},
+	{
+		id: "sorella-senior-protocol-engineer",
+		title: "Senior Protocol Engineer",
+		company: companies.sorella,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		salary: "$175k-225k + Equity",
+		link: "https://sorellalabs.xyz/careers?gh_jid=4196455007&view=jd",
+		tags: ["protocol", "mev"],
 	},
 	// Flashbots Jobs
 	{
