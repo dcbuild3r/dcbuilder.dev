@@ -50,16 +50,18 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 
 	// Close expanded view on escape key
 	useEffect(() => {
+		if (!expandedCandidate) return;
+
 		const handleEscape = (e: KeyboardEvent) => {
 			if (e.key === "Escape") setExpandedCandidate(null);
 		};
-		if (expandedCandidate) {
-			document.addEventListener("keydown", handleEscape);
-			document.body.style.overflow = "hidden";
-		}
+		const previousOverflow = document.body.style.overflow;
+		document.addEventListener("keydown", handleEscape);
+		document.body.style.overflow = "hidden";
+
 		return () => {
 			document.removeEventListener("keydown", handleEscape);
-			document.body.style.overflow = "";
+			document.body.style.overflow = previousOverflow;
 		};
 	}, [expandedCandidate]);
 

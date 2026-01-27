@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
 
@@ -182,10 +182,10 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 	// Helper to check if job is hot
 	const isHotJob = (job: Job) => job.tags?.includes("hot");
 
-	// Helper to get company tier
-	const getTier = (job: Job) =>
+	// Helper to get company tier (useCallback for stable reference in useEffect)
+	const getTier = useCallback((job: Job) =>
 		companyTiers[job.company.name] ??
-		(job.company.category === "portfolio" ? 4 : 5);
+		(job.company.category === "portfolio" ? 4 : 5), []);
 
 	// Sort jobs deterministically (no shuffle - that happens in useEffect)
 	const sortedJobs = useMemo(() => {
@@ -236,7 +236,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 			.flatMap((tier) => shuffleArray(tierGroups[tier]));
 
 		setShuffledJobs([...shuffledHot, ...shuffledFeatured, ...sortedNonFeatured]);
-	}, [filteredJobs, isHydrated]);
+	}, [filteredJobs, isHydrated, getTier]);
 
 	// Use shuffled jobs after hydration, otherwise use deterministic sort
 	const displayJobs = isHydrated && shuffledJobs.length > 0 ? shuffledJobs : sortedJobs;
@@ -378,6 +378,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 							}}
 							role="link"
 							tabIndex={0}
+							aria-label={`View ${job.title} position at ${job.company.name}`}
 							onKeyDown={(e) => {
 								if (e.key === 'Enter' || e.key === ' ') {
 									e.preventDefault();

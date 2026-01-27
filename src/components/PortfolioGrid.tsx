@@ -148,6 +148,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 						}}
 						role="link"
 						tabIndex={0}
+						aria-label={`View ${investment.title} website`}
 						onKeyDown={(e) => {
 							if (e.key === 'Enter' || e.key === ' ') {
 								e.preventDefault();
