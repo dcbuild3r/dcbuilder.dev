@@ -11,8 +11,8 @@ export default function Jobs() {
 	return (
 		<>
 			<Navbar />
-			<main className="min-h-screen pt-24 px-6">
-				<div className="max-w-4xl mx-auto py-12 space-y-8">
+			<main className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-6">
+				<div className="max-w-4xl mx-auto py-8 sm:py-12 space-y-6 sm:space-y-8">
 					{/* Header */}
 					<section className="text-center space-y-4">
 						<h1 className="text-4xl font-bold">Jobs</h1>

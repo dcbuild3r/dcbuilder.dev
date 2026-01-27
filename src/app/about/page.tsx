@@ -11,8 +11,8 @@ export default function About() {
 	return (
 		<>
 			<Navbar />
-			<main className="min-h-screen pt-24 px-6">
-				<div className="max-w-4xl mx-auto py-12 space-y-20">
+			<main className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-6">
+				<div className="max-w-4xl mx-auto py-8 sm:py-12 space-y-12 sm:space-y-20">
 					{/* Bio Section */}
 					<section className="flex flex-col md:flex-row items-center gap-12">
 						<Link href="/" className="shrink-0">
