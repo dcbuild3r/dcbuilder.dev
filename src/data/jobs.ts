@@ -115,7 +115,7 @@ const companies = {
 		logo: "/images/investments/morpho.png",
 		website: "https://morpho.org/",
 		category: "portfolio" as const,
-		twitter: "https://x.com/MorphoLabs",
+		twitter: "https://x.com/morpho",
 		github: "https://github.com/morpho-org",
 	},
 	ritual: {
