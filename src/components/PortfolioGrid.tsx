@@ -139,12 +139,22 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 			{/* Grid */}
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				{displayInvestments.map((investment) => (
-					<a
+					<div
 						key={investment.title}
-						href={investment.imageUrl}
-						target="_blank"
-						rel="noopener noreferrer"
-						className={`group p-6 rounded-xl border transition-colors flex flex-col items-center text-center ${
+						onClick={(e) => {
+							// Don't navigate if clicking on nested links
+							if ((e.target as HTMLElement).closest('a')) return;
+							window.open(investment.imageUrl, '_blank', 'noopener,noreferrer');
+						}}
+						role="link"
+						tabIndex={0}
+						onKeyDown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								window.open(investment.imageUrl, '_blank', 'noopener,noreferrer');
+							}
+						}}
+						className={`group p-6 rounded-xl border transition-colors flex flex-col items-center text-center cursor-pointer ${
 							investment.tier === 1
 								? "border-neutral-300 dark:border-neutral-600 hover:border-neutral-500 dark:hover:border-neutral-400"
 								: investment.tier === 3
@@ -185,8 +195,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 								href={investment.imageUrl}
 								target="_blank"
 								rel="noopener noreferrer"
-								onClick={(e) => e.stopPropagation()}
-								className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+																className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
 								title="Website"
 							>
 								<svg
@@ -209,8 +218,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 									href={investment.x}
 									target="_blank"
 									rel="noopener noreferrer"
-									onClick={(e) => e.stopPropagation()}
-									className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+																		className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
 									title="X (Twitter)"
 								>
 									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -224,8 +232,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 									href={investment.github}
 									target="_blank"
 									rel="noopener noreferrer"
-									onClick={(e) => e.stopPropagation()}
-									className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+																		className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
 									title="GitHub"
 								>
 									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -234,7 +241,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 								</a>
 							)}
 						</div>
-					</a>
+					</div>
 				))}
 			</div>
 
