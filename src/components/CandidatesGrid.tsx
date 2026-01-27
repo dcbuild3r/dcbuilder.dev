@@ -308,7 +308,7 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
 
 	return (
 		<div
-			className={`p-4 rounded-xl border transition-all ${
+			className={`p-4 rounded-xl border transition-all overflow-hidden ${
 				candidate.hot
 					? "border-orange-400 dark:border-orange-500 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 shadow-[0_0_15px_rgba(251,146,60,0.3)] dark:shadow-[0_0_20px_rgba(251,146,60,0.2)]"
 					: "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
@@ -328,26 +328,22 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
 				</div>
 
 				<div className="flex-1 min-w-0">
-					<div className="flex items-start justify-between gap-2">
-						<div>
-							<h3 className="font-semibold truncate">
-								{displayName}
-								{candidate.featured && (
-									<span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
-										★
-									</span>
-								)}
-							</h3>
-							<p className="text-sm text-neutral-600 dark:text-neutral-400 truncate">
-								{candidate.title}
-							</p>
-						</div>
-						<span
-							className={`flex-shrink-0 px-2 py-0.5 text-xs rounded-full ${availabilityColor[candidate.availability]}`}
-						>
-							{availabilityLabels[candidate.availability]}
-						</span>
-					</div>
+					<h3 className="font-semibold truncate">
+						{displayName}
+						{candidate.featured && (
+							<span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
+								★
+							</span>
+						)}
+					</h3>
+					<p className="text-sm text-neutral-600 dark:text-neutral-400 truncate">
+						{candidate.title}
+					</p>
+					<span
+						className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full ${availabilityColor[candidate.availability]}`}
+					>
+						{availabilityLabels[candidate.availability]}
+					</span>
 				</div>
 			</div>
 
