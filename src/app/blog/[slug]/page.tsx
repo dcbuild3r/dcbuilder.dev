@@ -70,6 +70,8 @@ export default async function BlogPostPage({ params }: Props) {
 									</a>
 								</>
 							)}
+							<span>·</span>
+							<span>{post.readingTime} min read</span>
 						</div>
 						<h1 className="text-4xl font-bold mt-2">{post.title}</h1>
 						{post.description && (

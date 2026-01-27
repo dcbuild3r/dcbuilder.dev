@@ -46,6 +46,8 @@ export default function BlogPage() {
 												</a>
 											</>
 										)}
+										<span>·</span>
+										<span>{post.readingTime} min read</span>
 									</div>
 									<Link href={`/blog/${post.slug}`} className="block group cursor-pointer">
 										<h2 className="text-2xl font-bold mt-1 mb-2 group-hover:opacity-70 transition-opacity cursor-pointer">
