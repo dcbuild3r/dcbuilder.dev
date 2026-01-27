@@ -17,6 +17,7 @@ export type JobTag =
 	| "bd"
 	| "research"
 	| "security"
+	| "legal"
 	| "monad-ecosystem"
 	| "entry-level";
 
@@ -35,6 +36,7 @@ export const tagLabels: Record<JobTag, string> = {
 	bd: "BD",
 	research: "Research",
 	security: "Security",
+	legal: "Legal",
 	"monad-ecosystem": "Monad Ecosystem",
 	"entry-level": "Entry Level",
 };
@@ -326,7 +328,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Legal",
 		link: "https://morpho.org/jobs/job-00x52y1m34",
-		tags: ["defi"],
+		tags: ["defi", "legal"],
 	},
 	// Ritual Jobs
 	{
@@ -476,7 +478,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Legal",
 		link: "https://ritual.net/careers/4635587007",
-		tags: ["ai", "cryptography"],
+		tags: ["ai", "cryptography", "legal"],
 	},
 	{
 		id: "ritual-research-intern",
@@ -1055,7 +1057,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Legal",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/e76d5bc9-12b5-4213-b790-4b9d060c4771",
-		tags: ["protocol"],
+		tags: ["protocol", "legal"],
 	},
 	{
 		id: "ef-legal-operations-associate",
@@ -1066,7 +1068,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Legal",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/731f5ff4-d9f9-4c5b-9421-83c123695c09",
-		tags: ["protocol"],
+		tags: ["protocol", "legal"],
 	},
 	{
 		id: "ef-local-production-devcon",
@@ -1132,5 +1134,6 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://job-boards.eu.greenhouse.io/aztec/jobs/4763296101",
+		tags: ["legal"],
 	},
 ];
