@@ -150,6 +150,12 @@ const companies = {
 		website: "https://ethereum.foundation/",
 		category: "network" as const,
 	},
+	aztec: {
+		name: "Aztec",
+		logo: "/images/investments/aztec.png",
+		website: "https://aztec.network/",
+		category: "network" as const,
+	},
 };
 
 export const jobs: Job[] = [
@@ -1094,5 +1100,37 @@ export const jobs: Job[] = [
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/f466a83a-e322-4b81-80a8-2d600870d98a",
 		tags: ["protocol", "security"],
+	},
+	// Aztec Jobs
+	{
+		id: "aztec-software-engineer-devops",
+		title: "Software Engineer Generalist - Devops",
+		company: companies.aztec,
+		location: "London / New York",
+		remote: false,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://job-boards.eu.greenhouse.io/aztec/jobs/4700513101",
+		tags: ["infra", "cryptography"],
+	},
+	{
+		id: "aztec-executive-assistant",
+		title: "Executive Assistant",
+		company: companies.aztec,
+		location: "New York",
+		remote: false,
+		type: "full-time",
+		department: "Marketing",
+		link: "https://job-boards.eu.greenhouse.io/aztec/jobs/4738156101",
+	},
+	{
+		id: "aztec-senior-legal-counsel",
+		title: "Senior Legal Counsel",
+		company: companies.aztec,
+		location: "London / New York",
+		remote: false,
+		type: "full-time",
+		department: "Operations",
+		link: "https://job-boards.eu.greenhouse.io/aztec/jobs/4763296101",
 	},
 ];
