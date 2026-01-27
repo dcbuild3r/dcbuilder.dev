@@ -338,6 +338,18 @@ export const jobs: Job[] = [
 		link: "https://morpho.org/jobs/job-00x52y1m34",
 		tags: ["defi", "legal"],
 	},
+	// MegaETH Jobs
+	{
+		id: "megaeth-assistant-general-counsel",
+		title: "Assistant General Counsel / Senior Counsel",
+		company: companies.megaeth,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Legal",
+		link: "https://www.megaeth.com/about#career",
+		tags: ["legal"],
+	},
 	// Ritual Jobs
 	{
 		id: "ritual-controller",
