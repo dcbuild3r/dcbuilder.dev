@@ -405,12 +405,12 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 														</svg>
 													</span>
 													{/* X (Twitter) */}
-													{job.company.twitter && (
+													{job.company.x && (
 														<span
 															onClick={(e) => {
 																e.preventDefault();
 																e.stopPropagation();
-																window.open(job.company.twitter, "_blank");
+																window.open(job.company.x, "_blank");
 															}}
 															className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 cursor-pointer"
 															title="X (Twitter)"

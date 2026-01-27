@@ -24,7 +24,7 @@ export const experienceLabels: Record<ExperienceLevel, string> = {
 };
 
 export interface SocialLinks {
-	twitter?: string;
+	x?: string;
 	github?: string;
 	linkedin?: string;
 	email?: string;
@@ -96,7 +96,7 @@ export const candidates: Candidate[] = [
 			{ name: "Happy Devs", url: "https://docs.happy.tech/" },
 		],
 		socials: {
-			twitter: "https://x.com/norswap",
+			x: "https://x.com/norswap",
 			github: "https://github.com/norswap",
 			linkedin: "https://linkedin.com/in/norswap",
 			telegram: "https://t.me/norswap",

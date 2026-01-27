@@ -6,7 +6,7 @@ export interface Investment {
 	tier: 1 | 2 | 3 | 4;
 	featured: boolean;
 	status?: "active" | "inactive" | "acquired";
-	twitter?: string;
+	x?: string;
 	github?: string;
 }
 
@@ -26,7 +26,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/agora.jpg",
 		tier: 2,
 		featured: true,
-		twitter: "https://x.com/AgoraGovernance",
+		x: "https://x.com/AgoraGovernance",
 		github: "https://github.com/voteagora",
 	},
 	{
@@ -61,7 +61,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/berachain.png",
 		tier: 3,
 		featured: true,
-		twitter: "https://x.com/berachain",
+		x: "https://x.com/berachain",
 		github: "https://github.com/berachain",
 	},
 	{
@@ -72,6 +72,16 @@ export const investments: Investment[] = [
 		logo: "/images/investments/blocksense.jpg",
 		tier: 4,
 		featured: true,
+	},
+	{
+		title: "Category Labs",
+		description: "Building Category Theory Infrastructure",
+		imageUrl: "https://www.category.xyz/",
+		logo: "/images/investments/category.jpg",
+		tier: 1,
+		featured: true,
+		x: "https://x.com/category_xyz",
+		github: "https://github.com/category-labs",
 	},
 	{
 		title: "Clique",
@@ -120,6 +130,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/exo.png",
 		tier: 1,
 		featured: true,
+		x: "https://x.com/exolabs",
+		github: "https://github.com/exo-explore",
 	},
 	{
 		title: "Fabric Cryptography",
@@ -176,7 +188,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/inco.png",
 		tier: 3,
 		featured: true,
-		twitter: "https://x.com/inconetwork",
+		x: "https://x.com/inconetwork",
 		github: "https://github.com/Inco-fhevm",
 	},
 	{
@@ -212,7 +224,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/lucis.jpg",
 		tier: 1,
 		featured: true,
-		twitter: "https://x.com/lucis_life",
+		x: "https://x.com/lucis_life",
 	},
 	{
 		title: "MegaETH",
@@ -221,7 +233,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/megaeth.jpg",
 		tier: 1,
 		featured: true,
-		twitter: "https://x.com/megaeth",
+		x: "https://x.com/megaeth",
 		github: "https://github.com/megaeth-labs",
 	},
 	{
@@ -256,7 +268,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/monad.jpg",
 		tier: 1,
 		featured: true,
-		twitter: "https://x.com/monad_xyz",
+		x: "https://x.com/monad_xyz",
 		github: "https://github.com/monad-developers",
 	},
 	{
@@ -266,7 +278,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/morpho.png",
 		tier: 1,
 		featured: true,
-		twitter: "https://x.com/morpho",
+		x: "https://x.com/morpho",
 		github: "https://github.com/morpho-org",
 	},
 	{
@@ -364,7 +376,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/prime-intellect.jpg",
 		tier: 1,
 		featured: true,
-		twitter: "https://x.com/PrimeIntellect",
+		x: "https://x.com/PrimeIntellect",
 		github: "https://github.com/PrimeIntellect-ai",
 	},
 	{
@@ -382,7 +394,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/rhinestone.jpg",
 		tier: 2,
 		featured: true,
-		twitter: "https://x.com/rhinestonewtf",
+		x: "https://x.com/rhinestonewtf",
 		github: "https://github.com/rhinestonewtf",
 	},
 	{
@@ -392,7 +404,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/ritual.png",
 		tier: 3,
 		featured: true,
-		twitter: "https://x.com/ritualnet",
+		x: "https://x.com/ritualnet",
 		github: "https://github.com/ritual-net",
 	},
 	{
@@ -402,7 +414,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/sorella.png",
 		tier: 2,
 		featured: true,
-		twitter: "https://x.com/SorellaLabs",
+		x: "https://x.com/SorellaLabs",
 		github: "https://github.com/sorellalabs",
 	},
 	{
@@ -412,7 +424,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/succinct.png",
 		tier: 2,
 		featured: true,
-		twitter: "https://x.com/SuccinctLabs",
+		x: "https://x.com/SuccinctLabs",
 		github: "https://github.com/succinctlabs",
 	},
 	{

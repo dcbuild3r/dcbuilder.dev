@@ -154,12 +154,12 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 								</svg>
 							</span>
 							{/* X (Twitter) */}
-							{investment.twitter && (
+							{investment.x && (
 								<span
 									onClick={(e) => {
 										e.preventDefault();
 										e.stopPropagation();
-										window.open(investment.twitter, "_blank");
+										window.open(investment.x, "_blank");
 									}}
 									className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 cursor-pointer"
 									title="X (Twitter)"
