@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 	},
 	description:
 		"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
+	metadataBase: new URL("https://dcbuilder.dev"),
 	openGraph: {
 		title: "dcbuilder.eth",
 		description:
@@ -20,8 +21,10 @@ export const metadata: Metadata = {
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "dcbuilder",
-		description: "Research, Engineering, Angel Investing",
+		title: "dcbuilder.eth",
+		description:
+			"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
+		creator: "@DCbuild3r",
 	},
 	robots: {
 		index: true,
