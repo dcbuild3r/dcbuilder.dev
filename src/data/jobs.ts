@@ -198,6 +198,8 @@ const companies = {
 		logo: "/images/investments/world.png",
 		website: "https://world.org/",
 		category: "network" as const,
+		twitter: "https://x.com/worldcoin",
+		github: "https://github.com/worldcoin",
 	},
 	agora: {
 		name: "Agora",
