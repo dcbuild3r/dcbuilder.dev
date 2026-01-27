@@ -30,6 +30,7 @@ export interface SocialLinks {
 	email?: string;
 	website?: string;
 	telegram?: string;
+	cv?: string;
 }
 
 export interface Achievement {
