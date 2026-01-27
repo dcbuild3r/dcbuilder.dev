@@ -1193,6 +1193,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Legal",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/669fa0ce-d0ca-469d-bd2a-4c289482ae38",
+		featured: true,
 		tags: ["world", "legal"],
 	},
 	{
@@ -1203,6 +1204,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/e5b0781d-8a66-46ea-ba39-ebf0feb6053a",
+		featured: true,
 		tags: ["world"],
 	},
 	{
@@ -1283,6 +1285,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "World App",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/5e1c4da2-e096-4f37-842a-b01a522e3314",
+		featured: true,
 		tags: ["world", "design"],
 	},
 	{
@@ -1293,6 +1296,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d91841c6-72dd-42cb-bd5c-0b7299a6d74b",
+		featured: true,
 		tags: ["world", "protocol", "cryptography"],
 	},
 	{
@@ -1673,6 +1677,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Economics and Data Science",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/641f94f8-034c-4689-a844-a4d7d899056e",
+		featured: true,
 		tags: ["world", "research"],
 	},
 	{
@@ -1683,6 +1688,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/0f22bdfe-7d40-474c-a668-e2f8bf18886e",
+		featured: true,
 		tags: ["world"],
 	},
 	{
@@ -1693,6 +1699,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/401855c9-ae93-47a2-8b9e-7bb98d8e51dc",
+		featured: true,
 		tags: ["world"],
 	},
 	{
@@ -1764,6 +1771,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/daf2307b-b6e8-4fed-a682-f6cc35df05cc",
+		featured: true,
 		tags: ["world", "infra"],
 	},
 	{
@@ -1774,6 +1782,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/3385936a-e807-4d3d-a7b5-3cb23f7b7d88",
+		featured: true,
 		tags: ["world", "security"],
 	},
 	{
@@ -1784,6 +1793,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/22635bae-cc5a-4d5e-b87a-901752467a94",
+		featured: true,
 		tags: ["world", "infra"],
 	},
 	{
@@ -1794,6 +1804,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/18bd79de-2958-412e-b19c-94d13ecc78e7",
+		featured: true,
 		tags: ["world", "design"],
 	},
 	{
@@ -1804,6 +1815,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/bdd9f818-2569-4823-8ba3-d37a9d5872b3",
+		featured: true,
 		tags: ["world", "security"],
 	},
 	{
@@ -1814,6 +1826,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/53be510d-300d-4bae-b347-e6e8ce0dd450",
+		featured: true,
 		tags: ["world", "security"],
 	},
 	{
@@ -1824,6 +1837,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b9132dad-c7ea-49e6-bc53-c8fdc466584a",
+		featured: true,
 		tags: ["world", "protocol", "cryptography"],
 	},
 	{
