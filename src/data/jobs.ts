@@ -1008,7 +1008,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		salary: "$175k-225k + Equity",
 		link: "https://sorellalabs.xyz/careers",
-		tags: ["defi", "trading", "protocol", "mev"],
+		tags: ["defi", "protocol", "mev"],
 	},
 	{
 		id: "sorella-senior-protocol-engineer",
