@@ -21,7 +21,7 @@ export default function About() {
 								alt="dcbuilder.eth"
 								width={200}
 								height={200}
-								className="rounded-full hover:scale-110 transition-transform"
+								className="rounded-full hover:scale-105 transition-transform"
 							/>
 						</Link>
 						<div className="space-y-6 text-xl text-neutral-700 dark:text-neutral-300">
@@ -61,7 +61,7 @@ export default function About() {
 												alt={affiliation.title}
 												width={100}
 												height={100}
-												className="object-contain bg-white rounded-lg p-2 group-hover:scale-110 transition-transform"
+												className="object-contain bg-white rounded-lg p-2 group-hover:scale-105 transition-transform"
 											/>
 										</div>
 										<div className="flex-1">
