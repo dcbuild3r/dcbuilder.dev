@@ -31,8 +31,26 @@ function calculateReadingTime(content: string): number {
 	return Math.ceil(words / wordsPerMinute);
 }
 
+function parseDate(dateString: string | undefined, context: string): string {
+	if (!dateString) {
+		console.warn(`[blog.ts] ${context}: Missing date in frontmatter`);
+		return new Date().toISOString();
+	}
+	const parsed = new Date(dateString);
+	if (isNaN(parsed.getTime())) {
+		console.warn(`[blog.ts] ${context}: Invalid date format "${dateString}"`);
+		return new Date().toISOString();
+	}
+	return dateString;
+}
+
 export function getAllPosts(): BlogPostMeta[] {
 	if (!fs.existsSync(BLOG_DIR)) {
+		console.warn(
+			`[blog.ts] Blog directory not found at ${BLOG_DIR}. ` +
+				`Expected location: ${path.resolve(BLOG_DIR)}. ` +
+				`Current working directory: ${process.cwd()}`
+		);
 		return [];
 	}
 
@@ -43,19 +61,30 @@ export function getAllPosts(): BlogPostMeta[] {
 		.map((file) => {
 			const slug = file.replace(/\.mdx?$/, "");
 			const filePath = path.join(BLOG_DIR, file);
-			const fileContent = fs.readFileSync(filePath, "utf-8");
-			const { data, content } = matter(fileContent);
 
-			return {
-				slug,
-				title: data.title || slug,
-				date: data.date || "",
-				description: data.description || "",
-				source: data.source,
-				sourceUrl: data.sourceUrl,
-				readingTime: calculateReadingTime(content),
-			};
+			try {
+				const fileContent = fs.readFileSync(filePath, "utf-8");
+				const { data, content } = matter(fileContent);
+
+				const post: BlogPostMeta = {
+					slug,
+					title: data.title || slug,
+					date: parseDate(data.date, `Post "${slug}"`),
+					description: data.description || "",
+					source: data.source,
+					sourceUrl: data.sourceUrl,
+					readingTime: calculateReadingTime(content),
+				};
+				return post;
+			} catch (error) {
+				console.error(`[blog.ts] Failed to read post "${slug}":`, {
+					filePath,
+					error: error instanceof Error ? error.message : String(error),
+				});
+				return null;
+			}
 		})
+		.filter((post): post is BlogPostMeta => post !== null)
 		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 	return posts;
@@ -74,23 +103,36 @@ export function getPostBySlug(slug: string): BlogPost | null {
 		return null;
 	}
 
-	const fileContent = fs.readFileSync(filePath, "utf-8");
-	const { data, content } = matter(fileContent);
+	try {
+		const fileContent = fs.readFileSync(filePath, "utf-8");
+		const { data, content } = matter(fileContent);
 
-	return {
-		slug,
-		title: data.title || slug,
-		date: data.date || "",
-		description: data.description || "",
-		content,
-		source: data.source,
-		sourceUrl: data.sourceUrl,
-		readingTime: calculateReadingTime(content),
-	};
+		return {
+			slug,
+			title: data.title || slug,
+			date: parseDate(data.date, `Post "${slug}"`),
+			description: data.description || "",
+			content,
+			source: data.source,
+			sourceUrl: data.sourceUrl,
+			readingTime: calculateReadingTime(content),
+		};
+	} catch (error) {
+		console.error(`[blog.ts] Failed to read post "${slug}":`, {
+			filePath,
+			error: error instanceof Error ? error.message : String(error),
+		});
+		return null;
+	}
 }
 
 export function getAllSlugs(): string[] {
 	if (!fs.existsSync(BLOG_DIR)) {
+		console.warn(
+			`[blog.ts] Blog directory not found at ${BLOG_DIR}. ` +
+				`Expected location: ${path.resolve(BLOG_DIR)}. ` +
+				`Current working directory: ${process.cwd()}`
+		);
 		return [];
 	}
 

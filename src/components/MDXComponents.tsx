@@ -6,7 +6,15 @@ export const mdxComponents: MDXComponents = {
 	// Replace img with Next.js optimized Image
 	img: (props) => {
 		const { src, alt, ...rest } = props as { src?: string; alt?: string };
-		if (!src) return null;
+		if (!src) {
+			if (process.env.NODE_ENV === "development") {
+				console.warn(
+					"[MDXComponents] Image tag missing src attribute. Alt text:",
+					alt
+				);
+			}
+			return null;
+		}
 
 		// For external images, use regular img
 		if (src.startsWith("http")) {

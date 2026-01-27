@@ -17,6 +17,16 @@ interface CandidatesGridProps {
 	candidates: Candidate[];
 }
 
+// Fisher-Yates shuffle (pure function)
+function shuffleArray<T>(array: T[]): T[] {
+	const result = [...array];
+	for (let i = result.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[result[i], result[j]] = [result[j], result[i]];
+	}
+	return result;
+}
+
 export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const [availabilityFilter, setAvailabilityFilter] = useState<
 		"all" | AvailabilityStatus
@@ -26,15 +36,16 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	>("all");
 	const [selectedTags, setSelectedTags] = useState<JobTag[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [shuffleKey, setShuffleKey] = useState(0);
+	const [shuffledCandidates, setShuffledCandidates] = useState<Candidate[]>([]);
+	const [isHydrated, setIsHydrated] = useState(false);
 	const [showAll, setShowAll] = useState(false);
 	const [expandedCandidate, setExpandedCandidate] = useState<Candidate | null>(
 		null
 	);
 
-	// Trigger shuffle only on client after hydration
+	// Mark as hydrated after mount
 	useEffect(() => {
-		setShuffleKey(Math.random());
+		setIsHydrated(true);
 	}, []);
 
 	// Close expanded view on escape key
@@ -121,25 +132,11 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		});
 	}, [candidates, availabilityFilter, experienceFilter, searchQuery, selectedTags]);
 
-	// Sort: hot first, then featured (randomized), then by tier, then remaining
+	// Sort: hot first, then featured, then by tier (deterministic - no shuffle)
 	const sortedCandidates = useMemo(() => {
 		const hot = filteredCandidates.filter((c) => c.hot);
 		const featured = filteredCandidates.filter((c) => c.featured && !c.hot);
 		const nonFeatured = filteredCandidates.filter((c) => !c.featured && !c.hot);
-
-		// Only shuffle after hydration (when shuffleKey > 0)
-		if (shuffleKey > 0) {
-			// Shuffle hot candidates
-			for (let i = hot.length - 1; i > 0; i--) {
-				const j = Math.floor(Math.random() * (i + 1));
-				[hot[i], hot[j]] = [hot[j], hot[i]];
-			}
-			// Shuffle featured candidates
-			for (let i = featured.length - 1; i > 0; i--) {
-				const j = Math.floor(Math.random() * (i + 1));
-				[featured[i], featured[j]] = [featured[j], featured[i]];
-			}
-		}
 
 		// Group non-featured by tier
 		const tierGroups: Record<number, Candidate[]> = {};
@@ -149,30 +146,53 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			tierGroups[tier].push(candidate);
 		});
 
-		// Shuffle each tier group (only after hydration)
-		if (shuffleKey > 0) {
-			Object.values(tierGroups).forEach((group) => {
-				for (let i = group.length - 1; i > 0; i--) {
-					const j = Math.floor(Math.random() * (i + 1));
-					[group[i], group[j]] = [group[j], group[i]];
-				}
-			});
-		}
-
-		// Combine tiers in order
+		// Combine tiers in order (deterministic)
 		const sortedNonFeatured = Object.keys(tierGroups)
 			.map(Number)
 			.sort((a, b) => a - b)
 			.flatMap((tier) => tierGroups[tier]);
 
 		return [...hot, ...featured, ...sortedNonFeatured];
-	}, [filteredCandidates, shuffleKey]);
+	}, [filteredCandidates]);
+
+	// Shuffle in useEffect after hydration (React-safe)
+	useEffect(() => {
+		if (!isHydrated) return;
+
+		const hot = filteredCandidates.filter((c) => c.hot);
+		const featured = filteredCandidates.filter((c) => c.featured && !c.hot);
+		const nonFeatured = filteredCandidates.filter((c) => !c.featured && !c.hot);
+
+		// Shuffle each group
+		const shuffledHot = shuffleArray(hot);
+		const shuffledFeatured = shuffleArray(featured);
+
+		// Group and shuffle non-featured by tier
+		const tierGroups: Record<number, Candidate[]> = {};
+		nonFeatured.forEach((candidate) => {
+			const tier = candidate.tier;
+			if (!tierGroups[tier]) tierGroups[tier] = [];
+			tierGroups[tier].push(candidate);
+		});
+
+		const sortedNonFeatured = Object.keys(tierGroups)
+			.map(Number)
+			.sort((a, b) => a - b)
+			.flatMap((tier) => shuffleArray(tierGroups[tier]));
+
+		setShuffledCandidates([...shuffledHot, ...shuffledFeatured, ...sortedNonFeatured]);
+	}, [filteredCandidates, isHydrated]);
+
+	// Use shuffled after hydration, otherwise use deterministic sort
+	const candidatesToDisplay = isHydrated && shuffledCandidates.length > 0
+		? shuffledCandidates
+		: sortedCandidates;
 
 	// Limit display unless showAll is true
 	const displayedCandidates = showAll
-		? sortedCandidates
-		: sortedCandidates.slice(0, 12);
-	const hasMore = sortedCandidates.length > 12 && !showAll;
+		? candidatesToDisplay
+		: candidatesToDisplay.slice(0, 12);
+	const hasMore = candidatesToDisplay.length > 12 && !showAll;
 
 	return (
 		<div className="space-y-6">
@@ -269,7 +289,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 											: "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
 							}`}
 						>
-							{tagLabels[tag]}
+							{tagLabels[tag] ?? tag}
 						</button>
 					))}
 					{selectedTags.length > 0 && (
@@ -364,6 +384,10 @@ function CandidateCard({
 						width={48}
 						height={48}
 						className="object-cover w-full h-full"
+						onError={(e) => {
+							console.warn(`[CandidatesGrid] Failed to load image for ${displayName}`);
+							e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
+						}}
 					/>
 				</div>
 
@@ -430,7 +454,7 @@ function CandidateCard({
 										: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
 							}`}
 						>
-							{tagLabels[tag]}
+							{tagLabels[tag] ?? tag}
 						</span>
 					))}
 					{candidate.skills.length > 4 && (
@@ -710,6 +734,10 @@ function ExpandedCandidateView({
 								width={128}
 								height={128}
 								className="object-cover w-full h-full"
+								onError={(e) => {
+									console.warn(`[CandidatesGrid] Failed to load image for ${displayName}`);
+									e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
+								}}
 							/>
 						</div>
 
@@ -793,7 +821,7 @@ function ExpandedCandidateView({
 													: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
 										}`}
 									>
-										{tagLabels[tag]}
+										{tagLabels[tag] ?? tag}
 									</span>
 								))}
 							</div>
@@ -832,11 +860,14 @@ function ExpandedCandidateView({
 									>
 										{company.logo && (
 											<Image
-												src={company.logo}
+												src={company.logo || "/images/candidates/anonymous-placeholder.svg"}
 												alt={company.name}
 												width={24}
 												height={24}
 												className="rounded"
+												onError={(e) => {
+													e.currentTarget.style.display = "none";
+												}}
 											/>
 										)}
 										<span className="font-medium">{company.name}</span>
