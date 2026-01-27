@@ -73,6 +73,40 @@ export const DCBUILDER_TELEGRAM = "https://t.me/dcbuilder";
 
 export const candidates: Candidate[] = [
 	{
+		id: "norswap",
+		visibility: "public",
+		name: "Norswap",
+		title: "Tech Lead / Protocol Engineer",
+		bio: "Experienced crypto tech leader with strong track record in protocol design at Optimism and leading teams to ship at HappyChainDevs. Open to tech leadership, VC investment roles, or co-founding opportunities.",
+		profileImage: "/images/candidates/norswap.jpg",
+		skills: ["protocol", "infra", "vc", "research"],
+		location: "Remote",
+		remote: true,
+		experience: "10+",
+		availability: "looking",
+		preferredRoles: [
+			"Head of Engineering",
+			"Tech Lead",
+			"Engineering Manager",
+			"VC Investment",
+			"Co-founder",
+		],
+		companies: [
+			{ name: "Optimism", url: "https://optimism.io" },
+			{ name: "HappyChainDevs", url: "https://happychaindevs.com" },
+		],
+		socials: {
+			twitter: "https://x.com/norswap",
+			website: "https://norswap.com",
+			cv: "https://norswap.com/resume/",
+		},
+		tier: 1,
+		featured: true,
+		hot: true,
+		vouched: true,
+		dateAdded: "2025-01-27",
+	},
+	{
 		id: "alex-chen",
 		visibility: "public",
 		name: "Alex Chen",
