@@ -6,6 +6,8 @@ export interface Investment {
 	tier: 1 | 2 | 3 | 4;
 	featured: boolean;
 	status?: "active" | "inactive" | "acquired";
+	twitter?: string;
+	github?: string;
 }
 
 export const investments: Investment[] = [
@@ -24,6 +26,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/agora.jpg",
 		tier: 2,
 		featured: true,
+		twitter: "https://x.com/AgoraGovernance",
+		github: "https://github.com/voteagora",
 	},
 	{
 		title: "Aligned Layer",
@@ -57,6 +61,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/berachain.png",
 		tier: 3,
 		featured: true,
+		twitter: "https://x.com/berachain",
+		github: "https://github.com/berachain",
 	},
 	{
 		title: "blocksense",
@@ -170,6 +176,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/inco.png",
 		tier: 3,
 		featured: true,
+		twitter: "https://x.com/inconetwork",
+		github: "https://github.com/Inco-fhevm",
 	},
 	{
 		title: "Intuition",
@@ -204,6 +212,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/lucis.jpg",
 		tier: 1,
 		featured: true,
+		twitter: "https://x.com/lucis_life",
 	},
 	{
 		title: "MegaETH",
@@ -212,6 +221,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/megaeth.jpg",
 		tier: 1,
 		featured: true,
+		twitter: "https://x.com/megaeth",
+		github: "https://github.com/megaeth-labs",
 	},
 	{
 		title: "Mind Palace",
@@ -245,6 +256,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/monad.jpg",
 		tier: 1,
 		featured: true,
+		twitter: "https://x.com/monad_xyz",
+		github: "https://github.com/monad-developers",
 	},
 	{
 		title: "Morpho",
@@ -253,6 +266,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/morpho.png",
 		tier: 1,
 		featured: true,
+		twitter: "https://x.com/morpho",
+		github: "https://github.com/morpho-org",
 	},
 	{
 		title: "Movement",
@@ -349,6 +364,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/prime-intellect.jpg",
 		tier: 1,
 		featured: true,
+		twitter: "https://x.com/PrimeIntellect",
+		github: "https://github.com/PrimeIntellect-ai",
 	},
 	{
 		title: "PWN",
@@ -365,6 +382,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/rhinestone.jpg",
 		tier: 2,
 		featured: true,
+		twitter: "https://x.com/rhinestonewtf",
+		github: "https://github.com/rhinestonewtf",
 	},
 	{
 		title: "Ritual",
@@ -373,6 +392,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/ritual.png",
 		tier: 3,
 		featured: true,
+		twitter: "https://x.com/ritualnet",
+		github: "https://github.com/ritual-net",
 	},
 	{
 		title: "Sorella",
@@ -381,6 +402,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/sorella.png",
 		tier: 2,
 		featured: true,
+		twitter: "https://x.com/SorellaLabs",
+		github: "https://github.com/sorellalabs",
 	},
 	{
 		title: "Succinct",
@@ -389,6 +412,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/succinct.png",
 		tier: 2,
 		featured: true,
+		twitter: "https://x.com/SuccinctLabs",
+		github: "https://github.com/succinctlabs",
 	},
 	{
 		title: "Wildcat",

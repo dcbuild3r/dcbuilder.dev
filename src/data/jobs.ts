@@ -178,8 +178,9 @@ const companies = {
 	flashbots: {
 		name: "Flashbots",
 		logo: "/images/investments/flashbots.png",
-		website: "https://www.flashbots.net/",
+		website: "https://flashbots.net/",
 		category: "network" as const,
+		github: "https://github.com/flashbots",
 	},
 	ethereumFoundation: {
 		name: "Ethereum Foundation",
