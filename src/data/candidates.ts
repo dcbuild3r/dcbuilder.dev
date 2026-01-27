@@ -97,6 +97,7 @@ export const candidates: Candidate[] = [
 		],
 		socials: {
 			twitter: "https://x.com/norswap",
+			github: "https://github.com/norswap",
 			linkedin: "https://linkedin.com/in/norswap",
 			telegram: "https://t.me/norswap",
 			email: "norswap@gmail.com",
@@ -149,6 +150,9 @@ export const candidates: Candidate[] = [
 		experience: "3-5",
 		availability: "looking",
 		preferredRoles: ["Senior Engineer", "Tech Lead"],
+		socials: {
+			github: "https://github.com/cryptomaya",
+		},
 		tier: 2,
 		featured: true,
 		dateAdded: "2025-01-10",
@@ -189,6 +193,9 @@ export const candidates: Candidate[] = [
 		experience: "5-10",
 		availability: "looking",
 		preferredRoles: ["Quant Researcher", "Trading Strategist"],
+		socials: {
+			github: "https://github.com/quantanon",
+		},
 		tier: 1,
 		featured: true,
 		hot: true,
