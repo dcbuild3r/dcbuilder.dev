@@ -34,7 +34,7 @@ export const affiliations: Affiliation[] = [
     dateEnd: "Present",
     description: "Bagel is a machine learning and cryptography research lab building a neutral, peer-to-peer AI ecosystem that covers the complete machine learning lifecycle.",
     imageUrl: "https://bagel.net/",
-    logo: "/images/bagel.png",
+    logo: "/images/bagel.jpg",
   },
   {
     title: "Modulus Labs",

@@ -90,31 +90,21 @@ const companies = {
 		website: "https://lucis.life/",
 		category: "portfolio" as const,
 	},
+	sorella: {
+		name: "Sorella",
+		logo: "/images/investments/sorella.png",
+		website: "https://sorellalabs.xyz/",
+		category: "portfolio" as const,
+	},
+	flashbots: {
+		name: "Flashbots",
+		logo: "/images/investments/flashbots.png",
+		website: "https://www.flashbots.net/",
+		category: "network" as const,
+	},
 };
 
 export const jobs: Job[] = [
-	{
-		id: "monad-rust-engineer",
-		title: "Senior Rust Engineer",
-		company: companies.monad,
-		location: "New York, NY",
-		remote: true,
-		type: "full-time",
-		department: "Engineering",
-		link: "https://www.monad.xyz/careers",
-		featured: true,
-	},
-	{
-		id: "megaeth-protocol-engineer",
-		title: "Protocol Engineer",
-		company: companies.megaeth,
-		location: "Remote",
-		remote: true,
-		type: "full-time",
-		department: "Engineering",
-		link: "https://jobs.ashbyhq.com/megaeth",
-		featured: true,
-	},
 	{
 		id: "morpho-integrations-engineer-apac",
 		title: "Integrations Engineer - APAC",
@@ -280,15 +270,38 @@ export const jobs: Job[] = [
 		link: "https://ritual.net/careers",
 		featured: true,
 	},
+	// Succinct Jobs
 	{
-		id: "succinct-zk-engineer",
-		title: "ZK Engineer",
+		id: "succinct-apac-lead",
+		title: "APAC Lead",
 		company: companies.succinct,
-		location: "San Francisco / Remote",
+		location: "Remote",
 		remote: true,
 		type: "full-time",
+		department: "Growth",
+		link: "https://jobs.ashbyhq.com/succinct",
+		featured: true,
+	},
+	{
+		id: "succinct-head-of-marketing",
+		title: "Head of Marketing",
+		company: companies.succinct,
+		location: "San Francisco",
+		remote: false,
+		type: "full-time",
+		department: "Marketing",
+		link: "https://jobs.ashbyhq.com/succinct",
+		featured: true,
+	},
+	{
+		id: "succinct-head-of-product",
+		title: "Head of Product",
+		company: companies.succinct,
+		location: "San Francisco",
+		remote: false,
+		type: "full-time",
 		department: "Engineering",
-		link: "https://succinct.xyz/careers",
+		link: "https://jobs.ashbyhq.com/succinct",
 		featured: true,
 	},
 	// Prime Intellect Jobs
@@ -481,7 +494,7 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "full-time",
 		department: "Marketing",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.ashbyhq.com/monad.foundation/66cbe700-0039-4df3-a06f-3acb9f0b9ffb",
 	},
 	{
 		id: "monad-foundation-head-of-korea",
@@ -491,7 +504,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Regional",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.ashbyhq.com/monad.foundation/d5c22aae-9697-4077-bc4c-fa082863104f",
 	},
 	{
 		id: "monad-foundation-technical-program-manager",
@@ -501,7 +514,7 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.ashbyhq.com/monad.foundation/3241c294-b313-421b-8486-e55b2105ac19",
 	},
 	{
 		id: "monad-foundation-design-engineer",
@@ -511,7 +524,7 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.ashbyhq.com/monad.foundation/b912ec98-a4d8-43d2-ad6c-d7a3e4312c2d",
 	},
 	{
 		id: "monad-foundation-latam-bd",
@@ -521,7 +534,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Business Development",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.ashbyhq.com/monad.foundation/200be835-5b50-4ffd-a37c-7992a8c4f021",
 	},
 	{
 		id: "monad-foundation-graphic-designer",
@@ -531,7 +544,7 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "contract",
 		department: "Design",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.ashbyhq.com/monad.foundation/b4a24a16-25bd-4214-962a-78182284dbf8",
 	},
 	{
 		id: "monad-foundation-motion-designer",
@@ -541,7 +554,7 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "contract",
 		department: "Design",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.ashbyhq.com/monad.foundation/73534b84-588b-4239-9d0d-ba218aaac365",
 	},
 	{
 		id: "monad-foundation-bd-lead-payments",
@@ -552,7 +565,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Business Development",
 		salary: "$200k/year",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.ashbyhq.com/monad.foundation/dccd3d0f-e491-45fa-b311-980021976d62",
 		featured: true,
 	},
 	{
@@ -563,7 +576,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Ecosystem",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.ashbyhq.com/monad.foundation/5558059f-664c-4059-9d0d-a6dec98b34d8",
 	},
 	// Perpl Jobs
 	{
@@ -574,7 +587,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDrmsgm_jr0vUukDYYBsb0Ss",
 		featured: true,
 	},
 	{
@@ -585,7 +598,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDqhJ9YFgDCR8KoKvrxzkLSx",
 		featured: true,
 	},
 	{
@@ -596,7 +609,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "contract",
 		department: "Marketing",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDrKAWMgo2bvHF7CV1SWXewv",
 	},
 	{
 		id: "perpl-quant-trader",
@@ -606,7 +619,7 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "full-time",
 		department: "Trading",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDqyBNxBzKmbw_SUX-V2EJh1",
 		featured: true,
 	},
 	{
@@ -617,7 +630,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDoV4xQA7Au1gx9qORFO21J2",
 	},
 	// Kuru Jobs
 	{
@@ -628,7 +641,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://jobs.ashbyhq.com/kuru-labs/ca804294-8f0c-436c-9c49-33e55d89be48",
 	},
 	// RareBetSports Jobs
 	{
@@ -639,7 +652,7 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://eco-jobs.monad.xyz/jobs",
+		link: "https://eco-jobs.monad.xyz/companies/rarebetsports/jobs/64210595-director-of-engineering",
 		featured: true,
 	},
 	// Lucis Jobs
@@ -684,5 +697,39 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Medical",
 		link: "https://lucislife.notion.site/join-lucis-team",
+	},
+	// Sorella Jobs
+	{
+		id: "sorella-wildcard",
+		title: "Wildcard (Open Application)",
+		company: companies.sorella,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		salary: "$175k-225k + Equity",
+		link: "https://sorellalabs.xyz/careers",
+	},
+	// Flashbots Jobs
+	{
+		id: "flashbots-senior-backend-engineer",
+		title: "Senior Backend Engineer",
+		company: companies.flashbots,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://jobs.ashbyhq.com/flashbots.net/649fc903-8345-4ddc-9535-ddce374fe23b",
+		featured: true,
+	},
+	{
+		id: "flashbots-senior-devops-engineer",
+		title: "Senior DevOps Engineer",
+		company: companies.flashbots,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://jobs.ashbyhq.com/flashbots.net/8fa82d12-baef-4f95-86af-a8354af820d8",
+		featured: true,
 	},
 ];

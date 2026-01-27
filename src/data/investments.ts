@@ -199,7 +199,7 @@ export const investments: Investment[] = [
 	{
 		title: "Lucis",
 		description:
-			"Advanced Diagnostics and Tools for Health Performance and Longevity",
+			"Preventive Health Made Accessible",
 		imageUrl: "https://lucis.life/",
 		logo: "/images/investments/lucis.jpg",
 		tier: 1,
@@ -362,7 +362,7 @@ export const investments: Investment[] = [
 		title: "Rhinestone",
 		description: "Intent-Powered Wallet Infrastructure for Your Users",
 		imageUrl: "https://www.rhinestone.wtf/",
-		logo: "/images/investments/rhinestone.png",
+		logo: "/images/investments/rhinestone.jpg",
 		tier: 2,
 		featured: true,
 	},
