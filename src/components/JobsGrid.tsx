@@ -25,6 +25,7 @@ const companyTiers: Record<string, number> = {
 	Flashbots: 5,
 	"Ethereum Foundation": 5,
 	Aztec: 5,
+	Agora: 5,
 	// Tier 6 - Ecosystem (Monad ecosystem projects)
 	Perpl: 6,
 	Kuru: 6,

@@ -166,6 +166,12 @@ const companies = {
 		website: "https://world.org/",
 		category: "network" as const,
 	},
+	agora: {
+		name: "Agora",
+		logo: "/images/investments/agora.svg",
+		website: "https://www.agora.xyz/",
+		category: "network" as const,
+	},
 };
 
 export const jobs: Job[] = [
@@ -1901,5 +1907,28 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/85f8c4f7-6125-4d44-8c44-2367a46cc5e2",
 		tags: ["world"],
+	},
+	// Agora Jobs
+	{
+		id: "agora-fullstack-engineer",
+		title: "Full-Stack Software Engineer",
+		company: companies.agora,
+		location: "Remote (EST/PST)",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://handpick.app/agora/19759a8a-7b38-435c-bd64-7149e9ff9c5e",
+		tags: ["protocol"],
+	},
+	{
+		id: "agora-smart-contract-engineer",
+		title: "Smart Contract Engineer",
+		company: companies.agora,
+		location: "Remote (EST/PST)",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://handpick.app/agora/18d68421-0d34-41cc-b4d7-3576bca61521",
+		tags: ["protocol", "cryptography"],
 	},
 ];
