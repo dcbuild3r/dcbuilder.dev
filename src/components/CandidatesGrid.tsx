@@ -260,7 +260,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 									? selectedTags.includes(tag)
 										? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_15px_rgba(251,146,60,0.6)]"
 										: "bg-gradient-to-r from-orange-400 to-amber-400 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.4)] hover:shadow-[0_0_15px_rgba(251,146,60,0.6)]"
-									: tag === "rising"
+									: tag === "top"
 										? selectedTags.includes(tag)
 											? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold shadow-[0_0_15px_rgba(139,92,246,0.6)]"
 											: "bg-gradient-to-r from-violet-400 to-purple-400 text-white font-semibold shadow-[0_0_10px_rgba(139,92,246,0.4)] hover:shadow-[0_0_15px_rgba(139,92,246,0.6)]"
@@ -425,7 +425,7 @@ function CandidateCard({
 							className={`px-2 py-0.5 text-xs rounded-full ${
 								tag === "hot"
 									? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.5)]"
-									: tag === "rising"
+									: tag === "top"
 										? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold shadow-[0_0_10px_rgba(139,92,246,0.5)]"
 										: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
 							}`}
@@ -788,7 +788,7 @@ function ExpandedCandidateView({
 										className={`px-3 py-1.5 text-sm rounded-full ${
 											tag === "hot"
 												? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold"
-												: tag === "rising"
+												: tag === "top"
 													? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold"
 													: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
 										}`}

@@ -4,7 +4,7 @@ export type JobType = "full-time" | "part-time" | "contract" | "internship";
 
 export type JobTag =
 	| "hot"
-	| "rising"
+	| "top"
 	| "ai"
 	| "mev"
 	| "health"
@@ -32,7 +32,7 @@ export type JobTag =
 
 export const tagLabels: Record<JobTag, string> = {
 	hot: "🔥 HOT",
-	rising: "⭐ Rising",
+	top: "⭐ TOP",
 	ai: "AI",
 	mev: "MEV",
 	health: "Health",
