@@ -24,7 +24,7 @@ export const affiliations: Affiliation[] = [
     dateBegin: "July 2022",
     dateEnd: "Feb 2024",
     description: "Tools for Humanity are the main developers of the World project. As a research engineer on the protocol team at TfH I worked on all the core parts of World ID protocol, the Semaphore merkle tree batcher circuits (SMTB), the signup sequencer, the state bridge contracts and various other parts of the protocol.",
-    imageUrl: "https://world.org/",
+    imageUrl: "https://www.toolsforhumanity.com/",
     logo: "/images/tfh.png",
   },
   {
@@ -61,7 +61,7 @@ export const affiliations: Affiliation[] = [
     dateEnd: "Present",
     description: "ETHPrague is a 3-day organized conference by local members of the Ethereum community that takes place every year.",
     imageUrl: "https://ethprague.com/",
-    logo: "/images/ethprague.png",
+    logo: "/images/ethprague.jpg",
   },
   {
     title: "Alongside",
@@ -79,6 +79,6 @@ export const affiliations: Affiliation[] = [
     dateEnd: "Mar 2022",
     description: "Moralis is a web3 development platform that allows for an easy and simple dapp development experience. I worked as a researcher and writer for their weekly research publications.",
     imageUrl: "https://moralis.io/",
-    logo: "/images/moralis.png",
+    logo: "/images/moralis.jpg",
   },
 ];
