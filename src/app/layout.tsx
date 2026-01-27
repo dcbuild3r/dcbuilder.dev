@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 		title: "dcbuilder.eth",
 		description:
 			"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
-		creator: "@DCbuild3r",
+		creator: "@dcbuilder",
 	},
 	robots: {
 		index: true,
