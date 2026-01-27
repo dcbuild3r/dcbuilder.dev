@@ -1,0 +1,456 @@
+---
+title: "The Future of Digital Identity"
+date: "2023-12-14"
+description: "A holistic overview of digital identity, new cryptographic primitives like ZK, FHE, MPC, TEEs, and the building blocks for a better identity future."
+source: "Mirror"
+sourceUrl: "https://paragraph.com/@mirror.dcbuilder/the-future-of-digital-identity"
+---
+
+![Cover photo](https://img.paragraph.com/cdn-cgi/image/format=auto,width=3840,quality=85/https://storage.googleapis.com/papyrus_images/e970902841fb3c193ec4078f0b545aebc152b6e60dcb1352ab39150a02741604.png)
+
+gm. It's been a while. I missed you. Writing about different topics I'm interested in and doing research to solidify my understanding of different concepts and ideas is something I enjoyed a lot when I first joined the space in 2018. However, in the last year and a half, it has been harder to find the time to write articles.
+
+In this article, I will try to present a holistic overview of what the space of digital identity has to offer at the moment and what my ideal future would look like as the underlying technologies evolve and gain mass adoption. In the last couple of years, many new cryptographic primitives have emerged from different fields like zero-knowledge (ZK), fully-homomorphic encryption (FHE), trusted-execution environments (TEEs), and multi-party computation (MPC). Many of these primitives are very useful in the context of making attestations about data, proving provenance and data integrity, and proving composable statements to third parties, which are core building blocks of any identity protocol. The way that identity protocols have worked until now is with trusted third parties that issue certificates or sign messages from a root public key which is in some certificate authority (CA) registry, these signatures can then be verified and applications can leverage the underlying attestations in meaningful ways. New approaches allow users to self-custody their data and selectively make attestations about their private information without revealing more than they want to / need to, these new attestations are composable, and unlock access to many possibilities that were impossible in the past.
+
+## TL;DR
+
+- The current digital identity **status quo sucks** (who would have thought)
+- New cryptographic primitives like **ZK, FHE, MPC, and TEEs** have opened new doors
+- There has been an explosion in the **mechanism design** space thanks to building blocks like:
+	- ZK Email
+	- zkLogin
+	- TLS Notary
+	- World ID
+	- Sybil-resistant web of trust systems
+	- Rate Limiting Nullifiers (RLN)
+	- Minimal Anti-Collusion Infrastructure (MACI)
+	- Attestation protocols
+	- ZK KYC
+	- ZK Co-processors
+	- Storage proofs
+	- Proof Aggregators
+	- Proof Marketplaces
+	- Oracles
+	- Intents
+	- Prediction Markets
+	- ZKML
+- The **digital identity pipeline** of the new age
+	- Data and data provenance proofs
+	- Attestations and provable off-chain compute
+	- Proof Aggregators and proof marketplaces
+	- Intent-driven interactions
+	- Provable inference
+- **Standardization** is going to be a challenge
+- The future of digital identity has never been **more exciting**
+
+I am affiliated with some of the projects I mention in this article. I am an advisor to Modulus (with equity), an angel investor in Ritual, Giza, Clique, and Nebra, and have a vested interest in Worldcoin.
+
+## Identity landscape
+
+It is almost 2024, and we are living in a world where we have advanced AIs, sophisticated blockchain protocols, and reusable space rockets, but somehow we still use a piece of paper to prove who we are to other people and all of our data is owned by big corporations that profit off of everything we do. In this section, I briefly introduce the identity primitives we currently use and the properties they have.
+
+### Government credentials
+
+Most of the world is used to having a set of physical/digital legal documents that represent who they are within the country they are citizens of. We are used to showing these documents to third parties whenever they want to verify a given fact about us (age, nationality,...) and some databases associate the uniquely identifying string representing each document with other useful data like earnings (accounting), tax records, criminal records, legal records, etc. This puts a lot of trust in the issuers of these government credentials, as they are the sole providers of these attestations. These credentials are also not interoperable with other systems and are very hard to work with. Most countries don't have an easy way to extract your personal information or information associated with you into the digital realm. All of these attestations usually live in the physical world, are very privacy-invasive, and don't scale at all.
+
+There are however some countries that have functioning digital ID systems that are provided by their respective government authorities. Some of them are very privacy-invasive and act as tools of population control, some others are built with a focus on privacy, and solutions fall everywhere in between this spectrum.
+
+Examples:
+
+- [e-Identity](https://e-estonia.com/solutions/e-identity/id-card/) (Estonia)
+- [AADHAAR](https://www.uidai.gov.in/en/16-english-uk/aapka-aadhaar/14-what-is-aadhaar.html) (India)
+- [Resident Identity Card](https://en.wikipedia.org/wiki/Resident_Identity_Card) (China)
+
+### SSO credentials
+
+As most people have gotten access to the internet, many have generated accounts in different applications and platforms and used these accounts as login credentials within other service providers and applications. In this world, applications store different cookies and signatures over different parts of our activities on these platforms to communicate things like our preferences, usage metrics, interests, and more. This is another form of identity that we use to get better services (better content/product recommendations, tailored experiences,...) or to access services that use our data to be able to provide these products to us for free in exchange for selling our data to advertisers on their platforms.
+
+Government and SSO credentials are usually used as indices for all the other data that is stored by the digital services and products we use. These applications store some information about our usage, and preferences, and tie it back to either our login or government-issued credentials. All of the data and value we create which is part of our identity is custodied by the platforms and services we use, the data usually can't be exported (unless [GDPR](https://gdpr-info.eu/) requires it), it is not interoperable with other services, and platforms and users are at the mercy of the platform. In case things go south users' accounts can be terminated without notice which can oftentimes end the livelihood of users in the case of platforms like YouTube, Twitch, X, and others. The data and content we create are thus siloed, and there are no signs of this ever-changing. We must opt out of this system if we value our freedom and sovereignty.
+
+### Status quo
+
+As we can see, government digital IDs, SSO credentials, and platform databases as they are used currently put users' data in the hands of third parties that then sell this very valuable data to advertisers and other third parties to generate revenue and profit, which in turn jeopardizes users' privacy and freedom.
+
+There are many problems with the way that we do digital identity nowadays. Centralized data custodians are security and privacy liabilities that are subject to mass leakage and exploits which lead to phishing, sabotage, privacy violations, and more. They are also not very scalable, government IDs have a different format in each country and are only distributed to a very limited amount of the world population, it is estimated that about half of the world does not have access to any form of digital identity ([1](https://www.raconteur.net/digital-transformation/governments-back-a-global-digital-id-framework#:~:text=It's%20estimated%20that%203.2%20billion,security%20and%20privacy%20of%20citizens.), not a good source, but the only statistic I could find) with up to 850 million not having access to any form of government identity ([2](https://blogs.worldbank.org/digital-development/850-million-people-globally-dont-have-id-why-matters-and-what-we-can-do-about)).
+
+The current forms of identification are also not interoperable, you cannot build applications that leverage information from your personal documents, internet history, product usage, and other sources easily. Digital identity is also not standardized and there is no easy way to verify the provenance of the information you want to leverage.
+
+Properties of current identity systems:
+
+- Opaque
+- Siloed data (non-exportable)
+- Centralized
+- Non-interoperable
+- Hard to build applications with their data
+- Privacy invasive
+- Users don't have agency over their data (lack of sovereignty)
+
+For those of you who don't keep up with the latest and greatest in the field of academic cryptography (don't worry, I don't refresh IACR's eprint daily either), there has been an accelerating pace of advances.
+
+In particular, there's increasing practicality in many powerful primitives whose properties may completely revolutionize the world of digital identity. I will do my best to introduce some of them in this post and refer the curious to further resources. Not only have these primitives just emerged, but they have also started reaching a level of maturity and adoption that makes it feasible for startups, researchers, and engineers to build new products and proofs of concepts around them in a production-ready way.
+
+ZK has been one of the most relevant technologies within the crypto industry as many projects working on Ethereum's L2 scalability roadmap and different privacy solutions have gone into production over the last two years. You can think of ZK as allowing you to prove certain statements or computations over some initial data without revealing anything else besides the statement. The main properties of ZK are:
+
+- Succinctness: It is a lot easier to verify a ZK proof of a computation than to perform the computation yourself. This is a really important characteristic when it comes to offloading computation to a different agent within a system whilst preserving the correctness assumption (you don't have to trust the third party that did the computation, since you can verify a ZK proof). In the context of blockchains, it is really useful to offload computation to one party which does all the heavy lifting and everyone else can just verify a proof of said computation. This is the main property of ZK that rollups use to scale.
+- Completeness: If a given statement is true, an honest verifier will be convinced by an honest prover. This also means that a prover always needs to have all the information about the statement (called the witness) to be able to compute valid proofs.
+- Soundness: If the statement is false, no deceptive prover can convince an honest verifier that it is true, except with some negligible probability.
+- Computational integrity: With ZK you can prove that any computation over any input data was performed correctly.
+- Zero-Knowledge: The verifier learns nothing other than the fact that the statement is true. The prover does not reveal any other information.
+
+In the context of digital identity, zero-knowledge proofs are extremely useful as they allow us to make provable statements about some data that anyone can verify, whilst keeping things we don't want to disclose private. Self-sovereign selective disclosure is going to be one of the main pillars of the use cases we will look into in the following sections.
+
+The biggest trust assumption you are making when it comes to ZK is the provenance of the data that you are making ZK proofs of. In rollups everyone can download all of the state of a zk rollup from Ethereum calldata and verify the proof of every state transition in the system, in an arbitrary digital identity system this data is often not public and so there is a root authority that you need to trust for sourcing the data, similar to how web2 works today, however with much better computational correctness and privacy guarantees.
+
+Introductory:
+
+- [Intro to Zero-Knowledge: A Guided Tour of the ZK Landscape, Part 1 - Zellic (blog)](https://www.zellic.io/blog/intro-to-zk-part-1/)
+- [Intro to Zero-Knowledge: A Guided Tour of the ZK Landscape, Part 2 - Zellic (blog)](https://www.zellic.io/blog/intro-to-zk-part-2/)
+
+Technical:
+
+- [ZK Hack Whiteboard Sessions (lecture series)](http://zkhack.dev/whiteboard)
+- [ingopedia - Ingonyama (ZK Resource aggregator)](https://www.ingonyama.com/ingopedia/)
+- [ZK Jargon Decoder - Nicolas Mohnblatt (ZK jargon dictionary)](https://nmohnblatt.github.io/zk-jargon-decoder/foreword.html)
+- [ZK MOOC - Boneh, Goldwasser, Song, Thaler, Zhang (university course)](https://zk-learning.org/)
+- [Proofs, Args, ZK - Justin Thaler (book)](https://people.cs.georgetown.edu/jthaler/ProofsArgsAndZK.pdf)
+- [Zero Knowledge Canon, part 1 & 2 - a16zcrypto (resource aggregator)](https://a16zcrypto.com/posts/article/zero-knowledge-canon/)
+
+Fully homomorphic encryption as opposed to regular encryption schemes that you may be familiar with in traditional web2 systems or even web3 has one main distinction. It allows you to do computations over ciphertext and when you decrypt said ciphertext using a key, the computation will persist over the original input into the encryption scheme. In regular encryption, you get a pseudorandom string of bytes representing the ciphertext, however, you can't do anything with that ciphertext besides decrypting it. Fully homomorphic encryption allows us to do fully private computation over any FHE-encrypted data.
+
+Properties of FHE:
+
+- Data privacy: As opposed to ZK, FHE provides true data privacy, not just computational privacy. In ZK the prover needs to have access to the information that it is making proofs of statements about (completeness property), in FHE you do not need anything more than a ciphertext that was generated using a specific cryptographic method, however, you do not get proof that the computation over said ciphertext was computed correctly (fun note: [ZK FHE](https://x.com/backaes/status/1730602747106574598?s=20) experiments are being worked on as well)
+- Quantum-resistant
+- Slowness: FHE and its variants (TFHE, CKKS, BGV...) incur a big computational overhead compared to just running the computations over the original data. It is less mature and tooling benchmarks are still several orders of magnitude less feasible than ZK, but FHE projects are showing promise and solid progress.
+
+For digital identity, FHE might be useful to do operations over sensitive data in a way where the operator does not learn what data they are computing over. Private APIs serving results over some signed input by some public key that they trust will be a strong primitive for many protocols that do not require proofs of computation. For example, doing analyses of medical data without the third party providing the analyses learning any sensitive data. It is important to note that FHE is in its very early R&D phases and it has only recently started to become computationally feasible for modern-day computational needs. It will take several years for the technology + research to become productized at the level that ZK is today.
+
+Introductory:
+
+- [What is Fully Homomorphic Encryption - Inpher (blog)](https://inpher.io/technology/what-is-fully-homomorphic-encryption/)
+- [FHE.org community links (a good place to ask questions about this nascent technology)](https://fhe.org/community)
+
+Technical:
+
+- [Zama FHE (FHE project, tooling)](https://www.zama.ai/)
+- [Sunscreen (FHE project, tooling, blog)](https://sunscreen.tech/)
+- [FHE.org resources page](https://fhe.org/resources/)
+
+SMPC enables multiple parties to jointly compute a function using private data, keeping individual inputs confidential while still producing the correct output. It uses encryption and secret sharing to ensure privacy and security during the computation process. [\[SMPC - Chainlink\]](https://chain.link/education-hub/secure-multiparty-computation-mcp).
+
+Properties:
+
+- Data privacy: Users can keep their data confidential while allowing third parties to use it in their applications, research, voting mechanisms, and more.
+- Collaborative (distributed): can securely aggregate and analyze data from multiple sources without compromising privacy
+- Quantum-safe: Current SMPC schemes are resistant to quantum computers, unlike current ZK schemes for example
+
+In the digital identity space, SMPC could allow for distributed computation of ZK proofs of different attestations in a way where the parties computing the proof, in the end, don't learn what the individual inputs were since SMPC schemes have input data privacy, this field is called "Collaborative zkSNARKs". These SMPC algorithms can be used to distribute all sorts of computations across a variety of parties in a way where no single or group of dishonest parties could change the result of an honest participant to give an incorrect result. Thanks to this we can use this primitive in a plethora of different environments where we want to distribute computation and preserve data privacy as well as correctness. I believe that the field of digital identity will rely heavily on SMPC for various use cases as computation over private data is a core element of most applications and protocols in this area.
+
+MPC and FHE have a lot of similar properties and can be used interchangeably in several scenarios, you can think of FHE as "just MPC but restricted to 1 round of communication". There are primitives such as [garbled circuits](https://en.wikipedia.org/wiki/Garbled_circuit) that allow two parties to jointly evaluate a function over their private data without a trusted third party (which as you can see is very similar to FHE).
+
+Introductory:
+
+- [What is Secure Multiparty Computation?](https://inpher.io/technology/what-is-secure-multiparty-computation/)
+- [Secure Multi-Party Computation - Chainlink (blog)](https://chain.link/education-hub/secure-multiparty-computation-mcp)
+
+Technical:
+
+- [MPC Alliance learn page (resource aggregator)](https://www.mpcalliance.org/learn)
+- [awesome-mpc - OSS curated (resource aggregator)](https://github.com/rdragos/awesome-mpc)
+- [Collaborative zkSNARKs - Ozdemir, Boneh (slides)](https://cs.stanford.edu/~aozdemir/docs/cozkSNARKs.pdf)
+- [Experimenting with Collaborative zk-SNARKs: Zero-Knowledge Proofs for Distributed Secrets - Ozdemir, Boneh (paper)](https://eprint.iacr.org/2021/1530.pdf)
+
+A TEE can be thought of as a separate environment within a computer that is protected from other components using encryption and custom hardware (oftentimes). TEEs can functionally replace ZK, FHE, and MPC, however, they come with their own set of trade-offs. You can think of TEEs as trusted third parties that are capable of arbitrary, inexpensive computations with the ability to make attestations about the computations they are making, whilst keeping those computations private (if the TEE functions as expected). The security of TEEs relies on hardware and firmware security, which is different than the security models of ZK, FHE, and MPC which rely mostly on mathematical security definitions.
+
+Properties:
+
+- tamper-proof execution environment
+- attestations: data provenance is one of the most important use cases of TEEs
+- private computation: the data and computations cannot be extracted outside of the TEE and into other components of a computer besides the end results or attestations that are explicitly exposed.
+- can function like ZK, MPC, FHE: The properties of TEEs allow you to replace these technologies in different scenarios where the security and performance tradeoffs make sense
+- performant: minimal computational overhead compared to ZK, MPC, FHE
+
+One major area where TEEs are relevant is in the creation of attested sensors, pieces of hardware that act as oracles for the real world and create data out of it. Attested sensors like attested cameras, microphones, keyboards, [the Worldcoin orb](https://whitepaper.worldcoin.org/technical-implementation#the-orb), and many others, these attested sensors provide signatures that come from the secure enclave of the devices which stores a key that cannot be extracted and can only be put into the device during provisioning. These devices can run a TEE in them for added computations on top of the data they produce and create attestations about them besides the signed content they produce. Data provenance is one of the toughest unsolved problems and digital identity would strongly benefit from having strong guarantees of real-world data provenance for oracles.
+
+Downsides:
+
+- Trust in hardware and firmware security
+- Trust in a third party operating these devices in good faith (requires strong audits)
+- [What is a trusted execution environment (TEE)? - Halborn (blog)](https://www.halborn.com/blog/post/what-is-a-trusted-execution-environment-tee)
+- [Introduction to Trusted Execution Environment and ARM's TrustZone - Sergio Prado (blog)](https://sergioprado.blog/introduction-to-trusted-execution-environment-tee-arm-trustzone/)
+
+Over the last couple of years, a plethora of new building blocks have greatly expanded the design space of protocols that can be used within the digital identity domain by leveraging many of the cryptographic primitives introduced earlier. Many of them enable new types of computation over an ever-increasing amount of data in a way that is privacy-preserving and users retain sovereignty and custody of their data. We are only at the very beginning, many of these protocols emerged recently and people are starting to explore the extent of what can be built with them. It is truly an awesome time to start exploring new use cases and possibilities within the space of digital identity, I believe it is becoming ripe for disruption. Let's dive into what new tools we have at our disposal.
+
+### ZK Email
+
+[ZK Email](https://prove.email/) is probably my favorite protocol that has come out recently. It allows anyone to create a ZK proof that an email sent by someone with some specific title has some information within it. You can make attestations about the provenance of the email (which domain and user it was sent from) as well as the content it contains. With this primitive, we can bridge existing web2 infrastructure and data onto web3 thanks to programmable provenance which is powerful. I recommend reading the [ZK Email announcement blog post](https://prove.email/blog/zkemail) from the ZK Email team which goes into depth on how the protocol is implemented and what things you can build with it, it does so a lot better than I could explain here.
+
+### zkLogin
+
+zkLogin is a Sui primitive that provides the ability for you to send transactions from a Sui address using an OAuth credential, without publicly linking the two (excerpt from the [Sui docs](https://docs.sui.io/concepts/cryptography/zklogin)). It allows a user to sign any arbitrary transaction on Sui by authenticating with a traditional OID provider like Facebook/Instagram, Google, Twitch, and others. I believe that this primitive will be adopted in other ecosystems as well once zkJWTs (zk JSON Web Tokens) get more mindshare. For more resources on zkLogin, I recommend listening to the [Zero Knowledge Podcast Episode 302: ZK for web2 interop with zkLogin & ZK Email](https://zeroknowledge.fm/302-2/) and watching [Kostas Krypto'](https://twitter.com/kostascrypto) s (co-founder at Mysten Labs) talk at ZKSummit 10: [ZK for authentication: How to SNARK sign-in w/ Google, Apple & Facebook - Kostas Kryptos](https://www.youtube.com/watch?v=FrihpBU4MzY).
+
+### TLSNotary
+
+[TLSNotary](https://tlsnotary.org/) is a protocol that allows for the creation of proofs of data provenance for any data on the web as long as it lives on a website using the [TLS protocol](https://www.cloudflare.com/learning/ssl/transport-layer-security-tls/) (the S in HTTPS). This is another major unlock in the amount of Web2 data that we can now make proofs and attestations about and will enable new forms of digital identity.
+
+We can now extract any information from any web session
+
+Note: In both of the contexts of ZK Email and TLSNotary we are trusting the email sender (email server controller) and websites to provide correct information and also make some security assumptions for the way the protocols are designed, you can read more in each respective protocol's documentation.
+
+### Proof of Personhood
+
+I think it comes as no surprise that I will talk about the importance of proof of personhood and Sybil resistance as it has been my main focus for the last year and a half as part of my work at Tools for Humanity (the main developers of Worldcoin). (\*)
+
+I deeply believe that being able to prove that you are a human online is going to be one of the biggest unlocks of potential for building fair, credibly neutral, DoS-resistant, and scalable mechanisms, protocols, and applications. Whether it is anonymous private voting where each person can only vote once, fair distribution mechanisms (airdrops, raffles, giveaways, royalties, UBI, ticketing,...), Sybil-resistant APIs and applications (better captcha, anonymous SSOs, on-chain actions), and many more things. [World ID](https://worldcoin.org/world-id) is the protocol that enables this by allowing users to create a ZK proof of inclusion into the set of verified users and that a given nullifier hash for an action has not been "consumed" before (more in [the whitepaper](https://whitepaper.worldcoin.org/technical-implementation#worldcoin-protocol)).
+
+To anyone curious and want to learn more, I recommend reading [the Worldcoin whitepaper](https://whitepaper.worldcoin.org/) which goes in-depth on every single aspect of the project, from the hardware to biometrics, cryptography, blockchain, and more.
+
+Note: Check out our RFPs
+
+### RLN
+
+[RLN](https://rate-limiting-nullifier.github.io/rln-docs/rln.html) is a zk-gadget/protocol that enables a spam prevention mechanism for anonymous environments (as defined per PSE's RLN docs). In truly anonymous systems, where users don't share any information about themselves to prove uniqueness or any facts that might at least hint at the likeliness of the user being unique, there are not many ways to prevent Sybil attacks and spam. RLN is a method in which a user registers using a private key and puts up a small stake in the network (financial commitment) by leveraging ZK nullifiers that allow a given user (identity commitment) to only perform certain actions a certain amount of time. If the users misbehave they can be slashed and lose access to their account, so they would have to put up a new financial commitment to participate again. Alternatively, the user can also withdraw from the system.
+
+RLN is going to be a nifty mechanism for limiting spam in truly anonymous environments. In the digital identity space, primitives that are fully privacy-preserving are must-have options for the biggest privacy advocates and wary participants.
+
+### MACI
+
+[MACI](https://maci.pse.dev/) is a protocol originally [proposed by Vitalik](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413) and [implemented](https://github.com/privacy-scaling-explorations/maci) by PSE and several other people that provides a private, on-chain voting system.
+
+From the documentation: MACI is a protocol designed to provide a highly secure e-voting solution. It enables organizations to conduct on-chain voting processes with a significantly reduced risk of cheating, such as bribery or collusion. MACI uses zero-knowledge proofs to implement a receipt-free voting scheme, making it impossible for anyone other than the voting coordinator to verify how a specific user voted. This ensures the correct execution of votes and allows anyone to verify the results. It is particularly beneficial for governance and funding events, where its anti-collusion mechanisms help ensure fair and transparent outcomes.
+
+This primitive is very practical in the context of identity as voting is a really important mechanism that can be leveraged for achieving consensus among participants.
+
+### Attestations
+
+An attestation is a declaration or statement made to confirm the authenticity, accuracy, or truthfulness of something. In the context of applied cryptography and distributed systems, attestations often refer to cryptographic proofs or certificates that verify the integrity or attributes of data, software, or hardware components. More broadly, any person or group can also attest to their opinions, beliefs, and knowledge in a public way in the form of social attestations and protocols can leverage these attestations in different ways. Whether it is reviewing the quality of a restaurant, which destination is the most preferred one for a given time of the year, which videogame is the most popular one among a certain age group, or anything really, all are attestations made by different individuals at the end of the day.
+
+Sybil resistance is an integral part of any social attestation protocol because we need to know that there are no conflicting attestations from the same users or that there is 1 user disproportionately creating attestations about a given thing and swaying public information. A good example of this is the fact that Yelp and Google Maps reviews can be fake and thus incorrectly represent how good a restaurant might be. If we have sybil resistance and a way to check that no one user can submit conflicting attestations, then we can extrapolate a ground truth from the resulting data as long as each participant is honest.
+
+There are many projects already working in this space, some of which to look out for are:
+
+- [Clique](https://clique.social/) (\*)
+- [EAS](https://attest.sh/)
+- [Intuition](https://intuition.systems/)
+- [Polygon ID](https://polygonid.com/)
+- [ZuPass](https://github.com/proofcarryingdata/zupass)
+- [Sismo](https://www.sismo.io/) ([recently shut down, but technology will be OSS](https://x.com/dhadrien_/status/1733124453523919332?s=20))
+
+In the next major section, we will explore what are the implications of attestations for the future of digital identity.
+
+### Web of Trust
+
+Web of trust is a concept that originally comes from the world of cryptography where different entities share public keys and the identity attached to them among themselves in a peer-to-peer fashion and sign each others' keys to build public trust. This concept can be expanded beyond Public Key Infrastructure (PKI) and into the general world of attestations. If a party proves that they are a unique person (using something like World ID) and makes an attestation about a different unique person that can generate a perception of trust in the eyes of another third party. If many unique attestations (with built-in sybil resistance) are accrued, the stronger a given attestation becomes. Over long periods and interactions, it can build a verifiable network of attestations and a complex graph of interactions amongst participants (and they can remain anonymous while doing so).
+
+Through the use of web of trust networks and attestations, we can build notions of reputation, credit scoring, accountability, merit, and more. There are also primitives like restaking that I believe will lead people to build applications with crypto-economic incentives that have a slashability condition based on the result of the attestations made by a big web of trust network thus effectively making a financial obligation to a community.
+
+![I find discussions around Eigenlayer very amusing](https://img.paragraph.com/cdn-cgi/image/format=auto,width=640,quality=85/https://storage.googleapis.com/papyrus_images/9bb15c7d07cc6ac6ff950171efdbc5a974c6ca092d41bbb3df88700b7d23c2a2.jpg)
+
+I find discussions around Eigenlayer very amusing
+
+There are a lot of use cases that could be unlocked if we can tap into the network effects of big interactive social graphs, ones that are permissionless, where each participant is sovereign, and can take their network with them, where each connection is composable with other systems, built in an open way and with privacy in mind.
+
+### ZK KYC
+
+KYC is always going to a primitive and will be used by services that require government-issued identification, however, sometimes we may want to share our age, nationality, or any other detail from personal documents without revealing everything else. This is something that ZK KYC can be used for, as long as the public key of the signing entity (government) is known, we can prove that we have a signature over some personal data that came from it, and in the zero-knowledge proofs, we can make proofs about different parts of the documents (ID, passport, licenses, certificates,...).
+
+One cool example that I have seen of this is Anon Aadhaar which allows Aadhaar (Indian) identity holders to make proofs about any of the information on their Aadhaar card, without revealing anything else about themselves. This approach can be generalized to any IDs where the issuer signs the information provided in a specific way.
+
+[https://mirror.xyz/privacy-scaling-explorations.eth/6R8kACTYp9mF3eIpLZMXs8JAQmTyb6Uy8KnZqzmDFZI](https://mirror.xyz/privacy-scaling-explorations.eth/6R8kACTYp9mF3eIpLZMXs8JAQmTyb6Uy8KnZqzmDFZI)
+
+### ZK Co-Processors
+
+ZK co-processors are essentially separate computational environments to which you send some data, they can perform arbitrary operations on that data, they produce a ZK proof (SNARK/STARK) of all of the computations that they did, and then they send back the proof to the sender. In the context of Ethereum, for example, co-processors can be used to offload computation. The co-processor will use some data from the EVM, perform some heavy computations on it, output the result, and also compute a proof that the result was computed correctly from the original EVM state, and the proof is then sent back to Ethereum alongside with the proof. If the proof verifies correctly then Ethereum has in practice increased its computational capacity through the use of the ZK-Coprocessor. For a better explanation of what ZK co-processors are, I recommend reading 0xEmperor's deep dives.
+
+Some projects working on this problem space:
+
+- [Axiom](https://www.axiom.xyz/)
+- [Risc-Zero](https://www.risczero.com/)
+
+The way I see ZK co-processors fitting into the picture is that many data sources may not provide the data in the forms we need to make attestations about them, we may need to pre-process it or manipulate it in a way that we need to then start making attestations about the sources. It also may be useful to compute aggregate metrics that are composed of many different initial data sources in a verifiable manner.
+
+### Storage proofs
+
+In blockchain systems today, each node on the network synchronizes the latest state every single time a new block is inserted, each node then proceeds to run every single transaction included in that block and updates its own state, this process is repeated for every block by every node on the network. Archive nodes have a database of all historical transactions and state, this allows them to generate Merkle proofs of some state being included in the chain, however, if you send that proof to a third party, they have no way of verifying that proof unless they have an archive node synchronized to the tip of the chain themselves as well. This is a problem as we cannot prove to a third party that our blockchain has some state that we may want to use to create attestations about our digital identity, financial history, or any other state that we might be interested in proving the existence of.
+
+Projects tackling storage proofs:
+
+- [Axiom](https://www.axiom.xyz/)
+- [Herodotus](https://herodotus.dev/)
+- [Lagrange](https://www.lagrange.dev/)
+
+With storage proofs, you can prove using SNARKS/STARKS ("ZK") the inclusion of any data within a given blockchain. This is important for data provenance, as we need to know that the data we are making attestations about does indeed come from the place we think it comes from.
+
+### Proof aggregators
+
+With all of the attestations we create, there will be a gigantic demand for the creation of zero-knowledge proofs and this will drastically increase the computational load on the public blockchains we use to verify them. Proof aggregators are a way of cryptographically batching the operation of verifying individual proof into the operation of verifying one aggregate proof of all its constituents. Verifying an aggregate proof amortizes the cost of verifying each constituent proof individually, this would reduce the execution burden imposed on public blockchains significantly.
+
+Another benefit of proof aggregators is the concept of composite proofs. Composite proofs allow for verifying a specific set of individual proofs at once to make a combined attestation synchronously. If we want to make a multi-dimensional attestation (e.g. we want to prove that our age is over 18, that we have a World ID, that we haven't done a given on-chain action before, that our balance on Optimism's L2 is over 2 eth, that we have a good track record of loans taken on Aave, that we have a high reputation score on a decentralized social network, and more), we can take each attestation proof, create a composite proof, and leverage it as we please in the application or protocol where we want to make such an attestation. The alternative to doing composite proofs would be to send individual attestations to the end consumer and update the state for each attestation we make until we satisfy all pre-requisites to trigger some action at the end of it all. With a composite proof, we can do everything at once, and do all of the computation off-chain, without the need to keep state on-chain to keep track of which individual proof of the composite attestation was verified correctly.
+
+Projects tackling proof aggregation:
+
+- [Nebra](https://www.nebra.one/) (\*)
+
+### Intents
+
+In the last couple of months, there have been a lot of conversations about this new term "intents" and I want to give you some context on what it is and what it may mean for identity as a primitive. Intents are the set of end goals that a user has, in the context of DEXes or trading platforms a user may want to create a limit order that will only execute if the value of eth reaches $10k, a limit order is the simplest example of an intent. Instead of the user monitoring the price of ETH until it hits $10k and finding what exchange to use to sell his ETH, he signs a message that allows a third party ("solver") to execute that limit order once ETH hits $10k. It turns an imperative paradigm, where the user performs each step on their own, to a declarative paradigm in which the end user states the end goal they want to achieve and they allow a third party to fill this order (in exchange for a small reward).
+
+A user may want to get a composite attestation about a given person or topic and declare an intent: e.g. "I want to get proof that this user hasn't created bad debt and all their positions have been well-collateralized on average". A solver can go through existing data sources, parse blockchain historical data for popular DeFi protocols, create storage proofs of historic collateralization ratios for that user, and make sure that he didn't get liquidated or take on too much leverage, after producing the storage proofs and attestations the solver creates a batch proof which can get scored in a fair and provable way (more on this later). The user who requested the proof accepts the bid from the solver and receives the information they need. This way of declarative way of thinking can scale to a lot of different use cases and it will be a very interesting primitive to improve the user experience of applications on public blockchains.
+
+For more resources on intents, check out:
+
+- [Intent-Based Architectures and Their Risks](https://www.paradigm.xyz/2023/06/intents)
+
+![Do not believe everything you hear ;) Thank you 0xWenMoon for the meme](https://img.paragraph.com/cdn-cgi/image/format=auto,width=640,quality=85/https://storage.googleapis.com/papyrus_images/1c1b172cb2071ecb39b4571ce75e8a37ead7c26b177dcc7685ec8d9078806afb.png)
+
+Do not believe everything you hear;) Thank you 0xWenMoon for the meme
+
+### Proof marketplaces
+
+Proof marketplaces, as the name implies, are places where people (or bots) buy and sell proofs. In the space of MEV, there are already marketplaces between different parties e.g. block builders and proposers sell a commitment to some ordering of transactions within and searchers buy that commitment and get their transactions included in the block with the ordering that was agreed upon. There are different types of auctions and mechanisms through which blocks are built depending on the configuration of the marketplace and the preference of the parties involved. Proof marketplaces are currently nowhere near as relevant as MEV marketplaces because there are no financial incentives for most participants yet and it is a primitive that hasn't been explored as much, but I believe that will start changing soon. There is going to be strong demand to generate proofs of different kinds: proof of solvency, proof of optimum risk-adjusted yield, proof of good financial history, proof of social status, and more. It will be a fairly difficult task to generate some of the more complex proofs as there will be many data sources, attestations, composite/aggregate proofs, and inference over those attestations that might be required to reach the end goal of the user. This is why I believe an intent-driven design where sophisticated solvers find the right proof for users will be necessary for this.
+
+There are already some projects exploring these ideas:
+
+- [Nil Foundation](https://nil.foundation/)
+- [Succinct](https://succinct.xyz/)
+- Gevulot
+
+[https://figmentcapital.medium.com/decentralized-proving-proof-markets-and-zk-infrastructure-f4cce2c58596](https://figmentcapital.medium.com/decentralized-proving-proof-markets-and-zk-infrastructure-f4cce2c58596)
+
+### Oracles
+
+Oracles are external data providers to smart contracts and dApps. Blockchains themselves are typically isolated from external data sources, and their primary function is to securely store and process data within the network. Oracles play a crucial role in enabling smart contracts to interact with data and events that occur outside the blockchain ecosystem and thus they need to be decentralized and robust. In the context of digital identity oracles can be used to fetch external data (for prediction markets, attestations, and more).
+
+Now that we have all the primitives we have talked about above we can improve the tech stack that oracles operate with to provide data with attestations about the sources they fetched the data they provide. [Pragma](https://www.pragmaoracle.com/) (\*) is a ZK oracle whose smart contracts leverage zk computation to aggregate raw signed data with total transparency and robustness, I believe that this is going to be an important trend moving forward to give stronger assurances to the smart contracts and applications using external data sources.
+
+Some popular oracle projects:
+
+- [Chainlink](https://chain.link/)
+- [Chronicle](https://chroniclelabs.org/)
+- [Pyth](https://pyth.network/)
+- ...
+
+### Prediction markets
+
+Prediction markets are a primitive that has been around since 2018, however, it feels like it never really got as much attention or usage as it deserved in my opinion. Prediction markets allow users to bet on the results of future events by buying into tokens that represent the different outcomes, once the event has concluded an oracle settles the outcome and the value from the people who bet for the outcome that didn't happen flows into the holders of the token of the outcome that did indeed happen. There are a lot of really interesting mechanics, pricing mechanisms, dynamics, and social phenomena that emerge once you introduce a financial mechanism around predicting future outcomes. People can in real-time gauge how people feel about the likelihood of something happening, for example, if the democratic or republican party will win the presidential elections in the US, whether Madrid or Barcelona will win the next El Clasico or any other event where the outcome is not ambiguous or subject to opinion or debate.
+
+I believe that prediction markets will play a key role in the world of digital identity, especially in the context of reputation, because individuals and groups that can accurately predict outcomes for different events in their fields of expertise will naturally have a way of showing said expertise by being able to consistently choose the right outcome compared to the rest. Some prediction markets are not useful, but sometimes we want to know how to price the possibility of certain outcomes to underwrite risk, plan ahead, choose different paths, and more.
+
+Resources on prediction markets:
+
+- [Manifest conference talks](https://www.youtube.com/playlist?list=PL1CkJbX2uY1rtuVJmN4TIjRy7ZFPOdAQV)
+- [Prediction Markets: Tales from the Election - Vitalik Buterin](https://vitalik.eth.limo/general/2021/02/18/election.html)
+
+Projects building prediction markets:
+
+- [Manifold](https://manifold.markets/)
+- [Polymarket](https://polymarket.com/)
+- [Kalshi](https://kalshi.com/)
+- [Augur](https://augur.net/)
+
+### ZKML
+
+Zero-knowledge machine learning is the act of creating ZK proofs of the inference step of machine learning algorithms. A good way to conceptualize it is that for a given input I and a model M, a ZKML prover P can create a proof π that output O came from applying the model M on input I: M(I) = O -> π. For a more in-depth explanation, I gave a [talk on ZKML](https://www.youtube.com/watch?v=f4X841gDnwY&t=105s&pp=ygUKZXRoY2MgemttbA%3D%3D) at ETHCC this year which goes more in-depth.
+
+Machine learning algorithms allow us to solve problems in a non-deterministic fashion, it allows us to create predictions, and estimations and classify data with some accuracy depending on what we decide to optimize for. I'm sure you have seen LLMs like ChatGPT which try to predict what is the most likely word to follow some input or generative AI models like DALL-E/Stable Diffusion which tries to create an image that tries to illustrate the text input. These algorithms are really powerful and allow us to solve problems we could not have otherwise.
+
+Some of the things that I believe ZKML will be useful for is creating heuristics ("approximations") for on-chain data to answer useful questions like "How credit-worthy is this individual?" or "How likely is it that this user will default?" (risk underwriting), and similar tasks where we are trying to create some form of score that aggregates many different metrics in useful ways.
+
+At Worldcoin we are currently working with Modulus to create a zero-knowledge proof that the iris code was created correctly from a normalized iris texture ([link](https://whitepaper.worldcoin.org/technical-implementation#normalization)). This would allow users to self-custody their normalized iris texture on their phone and if we ever update the iris code generation model, users would be able to download the new model and a prover and then recompute the iris code and provide proof to permissionlessly insert themselves into the set of verified users.
+
+Projects working on ZKML:
+
+- [Modulus](https://www.modulus.xyz/) (\*)
+- [Giza](https://gizatech.xyz/) (\*)
+- [Ezkl](https://ezkl.xyz/)
+
+Note: There are also projects trying to decentralize access to AI compute which will be useful, too:
+
+- [Ritual](https://ritual.net/) (\*)
+- [Gensyn.ai](https://www.gensyn.ai/)
+
+I created the `awesome-zkml` ZKML resource aggregator where I list all the resources on ZKML I could find, if you find any please open a PR.
+
+## The Future
+
+I hope that I have convinced you that the current status quo of digital identity is something we don't want for humanity for the years to come and that in recent years there have been a lot of advances in technologies that can drastically improve the digital identity system design space of what could be built. There are a lot of unknowns in the equation that we need to figure out still before any of the technologies I figured out will be ready for mass adoption. Blockchains are still fairly expensive to use, even with new developments in L2s, data availability layers, improvements to L1 DA, state growth, state expiry, alt L1s, etc. As we slowly onboard the next billion users onto decentralized systems and create protocols that allow us to interoperate with existing systems we can start migrating to better and improved applications and protocols. There are also a lot of UX flows that need to be figured out to create experiences that are easy, accessible, seamless, and powerful while retaining all the nice properties of decentralized systems, and that will take time, but I believe that we are well on our way to get there.
+
+There will be a day when everyone runs a light client for all the different major blockchains, data availability networks, and scaling solutions, they will be able to generate storage proofs of any on-chain and off-chain data, and they can create proofs about statements/attestations over that data and the data on their phone storage/cloud (using TEEs), aggregate those proofs and permissionlessly submit them to the chain via the light client or to an API of any kind. They have access to signatures from all of their services through TLS signature extraction, they can timestamp things, they can aggregate all the data they have on themselves, custody it in an encrypted way on their device and only selectively disclose the information they want. All the technologies I describe in this article and more will be ubiquitous and commonplace and will unlock new possibilities never imagined before.
+
+### The pipeline
+
+How does the entire stack look from a bird's eye view? You might be asking yourself. Well, I have been thinking about that myself over the last couple of months and I have had hundreds of conversations with many different people at conferences and over X and Telegram. I think that I have some intuitions about what might the digital identity pipeline look like using web3 rails.
+
+It all starts with data, data rules the world, it is what encodes all of our interactions, preferences, and information, it is everything to us, we need efficient ways of manipulating data and knowing where it comes from. Every individual has the right to own their data, it is one of our most valuable assets and as we strive to decentralize the world regain ownership of what is ours, and build technologies that represent our values, we will encounter different challenges. Some of them are data persistence (preventing loss of important data which is self-custodied), cryptographic key custody (account recovery, account abstraction, smart contract wallets,...), ease of use, intuitive user flows, scalability, privacy, and many others.
+
+Luckily cryptography allows us to verify where some data might be coming from and who might be sending it. Does this data come from a website? The TLS protocol will sign over the data you are receiving. Does it come from an email? Your email server signs the data. Does it come from the real world? An attested sensor will sign the data using its secure enclave. Was the information sent by Bob and Alice over a P2P network? You can verify that the data was signed using their public keys and that the public keys are theirs by checking with a PKI authority or by sharing the keys over a PGP signing ceremony (or any other side channel to corroborate the keys). Does the data come from a public blockchain like Ethereum? We can verify a ZK storage proof against the public storage Merkle tree. What I am trying to say is that for every medium there is a way to get data and a way to verify and certify its provenance in an external environment. Of course, each method comes with its security assumptions, whether mathematical (cryptographic), game-theoretical, or otherwise.
+
+The second major component in our digital identity pipeline is attestations and provable off-chain compute (ZK co-processors). Once we have the source data and proof of where it came from we can start processing the data to be able to extract insights from it and make provable statements about the data. ZK co-processors allow us to manipulate the source data in a verifiable way and then using zk circuits we can create attestations about the properties of the data that are useful within the context of digital identity. Of course, this process is very cumbersome for any individual to do manually, so there will be higher levels of abstraction to simplify these actions.
+
+Once we have all our data, our data provenance proofs, and attestations we can start aggregating them into composite statements that start to mean something to the end consumer, whether it is a protocol, a dapp, or the user. However, one thing that needs to be solved is incentives. There needs to be a prover party that ingests all of the data to process it, make attestations, and aggregate it into meaningful statements and that's where proof marketplaces come into play. Third parties will request some attestations to prove a statement they want to make, and they will be able to purchase them from a proof marketplace. But how will supply meet demand? How will provers and data providers know what areas to focus on? Well, that's where solvers come into play.
+
+Intent-driven designs are becoming increasingly popular nowadays to simplify the user experience of most applications we use. Instead of doing all of the steps ourselves, we sign a message which parametrizes what our objective is and we let a third party fulfill our request. This specialized participant will find what data sources and proving techniques to use as well as how to aggregate them efficiently and buy the right proofs to fulfill the order of the end user. Once they find a combination that works, they come back to the user and claim the reward posted for this bid in exchange for fulfilling the intent. In a competitive market, there will be many different parties trying to solve different kinds of specialized requests and they will communicate with all the different parties in the system to make the flow as efficient as possible since they have a direct incentive to do so (both financial and reputational).
+
+Now we have something that looks like a pretty complete picture of what the digital identity flow might look like in the future, we have public data for things we want everyone to know, we have private data that users and groups custody on their own and can selectively make attestations about, we have off-chain provable compute to process the data and attestations we produce, we can aggregate those proofs and attestations into composite statements and sell them in a marketplace, we can declare an intent and let a third party solve our problems, and more.
+
+We can now prove the entire digital identity lifecycle, from source data to the end consumer of attestations. All while preserving user sovereignty, privacy, integrity, composability, and decentralization. After all of these steps you may think we have it all, but something seems to be missing, how do we make sense of all of this data and these attestations in the first place? Well for that we need verifiable and distributed inference. Using modern ML techniques we can better understand what is going on, and get help throughout every step of the pipeline. Not only can we use ML, but we can create proofs of ML inference using ZKML and use the proofs to give more meaning to our attestations.
+
+So to summarize the digital identity pipeline I foresee is composed of:
+
+- Data sources and data provenance proofs
+- Attestations and off-chain provable compute
+- Proof aggregators and proof marketplaces
+- intent-driven interface and solvers
+- provable inference (ZKML)
+
+![xkcd standards: Coordination failure is a common pitfall that hinders mass adoption](https://img.paragraph.com/cdn-cgi/image/format=auto,width=640,quality=85/https://storage.googleapis.com/papyrus_images/9ace7dfa08a2557022a9c32df8109cddceb5b3c551a8eda193d7795230da09e8.png)
+
+xkcd standards: Coordination failure is a common pitfall that hinders mass adoption
+
+### Standardization
+
+The digital identity space has been around and many different organizations have tried to create standards that allow interoperability across platforms, efforts like [W3C's DID standards](https://www.w3.org/TR/did-core/), [Apple PassKit standards](https://developer.apple.com/documentation/passkit), [OpenID standards](https://openid.net/specs/openid-connect-core-1_0.html), and many more. The common problem across all of these systems is that no single standard will fill everyone's needs and as new technologies emerge, older standards become obsolete and also harder to maintain since some changes would be impossible to make backward compatible and the momentum of a given standard would disallow for the new changes to be integrated. In modern cryptography efforts, the research is moving too fast and quickly making previous schemes obsolete, and the industry is doing all it can to adopt the better, faster, more secure variants. This makes everything hard to standardize as hardware manufacturers can't make FPGAs and ASICs for those systems, library developers need to be on their toes and can't create robust tooling that can be thrown away in a year once a better thing comes along, and the developers using the libraries don't have something production-ready which has been standardized, heavily audited and deployed in production by several other projects before them. Standards are **incredibly hard to do well**. Standards are hard to create, however, they are necessary for us to be able to build interoperable and scalable systems, unlike the ones that we have currently. One of my biggest wishes for the industry is to have more cross-team communications, discuss such standards, and achieve consensus on them, similar to how the [EIP process](https://ethereum.org/en/eips/) functions, but with a digital identity ecosystem-wide focus.
+
+At the very beginning, we examined what are the properties of existing identity protocols
+
+- Opaque -> Open and permissionless
+- Siloed data (non-exportable) -> Composable data and attestations
+- Centralized -> Decentralized and owned by everyone
+- Non-interoperable -> Interoperable with any open system
+- Hard to build applications with their data -> open SDKs, infrastructure, and tooling
+- Privacy invasive -> Privacy-preserving
+- Users don't have agency over their data -> Self-sovereign, self-custody
+
+That was a lot of information I just shared, there is a lot to go through, but I believe that all of these ingredients will be instrumental in the creation of a future where we embrace the values of decentralization, individual and group sovereignty, openness, privacy, inclusivity and shared ownership.
+
+To solve problems around digital identity we will need more than just technology however, we need to create resilient systems, and crypto-economic incentive mechanisms, we need to do a lot of user onboarding, education, and growth of open and permissionless social graphs, and convincing people who are already participants and stakeholders in current systems to use the decentralized systems instead.
+
+If we manage to create humankind-wide decentralized systems we will be able to coordinate at scales never seen before which is one of the most important parts of solving the systemic coordination failures we are facing today. It may sound far-fetched, but over the coming years and decades, if we work hard enough, all of these problems can be solved.
+
+![a future where d/acc and decentralized digital identity systems are commonplace](https://img.paragraph.com/cdn-cgi/image/format=auto,width=640,quality=85/https://storage.googleapis.com/papyrus_images/0aeccef7d42fbe404c495b67c4c57641496bef3c169d1efc92e504765ca08791.jpg)
+
+a future where d/acc and decentralized digital identity systems are commonplace
+
+## Closing words
+
+It was really fun writing this article, I really missed doing this. I hope you had as much fun reading it as I did writing it. Some of the articles that I am looking to write soon are my yearly summary and goals for next year, and an article talking about all the angel investments that I have done over the last two years and why I believe in the teams I have invested in.
+
+Something I am also interested in, but haven't discussed deeply in this article, is the potential negative implications of the systems I described above, if you like the article DM me on Telegram if you would like me to examine the pitfalls of the technologies I describe in this article and the potential negative impact on society they could have if used for evil or if incentives are misaligned at scale.
+
+At the very end, I want to post some open problems that we are working on at Worldcoin that are related to the material I talk about. I didn't want to break the flow of the article, but I believe some of these problems are very important and we would like for people interested to participate.
+
+#### RFPs
+
+We are committed to building a credibly neutral, privacy-preserving, inclusive, scalable, and decentralized identity and financial network and we need your help to do so. The Worldcoin Foundation has recently launched a [grants program](https://worldcoin.org/blog/announcements/worldcoin-community-grants-program-wave0-launches) that rewards RFPs that solve [some of the problems](https://worldcoin.org/rfp) we are working on. If you are interested in helping build the future of identity and scalability and meet the eligibility criteria, please apply.
+
+#### FHE/TEE PIR
+
+One problem we are interested in is privacy-preserving inclusion proofs and private information retrieval (PIR). The signup-sequencer is a Rust service that has a Merkle tree of all the public keys of World ID users, whenever a user wants to generate a zk proof of inclusion they first need to fetch the Merkle proof from the signup-sequencer by calling an API endpoint. We proxy every request so that we do not learn the service or the IP address of the user calling this endpoint, but you can still try to do differential analysis to correlate a given proof and nullifier hash being verified on-chain/off-chain with a Merkle inclusion proof request based on timing side-channel attacks. The more users you have the more anonymity each request has, as it is harder to do differential analysis when there is a lot of noise and entropy. However, in the name of decentralization, we have built the world-tree service which allows anyone to sync the entire Merkle tree from on-chain calldata and serve inclusion proofs for any given leaf. In the case where third parties other than Tools For Humanity start serving these requests and have less traffic than the signup sequencer, it might be easier to correlate activity with on-chain/off-chain proofs, as the pool of incoming requests is smaller (this mostly applies to blockchains that are not currently not supported by World ID, as networks like Optimism/Ethereum, do have proofs being verified often). FHE would allow us to serve a Merkle proof without learning which leaf it was requested for.
+
+### Thank you
+
+I want to give a big thanks to all of the people who inspired me to write this blog post, and to the people who helped review this article: [Vitalik Buterin](https://twitter.com/VitalikButerin), [Scott Moore](https://twitter.com/notscottmoore), [Paul Henry](https://twitter.com/phklive/), [atris.eth](https://twitter.com/atris_eth/), [devloper](https://twitter.com/devloper_xyz), [0xOsprey](https://twitter.com/0x_Osprey), [Jesse Walden](https://twitter.com/jessewldn), [Daniel Schorr](https://twitter.com/realDanielShorr), Filip Široký, [Ian Klatzco](https://twitter.com/ian5v), and [Keeks](https://twitter.com/Nogoodtwts). Děkuji mockrát!
+
+![❤️](https://img.paragraph.com/cdn-cgi/image/format=auto,width=640,quality=85/https://storage.googleapis.com/papyrus_images/4bb6b3408b6358de7446515260d66ec0d1199907e66f4a076e638aba3cd87b3d.png)
+
+❤️
