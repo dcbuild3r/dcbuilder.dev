@@ -1017,7 +1017,7 @@ export const jobs: Job[] = [
 		location: "Remote",
 		remote: true,
 		type: "full-time",
-		salary: "$175k-225k + Equity",
+		salary: "$400k+ TC",
 		link: "https://sorellalabs.xyz/careers?gh_jid=4196455007&view=jd",
 		tags: ["protocol", "mev"],
 	},
