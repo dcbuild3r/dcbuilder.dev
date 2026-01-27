@@ -217,6 +217,12 @@ const companies = {
 		website: "https://goldsky.com/",
 		category: "network" as const,
 	},
+	inco: {
+		name: "Inco",
+		logo: "/images/investments/inco.png",
+		website: "https://www.inco.org/",
+		category: "portfolio" as const,
+	},
 };
 
 export const jobs: Job[] = [
@@ -2119,5 +2125,28 @@ export const jobs: Job[] = [
 		department: "Support",
 		link: "https://ecojobs.berachain.com/jobs",
 		tags: ["infra", "berachain-ecosystem"],
+	},
+	// Inco Jobs
+	{
+		id: "inco-devops-engineer",
+		title: "DevOps Engineer",
+		company: companies.inco,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://inco.bamboohr.com/careers/33",
+		tags: ["infra", "cryptography"],
+	},
+	{
+		id: "inco-senior-backend-engineer-rust",
+		title: "Senior Backend Engineer (Rust)",
+		company: companies.inco,
+		location: "Bangalore (Remote)",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://inco.bamboohr.com/careers/34",
+		tags: ["cryptography"],
 	},
 ];
