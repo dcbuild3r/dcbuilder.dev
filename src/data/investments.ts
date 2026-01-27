@@ -419,7 +419,7 @@ export const investments: Investment[] = [
 	},
 	{
 		title: "OWN",
-		description: "DeFi Lending Reimagined",
+		description: "Digital Asset Mortgages",
 		imageUrl: "https://ownlabs.co/",
 		logo: "/images/investments/own.jpg",
 		tier: 3,
