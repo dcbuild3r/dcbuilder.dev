@@ -23,6 +23,7 @@ const companyTiers: Record<string, number> = {
 	Rhinestone: 2,
 	// Tier 3 - Portfolio companies
 	Ritual: 3,
+	Berachain: 3,
 	// Tier 5 - Network/Friends
 	Flashbots: 5,
 	"Ethereum Foundation": 5,

@@ -178,6 +178,12 @@ const companies = {
 		website: "https://www.rhinestone.wtf/",
 		category: "portfolio" as const,
 	},
+	berachain: {
+		name: "Berachain",
+		logo: "/images/investments/berachain.png",
+		website: "https://www.berachain.com/",
+		category: "portfolio" as const,
+	},
 };
 
 export const jobs: Job[] = [
@@ -1957,5 +1963,50 @@ export const jobs: Job[] = [
 		type: "full-time",
 		link: "https://rhinestone.notion.site/Rhinestone-Job-Board-faf25f85b9244f8c81fa63387c4f910a?p=060bff1e0e9b4379800be8d06e1f22c4&pm=s",
 		tags: ["protocol", "cryptography"],
+	},
+	// Berachain Jobs
+	{
+		id: "berachain-head-investor-relations",
+		title: "Head of Investor Relations",
+		company: companies.berachain,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Operations & Finance",
+		link: "https://careers.berachain.com/35128",
+		tags: ["bd"],
+	},
+	{
+		id: "berachain-apac-bd",
+		title: "APAC BD",
+		company: companies.berachain,
+		location: "China (Remote)",
+		remote: true,
+		type: "full-time",
+		department: "Business Development",
+		link: "https://careers.berachain.com/36007",
+		tags: ["bd"],
+	},
+	{
+		id: "berachain-korea-lead",
+		title: "Korea Lead",
+		company: companies.berachain,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Business Development",
+		link: "https://careers.berachain.com/35161",
+		tags: ["bd"],
+	},
+	{
+		id: "berachain-marketing-lead",
+		title: "Marketing Lead",
+		company: companies.berachain,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Marketing",
+		link: "https://careers.berachain.com/29948",
+		tags: ["marketing"],
 	},
 ];
