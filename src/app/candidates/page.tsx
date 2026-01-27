@@ -63,7 +63,7 @@ export default function Candidates() {
 								<span>•</span>
 								<span>
 									<strong className="text-amber-600 dark:text-amber-400">◇</strong>{" "}
-									= Referred candidate (not personally known)
+									= Referred candidate (not personally known, proceed with caution)
 								</span>
 							</li>
 						</ul>
