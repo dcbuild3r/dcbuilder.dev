@@ -18,6 +18,7 @@ export type JobTag =
 	| "research"
 	| "security"
 	| "legal"
+	| "world"
 	| "monad-ecosystem"
 	| "entry-level";
 
@@ -37,6 +38,7 @@ export const tagLabels: Record<JobTag, string> = {
 	research: "Research",
 	security: "Security",
 	legal: "Legal",
+	world: "World",
 	"monad-ecosystem": "Monad Ecosystem",
 	"entry-level": "Entry Level",
 };
@@ -1151,7 +1153,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6588e344-8314-4a9c-a6d4-c84e026057ae",
-		tags: ["design"],
+		tags: ["world", "design"],
 	},
 	{
 		id: "world-bd-lead-japan",
@@ -1161,7 +1163,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/2505ce27-2f4a-4685-a971-418b62608a62",
-		tags: ["bd"],
+		tags: ["world", "bd"],
 	},
 	{
 		id: "world-bd-manager-central-europe",
@@ -1171,7 +1173,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/3b149493-c040-4658-9a4d-4685be87fc00",
-		tags: ["bd"],
+		tags: ["world", "bd"],
 	},
 	{
 		id: "world-bd-manager-western-europe",
@@ -1181,7 +1183,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/9ab1a3ac-290a-4e80-93dd-0ccfa827cc6d",
-		tags: ["bd"],
+		tags: ["world", "bd"],
 	},
 	{
 		id: "world-chief-privacy-officer",
@@ -1191,7 +1193,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Legal",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/669fa0ce-d0ca-469d-bd2a-4c289482ae38",
-		tags: ["legal"],
+		tags: ["world", "legal"],
 	},
 	{
 		id: "world-director-central-ops",
@@ -1201,6 +1203,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/e5b0781d-8a66-46ea-ba39-ebf0feb6053a",
+		tags: ["world"],
 	},
 	{
 		id: "world-field-ops-lead",
@@ -1210,6 +1213,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/865cd1c6-3609-44b8-aa2e-e2137552758d",
+		tags: ["world"],
 	},
 	{
 		id: "world-fullstack-engineer-world-id",
@@ -1219,7 +1223,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "World ID",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/f00b5ae3-1a4e-4959-9bcf-a9bc96f48feb",
-		tags: ["ai", "cryptography"],
+		tags: ["world", "ai", "cryptography"],
 	},
 	{
 		id: "world-gm-germany",
@@ -1229,6 +1233,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/f8be9cf4-1433-4be3-902d-abcb0746bc85",
+		tags: ["world"],
 	},
 	{
 		id: "world-gm-mexico",
@@ -1238,6 +1243,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/20c24519-eb3f-462a-b7bf-ac5033cbd31a",
+		tags: ["world"],
 	},
 	{
 		id: "world-gm-south-cone",
@@ -1247,6 +1253,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/7671a095-15d8-4ae9-9f99-ee0a9f8b91ef",
+		tags: ["world"],
 	},
 	{
 		id: "world-graphic-designer",
@@ -1256,7 +1263,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6db2b659-c96e-4748-a4c3-02367d1aa019",
-		tags: ["design"],
+		tags: ["world", "design"],
 	},
 	{
 		id: "world-growth-ops-lead-italy",
@@ -1266,6 +1273,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/2d7ec5bd-87bd-4a79-b59a-0b2b0b410ee2",
+		tags: ["world"],
 	},
 	{
 		id: "world-head-product-design",
@@ -1275,7 +1283,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "World App",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/5e1c4da2-e096-4f37-842a-b01a522e3314",
-		tags: ["design"],
+		tags: ["world", "design"],
 	},
 	{
 		id: "world-head-protocol",
@@ -1285,7 +1293,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d91841c6-72dd-42cb-bd5c-0b7299a6d74b",
-		tags: ["protocol", "cryptography"],
+		tags: ["world", "protocol", "cryptography"],
 	},
 	{
 		id: "world-logistics-ops-lead-na",
@@ -1295,6 +1303,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/f1652f35-9e3b-457b-9a8b-1c8856b81a9e",
+		tags: ["world"],
 	},
 	{
 		id: "world-manager-device-automation-qa",
@@ -1304,6 +1313,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/73771c91-eddd-4602-9195-91e11bbbbf71",
+		tags: ["world"],
 	},
 	{
 		id: "world-marketing-manager-central-europe",
@@ -1313,7 +1323,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/15ce3f89-89bb-4299-a85e-370e98e97223",
-		tags: ["marketing"],
+		tags: ["world", "marketing"],
 	},
 	{
 		id: "world-marketing-manager-us",
@@ -1323,7 +1333,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/ec8917e4-0dc5-42be-9cfb-b51a6a2874fc",
-		tags: ["marketing"],
+		tags: ["world", "marketing"],
 	},
 	{
 		id: "world-ops-manager-us",
@@ -1333,6 +1343,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6937d6a4-09e4-4ed0-a222-e1c2ab898c68",
+		tags: ["world"],
 	},
 	{
 		id: "world-product-counsel",
@@ -1342,7 +1353,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Legal",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6b3106d2-00a8-42be-9d09-cad4cb0cdbc4",
-		tags: ["legal"],
+		tags: ["world", "legal"],
 	},
 	{
 		id: "world-pm-human-modalities",
@@ -1352,7 +1363,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "World ID",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/e8e75379-b051-4eb3-82db-da63b0c76ef4",
-		tags: ["ai"],
+		tags: ["world", "ai"],
 	},
 	{
 		id: "world-regional-logistics-manager-eu-apac",
@@ -1362,6 +1373,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/80eebe75-fba4-48ac-8ee9-5cb0a150755a",
+		tags: ["world"],
 	},
 	{
 		id: "world-security-engineering-intern",
@@ -1371,7 +1383,7 @@ export const jobs: Job[] = [
 		type: "internship",
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/adffedc8-6e73-431d-93a2-04095c6ad07f",
-		tags: ["security", "entry-level"],
+		tags: ["world", "security", "entry-level"],
 	},
 	{
 		id: "world-sr-accounting-ops-manager",
@@ -1381,6 +1393,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Finance",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/285cbc02-bf6c-4f9e-903c-85fb5a9e9c10",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-android-engineer-orbmini",
@@ -1390,6 +1403,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6a443ccf-4133-4ba0-aa1a-521f0701e338",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-android-framework-engineer",
@@ -1399,6 +1413,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/392e10be-5451-4fb1-bb0f-4a0bdab22110",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-android-kernel-engineer",
@@ -1408,6 +1423,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/04422156-2336-4971-884d-f8c0d063abdc",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-business-recruiter",
@@ -1417,6 +1433,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "People",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/a00319be-cfc0-42ad-9e02-bd05bcfe5d36",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-camera-validation-engineer",
@@ -1426,6 +1443,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b4a132c2-d0f5-4ebd-982b-6d821198d62d",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-data-scientist-fraud",
@@ -1435,7 +1453,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Economics and Data Science",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d829071a-0c9b-425d-b2a7-ad1c5cc2118d",
-		tags: ["ai", "security"],
+		tags: ["world", "ai", "security"],
 	},
 	{
 		id: "world-sr-electrical-engineer-concept",
@@ -1445,6 +1463,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/ba189695-ac42-465d-8e18-84c19f69473d",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-embedded-engineer-concept",
@@ -1454,6 +1473,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/368eb1ef-ec72-48bc-89a9-9122548aa4b3",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-embedded-engineer-orb-sf",
@@ -1463,6 +1483,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d9fdfbaf-02df-46c5-8e07-9f98f41bc0a8",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-embedded-engineer-orb-munich",
@@ -1472,6 +1493,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/cef8f78c-bcae-4586-a21f-820124a0b9d7",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-embedded-engineer-orbmini",
@@ -1481,6 +1503,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/081258fe-1322-4e2e-b217-ce8deedd1fc5",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-embedded-engineer-test",
@@ -1490,6 +1513,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b8f6ace6-949a-4876-82d6-75ca6ecaaadc",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-fraud-engineer",
@@ -1499,7 +1523,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/977184cf-3f52-4252-a91f-5a312914f759",
-		tags: ["security"],
+		tags: ["world", "security"],
 	},
 	{
 		id: "world-sr-it-engineer",
@@ -1509,7 +1533,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "IT",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/df3338ed-cbdd-4306-ad15-ef0d3e3c35fc",
-		tags: ["infra"],
+		tags: ["world", "infra"],
 	},
 	{
 		id: "world-sr-product-design-engineer",
@@ -1519,7 +1543,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/2cceef10-e016-495b-80b6-47f8eb40f6db",
-		tags: ["design"],
+		tags: ["world", "design"],
 	},
 	{
 		id: "world-sr-pm-growth-incentives",
@@ -1529,6 +1553,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/ccdba5bb-b4d1-46c2-b767-454d91654d59",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-pm-growth-lifecycle",
@@ -1538,6 +1563,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/45d0fc2c-ed91-48ec-b1cd-fc69052f2040",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-pm-growth-modalities",
@@ -1547,6 +1573,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d3cede81-cd25-446e-9387-1658715c7464",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-pm-hardware-devices",
@@ -1556,6 +1583,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/c84a5b71-448d-4df2-8ac1-20ce51844e17",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-product-security-engineer-sf",
@@ -1565,7 +1593,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/075918dc-57c0-4a73-ba3c-a6caafee9412",
-		tags: ["security"],
+		tags: ["world", "security"],
 	},
 	{
 		id: "world-sr-product-security-engineer-munich",
@@ -1575,7 +1603,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/aa8e9d73-0209-4109-9116-649ee7f78ab3",
-		tags: ["security"],
+		tags: ["world", "security"],
 	},
 	{
 		id: "world-sr-qa-engineer",
@@ -1585,6 +1613,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "QA",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/c068595b-fee3-4112-aa99-718832656a3a",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-software-engineer-android",
@@ -1594,6 +1623,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "World App",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/9a2229dc-3027-4334-a7e4-cda30da08cc3",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-software-engineer-android-financial",
@@ -1603,7 +1633,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "World App",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d35baebd-9c2c-43d2-8918-4221df271732",
-		tags: ["defi"],
+		tags: ["world", "defi"],
 	},
 	{
 		id: "world-sr-software-engineer-ios-sf",
@@ -1613,6 +1643,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "World App",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/7542c9f2-f6a7-4bc2-be32-8cc2d73f2424",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-software-engineer-ios-munich",
@@ -1622,6 +1653,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "World App",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d3eb5c44-0a36-4db5-aa15-3c1fe5cd6063",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-software-engineer-protocol",
@@ -1631,7 +1663,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b069b878-acf7-45db-8b82-8c501cdee06d",
-		tags: ["protocol", "cryptography"],
+		tags: ["world", "protocol", "cryptography"],
 	},
 	{
 		id: "world-sr-staff-economist",
@@ -1641,7 +1673,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Economics and Data Science",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/641f94f8-034c-4689-a844-a4d7d899056e",
-		tags: ["research"],
+		tags: ["world", "research"],
 	},
 	{
 		id: "world-sr-staff-embedded-engineer-orb-sf",
@@ -1651,6 +1683,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/0f22bdfe-7d40-474c-a668-e2f8bf18886e",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-staff-embedded-engineer-orb-munich",
@@ -1660,6 +1693,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/401855c9-ae93-47a2-8b9e-7bb98d8e51dc",
+		tags: ["world"],
 	},
 	{
 		id: "world-sr-technical-recruiter",
@@ -1669,6 +1703,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "People",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6531763f-02a1-45cb-8839-87b78e3a36f8",
+		tags: ["world"],
 	},
 	{
 		id: "world-snr-growth-lead-uk",
@@ -1678,6 +1713,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/e4d9819d-dcb0-4bc7-a6eb-3c8f36176e45",
+		tags: ["world"],
 	},
 	{
 		id: "world-snr-growth-ops-lead-rola",
@@ -1688,6 +1724,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/f99db0df-ba16-46d5-9159-637f231b1541",
+		tags: ["world"],
 	},
 	{
 		id: "world-software-engineer-ai-data-infra",
@@ -1697,7 +1734,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "AI",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/fab8090d-6f45-4f1f-8068-7ed509f3a63c",
-		tags: ["ai", "infra"],
+		tags: ["world", "ai", "infra"],
 	},
 	{
 		id: "world-software-engineer-backend-cloud",
@@ -1707,7 +1744,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/a82461c7-31d9-4437-837d-3220f519b9ab",
-		tags: ["infra"],
+		tags: ["world", "infra"],
 	},
 	{
 		id: "world-software-engineer-fullstack",
@@ -1717,6 +1754,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/ba13f0bb-154a-4019-ab13-6bc7183dd9b3",
+		tags: ["world"],
 	},
 	{
 		id: "world-staff-backend-engineer",
@@ -1726,7 +1764,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/daf2307b-b6e8-4fed-a682-f6cc35df05cc",
-		tags: ["infra"],
+		tags: ["world", "infra"],
 	},
 	{
 		id: "world-staff-fraud-engineer",
@@ -1736,7 +1774,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/3385936a-e807-4d3d-a7b5-3cb23f7b7d88",
-		tags: ["security"],
+		tags: ["world", "security"],
 	},
 	{
 		id: "world-staff-infra-engineer",
@@ -1746,7 +1784,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/22635bae-cc5a-4d5e-b87a-901752467a94",
-		tags: ["infra"],
+		tags: ["world", "infra"],
 	},
 	{
 		id: "world-staff-product-design-engineer",
@@ -1756,7 +1794,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/18bd79de-2958-412e-b19c-94d13ecc78e7",
-		tags: ["design"],
+		tags: ["world", "design"],
 	},
 	{
 		id: "world-staff-product-security-engineer-sf",
@@ -1766,7 +1804,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/bdd9f818-2569-4823-8ba3-d37a9d5872b3",
-		tags: ["security"],
+		tags: ["world", "security"],
 	},
 	{
 		id: "world-staff-product-security-engineer-munich",
@@ -1776,7 +1814,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/53be510d-300d-4bae-b347-e6e8ce0dd450",
-		tags: ["security"],
+		tags: ["world", "security"],
 	},
 	{
 		id: "world-staff-software-engineer-protocol",
@@ -1786,7 +1824,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b9132dad-c7ea-49e6-bc53-c8fdc466584a",
-		tags: ["protocol", "cryptography"],
+		tags: ["world", "protocol", "cryptography"],
 	},
 	{
 		id: "world-systems-delivery-lead",
@@ -1796,6 +1834,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/013cc590-b4af-4392-bb35-c8d2a4f70b2c",
+		tags: ["world"],
 	},
 	{
 		id: "world-tpm-device-compliance",
@@ -1805,6 +1844,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/37073900-4f09-4d41-b820-d0e3ec8e129e",
+		tags: ["world"],
 	},
 	{
 		id: "world-tpm-world-id",
@@ -1814,7 +1854,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "World ID",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/92038de9-fb74-4d32-b8b2-fe1474f1d6c0",
-		tags: ["ai", "cryptography"],
+		tags: ["world", "ai", "cryptography"],
 	},
 	{
 		id: "world-engineering-fellowship",
@@ -1824,7 +1864,7 @@ export const jobs: Job[] = [
 		type: "internship",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/5e076db5-ef04-46d2-a586-dc7675485808",
-		tags: ["entry-level"],
+		tags: ["world", "entry-level"],
 	},
 	{
 		id: "world-spaces-manager",
@@ -1834,5 +1874,6 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/85f8c4f7-6125-4d44-8c44-2367a46cc5e2",
+		tags: ["world"],
 	},
 ];
