@@ -65,6 +65,7 @@ export interface Candidate {
 	tier: CandidateTier;
 	featured: boolean;
 	hot?: boolean;
+	vouched?: boolean; // true = personally known/vouched, false/undefined = not personally known
 	dateAdded?: string;
 }
 
@@ -135,6 +136,7 @@ export const candidates: Candidate[] = [
 		},
 		tier: 2,
 		featured: false,
+		vouched: false, // Referred candidate, not personally known
 		dateAdded: "2025-01-08",
 	},
 	{

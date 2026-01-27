@@ -331,8 +331,23 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
 					<h3 className="font-semibold truncate">
 						{displayName}
 						{candidate.featured && (
-							<span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
+							<span className="ml-1 text-xs text-amber-600 dark:text-amber-400">
 								★
+							</span>
+						)}
+						{candidate.vouched !== false ? (
+							<span
+								className="ml-1 text-xs text-green-600 dark:text-green-400"
+								title="Personally vouched"
+							>
+								✓
+							</span>
+						) : (
+							<span
+								className="ml-1 text-xs text-amber-600 dark:text-amber-400"
+								title="Referred (not personally known)"
+							>
+								◇
 							</span>
 						)}
 					</h3>
