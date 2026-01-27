@@ -423,6 +423,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/wildcat.png",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/wildcatfi",
+		github: "https://github.com/wildcat-finance",
 	},
 	{
 		title: "Zenith",
