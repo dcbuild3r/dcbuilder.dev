@@ -1039,7 +1039,6 @@ export const jobs: Job[] = [
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/84f239ee-f61a-48d0-a28f-c95c4a0226c1",
 		tags: ["protocol", "infra"],
-		featured: true,
 	},
 	{
 		id: "ef-legal-counsel",
@@ -1084,7 +1083,6 @@ export const jobs: Job[] = [
 		department: "Devcon Team",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/16d6d109-b782-460e-ab7a-0dcca970159f",
 		tags: ["protocol"],
-		featured: true,
 	},
 	{
 		id: "ef-protocol-tester-consensus",
@@ -1096,6 +1094,5 @@ export const jobs: Job[] = [
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/f466a83a-e322-4b81-80a8-2d600870d98a",
 		tags: ["protocol", "security"],
-		featured: true,
 	},
 ];
