@@ -81,9 +81,14 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 		});
 	}, [jobs, filterCategory, selectedCompany, searchQuery, selectedTags]);
 
-	// Sort: featured first, then alphabetically by company
+	// Sort: by tier (1 highest), then featured, then alphabetically by company
 	const sortedJobs = useMemo(() => {
 		return [...filteredJobs].sort((a, b) => {
+			// Tier sorting (default tier 1 for portfolio, 2 for network without explicit tier)
+			const tierA = a.tier ?? (a.company.category === "portfolio" ? 1 : 2);
+			const tierB = b.tier ?? (b.company.category === "portfolio" ? 1 : 2);
+			if (tierA !== tierB) return tierA - tierB;
+			// Featured sorting within same tier
 			if (a.featured !== b.featured) return a.featured ? -1 : 1;
 			return a.company.name.localeCompare(b.company.name);
 		});

@@ -16,7 +16,8 @@ export type JobTag =
 	| "marketing"
 	| "bd"
 	| "research"
-	| "security";
+	| "security"
+	| "monad-ecosystem";
 
 export const tagLabels: Record<JobTag, string> = {
 	ai: "AI",
@@ -33,7 +34,11 @@ export const tagLabels: Record<JobTag, string> = {
 	bd: "BD",
 	research: "Research",
 	security: "Security",
+	"monad-ecosystem": "Monad Ecosystem",
 };
+
+// Job tiers: 1 = highest priority (portfolio), 2 = medium, 3 = lower (network/ecosystem)
+export type JobTier = 1 | 2 | 3;
 
 export interface Company {
 	name: string;
@@ -54,6 +59,7 @@ export interface Job {
 	link: string;
 	featured?: boolean;
 	tags?: JobTag[];
+	tier?: JobTier; // 1 = highest priority, 2 = medium, 3 = lower
 }
 
 // Reusable company definitions
@@ -806,7 +812,7 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/monad.foundation/5558059f-664c-4059-9d0d-a6dec98b34d8",
 		tags: ["protocol"],
 	},
-	// Perpl Jobs
+	// Perpl Jobs (Monad Ecosystem)
 	{
 		id: "perpl-staff-infra-engineer",
 		title: "Staff Infrastructure Engineer",
@@ -817,7 +823,8 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDrmsgm_jr0vUukDYYBsb0Ss",
 		featured: true,
-		tags: ["defi", "trading", "infra"],
+		tags: ["defi", "trading", "infra", "monad-ecosystem"],
+		tier: 3,
 	},
 	{
 		id: "perpl-founding-backend-engineer",
@@ -829,7 +836,8 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDqhJ9YFgDCR8KoKvrxzkLSx",
 		featured: true,
-		tags: ["defi", "trading", "infra"],
+		tags: ["defi", "trading", "infra", "monad-ecosystem"],
+		tier: 3,
 	},
 	{
 		id: "perpl-videographer",
@@ -840,7 +848,8 @@ export const jobs: Job[] = [
 		type: "contract",
 		department: "Marketing",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDrKAWMgo2bvHF7CV1SWXewv",
-		tags: ["defi", "marketing"],
+		tags: ["defi", "marketing", "monad-ecosystem"],
+		tier: 3,
 	},
 	{
 		id: "perpl-quant-trader",
@@ -852,7 +861,8 @@ export const jobs: Job[] = [
 		department: "Trading",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDqyBNxBzKmbw_SUX-V2EJh1",
 		featured: true,
-		tags: ["defi", "trading"],
+		tags: ["defi", "trading", "monad-ecosystem"],
+		tier: 3,
 	},
 	{
 		id: "perpl-staff-backend-engineer",
@@ -863,9 +873,10 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDoV4xQA7Au1gx9qORFO21J2",
-		tags: ["defi", "trading", "infra"],
+		tags: ["defi", "trading", "infra", "monad-ecosystem"],
+		tier: 3,
 	},
-	// Kuru Jobs
+	// Kuru Jobs (Monad Ecosystem)
 	{
 		id: "kuru-quant-engineer",
 		title: "Quant Engineer",
@@ -875,9 +886,10 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/kuru-labs/ca804294-8f0c-436c-9c49-33e55d89be48",
-		tags: ["defi", "trading"],
+		tags: ["defi", "trading", "monad-ecosystem"],
+		tier: 3,
 	},
-	// RareBetSports Jobs
+	// RareBetSports Jobs (Monad Ecosystem)
 	{
 		id: "rarebetsports-director-engineering",
 		title: "Director of Engineering",
@@ -888,7 +900,8 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://eco-jobs.monad.xyz/companies/rarebetsports/jobs/64210595-director-of-engineering",
 		featured: true,
-		tags: ["gaming", "infra"],
+		tags: ["gaming", "infra", "monad-ecosystem"],
+		tier: 3,
 	},
 	// Lucis Jobs
 	{
