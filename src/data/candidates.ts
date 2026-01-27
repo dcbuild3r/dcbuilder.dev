@@ -77,7 +77,7 @@ export const candidates: Candidate[] = [
 		visibility: "public",
 		name: "Norswap",
 		title: "Tech Lead / Protocol Engineer",
-		bio: "Experienced crypto tech leader with strong track record in protocol design at Optimism and leading teams to ship at HappyChainDevs. Open to tech leadership, VC investment roles, or co-founding opportunities.",
+		bio: "Experienced crypto tech leader with strong track record in protocol design at Optimism and leading teams to ship at Happy Devs. Open to tech leadership, VC investment roles, or co-founding opportunities.",
 		profileImage: "/images/candidates/norswap.jpg",
 		skills: ["protocol", "infra", "vc", "research"],
 		location: "Remote",
@@ -93,7 +93,7 @@ export const candidates: Candidate[] = [
 		],
 		companies: [
 			{ name: "Optimism", url: "https://optimism.io" },
-			{ name: "HappyChainDevs", url: "https://happychaindevs.com" },
+			{ name: "Happy Devs", url: "https://docs.happy.tech/" },
 		],
 		socials: {
 			twitter: "https://x.com/norswap",
