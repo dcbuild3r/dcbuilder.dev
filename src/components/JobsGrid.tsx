@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
 
@@ -21,14 +21,29 @@ const companyTiers: Record<string, number> = {
 	Sorella: 2,
 	Agora: 2,
 	Rhinestone: 2,
+	Bagel: 2,
 	// Tier 3 - Portfolio companies
 	Ritual: 3,
 	Berachain: 3,
 	Inco: 3,
-	// Tier 5 - Network/Friends
-	Flashbots: 5,
-	"Ethereum Foundation": 5,
-	Aztec: 5,
+	// Tier 4 - Network/Friends
+	Flashbots: 4,
+	"Ethereum Foundation": 4,
+	Aztec: 4,
+	TACEO: 4,
+	Nethermind: 4,
+	Nascent: 4,
+	CoinFund: 4,
+	"Blockchain Capital": 4,
+	RockawayX: 4,
+	"Ackee Blockchain": 4,
+	Reilabs: 4,
+	"Let's Go DevOps": 4,
+	Wonderland: 4,
+	Merge: 4,
+	// Tier 5 - Broader ecosystem
+	"Uniswap Labs": 5,
+	Alchemy: 5,
 	// Tier 6 - Ecosystem (Monad ecosystem projects)
 	Perpl: 6,
 	Kuru: 6,
@@ -48,8 +63,15 @@ interface JobsGridProps {
 export function JobsGrid({ jobs }: JobsGridProps) {
 	const [filterCategory, setFilterCategory] = useState<FilterCategory>("all");
 	const [selectedCompany, setSelectedCompany] = useState<string>("all");
+	const [selectedLocation, setSelectedLocation] = useState<string>("all");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedTags, setSelectedTags] = useState<JobTag[]>([]);
+	const [shuffleKey, setShuffleKey] = useState(0);
+
+	// Trigger shuffle only on client after hydration
+	useEffect(() => {
+		setShuffleKey(Math.random());
+	}, []);
 
 	// Get all unique tags from jobs
 	const allTags = useMemo(() => {
@@ -63,6 +85,23 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 		const companies = new Map<string, string>();
 		jobs.forEach((job) => companies.set(job.company.name, job.company.name));
 		return Array.from(companies.values()).sort();
+	}, [jobs]);
+
+	// Get all unique locations from jobs (normalized)
+	const allLocations = useMemo(() => {
+		const locations = new Set<string>();
+		jobs.forEach((job) => {
+			// Check if job is remote
+			if (job.remote) {
+				locations.add("Remote");
+			}
+			// Add base location (first part before "/" or ",")
+			const baseLocation = job.location.split(/[\/,]/)[0].trim();
+			if (baseLocation && baseLocation.toLowerCase() !== "remote") {
+				locations.add(baseLocation);
+			}
+		});
+		return Array.from(locations).sort();
 	}, [jobs]);
 
 	const toggleTag = (tag: JobTag) => {
@@ -84,6 +123,19 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 			// Company filter
 			if (selectedCompany !== "all" && job.company.name !== selectedCompany) {
 				return false;
+			}
+
+			// Location filter
+			if (selectedLocation !== "all") {
+				if (selectedLocation === "Remote") {
+					if (!job.remote) {
+						return false;
+					}
+				} else {
+					if (!job.location.includes(selectedLocation)) {
+						return false;
+					}
+				}
 			}
 
 			// Tag filter (job must have ALL selected tags)
@@ -114,12 +166,23 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 
 			return true;
 		});
-	}, [jobs, filterCategory, selectedCompany, searchQuery, selectedTags]);
+	}, [jobs, filterCategory, selectedCompany, selectedLocation, searchQuery, selectedTags]);
 
-	// Sort: by company tier (matching portfolio), then featured, then alphabetically
+	// Sort: featured first (randomized on client), then by company tier, then alphabetically
 	const sortedJobs = useMemo(() => {
-		return [...filteredJobs].sort((a, b) => {
-			// Use company tier map, default to 4 for unknown portfolio, 5 for network
+		const featured = filteredJobs.filter((j) => j.featured);
+		const nonFeatured = filteredJobs.filter((j) => !j.featured);
+
+		// Only shuffle after hydration (when shuffleKey > 0)
+		if (shuffleKey > 0) {
+			for (let i = featured.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[featured[i], featured[j]] = [featured[j], featured[i]];
+			}
+		}
+
+		// Sort non-featured by tier, then alphabetically
+		nonFeatured.sort((a, b) => {
 			const tierA =
 				companyTiers[a.company.name] ??
 				(a.company.category === "portfolio" ? 4 : 5);
@@ -127,11 +190,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 				companyTiers[b.company.name] ??
 				(b.company.category === "portfolio" ? 4 : 5);
 			if (tierA !== tierB) return tierA - tierB;
-			// Featured sorting within same tier
-			if (a.featured !== b.featured) return a.featured ? -1 : 1;
 			return a.company.name.localeCompare(b.company.name);
 		});
-	}, [filteredJobs]);
+
+		return [...featured, ...nonFeatured];
+	}, [filteredJobs, shuffleKey]);
 
 	return (
 		<div className="space-y-6">
@@ -177,6 +240,29 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 						{allCompanies.map((company) => (
 							<option key={company} value={company}>
 								{company}
+							</option>
+						))}
+					</select>
+				</div>
+
+				{/* Location Filter */}
+				<div className="flex items-center gap-2">
+					<label
+						htmlFor="location-filter"
+						className="text-sm text-neutral-600 dark:text-neutral-400"
+					>
+						Location:
+					</label>
+					<select
+						id="location-filter"
+						value={selectedLocation}
+						onChange={(e) => setSelectedLocation(e.target.value)}
+						className="px-3 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+					>
+						<option value="all">All Locations</option>
+						{allLocations.map((location) => (
+							<option key={location} value={location}>
+								{location}
 							</option>
 						))}
 					</select>
