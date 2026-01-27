@@ -19,13 +19,13 @@ const companyTiers: Record<string, number> = {
 	// Tier 2 - Strong portfolio companies
 	Succinct: 2,
 	Sorella: 2,
+	Agora: 2,
 	// Tier 3 - Portfolio companies
 	Ritual: 3,
 	// Tier 5 - Network/Friends
 	Flashbots: 5,
 	"Ethereum Foundation": 5,
 	Aztec: 5,
-	Agora: 5,
 	// Tier 6 - Ecosystem (Monad ecosystem projects)
 	Perpl: 6,
 	Kuru: 6,

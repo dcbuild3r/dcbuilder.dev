@@ -168,9 +168,9 @@ const companies = {
 	},
 	agora: {
 		name: "Agora",
-		logo: "/images/investments/agora.svg",
+		logo: "/images/investments/agora.jpg",
 		website: "https://www.agora.xyz/",
-		category: "network" as const,
+		category: "portfolio" as const,
 	},
 };
 
