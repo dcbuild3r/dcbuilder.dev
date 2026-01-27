@@ -514,11 +514,11 @@ function CandidateCard({
 								href={candidate.socials.x}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="X (Twitter)"
 							>
 								<svg
-									className="w-4 h-4"
+									className="w-5 h-5 sm:w-4 sm:h-4"
 									viewBox="0 0 24 24"
 									fill="currentColor"
 								>
@@ -531,11 +531,11 @@ function CandidateCard({
 								href={candidate.socials.github}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="GitHub"
 							>
 								<svg
-									className="w-4 h-4"
+									className="w-5 h-5 sm:w-4 sm:h-4"
 									viewBox="0 0 24 24"
 									fill="currentColor"
 								>
@@ -548,11 +548,11 @@ function CandidateCard({
 								href={candidate.socials.linkedin}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="LinkedIn"
 							>
 								<svg
-									className="w-4 h-4"
+									className="w-5 h-5 sm:w-4 sm:h-4"
 									viewBox="0 0 24 24"
 									fill="currentColor"
 								>
@@ -563,11 +563,11 @@ function CandidateCard({
 						{candidate.socials?.email && (
 							<a
 								href={`mailto:${candidate.socials.email}`}
-								className="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="Email"
 							>
 								<svg
-									className="w-4 h-4"
+									className="w-5 h-5 sm:w-4 sm:h-4"
 									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"
@@ -585,11 +585,11 @@ function CandidateCard({
 								href={candidate.socials.website}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="Website"
 							>
 								<svg
-									className="w-4 h-4"
+									className="w-5 h-5 sm:w-4 sm:h-4"
 									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"
@@ -608,11 +608,11 @@ function CandidateCard({
 								href={candidate.socials.telegram}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="Telegram"
 							>
 								<svg
-									className="w-4 h-4"
+									className="w-5 h-5 sm:w-4 sm:h-4"
 									viewBox="0 0 24 24"
 									fill="currentColor"
 								>
@@ -625,11 +625,11 @@ function CandidateCard({
 								href={candidate.socials.cv}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="CV / Resume"
 							>
 								<svg
-									className="w-4 h-4"
+									className="w-5 h-5 sm:w-4 sm:h-4"
 									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"
