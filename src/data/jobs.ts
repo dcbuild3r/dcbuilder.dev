@@ -14,6 +14,7 @@ export type JobTag =
 	| "gaming"
 	| "design"
 	| "marketing"
+	| "bd"
 	| "research"
 	| "security";
 
@@ -29,6 +30,7 @@ export const tagLabels: Record<JobTag, string> = {
 	gaming: "Gaming",
 	design: "Design",
 	marketing: "Marketing",
+	bd: "BD",
 	research: "Research",
 	security: "Security",
 };
@@ -157,7 +159,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Business Development",
 		link: "https://morpho.org/jobs/senior-enterprise-partnerships",
-		tags: ["defi"],
+		tags: ["defi", "bd"],
 	},
 	{
 		id: "morpho-senior-protocol-engineer",
@@ -447,7 +449,7 @@ export const jobs: Job[] = [
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/PrimeIntellect",
 		featured: true,
-		tags: ["ai"],
+		tags: ["ai", "bd"],
 	},
 	{
 		id: "prime-intellect-head-of-growth",
@@ -574,7 +576,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Regional",
 		link: "https://jobs.ashbyhq.com/monad.foundation/d5c22aae-9697-4077-bc4c-fa082863104f",
-		tags: ["protocol"],
+		tags: ["protocol", "bd"],
 	},
 	{
 		id: "monad-foundation-technical-program-manager",
@@ -642,7 +644,7 @@ export const jobs: Job[] = [
 		salary: "$200k/year",
 		link: "https://jobs.ashbyhq.com/monad.foundation/dccd3d0f-e491-45fa-b311-980021976d62",
 		featured: true,
-		tags: ["protocol", "defi"],
+		tags: ["protocol", "defi", "bd"],
 	},
 	{
 		id: "monad-foundation-ecosystem-nyc",
@@ -796,7 +798,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		salary: "$175k-225k + Equity",
 		link: "https://sorellalabs.xyz/careers",
-		tags: ["defi", "trading", "protocol"],
+		tags: ["defi", "trading", "protocol", "mev"],
 	},
 	// Flashbots Jobs
 	{
@@ -809,7 +811,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/flashbots.net/649fc903-8345-4ddc-9535-ddce374fe23b",
 		featured: true,
-		tags: ["protocol", "infra", "security"],
+		tags: ["protocol", "infra", "mev"],
 	},
 	{
 		id: "flashbots-senior-devops-engineer",
@@ -820,7 +822,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/flashbots.net/8fa82d12-baef-4f95-86af-a8354af820d8",
-		tags: ["protocol", "infra"],
+		tags: ["protocol", "infra", "mev"],
 		featured: true,
 	},
 ];
