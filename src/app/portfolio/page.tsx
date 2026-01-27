@@ -3,7 +3,7 @@ import { PortfolioGrid } from "@/components/PortfolioGrid";
 import { investments } from "@/data/investments";
 
 export const metadata = {
-  title: "dcbuilder - Portfolio",
+  title: "Portfolio",
 };
 
 export default function Portfolio() {

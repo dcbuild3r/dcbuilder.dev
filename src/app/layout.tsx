@@ -1,6 +1,17 @@
 import type { Metadata } from "next";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
+
+const inter = Inter({
+	variable: "--font-inter",
+	subsets: ["latin"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+	variable: "--font-mono",
+	subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
 	title: {
@@ -8,11 +19,12 @@ export const metadata: Metadata = {
 		template: "%s | dcbuilder.eth",
 	},
 	description:
-		"Research, Development, Angel Investing in cryptography, distributed systems, and AI",
+		"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
+	metadataBase: new URL("https://dcbuilder.dev"),
 	openGraph: {
 		title: "dcbuilder.eth",
 		description:
-			"Research, Development, Angel Investing in cryptography, distributed systems, and AI",
+			"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
 		url: "https://dcbuilder.dev",
 		siteName: "dcbuilder",
 		locale: "en_US",
@@ -20,8 +32,10 @@ export const metadata: Metadata = {
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "dcbuilder",
-		description: "Research, Development, Angel Investing",
+		title: "dcbuilder.eth",
+		description:
+			"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
+		creator: "@dcbuilder",
 	},
 	robots: {
 		index: true,
@@ -36,7 +50,7 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en" suppressHydrationWarning>
-			<body className="antialiased">
+			<body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
 				<ThemeProvider>{children}</ThemeProvider>
 			</body>
 		</html>

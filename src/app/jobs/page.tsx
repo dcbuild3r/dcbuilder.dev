@@ -3,7 +3,7 @@ import { JobsGrid } from "@/components/JobsGrid";
 import { jobs } from "@/data/jobs";
 
 export const metadata = {
-	title: "dcbuilder - Jobs",
+	title: "Jobs",
 	description: "Job opportunities at companies in my network",
 };
 

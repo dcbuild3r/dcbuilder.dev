@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
 
@@ -182,10 +182,10 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 	// Helper to check if job is hot
 	const isHotJob = (job: Job) => job.tags?.includes("hot");
 
-	// Helper to get company tier
-	const getTier = (job: Job) =>
+	// Helper to get company tier (useCallback for stable reference in useEffect)
+	const getTier = useCallback((job: Job) =>
 		companyTiers[job.company.name] ??
-		(job.company.category === "portfolio" ? 4 : 5);
+		(job.company.category === "portfolio" ? 4 : 5), []);
 
 	// Sort jobs deterministically (no shuffle - that happens in useEffect)
 	const sortedJobs = useMemo(() => {
@@ -236,7 +236,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 			.flatMap((tier) => shuffleArray(tierGroups[tier]));
 
 		setShuffledJobs([...shuffledHot, ...shuffledFeatured, ...sortedNonFeatured]);
-	}, [filteredJobs, isHydrated]);
+	}, [filteredJobs, isHydrated, getTier]);
 
 	// Use shuffled jobs after hydration, otherwise use deterministic sort
 	const displayJobs = isHydrated && shuffledJobs.length > 0 ? shuffledJobs : sortedJobs;
@@ -369,12 +369,23 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 					</p>
 				) : (
 					displayJobs.map((job) => (
-						<a
+						<div
 							key={job.id}
-							href={job.link}
-							target="_blank"
-							rel="noopener noreferrer"
-							className={`group block p-4 rounded-xl border transition-all ${
+							onClick={(e) => {
+								// Don't navigate if clicking on nested links
+								if ((e.target as HTMLElement).closest('a')) return;
+								window.open(job.link, '_blank', 'noopener,noreferrer');
+							}}
+							role="link"
+							tabIndex={0}
+							aria-label={`View ${job.title} position at ${job.company.name}`}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									window.open(job.link, '_blank', 'noopener,noreferrer');
+								}
+							}}
+							className={`group block p-4 rounded-xl border transition-all cursor-pointer ${
 								isHotJob(job)
 									? "border-orange-400 dark:border-orange-500 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 shadow-[0_0_15px_rgba(251,146,60,0.3)] dark:shadow-[0_0_20px_rgba(251,146,60,0.2)] hover:shadow-[0_0_25px_rgba(251,146,60,0.5)] dark:hover:shadow-[0_0_30px_rgba(251,146,60,0.4)]"
 									: "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
@@ -388,7 +399,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 										alt={job.company.name}
 										width={48}
 										height={48}
-										className="object-contain bg-white rounded-lg p-1 group-hover:scale-105 transition-transform"
+										className="object-contain bg-white rounded-lg p-1 group-hover:scale-[1.08] transition-transform duration-150"
 										onError={(e) => {
 											console.warn(`[JobsGrid] Failed to load logo for ${job.company.name}`);
 											e.currentTarget.style.display = "none";
@@ -416,8 +427,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 														href={job.company.website}
 														target="_blank"
 														rel="noopener noreferrer"
-														onClick={(e) => e.stopPropagation()}
-														className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+																												className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
 														title="Website"
 													>
 														<svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -432,8 +442,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 															href={job.company.x}
 															target="_blank"
 															rel="noopener noreferrer"
-															onClick={(e) => e.stopPropagation()}
-															className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+																														className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
 															title="X (Twitter)"
 														>
 															<svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -447,8 +456,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 															href={job.company.github}
 															target="_blank"
 															rel="noopener noreferrer"
-															onClick={(e) => e.stopPropagation()}
-															className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+																														className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
 															title="GitHub"
 														>
 															<svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -503,7 +511,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 									)}
 								</div>
 							</div>
-						</a>
+						</div>
 					))
 				)}
 			</div>

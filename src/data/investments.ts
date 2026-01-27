@@ -18,6 +18,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/accountable.jpg",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/accountabledata",
 	},
 	{
 		title: "Agora",
@@ -36,6 +37,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/aligned.jpg",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/alignedlayer",
+		github: "https://github.com/yetanotherco",
 	},
 	{
 		title: "Astria",
@@ -44,6 +47,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/astria.png",
 		tier: 4,
 		featured: false,
+		x: "https://x.com/AstriaOrg",
+		github: "https://github.com/astriaorg",
 	},
 	{
 		title: "Atoma",
@@ -52,6 +57,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/atoma.png",
 		tier: 4,
 		featured: false,
+		x: "https://x.com/atoma_network",
+		github: "https://github.com/AtomaAI",
 	},
 	{
 		title: "Berachain",
@@ -72,6 +79,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/blocksense.jpg",
 		tier: 4,
 		featured: true,
+		x: "https://x.com/blocksense_",
+		github: "https://github.com/blocksense-network",
 	},
 	{
 		title: "Clique",
@@ -80,6 +89,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/clique.png",
 		tier: 3,
 		featured: true,
+		x: "https://x.com/Clique2046",
+		github: "https://github.com/CliqueOfficial",
 	},
 	{
 		title: "Delta",
@@ -88,6 +99,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/delta.png",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/deltadotnetwork",
 	},
 	{
 		title: "Dria",
@@ -96,6 +108,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/dria.jpg",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/driaforall",
+		github: "https://github.com/firstbatchxyz",
 	},
 	{
 		title: "Eclipse",
@@ -104,6 +118,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/eclipse.png",
 		tier: 4,
 		featured: false,
+		x: "https://x.com/EclipseFND",
+		github: "https://github.com/Eclipse-Laboratories-Inc",
 	},
 	{
 		title: "Edison",
@@ -112,6 +128,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/edison.png",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/edison_watch",
+		github: "https://github.com/edison-watch",
 	},
 	{
 		title: "Exo",
@@ -130,6 +148,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/fabric.png",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/FabricCrypto",
 	},
 	{
 		title: "Friend",
@@ -138,6 +157,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/friend.png",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/AviSchiffmann",
 	},
 	{
 		title: "GasHawk",
@@ -146,6 +166,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/gashawk.png",
 		tier: 4,
 		featured: false,
+		x: "https://x.com/gashawkio",
+		github: "https://github.com/gashawk-io",
 	},
 	{
 		title: "Giza",
@@ -154,14 +176,18 @@ export const investments: Investment[] = [
 		logo: "/images/investments/giza.jpg",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/gizatechxyz",
+		github: "https://github.com/gizatechxyz",
 	},
 	{
 		title: "Happy Chain",
 		description: "The Simple Happy Game Chain",
-		imageUrl: "https://linktr.ee/happychaindevs",
+		imageUrl: "https://docs.happy.tech/",
 		logo: "/images/investments/happy_chain.png",
 		tier: 4,
 		featured: false,
+		x: "https://x.com/HappyChainDevs",
+		github: "https://github.com/HappyChainDevs",
 	},
 	{
 		title: "Herodotus",
@@ -170,6 +196,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/herodotus.jpg",
 		tier: 3,
 		featured: true,
+		x: "https://x.com/HerodotusDev",
+		github: "https://github.com/HerodotusDev",
 	},
 	{
 		title: "Inco",
@@ -189,6 +217,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/intuition.jpg",
 		tier: 3,
 		featured: true,
+		x: "https://x.com/0xIntuition",
+		github: "https://github.com/0xintuition",
 	},
 	{
 		title: "JokeRace",
@@ -197,6 +227,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/jokerace.png",
 		tier: 4,
 		featured: true,
+		x: "https://x.com/jokerace_io",
+		github: "https://github.com/jk-labs-inc",
 	},
 	{
 		title: "Lighter",
@@ -205,11 +237,12 @@ export const investments: Investment[] = [
 		logo: "/images/investments/lighter.jpg",
 		tier: 1,
 		featured: true,
+		x: "https://x.com/Lighter_xyz",
+		github: "https://github.com/elliottech",
 	},
 	{
 		title: "Lucis",
-		description:
-			"Preventive Health Made Accessible",
+		description: "Preventive Health Made Accessible",
 		imageUrl: "https://lucis.life/",
 		logo: "/images/investments/lucis.jpg",
 		tier: 1,
@@ -241,6 +274,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/mizu.png",
 		tier: 4,
 		featured: true,
+		x: "https://x.com/mizulabs",
 	},
 	{
 		title: "Mode",
@@ -250,6 +284,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/mode.jpg",
 		tier: 4,
 		featured: true,
+		x: "https://x.com/modenetwork",
+		github: "https://github.com/mode-network",
 	},
 	{
 		title: "Monad",
@@ -278,6 +314,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/movement.png",
 		tier: 4,
 		featured: false,
+		x: "https://x.com/movement_xyz",
+		github: "https://github.com/movementlabsxyz",
 	},
 	{
 		title: "Nebra",
@@ -294,6 +332,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/nillion.jpg",
 		tier: 4,
 		featured: true,
+		x: "https://x.com/nillion",
+		github: "https://github.com/NillionNetwork",
 	},
 	{
 		title: "OnlyDust",
@@ -302,6 +342,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/onlydust.png",
 		tier: 4,
 		featured: false,
+		x: "https://x.com/OnlyDust_com",
 	},
 	{
 		title: "OpenQ",
@@ -310,6 +351,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/openq.png",
 		tier: 4,
 		featured: true,
+		x: "https://x.com/openqlabs",
+		github: "https://github.com/openqdev",
 	},
 	{
 		title: "Phylax",
@@ -318,6 +361,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/phylax.png",
 		tier: 3,
 		featured: true,
+		x: "https://x.com/phylaxsystems",
+		github: "https://github.com/phylaxsystems",
 	},
 	{
 		title: "Pimlico",
@@ -326,6 +371,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/pimlico.png",
 		tier: 3,
 		featured: true,
+		x: "https://x.com/pimlicoHQ",
+		github: "https://github.com/pimlicolabs",
 	},
 	{
 		title: "PIN AI",
@@ -334,6 +381,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/pinai.png",
 		tier: 4,
 		featured: true,
+		x: "https://x.com/PINAI_IO",
 	},
 	{
 		title: "Pluto",
@@ -342,6 +390,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/pluto.png",
 		tier: 4,
 		featured: false,
+		x: "https://x.com/plutolabs_",
+		github: "https://github.com/pluto",
 	},
 	{
 		title: "Pragma",
@@ -350,6 +400,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/pragma.png",
 		tier: 4,
 		featured: true,
+		x: "https://x.com/PragmaOracle",
+		github: "https://github.com/astraly-labs",
 	},
 	{
 		title: "Praxis",
@@ -358,6 +410,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/praxis.png",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/praxisnation",
 	},
 	{
 		title: "Prime Intellect",
@@ -370,12 +423,14 @@ export const investments: Investment[] = [
 		github: "https://github.com/PrimeIntellect-ai",
 	},
 	{
-		title: "PWN",
-		description: "DeFi Lending Reimagined",
-		imageUrl: "https://pwn.xyz/",
-		logo: "/images/investments/pwn.png",
+		title: "OWN",
+		description: "Digital Asset Mortgages",
+		imageUrl: "https://ownlabs.co/",
+		logo: "/images/investments/own.jpg",
 		tier: 3,
 		featured: true,
+		x: "https://x.com/own_hq",
+		github: "https://github.com/pwndao",
 	},
 	{
 		title: "Rhinestone",
@@ -424,6 +479,8 @@ export const investments: Investment[] = [
 		logo: "/images/investments/wildcat.png",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/wildcatfi",
+		github: "https://github.com/wildcat-finance",
 	},
 	{
 		title: "Zenith",

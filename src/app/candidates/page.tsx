@@ -3,7 +3,7 @@ import { CandidatesGrid } from "@/components/CandidatesGrid";
 import { candidates } from "@/data/candidates";
 
 export const metadata = {
-	title: "dcbuilder - Candidates",
+	title: "Candidates",
 	description: "Talented builders looking for opportunities in crypto",
 };
 

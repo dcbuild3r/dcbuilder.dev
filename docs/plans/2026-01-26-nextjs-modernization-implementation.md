@@ -781,10 +781,10 @@ export default function Home() {
 								</ul>
 							</section>
 
-							{/* Development */}
+							{/* Engineering */}
 							<section>
 								<h2 className="text-2xl font-bold mb-4">
-									Development
+									Engineering
 								</h2>
 								<ul className="space-y-2 text-lg text-neutral-700 dark:text-neutral-300">
 									<li>• Rust</li>
@@ -830,7 +830,7 @@ bun dev
 Visit http://localhost:3000 and verify:
 
 -   Kaneki image displays
--   Research/Development/Angel Investing sections show
+-   Research/Engineering/Angel Investing sections show
 -   Theme toggle works
 -   Responsive layout on mobile
 
@@ -1095,11 +1095,11 @@ export const metadata: Metadata = {
 		template: "%s | dcbuilder",
 	},
 	description:
-		"Research, Development, Angel Investing in cryptography, distributed systems, and AI",
+		"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
 	openGraph: {
 		title: "dcbuilder",
 		description:
-			"Research, Development, Angel Investing in cryptography, distributed systems, and AI",
+			"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
 		url: "https://dcbuilder.dev",
 		siteName: "dcbuilder",
 		locale: "en_US",
@@ -1108,7 +1108,7 @@ export const metadata: Metadata = {
 	twitter: {
 		card: "summary_large_image",
 		title: "dcbuilder",
-		description: "Research, Development, Angel Investing",
+		description: "Research, Engineering, Angel Investing",
 	},
 	robots: {
 		index: true,

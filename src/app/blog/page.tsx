@@ -3,7 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { getAllPosts } from "@/lib/blog";
 
 export const metadata = {
-	title: "Blog | dcbuilder.eth",
+	title: "Blog",
 	description: "Thoughts on Ethereum, cryptography, and distributed systems.",
 };
 
@@ -50,7 +50,7 @@ export default function BlogPage() {
 										<span>{post.readingTime} min read</span>
 									</div>
 									<Link href={`/blog/${post.slug}`} className="block group cursor-pointer">
-										<h2 className="text-2xl font-bold mt-1 mb-2 group-hover:opacity-70 transition-opacity cursor-pointer">
+										<h2 className="text-2xl font-bold mt-1 mb-2 group-hover:scale-[1.02] origin-left transition-transform duration-150 cursor-pointer">
 											{post.title}
 										</h2>
 										<p className="text-neutral-600 dark:text-neutral-400">

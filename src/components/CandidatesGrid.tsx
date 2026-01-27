@@ -50,16 +50,18 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 
 	// Close expanded view on escape key
 	useEffect(() => {
+		if (!expandedCandidate) return;
+
 		const handleEscape = (e: KeyboardEvent) => {
 			if (e.key === "Escape") setExpandedCandidate(null);
 		};
-		if (expandedCandidate) {
-			document.addEventListener("keydown", handleEscape);
-			document.body.style.overflow = "hidden";
-		}
+		const previousOverflow = document.body.style.overflow;
+		document.addEventListener("keydown", handleEscape);
+		document.body.style.overflow = "hidden";
+
 		return () => {
 			document.removeEventListener("keydown", handleEscape);
-			document.body.style.overflow = "";
+			document.body.style.overflow = previousOverflow;
 		};
 	}, [expandedCandidate]);
 
@@ -377,7 +379,7 @@ function CandidateCard({
 			{/* Header */}
 			<div className="flex items-start gap-3">
 				{/* Profile Image */}
-				<div className="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+				<div className="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 hover:scale-[1.08] transition-transform duration-150">
 					<Image
 						src={profileImage}
 						alt={displayName}
