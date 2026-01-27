@@ -107,7 +107,7 @@ const companies = {
 		logo: "/images/investments/megaeth.jpg",
 		website: "https://megaeth.systems/",
 		category: "portfolio" as const,
-		twitter: "https://x.com/megaeth_labs",
+		twitter: "https://x.com/megaeth",
 		github: "https://github.com/megaeth-labs",
 	},
 	morpho: {
