@@ -97,6 +97,9 @@ export const candidates: Candidate[] = [
 		],
 		socials: {
 			twitter: "https://x.com/norswap",
+			linkedin: "https://linkedin.com/in/norswap",
+			telegram: "https://t.me/norswap",
+			email: "norswap@gmail.com",
 			website: "https://norswap.com",
 			cv: "https://norswap.com/resume/",
 		},
