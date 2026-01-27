@@ -74,16 +74,6 @@ export const investments: Investment[] = [
 		featured: true,
 	},
 	{
-		title: "Category Labs",
-		description: "Building Category Theory Infrastructure",
-		imageUrl: "https://www.category.xyz/",
-		logo: "/images/investments/category.jpg",
-		tier: 1,
-		featured: true,
-		x: "https://x.com/category_xyz",
-		github: "https://github.com/category-labs",
-	},
-	{
 		title: "Clique",
 		description: "Token Distribution Made Easy",
 		imageUrl: "https://www.clique.tech/",

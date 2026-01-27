@@ -28,7 +28,12 @@ export type JobTag =
 	| "accounting"
 	| "bci"
 	| "hardware"
-	| "talent";
+	| "talent"
+	| "leadership"
+	| "management"
+	| "product"
+	| "solana"
+	| "internship";
 
 export const tagLabels: Record<JobTag, string> = {
 	hot: "🔥 HOT",
@@ -57,6 +62,11 @@ export const tagLabels: Record<JobTag, string> = {
 	bci: "BCI",
 	hardware: "Hardware",
 	talent: "Talent",
+	leadership: "Leadership",
+	management: "Management",
+	product: "Product",
+	solana: "Solana",
+	internship: "Internship",
 };
 
 // Job tiers match portfolio tiers: 1-4 for portfolio companies, 5 for network, 6 for ecosystem
@@ -397,6 +407,20 @@ const companies = {
 		x: "https://x.com/Alchemy",
 		github: "https://github.com/alchemyplatform",
 	},
+	variant: {
+		name: "Variant",
+		logo: "/images/investments/variant.jpg",
+		website: "https://variant.fund/",
+		category: "network" as const,
+		x: "https://x.com/variantfund",
+	},
+	electricCapital: {
+		name: "Electric Capital",
+		logo: "/images/investments/electric-capital.png",
+		website: "https://www.electriccapital.com/",
+		category: "network" as const,
+		x: "https://x.com/electriccapital",
+	},
 };
 
 export const jobs: Job[] = [
@@ -523,7 +547,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Bioengineering",
 		link: "https://merge.io/careers",
-		tags: ["research", "bci"],
+		tags: ["research", "bci", "leadership"],
 	},
 	{
 		id: "merge-ml-research-scientist-bayesian",
@@ -880,7 +904,7 @@ export const jobs: Job[] = [
 		department: "People",
 		link: "https://morpho.org/jobs/job-fnaegqvocu",
 		featured: true,
-		tags: ["defi", "talent"],
+		tags: ["defi", "talent", "leadership"],
 	},
 	{
 		id: "morpho-technical-product-marketing-manager",
@@ -891,7 +915,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Marketing",
 		link: "https://morpho.org/jobs/job-2xuerfzdn6",
-		tags: ["defi", "marketing"],
+		tags: ["defi", "marketing", "management"],
 	},
 	{
 		id: "morpho-general-counsel",
@@ -1048,7 +1072,7 @@ export const jobs: Job[] = [
 		type: "internship",
 		department: "Engineering",
 		link: "https://ritual.net/careers/4068271007",
-		tags: ["ai", "cryptography", "entry-level"],
+		tags: ["ai", "cryptography", "entry-level", "internship"],
 	},
 	{
 		id: "ritual-legal-counsel",
@@ -1070,7 +1094,7 @@ export const jobs: Job[] = [
 		type: "internship",
 		department: "Research",
 		link: "https://ritual.net/careers/4358496007",
-		tags: ["ai", "research", "entry-level"],
+		tags: ["ai", "research", "entry-level", "internship"],
 	},
 	// Succinct Jobs
 	{
@@ -1095,7 +1119,7 @@ export const jobs: Job[] = [
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/succinct/7e7db7f4-7abd-485b-b28e-96a727cb4a65",
 		featured: true,
-		tags: ["cryptography", "marketing"],
+		tags: ["cryptography", "marketing", "leadership"],
 	},
 	{
 		id: "succinct-head-of-product",
@@ -1107,7 +1131,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/succinct/1cf47bb4-5ebb-418e-baa9-26cef32b4af2",
 		featured: true,
-		tags: ["cryptography", "protocol"],
+		tags: ["cryptography", "protocol", "leadership"],
 	},
 	// Prime Intellect Jobs
 	{
@@ -1201,7 +1225,7 @@ export const jobs: Job[] = [
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/primeintellect/3538e5bf-079e-476d-918b-be45f8ed05e5",
 		featured: true,
-		tags: ["ai", "bd"],
+		tags: ["ai", "bd", "leadership"],
 	},
 	{
 		id: "prime-intellect-head-of-growth",
@@ -1213,7 +1237,7 @@ export const jobs: Job[] = [
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/primeintellect/4c6ccfd6-6512-4905-979a-6dcc6d64a935",
 		featured: true,
-		tags: ["ai", "bd"],
+		tags: ["ai", "bd", "leadership"],
 	},
 	{
 		id: "prime-intellect-internship",
@@ -1223,7 +1247,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "internship",
 		link: "https://jobs.ashbyhq.com/primeintellect/486b3511-7128-46f9-93a5-fc1d748d8852",
-		tags: ["ai", "research", "entry-level"],
+		tags: ["ai", "research", "entry-level", "internship"],
 	},
 	{
 		id: "prime-intellect-lead-design-engineer",
@@ -1305,7 +1329,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/primeintellect/7f57964f-88d5-4811-8033-17ab2f232f15",
-		tags: ["ai"],
+		tags: ["ai", "leadership"],
 	},
 	{
 		id: "prime-intellect-open-application",
@@ -1338,7 +1362,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Regional",
 		link: "https://jobs.ashbyhq.com/monad.foundation/d5c22aae-9697-4077-bc4c-fa082863104f",
-		tags: ["protocol", "bd"],
+		tags: ["protocol", "bd", "leadership"],
 	},
 	{
 		id: "monad-foundation-technical-program-manager",
@@ -1349,7 +1373,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/monad.foundation/3241c294-b313-421b-8486-e55b2105ac19",
-		tags: ["protocol", "infra"],
+		tags: ["protocol", "infra", "management"],
 	},
 	{
 		id: "monad-foundation-design-engineer",
@@ -1502,7 +1526,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://eco-jobs.monad.xyz/companies/rarebetsports/jobs/64210595-director-of-engineering",
-		tags: ["gaming", "infra", "monad-ecosystem"],
+		tags: ["gaming", "infra", "monad-ecosystem", "leadership"],
 		tier: 3,
 	},
 	// Lucis Jobs
@@ -1540,7 +1564,7 @@ export const jobs: Job[] = [
 		department: "GTM",
 		link: "https://lucislife.notion.site/join-lucis-team",
 		featured: true,
-		tags: ["health", "marketing"],
+		tags: ["health", "marketing", "management"],
 	},
 	{
 		id: "lucis-preventive-medicine-doctor",
@@ -1612,7 +1636,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Global Policy Strategy",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/221b118a-2d76-4fd6-bffb-c95d5e02076f",
-		tags: ["protocol"],
+		tags: ["protocol", "management"],
 	},
 	{
 		id: "ef-associate-global-policy",
@@ -1796,7 +1820,7 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/e5b0781d-8a66-46ea-ba39-ebf0feb6053a",
 		featured: true,
-		tags: ["world"],
+		tags: ["world", "leadership"],
 	},
 	{
 		id: "world-field-ops-lead",
@@ -1877,7 +1901,7 @@ export const jobs: Job[] = [
 		department: "World App",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/5e1c4da2-e096-4f37-842a-b01a522e3314",
 		featured: true,
-		tags: ["world", "design"],
+		tags: ["world", "design", "leadership"],
 	},
 	{
 		id: "world-head-protocol",
@@ -1888,7 +1912,7 @@ export const jobs: Job[] = [
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d91841c6-72dd-42cb-bd5c-0b7299a6d74b",
 		featured: true,
-		tags: ["world", "protocol", "cryptography"],
+		tags: ["world", "protocol", "cryptography", "leadership"],
 	},
 	{
 		id: "world-logistics-ops-lead-na",
@@ -1978,7 +2002,7 @@ export const jobs: Job[] = [
 		type: "internship",
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/adffedc8-6e73-431d-93a2-04095c6ad07f",
-		tags: ["world", "security", "entry-level"],
+		tags: ["world", "security", "entry-level", "internship"],
 	},
 	{
 		id: "world-sr-accounting-ops-manager",
@@ -1988,7 +2012,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Finance",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/285cbc02-bf6c-4f9e-903c-85fb5a9e9c10",
-		tags: ["world"],
+		tags: ["world", "management"],
 	},
 	{
 		id: "world-sr-android-engineer-orbmini",
@@ -2469,7 +2493,7 @@ export const jobs: Job[] = [
 		type: "internship",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/5e076db5-ef04-46d2-a586-dc7675485808",
-		tags: ["hot", "world", "entry-level"],
+		tags: ["hot", "world", "entry-level", "internship"],
 		featured: true,
 	},
 	{
@@ -2480,7 +2504,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/85f8c4f7-6125-4d44-8c44-2367a46cc5e2",
-		tags: ["world"],
+		tags: ["world", "management"],
 	},
 	// Agora Jobs
 	{
@@ -2525,7 +2549,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations & Finance",
 		link: "https://careers.berachain.com/35128",
-		tags: ["bd"],
+		tags: ["bd", "leadership"],
 	},
 	{
 		id: "berachain-apac-bd",
@@ -2801,7 +2825,7 @@ export const jobs: Job[] = [
 		type: "internship",
 		department: "Research",
 		link: "https://jobs.blockchaincapital.com/companies/blockchain-capital-2/jobs/56345831-research-scholar-2026",
-		tags: ["vc", "research", "entry-level"],
+		tags: ["vc", "research", "entry-level", "internship"],
 	},
 	{
 		id: "blockchain-capital-legal-research-scholar",
@@ -2809,21 +2833,10 @@ export const jobs: Job[] = [
 		company: companies.blockchainCapital,
 		location: "Remote",
 		remote: true,
-		type: "internship",
+		type: "part-time",
 		department: "Legal",
 		link: "https://jobs.blockchaincapital.com/companies/blockchain-capital-2/jobs/27926758-legal-research-scholar",
 		tags: ["vc", "legal", "research", "entry-level"],
-	},
-	{
-		id: "blockchain-capital-engineering-scholar",
-		title: "Engineering Scholar - Spring or Summer 2024",
-		company: companies.blockchainCapital,
-		location: "San Francisco / New York",
-		remote: false,
-		type: "internship",
-		department: "Engineering",
-		link: "https://jobs.blockchaincapital.com/companies/blockchain-capital-2/jobs/26020530-engineering-scholar-spring-or-summer-2024",
-		tags: ["vc", "entry-level"],
 	},
 	// RockawayX Jobs
 	{
@@ -3088,7 +3101,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Customer Engineering",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4648724005",
 		tags: ["infra"],
 		tier: 4,
 	},
@@ -3100,7 +3113,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Customer Engineering",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4648719005",
 		tags: ["infra"],
 		tier: 4,
 	},
@@ -3112,7 +3125,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Customer Engineering",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4033855005",
 		tags: ["infra"],
 		tier: 4,
 	},
@@ -3124,8 +3137,8 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "contract",
 		department: "Design",
-		link: "https://www.alchemy.com/careers",
-		tags: ["marketing"],
+		link: "https://www.alchemy.com/careers/job/4650916005",
+		tags: ["marketing", "design"],
 		tier: 4,
 	},
 	{
@@ -3136,8 +3149,8 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://www.alchemy.com/careers",
-		tags: ["infra"],
+		link: "https://www.alchemy.com/careers/job/4642174005",
+		tags: ["infra", "leadership"],
 		tier: 4,
 	},
 	{
@@ -3148,7 +3161,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4637853005",
 		tags: ["infra"],
 		tier: 4,
 	},
@@ -3160,7 +3173,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4600128005",
 		tags: ["infra"],
 		tier: 4,
 	},
@@ -3172,7 +3185,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4020810005",
 		tags: ["protocol", "infra"],
 		tier: 4,
 	},
@@ -3184,7 +3197,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4648514005",
 		tags: ["infra"],
 		tier: 4,
 	},
@@ -3196,7 +3209,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4538329005",
 		tags: ["infra"],
 		tier: 4,
 	},
@@ -3208,7 +3221,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Leaders",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4595576005",
 		tier: 4,
 	},
 	{
@@ -3219,7 +3232,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Leaders",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4514511005",
 		tier: 4,
 	},
 	{
@@ -3230,8 +3243,8 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "full-time",
 		department: "Marketing",
-		link: "https://www.alchemy.com/careers",
-		tags: ["marketing"],
+		link: "https://www.alchemy.com/careers/job/4616104005",
+		tags: ["marketing", "management"],
 		tier: 4,
 	},
 	{
@@ -3242,8 +3255,8 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Product",
-		link: "https://www.alchemy.com/careers",
-		tags: ["infra"],
+		link: "https://www.alchemy.com/careers/job/4493804005",
+		tags: ["infra", "management"],
 		tier: 4,
 	},
 	{
@@ -3254,7 +3267,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Product",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4437123005",
 		tags: ["infra"],
 		tier: 4,
 	},
@@ -3266,8 +3279,8 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Product",
-		link: "https://www.alchemy.com/careers",
-		tags: ["infra"],
+		link: "https://www.alchemy.com/careers/job/4642183005",
+		tags: ["infra", "product", "solana"],
 		tier: 4,
 	},
 	{
@@ -3278,7 +3291,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Sales",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4461901005",
 		tags: ["bd"],
 		tier: 4,
 	},
@@ -3290,7 +3303,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Sales",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4600392005",
 		tags: ["bd"],
 		tier: 4,
 	},
@@ -3302,7 +3315,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Sales",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4600351005",
 		tags: ["bd"],
 		tier: 4,
 	},
@@ -3314,7 +3327,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Sales",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4539418005",
 		tags: ["bd"],
 		tier: 4,
 	},
@@ -3326,7 +3339,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Sales",
-		link: "https://www.alchemy.com/careers",
+		link: "https://www.alchemy.com/careers/job/4593927005",
 		tags: ["bd"],
 		tier: 4,
 	},
@@ -3338,8 +3351,70 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Sales",
-		link: "https://www.alchemy.com/careers",
-		tags: ["bd"],
+		link: "https://www.alchemy.com/careers/job/4635122005",
+		tags: ["bd", "management"],
+		tier: 4,
+	},
+	// Variant Jobs
+	{
+		id: "variant-investment-partner-liquid-venture",
+		title: "Investment Partner - Liquid Venture",
+		company: companies.variant,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Investment",
+		link: "https://variant.fund/careers/",
+		tags: ["vc"],
+		tier: 4,
+	},
+	// Electric Capital Jobs
+	{
+		id: "electric-capital-content-creator-crypto-data",
+		title: "Content Creator - Crypto Data",
+		company: companies.electricCapital,
+		location: "Palo Alto, CA",
+		remote: false,
+		type: "full-time",
+		department: "Content",
+		link: "https://jobs.electriccapital.com/companies/electric-capital",
+		tags: ["vc", "research"],
+		tier: 4,
+	},
+	{
+		id: "electric-capital-investor-relations-associate",
+		title: "Investor Relations Associate",
+		company: companies.electricCapital,
+		location: "Palo Alto, CA",
+		remote: false,
+		type: "full-time",
+		department: "Investor Relations",
+		link: "https://jobs.electriccapital.com/companies/electric-capital",
+		tags: ["vc"],
+		tier: 4,
+	},
+	{
+		id: "electric-capital-finance-associate",
+		title: "Finance Associate",
+		company: companies.electricCapital,
+		location: "Palo Alto, CA",
+		remote: false,
+		type: "full-time",
+		department: "Finance",
+		link: "https://jobs.electriccapital.com/companies/electric-capital",
+		tags: ["vc", "accounting"],
+		tier: 4,
+	},
+	{
+		id: "electric-capital-finance-associate-tax",
+		title: "Finance Associate (Tax Focus)",
+		company: companies.electricCapital,
+		location: "Palo Alto, CA",
+		remote: false,
+		type: "full-time",
+		department: "Finance",
+		link: "https://jobs.electriccapital.com/companies/electric-capital",
+		tags: ["vc", "accounting"],
 		tier: 4,
 	},
 ];
