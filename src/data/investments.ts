@@ -138,6 +138,7 @@ export const investments: Investment[] = [
 		logo: "/images/investments/friend.png",
 		tier: 2,
 		featured: true,
+		x: "https://x.com/AviSchiffmann",
 	},
 	{
 		title: "GasHawk",
