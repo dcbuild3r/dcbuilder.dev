@@ -31,9 +31,8 @@ export default function Home() {
 							</h2>
 							<ul className="space-y-2 text-lg text-inherit">
 								<li>• Ethereum</li>
-								<li>
-									• Programmable Cryptography (ZK, FHE, MPC,
-									TEE, ...)
+								<li className="whitespace-nowrap">
+									• Programmable Cryptography (ZK, FHE, MPC, TEE)
 								</li>
 								<li>• Digital Identity</li>
 								<li>• Distributed Systems</li>

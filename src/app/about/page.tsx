@@ -17,7 +17,7 @@ export default function About() {
 					<section className="flex flex-col md:flex-row items-center gap-12">
 						<Link href="/" className="shrink-0">
 							<Image
-								src="/images/dcbuilder.webp"
+								src="/images/dcbuilder.png"
 								alt="dcbuilder.eth"
 								width={200}
 								height={200}
