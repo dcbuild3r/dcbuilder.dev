@@ -65,6 +65,8 @@ export interface Company {
 	logo: string;
 	website: string;
 	category: RelationshipCategory;
+	twitter?: string;
+	github?: string;
 }
 
 export interface Job {
@@ -89,42 +91,56 @@ const companies = {
 		logo: "/images/investments/monad.jpg",
 		website: "https://www.monad.xyz/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/monad_xyz",
+		github: "https://github.com/monad-developers",
 	},
 	monadFoundation: {
 		name: "Monad Foundation",
 		logo: "/images/investments/monad.jpg",
 		website: "https://monad.xyz/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/monad_xyz",
+		github: "https://github.com/monad-developers",
 	},
 	megaeth: {
 		name: "MegaETH",
 		logo: "/images/investments/megaeth.jpg",
 		website: "https://megaeth.systems/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/megaeth_labs",
+		github: "https://github.com/megaeth-labs",
 	},
 	morpho: {
 		name: "Morpho",
 		logo: "/images/investments/morpho.png",
 		website: "https://morpho.org/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/MorphoLabs",
+		github: "https://github.com/morpho-org",
 	},
 	ritual: {
 		name: "Ritual",
 		logo: "/images/investments/ritual.png",
 		website: "https://ritual.net/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/ritualnet",
+		github: "https://github.com/ritual-net",
 	},
 	succinct: {
 		name: "Succinct",
 		logo: "/images/investments/succinct.png",
 		website: "https://succinct.xyz/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/SuccinctLabs",
+		github: "https://github.com/succinctlabs",
 	},
 	primeIntellect: {
 		name: "Prime Intellect",
 		logo: "/images/investments/prime-intellect.jpg",
 		website: "https://www.primeintellect.ai/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/PrimeIntellect",
+		github: "https://github.com/PrimeIntellect-ai",
 	},
 	perpl: {
 		name: "Perpl",
@@ -149,12 +165,15 @@ const companies = {
 		logo: "/images/investments/lucis.jpg",
 		website: "https://lucis.life/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/lucis_life",
 	},
 	sorella: {
 		name: "Sorella",
 		logo: "/images/investments/sorella.png",
 		website: "https://sorellalabs.xyz/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/SorellaLabs",
+		github: "https://github.com/sorellalabs",
 	},
 	flashbots: {
 		name: "Flashbots",
@@ -185,18 +204,24 @@ const companies = {
 		logo: "/images/investments/agora.jpg",
 		website: "https://www.agora.xyz/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/AgoraGovernance",
+		github: "https://github.com/voteagora",
 	},
 	rhinestone: {
 		name: "Rhinestone",
 		logo: "/images/investments/rhinestone.jpg",
 		website: "https://www.rhinestone.wtf/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/rhinestonewtf",
+		github: "https://github.com/rhinestonewtf",
 	},
 	berachain: {
 		name: "Berachain",
 		logo: "/images/investments/berachain.png",
 		website: "https://www.berachain.com/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/berachain",
+		github: "https://github.com/berachain",
 	},
 	// Berachain Ecosystem Companies
 	infraredFinance: {
@@ -234,6 +259,8 @@ const companies = {
 		logo: "/images/investments/inco.png",
 		website: "https://www.inco.org/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/inconetwork",
+		github: "https://github.com/Inco-fhevm",
 	},
 	taceo: {
 		name: "TACEO",
@@ -288,6 +315,7 @@ const companies = {
 		logo: "/images/investments/bagel.jpg",
 		website: "https://bagel.net/",
 		category: "portfolio" as const,
+		twitter: "https://x.com/bagel_network",
 	},
 	letsgoDevops: {
 		name: "Let's Go DevOps",
