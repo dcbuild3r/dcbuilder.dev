@@ -28,7 +28,7 @@ export function Navbar() {
 				{/* Center - Social Links */}
 				<div className="flex items-center gap-4">
 					<a
-						href="https://x.com/DCbuild3r"
+						href="https://x.com/dcbuilder"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="p-2 hover:scale-110 transition-transform cursor-pointer"
