@@ -3,7 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { getAllPosts } from "@/lib/blog";
 
 export const metadata = {
-	title: "Blog | dcbuilder.eth",
+	title: "Blog",
 	description: "Thoughts on Ethereum, cryptography, and distributed systems.",
 };
 

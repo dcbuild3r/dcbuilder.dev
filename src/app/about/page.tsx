@@ -4,7 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { affiliations } from "@/data/affiliations";
 
 export const metadata = {
-	title: "dcbuilder - About",
+	title: "About",
 };
 
 export default function About() {

@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props) {
 	}
 
 	return {
-		title: `${post.title} | dcbuilder.eth`,
+		title: post.title,
 		description: post.description,
 	};
 }
