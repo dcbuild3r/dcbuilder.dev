@@ -377,13 +377,13 @@ function CandidateCard({
 			{/* Header */}
 			<div className="flex items-start gap-3">
 				{/* Profile Image */}
-				<div className="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+				<div className="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 hover:scale-110 transition-transform">
 					<Image
 						src={profileImage}
 						alt={displayName}
 						width={48}
 						height={48}
-						className="object-cover w-full h-full hover:scale-110 transition-transform"
+						className="object-cover w-full h-full"
 						onError={(e) => {
 							console.warn(`[CandidatesGrid] Failed to load image for ${displayName}`);
 							e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
