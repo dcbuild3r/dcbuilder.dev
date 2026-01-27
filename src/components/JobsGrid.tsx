@@ -8,13 +8,14 @@ type FilterCategory = "all" | RelationshipCategory;
 
 // Company tiers matching portfolio rankings (lower = higher priority)
 const companyTiers: Record<string, number> = {
-	// Tier 1 - Top portfolio companies
+	// Tier 1 - Top portfolio companies + World
 	Morpho: 1,
 	"Prime Intellect": 1,
 	Lucis: 1,
 	MegaETH: 1,
 	Monad: 1,
 	"Monad Foundation": 1,
+	World: 1,
 	// Tier 2 - Strong portfolio companies
 	Succinct: 2,
 	Sorella: 2,
@@ -24,7 +25,6 @@ const companyTiers: Record<string, number> = {
 	Flashbots: 5,
 	"Ethereum Foundation": 5,
 	Aztec: 5,
-	World: 5,
 	// Tier 6 - Ecosystem (Monad ecosystem projects)
 	Perpl: 6,
 	Kuru: 6,
