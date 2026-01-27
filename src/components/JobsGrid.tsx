@@ -191,19 +191,35 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 			}
 		}
 
-		// Sort non-featured by tier, then alphabetically
-		nonFeatured.sort((a, b) => {
-			const tierA =
-				companyTiers[a.company.name] ??
-				(a.company.category === "portfolio" ? 4 : 5);
-			const tierB =
-				companyTiers[b.company.name] ??
-				(b.company.category === "portfolio" ? 4 : 5);
-			if (tierA !== tierB) return tierA - tierB;
-			return a.company.name.localeCompare(b.company.name);
+		// Group non-featured by tier
+		const getTier = (job: Job) =>
+			companyTiers[job.company.name] ??
+			(job.company.category === "portfolio" ? 4 : 5);
+
+		const tierGroups: Record<number, Job[]> = {};
+		nonFeatured.forEach((job) => {
+			const tier = getTier(job);
+			if (!tierGroups[tier]) tierGroups[tier] = [];
+			tierGroups[tier].push(job);
 		});
 
-		return [...hot, ...featured, ...nonFeatured];
+		// Shuffle each tier group (only after hydration)
+		if (shuffleKey > 0) {
+			Object.values(tierGroups).forEach((group) => {
+				for (let i = group.length - 1; i > 0; i--) {
+					const j = Math.floor(Math.random() * (i + 1));
+					[group[i], group[j]] = [group[j], group[i]];
+				}
+			});
+		}
+
+		// Combine tiers in order
+		const sortedNonFeatured = Object.keys(tierGroups)
+			.map(Number)
+			.sort((a, b) => a - b)
+			.flatMap((tier) => tierGroups[tier]);
+
+		return [...hot, ...featured, ...sortedNonFeatured];
 	}, [filteredJobs, shuffleKey]);
 
 	return (
