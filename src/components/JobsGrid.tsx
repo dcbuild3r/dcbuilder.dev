@@ -19,10 +19,14 @@ function ExpandedJobView({
 	job,
 	onClose,
 	jobUrl,
+	onViewOtherJobs,
+	otherJobsCount,
 }: {
 	job: Job;
 	onClose: () => void;
 	jobUrl: string;
+	onViewOtherJobs: () => void;
+	otherJobsCount: number;
 }) {
 	const isHot = job.tags?.includes("hot");
 	const [copiedLink, setCopiedLink] = useState<"job" | "apply" | null>(null);
@@ -286,6 +290,40 @@ function ExpandedJobView({
 									</>
 								)}
 							</button>
+						</div>
+
+						{/* Other Jobs & Careers */}
+						<div className="flex items-center gap-2">
+							{otherJobsCount > 0 && (
+								<button
+									onClick={onViewOtherJobs}
+									className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+								>
+									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+										<rect x="3" y="3" width="7" height="7" />
+										<rect x="14" y="3" width="7" height="7" />
+										<rect x="14" y="14" width="7" height="7" />
+										<rect x="3" y="14" width="7" height="7" />
+									</svg>
+									<span className="hidden sm:inline">{otherJobsCount} more {otherJobsCount === 1 ? "job" : "jobs"}</span>
+									<span className="sm:hidden">+{otherJobsCount}</span>
+								</button>
+							)}
+							{job.company.careers && (
+								<a
+									href={job.company.careers}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+									title="View all open positions"
+								>
+									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+										<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+										<circle cx="12" cy="7" r="4" />
+									</svg>
+									<span className="hidden sm:inline">Careers page</span>
+								</a>
+							)}
 						</div>
 
 						{/* Company Links */}
@@ -725,6 +763,26 @@ export function JobsGrid({ jobs }: JobsGridProps) {
               ]}
               className="flex-1 sm:flex-none sm:min-w-[160px]"
             />
+            {selectedCompany !== "all" && (() => {
+              const companyJob = jobs.find(j => j.company.name === selectedCompany);
+              const careersUrl = companyJob?.company.careers;
+              return careersUrl ? (
+                <a
+                  href={careersUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                  title={`View all ${selectedCompany} jobs`}
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                  <span className="hidden sm:inline">Careers</span>
+                </a>
+              ) : null;
+            })()}
           </div>
         </div>
 
@@ -1095,6 +1153,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
           job={expandedJob}
           onClose={closeJob}
           jobUrl={typeof window !== "undefined" ? `${window.location.origin}/jobs?job=${expandedJob.id}` : `/jobs?job=${expandedJob.id}`}
+          onViewOtherJobs={() => {
+            setSelectedCompany(expandedJob.company.name);
+            closeJob();
+          }}
+          otherJobsCount={jobs.filter(j => j.company.name === expandedJob.company.name && j.id !== expandedJob.id).length}
         />
       )}
     </div>
