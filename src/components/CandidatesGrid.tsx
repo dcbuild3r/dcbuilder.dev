@@ -165,17 +165,18 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 
 			return true;
 		});
-	}, [candidates, availabilityFilter, experienceFilter, searchQuery, selectedTags]);
+	}, [candidates, availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]);
 
 	const filterKey = useMemo(
 		() =>
 			[
 				availabilityFilter,
 				experienceFilter,
+				roleFilter,
 				searchQuery,
 				selectedTags.join(","),
 			].join("|"),
-		[availabilityFilter, experienceFilter, searchQuery, selectedTags]
+		[availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]
 	);
 
 	// Sort: hot first, then featured, then by tier (deterministic - no shuffle)
