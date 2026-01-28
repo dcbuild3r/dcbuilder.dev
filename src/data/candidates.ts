@@ -198,6 +198,10 @@ export const candidates: Candidate[] = [
 		],
 		companies: [
 			{ name: "OpenZeppelin", url: "https://openzeppelin.com" },
+			{ name: "Firewall", url: "https://firewall.xyz" },
+			{ name: "Code4rena", url: "https://code4rena.com" },
+			{ name: "Immutable", url: "https://immutable.com" },
+			{ name: "CertiK", url: "https://certik.com" },
 		],
 		socials: {
 			x: "https://x.com/_etherean",
