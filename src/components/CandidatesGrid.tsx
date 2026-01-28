@@ -328,7 +328,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 								<button
 									key={tag}
 									onClick={() => toggleTag(tag)}
-									className={`px-5 py-3 text-xl sm:text-sm font-medium rounded-xl sm:rounded-full transition-all ${
+									className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all ${
 										tag === "hot"
 											? selectedTags.includes(tag)
 												? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_15px_rgba(251,146,60,0.6)]"
@@ -347,7 +347,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 							))}
 							<button
 								onClick={() => setTagsExpanded(false)}
-								className="ml-auto px-5 py-3 text-xl sm:text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 flex items-center gap-1"
+								className="ml-auto px-3 py-1.5 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 flex items-center gap-1"
 							>
 								<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
