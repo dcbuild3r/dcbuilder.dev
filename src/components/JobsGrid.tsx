@@ -358,6 +358,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<JobTag[]>([]);
   const [tagsExpanded, setTagsExpanded] = useState(false);
+  const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
   const [shuffledJobs, setShuffledJobs] = useState<Job[]>([]);
   const [shuffledJobsKey, setShuffledJobsKey] = useState("");
   const [isHydrated, setIsHydrated] = useState(false);
@@ -448,6 +449,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
         }
       }
 
+      // Featured filter
+      if (showFeaturedOnly && !job.featured) {
+        return false;
+      }
+
       // Tag filter (job must have ALL selected tags)
       if (selectedTags.length > 0) {
         if (
@@ -486,6 +492,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     selectedLocation,
     searchQuery,
     selectedTags,
+    showFeaturedOnly,
   ]);
 
   const filterKey = useMemo(
@@ -496,8 +503,9 @@ export function JobsGrid({ jobs }: JobsGridProps) {
         selectedLocation,
         searchQuery,
         selectedTags.join(","),
+        showFeaturedOnly,
       ].join("|"),
-    [filterCategory, selectedCompany, selectedLocation, searchQuery, selectedTags],
+    [filterCategory, selectedCompany, selectedLocation, searchQuery, selectedTags, showFeaturedOnly],
   );
 
   // Helper to check if job is hot
@@ -680,6 +688,18 @@ export function JobsGrid({ jobs }: JobsGridProps) {
         <div className="space-y-3">
           {/* Toggle button and selected tags */}
           <div className="flex flex-wrap items-center gap-2">
+            {/* Featured only toggle */}
+            <button
+              onClick={() => setShowFeaturedOnly(!showFeaturedOnly)}
+              className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                showFeaturedOnly
+                  ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700"
+                  : "border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              }`}
+            >
+              <span className="text-amber-500">★</span>
+              <span>Featured only</span>
+            </button>
             <button
               onClick={() => setTagsExpanded(!tagsExpanded)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-full border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
