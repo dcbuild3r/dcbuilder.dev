@@ -628,7 +628,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     return Array.from(companies.values()).sort();
   }, [jobs]);
 
-  // Get all unique locations from jobs (split on "/", " or ", "," for multi-location jobs)
+  // Get all unique locations from jobs (split on "/", " or ", ",", "(", ")" for multi-location jobs)
   const allLocations = useMemo(() => {
     const locations = new Set<string>();
     jobs.forEach((job) => {
@@ -636,11 +636,10 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       if (job.remote) {
         locations.add("Remote");
       }
-      // Split location on "/", " or ", or "," and add each part
+      // Split location on various separators and add each part
       if (job.location) {
-        job.location.split(/\/| or |,/i).forEach((part) => {
-          // Trim whitespace and remove leading/trailing parentheses
-          const trimmed = part.trim().replace(/^\(+|\)+$/g, "").trim();
+        job.location.split(/[\/(),]| or /i).forEach((part) => {
+          const trimmed = part.trim();
           if (trimmed && trimmed.toLowerCase() !== "remote") {
             locations.add(trimmed);
           }
@@ -671,8 +670,9 @@ export function JobsGrid({ jobs }: JobsGridProps) {
         } else {
           // Check if any part of the job's location matches
           const jobLocations = job.location
-            .split(/\/| or |,/i)
-            .map((p) => p.trim().replace(/^\(+|\)+$/g, "").trim());
+            .split(/[\/(),]| or /i)
+            .map((p) => p.trim())
+            .filter(Boolean);
           if (!jobLocations.some((loc) => loc === selectedLocation)) {
             return false;
           }
