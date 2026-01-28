@@ -127,6 +127,14 @@ export const candidates: Candidate[] = [
 			"Senior Backend Engineer",
 			"Security Researcher",
 		],
+		companies: [
+			{ name: "Camp Network", url: "https://campnetwork.xyz" },
+			{ name: "Fuel Labs", url: "https://fuel.network" },
+			{ name: "Shell Protocol", url: "https://shellprotocol.io" },
+			{ name: "Halofi", url: "https://halofi.me" },
+			{ name: "Frontier", url: "https://frontier.xyz" },
+			{ name: "InstaDApp", url: "https://instadapp.io" },
+		],
 		socials: {
 			x: "https://x.com/Viraz04",
 			github: "https://github.com/viraj124",
@@ -156,6 +164,10 @@ export const candidates: Candidate[] = [
 			"Solidity Engineer",
 			"Smart Contract Developer",
 		],
+		companies: [
+			{ name: "Pixelcraft Studios", url: "https://pixelcraft.studio" },
+			{ name: "Web3Bridge", url: "https://web3bridge.com" },
+		],
 		socials: {
 			x: "https://x.com/timidan_x",
 			github: "https://github.com/timidan",
@@ -183,6 +195,9 @@ export const candidates: Candidate[] = [
 		preferredRoles: [
 			"Product Marketing Manager",
 			"Marketing Manager",
+		],
+		companies: [
+			{ name: "OpenZeppelin", url: "https://openzeppelin.com" },
 		],
 		socials: {
 			x: "https://x.com/_etherean",
