@@ -2353,6 +2353,30 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/flashbots.net/649fc903-8345-4ddc-9535-ddce374fe23b",
 		featured: true,
 		tags: ["protocol", "infra", "mev"],
+		description:
+			"Build and maintain reliable services in the MEV ecosystem at Flashbots. Work on critical infrastructure that enables fair, transparent markets for block space extraction across rollups and L1.",
+		responsibilities: [
+			"Build and maintain backend services for MEV infrastructure",
+			"Design scalable systems for rollup block building and transaction ordering",
+			"Develop high-performance, low-latency services in Rust or Go",
+			"Collaborate on research and implementation of new MEV solutions",
+			"Contribute to open-source tooling for the broader Ethereum ecosystem",
+		],
+		qualifications: [
+			"4-10 years of experience building production systems",
+			"Strong proficiency in Rust or Go",
+			"Deep understanding of distributed systems and blockchain infrastructure",
+			"Experience with rollup architectures and L2 scaling solutions",
+			"Familiarity with MEV, block building, or transaction ordering systems",
+		],
+		benefits: [
+			"Remote-first, globally distributed team",
+			"Above-market equity compensation",
+			"Unlimited PTO",
+			"$3,000 annual learning & development budget",
+			"Home office setup stipend",
+			"Work on cutting-edge MEV research and infrastructure",
+		],
 	},
 	{
 		id: "flashbots-senior-devops-engineer",
@@ -2365,6 +2389,32 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/flashbots.net/8fa82d12-baef-4f95-86af-a8354af820d8",
 		tags: ["protocol", "infra", "mev"],
 		featured: true,
+		description:
+			"Lead infrastructure and DevOps efforts for Flashbots' MEV infrastructure. Design, deploy, and maintain reliable systems that power block building and transaction ordering across Ethereum and L2s.",
+		responsibilities: [
+			"Design and maintain infrastructure for high-availability MEV services",
+			"Implement infrastructure-as-code using Terraform, Ansible, or similar tools",
+			"Manage Kubernetes clusters and container orchestration",
+			"Build monitoring, alerting, and observability systems",
+			"Automate deployment pipelines and improve CI/CD workflows",
+			"Collaborate with engineering teams to optimize system performance and reliability",
+		],
+		qualifications: [
+			"4-10 years of DevOps/SRE experience",
+			"Strong Linux systems administration and networking expertise",
+			"Proficiency with Terraform, Ansible, and Kubernetes",
+			"Experience with cloud providers (AWS, GCP, or Azure)",
+			"Understanding of blockchain node operations and infrastructure",
+			"Strong scripting skills (Bash, Python, or Go)",
+		],
+		benefits: [
+			"Remote-first, globally distributed team",
+			"Above-market equity compensation",
+			"Unlimited PTO",
+			"$3,000 annual learning & development budget",
+			"Home office setup stipend",
+			"Work on cutting-edge MEV research and infrastructure",
+		],
 	},
 	// Ethereum Foundation Jobs
 	{
