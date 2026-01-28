@@ -15,6 +15,12 @@ import {
 	DCBUILDER_TELEGRAM,
 } from "@/data/candidates";
 import { CustomSelect } from "./CustomSelect";
+import {
+	trackCandidateView,
+	trackCandidateCVClick,
+	trackCandidateSocialClick,
+	trackCandidateContactClick,
+} from "@/lib/posthog";
 
 interface CandidatesGridProps {
 	candidates: Candidate[];
@@ -63,12 +69,23 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		window.history.replaceState(null, "", url.pathname + url.search);
 	}, []);
 
+	// Helper to build candidate event properties for analytics
+	const getCandidateEventProps = useCallback((candidate: Candidate) => ({
+		candidate_id: candidate.id,
+		candidate_name: candidate.visibility === "anonymous"
+			? candidate.anonymousAlias || "Anonymous"
+			: candidate.name,
+		candidate_title: candidate.title,
+		is_featured: candidate.featured ?? false,
+	}), []);
+
 	// Sync URL with modal state
 	const openCandidate = useCallback((candidate: Candidate) => {
 		lastActiveRef.current = document.activeElement as HTMLElement | null;
 		setExpandedCandidate(candidate);
 		updateUrlParams({ candidate: candidate.id });
-	}, [updateUrlParams]);
+		trackCandidateView(getCandidateEventProps(candidate));
+	}, [updateUrlParams, getCandidateEventProps]);
 
 	const closeCandidate = useCallback(() => {
 		setExpandedCandidate(null);
@@ -505,6 +522,16 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				<ExpandedCandidateView
 					candidate={expandedCandidate}
 					onClose={closeCandidate}
+					onCVClick={() => trackCandidateCVClick(getCandidateEventProps(expandedCandidate))}
+					onSocialClick={(platform, url) => trackCandidateSocialClick({
+						...getCandidateEventProps(expandedCandidate),
+						platform,
+						url,
+					})}
+					onContactClick={(contactType) => trackCandidateContactClick({
+						...getCandidateEventProps(expandedCandidate),
+						contact_type: contactType,
+					})}
 				/>
 			)}
 
@@ -860,9 +887,15 @@ function CandidateCard({
 function ExpandedCandidateView({
 	candidate,
 	onClose,
+	onCVClick,
+	onSocialClick,
+	onContactClick,
 }: {
 	candidate: Candidate;
 	onClose: () => void;
+	onCVClick?: () => void;
+	onSocialClick?: (platform: string, url: string) => void;
+	onContactClick?: (contactType: "email" | "telegram" | "calendly") => void;
 }) {
 	const isAnonymous = candidate.visibility === "anonymous";
 	const displayName = isAnonymous
@@ -1216,6 +1249,7 @@ function ExpandedCandidateView({
 								href={DCBUILDER_TELEGRAM}
 								target="_blank"
 								rel="noopener noreferrer"
+								onClick={() => onContactClick?.("telegram")}
 								className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 transition-opacity"
 							>
 								<svg
@@ -1234,6 +1268,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.x}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={() => onSocialClick?.("x", candidate.socials!.x!)}
 										className="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 										title="X"
 									>
@@ -1251,6 +1286,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.github}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={() => onSocialClick?.("github", candidate.socials!.github!)}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 									>
 										<svg
@@ -1268,6 +1304,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.linkedin}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={() => onSocialClick?.("linkedin", candidate.socials!.linkedin!)}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 									>
 										<svg
@@ -1283,6 +1320,7 @@ function ExpandedCandidateView({
 								{candidate.socials?.email && (
 									<a
 										href={`mailto:${candidate.socials.email}`}
+										onClick={() => onContactClick?.("email")}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 									>
 										<svg
@@ -1305,6 +1343,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.website}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={() => onSocialClick?.("website", candidate.socials!.website!)}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 									>
 										<svg
@@ -1328,6 +1367,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.telegram}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={() => onSocialClick?.("telegram", candidate.socials!.telegram!)}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 									>
 										<svg
@@ -1345,6 +1385,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.cv}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={onCVClick}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
 									>
 										<svg
