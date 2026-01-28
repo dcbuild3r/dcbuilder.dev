@@ -1314,7 +1314,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="px-4 py-2 text-sm font-medium rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors"
+                        className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
+                          isHotJob(job)
+                            ? "bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-600 dark:to-amber-600 text-white hover:from-orange-600 hover:to-amber-600 dark:hover:from-orange-500 dark:hover:to-amber-500 shadow-[0_0_10px_rgba(251,146,60,0.4)]"
+                            : "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-200"
+                        }`}
                       >
                         Apply →
                       </a>
