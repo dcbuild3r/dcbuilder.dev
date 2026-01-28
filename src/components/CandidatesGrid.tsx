@@ -50,18 +50,53 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	);
 	const lastActiveRef = useRef<HTMLElement | null>(null);
 
-	// Mark as hydrated after mount
+	// Helper to update URL params without React re-render
+	const updateUrlParams = useCallback((updates: Record<string, string | null>) => {
+		const url = new URL(window.location.href);
+		Object.entries(updates).forEach(([key, value]) => {
+			if (value === null || value === "") {
+				url.searchParams.delete(key);
+			} else {
+				url.searchParams.set(key, value);
+			}
+		});
+		window.history.replaceState(null, "", url.pathname + url.search);
+	}, []);
+
+	// Sync URL with modal state
+	const openCandidate = useCallback((candidate: Candidate) => {
+		lastActiveRef.current = document.activeElement as HTMLElement | null;
+		setExpandedCandidate(candidate);
+		updateUrlParams({ candidate: candidate.id });
+	}, [updateUrlParams]);
+
+	const closeCandidate = useCallback(() => {
+		setExpandedCandidate(null);
+		updateUrlParams({ candidate: null });
+	}, [updateUrlParams]);
+
+	// Mark as hydrated after mount and check for candidate URL param
 	useEffect(() => {
 		// eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration flag set post-mount.
 		setIsHydrated(true);
-	}, []);
+
+		// Check if there's a candidate param in URL
+		const urlParams = new URLSearchParams(window.location.search);
+		const candidateId = urlParams.get("candidate");
+		if (candidateId) {
+			const candidate = candidates.find((c) => c.id === candidateId);
+			if (candidate) {
+				setExpandedCandidate(candidate);
+			}
+		}
+	}, [candidates]);
 
 	// Close expanded view on escape key
 	useEffect(() => {
 		if (!expandedCandidate) return;
 
 		const handleEscape = (e: KeyboardEvent) => {
-			if (e.key === "Escape") setExpandedCandidate(null);
+			if (e.key === "Escape") closeCandidate();
 		};
 		const previousOverflow = document.body.style.overflow;
 		document.addEventListener("keydown", handleEscape);
@@ -71,18 +106,13 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			document.removeEventListener("keydown", handleEscape);
 			document.body.style.overflow = previousOverflow;
 		};
-	}, [expandedCandidate]);
+	}, [expandedCandidate, closeCandidate]);
 
 	useEffect(() => {
 		if (!expandedCandidate && lastActiveRef.current) {
 			lastActiveRef.current.focus();
 		}
 	}, [expandedCandidate]);
-
-	const handleExpand = useCallback((candidate: Candidate) => {
-		lastActiveRef.current = document.activeElement as HTMLElement | null;
-		setExpandedCandidate(candidate);
-	}, []);
 
 	// Get all unique tags from candidates
 	const allTags = useMemo(() => {
@@ -464,7 +494,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 						<CandidateCard
 							key={candidate.id}
 							candidate={candidate}
-							onExpand={() => handleExpand(candidate)}
+							onExpand={() => openCandidate(candidate)}
 						/>
 					))
 				)}
@@ -474,7 +504,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			{expandedCandidate && (
 				<ExpandedCandidateView
 					candidate={expandedCandidate}
-					onClose={() => setExpandedCandidate(null)}
+					onClose={closeCandidate}
 				/>
 			)}
 
@@ -845,6 +875,7 @@ function ExpandedCandidateView({
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const titleId = `candidate-${candidate.id}-title`;
 	const descriptionId = `candidate-${candidate.id}-bio`;
+	const [copySuccess, setCopySuccess] = useState(false);
 
 	const availabilityColor = {
 		looking:
@@ -853,6 +884,18 @@ function ExpandedCandidateView({
 		"not-looking":
 			"bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
 	};
+
+	const handleCopyLink = useCallback(async () => {
+		const url = new URL(window.location.href);
+		url.searchParams.set("candidate", candidate.id);
+		try {
+			await navigator.clipboard.writeText(url.toString());
+			setCopySuccess(true);
+			setTimeout(() => setCopySuccess(false), 2000);
+		} catch (err) {
+			console.error("Failed to copy link:", err);
+		}
+	}, [candidate.id]);
 
 	useEffect(() => {
 		closeButtonRef.current?.focus();
@@ -902,26 +945,68 @@ function ExpandedCandidateView({
 					<div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
 				</div>
 
-				{/* Close Button - larger touch target on mobile */}
-				<button
-					ref={closeButtonRef}
-					onClick={onClose}
-					className="absolute top-4 right-4 z-10 p-3 sm:p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
-					aria-label="Close profile"
-				>
-					<svg
-						className="w-5 h-5 sm:w-6 sm:h-6"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						strokeLinecap="round"
-						strokeLinejoin="round"
+				{/* Action buttons - Copy Link and Close */}
+				<div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+					{/* Copy Link Button */}
+					<button
+						onClick={handleCopyLink}
+						className={`p-3 sm:p-2 rounded-full transition-colors ${
+							copySuccess
+								? "bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400"
+								: "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400"
+						}`}
+						aria-label={copySuccess ? "Link copied!" : "Copy link to profile"}
+						title={copySuccess ? "Link copied!" : "Copy link to profile"}
 					>
-						<line x1="18" y1="6" x2="6" y2="18" />
-						<line x1="6" y1="6" x2="18" y2="18" />
-					</svg>
-				</button>
+						{copySuccess ? (
+							<svg
+								className="w-5 h-5 sm:w-6 sm:h-6"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<polyline points="20 6 9 17 4 12" />
+							</svg>
+						) : (
+							<svg
+								className="w-5 h-5 sm:w-6 sm:h-6"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+								<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+							</svg>
+						)}
+					</button>
+
+					{/* Close Button */}
+					<button
+						ref={closeButtonRef}
+						onClick={onClose}
+						className="p-3 sm:p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
+						aria-label="Close profile"
+					>
+						<svg
+							className="w-5 h-5 sm:w-6 sm:h-6"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						>
+							<line x1="18" y1="6" x2="6" y2="18" />
+							<line x1="6" y1="6" x2="18" y2="18" />
+						</svg>
+					</button>
+				</div>
 
 				{/* Header Section */}
 				<div
@@ -933,7 +1018,7 @@ function ExpandedCandidateView({
 				>
 					<div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
 						{/* Profile Image */}
-						<div className="w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 ring-4 ring-white dark:ring-neutral-900">
+						<div className="w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 ring-4 ring-white dark:ring-neutral-900 hover:scale-[1.08] transition-transform duration-150">
 							<Image
 								src={profileImage}
 								alt={displayName}

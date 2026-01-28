@@ -14,6 +14,15 @@ const jobTypeLabels: Record<string, string> = {
 	internship: "Internship",
 };
 
+type JobDescriptionContent = {
+	description?: string;
+	responsibilities?: string[];
+	qualifications?: string[];
+	benefits?: string[];
+};
+
+const jobDescriptionCache = new Map<string, JobDescriptionContent>();
+
 // Expanded Job View Component
 function ExpandedJobView({
 	job,
@@ -30,6 +39,76 @@ function ExpandedJobView({
 }) {
 	const isHot = job.tags?.includes("hot");
 	const [copiedLink, setCopiedLink] = useState<"job" | "apply" | null>(null);
+	const [enrichedContent, setEnrichedContent] =
+		useState<JobDescriptionContent | null>(null);
+	const [isEnriching, setIsEnriching] = useState(false);
+	const missingSections =
+		!job.description ||
+		!job.responsibilities?.length ||
+		!job.qualifications?.length ||
+		!job.benefits?.length;
+
+	useEffect(() => {
+		setEnrichedContent(null);
+		if (!missingSections) return;
+
+		const cached = jobDescriptionCache.get(job.id);
+		if (cached) {
+			setEnrichedContent(cached);
+			return;
+		}
+
+		let cancelled = false;
+		const enrich = async () => {
+			setIsEnriching(true);
+			try {
+				const response = await fetch(
+					`/api/job-description?url=${encodeURIComponent(job.link)}`,
+				);
+				if (!response.ok) return;
+				const data = (await response.json()) as JobDescriptionContent;
+				if (!cancelled) {
+					jobDescriptionCache.set(job.id, data);
+					setEnrichedContent(data);
+				}
+			} catch (error) {
+				console.warn("[JobsGrid] Failed to enrich job description", error);
+			} finally {
+				if (!cancelled) setIsEnriching(false);
+			}
+		};
+
+		void enrich();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [job.id, job.link, missingSections]);
+
+	const loadingLabel = "Fetching details from job link...";
+	const defaultBullet = "Details will be shared during the process.";
+	const description =
+		job.description?.trim() ||
+		enrichedContent?.description?.trim() ||
+		(isEnriching ? loadingLabel : defaultBullet);
+	const responsibilities =
+		job.responsibilities && job.responsibilities.length > 0
+			? job.responsibilities
+			: enrichedContent?.responsibilities?.length
+				? enrichedContent.responsibilities
+				: [isEnriching ? loadingLabel : defaultBullet];
+	const qualifications =
+		job.qualifications && job.qualifications.length > 0
+			? job.qualifications
+			: enrichedContent?.qualifications?.length
+				? enrichedContent.qualifications
+				: [isEnriching ? loadingLabel : defaultBullet];
+	const benefits =
+		job.benefits && job.benefits.length > 0
+			? job.benefits
+			: enrichedContent?.benefits?.length
+				? enrichedContent.benefits
+				: [isEnriching ? loadingLabel : defaultBullet];
 
 	const copyToClipboard = async (text: string, type: "job" | "apply") => {
 		try {
@@ -88,7 +167,7 @@ function ExpandedJobView({
 				>
 					<div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
 						{/* Company Logo */}
-						<div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-white p-2 ring-2 ring-neutral-200 dark:ring-neutral-700">
+						<div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-white p-2 ring-2 ring-neutral-200 dark:ring-neutral-700 hover:scale-[1.08] transition-transform duration-150">
 							<Image
 								src={job.company.logo}
 								alt={job.company.name}
@@ -183,50 +262,42 @@ function ExpandedJobView({
 					)}
 
 					{/* Description */}
-					{job.description && (
-						<div>
-							<h3 className="text-lg font-semibold mb-3">About the Role</h3>
-							<p className="text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-line">
-								{job.description}
-							</p>
-						</div>
-					)}
+					<div>
+						<h3 className="text-lg font-semibold mb-3">About the Role</h3>
+						<p className="text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-line">
+							{description}
+						</p>
+					</div>
 
 					{/* Responsibilities */}
-					{job.responsibilities && job.responsibilities.length > 0 && (
-						<div>
-							<h3 className="text-lg font-semibold mb-3">Responsibilities</h3>
-							<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
-								{job.responsibilities.map((item, index) => (
-									<li key={index}>{item}</li>
-								))}
-							</ul>
-						</div>
-					)}
+					<div>
+						<h3 className="text-lg font-semibold mb-3">Responsibilities</h3>
+						<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
+							{responsibilities.map((item, index) => (
+								<li key={index}>{item}</li>
+							))}
+						</ul>
+					</div>
 
 					{/* Qualifications */}
-					{job.qualifications && job.qualifications.length > 0 && (
-						<div>
-							<h3 className="text-lg font-semibold mb-3">Qualifications</h3>
-							<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
-								{job.qualifications.map((item, index) => (
-									<li key={index}>{item}</li>
-								))}
-							</ul>
-						</div>
-					)}
+					<div>
+						<h3 className="text-lg font-semibold mb-3">Qualifications</h3>
+						<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
+							{qualifications.map((item, index) => (
+								<li key={index}>{item}</li>
+							))}
+						</ul>
+					</div>
 
 					{/* Benefits */}
-					{job.benefits && job.benefits.length > 0 && (
-						<div>
-							<h3 className="text-lg font-semibold mb-3">Benefits</h3>
-							<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
-								{job.benefits.map((item, index) => (
-									<li key={index}>{item}</li>
-								))}
-							</ul>
-						</div>
-					)}
+					<div>
+						<h3 className="text-lg font-semibold mb-3">Benefits</h3>
+						<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
+							{benefits.map((item, index) => (
+								<li key={index}>{item}</li>
+							))}
+						</ul>
+					</div>
 
 				</div>
 
@@ -466,6 +537,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
   const [isHydrated, setIsHydrated] = useState(false);
   const [expandedJob, setExpandedJob] = useState<Job | null>(null);
   const hasInitializedFromUrl = useRef(false);
+	const shuffledJobsKeyRef = useRef("");
 
   // Create job lookup map
   const jobsById = useMemo(() => {
@@ -530,7 +602,10 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       const newTags = prev.includes(tag)
         ? prev.filter((t) => t !== tag)
         : [...prev, tag];
-      updateUrlParams({ tags: newTags.length > 0 ? newTags.join(",") : null });
+      // Use setTimeout to avoid updating URL during render
+      setTimeout(() => {
+        updateUrlParams({ tags: newTags.length > 0 ? newTags.join(",") : null });
+      }, 0);
       return newTags;
     });
   }, [updateUrlParams]);
@@ -817,6 +892,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
   // Shuffle jobs in useEffect after hydration (React-safe)
   useEffect(() => {
     if (!isHydrated) return;
+		if (shuffledJobsKeyRef.current === filterKey) return;
 
     const hot = filteredJobs.filter((j) => isHotJob(j));
     const featured = filteredJobs.filter((j) => j.featured && !isHotJob(j));
@@ -845,6 +921,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       ...shuffledFeatured,
       ...sortedNonFeatured,
     ]);
+		shuffledJobsKeyRef.current = filterKey;
     setShuffledJobsKey(filterKey);
   }, [filteredJobs, isHydrated, getTier, filterKey]);
 
@@ -898,6 +975,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                 ...allCompanies.map((company) => ({ value: company, label: company })),
               ]}
               className="flex-1 sm:flex-none sm:min-w-[160px]"
+              searchable
             />
             {selectedCompany !== "all" && (() => {
               const companyJob = jobs.find(j => j.company.name === selectedCompany);
@@ -1286,6 +1364,29 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                       )}
                     </div>
                   )}
+
+                  {/* Actions */}
+                  <div className="mt-4 flex flex-wrap justify-center sm:justify-end gap-2">
+                    <a
+                      href={job.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors"
+                    >
+                      Apply →
+                    </a>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openJob(job);
+                      }}
+                      className="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    >
+                      View details
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

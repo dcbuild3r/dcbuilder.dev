@@ -38,7 +38,11 @@ export type JobTag =
 	| "sales"
 	| "account-abstraction"
 	| "privacy"
-	| "web3";
+	| "web3"
+	| "frontend"
+	| "backend"
+	| "fullstack"
+	| "rust";
 
 export const tagLabels: Record<JobTag, string> = {
 	hot: "🔥 HOT",
@@ -77,6 +81,10 @@ export const tagLabels: Record<JobTag, string> = {
 	"account-abstraction": "Account Abstraction",
 	privacy: "Privacy",
 	web3: "Web3",
+	frontend: "Frontend",
+	backend: "Backend",
+	fullstack: "Full Stack",
+	rust: "Rust",
 };
 
 // Job tiers match portfolio tiers: 1-4 for portfolio companies, 5 for network, 6 for ecosystem
@@ -444,6 +452,13 @@ const companies = {
 		category: "network" as const,
 		x: "https://x.com/electriccapital",
 	},
+	tempo: {
+		name: "Tempo",
+		logo: "/images/companies/tempo.jpg",
+		website: "https://tempo.xyz/",
+		category: "network" as const,
+		x: "https://x.com/tempo",
+	},
 };
 
 export const jobs: Job[] = [
@@ -492,7 +507,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://reilabs.io/careers/rust-engineer/",
 		featured: true,
-		tags: ["cryptography", "infra"],
+		tags: ["cryptography", "infra", "rust"],
 		salary: "$40 - $70/hr",
 		description:
 			"Join Reilabs as a Rust Engineer with blockchain and infrastructure expertise. Work on complex engineering challenges including designing and maintaining application backends connecting to Ethereum.",
@@ -518,6 +533,293 @@ export const jobs: Job[] = [
 			"B2B contract arrangement",
 		],
 	},
+	// Category Labs Jobs
+	{
+		id: "category-labs-open-application",
+		title: "Open Application",
+		company: companies.categoryLabs,
+		location: "Location not listed",
+		link: "https://www.category.xyz/category-careers",
+		description:
+			"Join Category Labs to help build technology for the future. The team focuses on VM optimization and distributed systems to deliver high-performance infrastructure.",
+		responsibilities: [
+			"Iterate, ship, and innovate at high speed",
+			"Tackle complex challenges in VM optimization and distributed systems",
+			"Apply theoretical solutions to real-world applications",
+			"Contribute to high-level system design and low-level performance optimization",
+			"Drive outsized impact as a small, cross-functional team",
+		],
+		qualifications: [
+			"Intellectual curiosity",
+			"Honesty and low ego",
+			"Data-driven mindset",
+			"No-BS mentality",
+		],
+	},
+	{
+		id: "category-labs-infra-engineer-apac",
+		title: "Infrastructure Engineer, APAC",
+		company: companies.categoryLabs,
+		location: "Remote (APAC)",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://jobs.ashbyhq.com/category-labs/ea8cf4f7-0db7-43e9-afa0-b4317db024ff",
+		tags: ["infra"],
+		description:
+			"Scale and automate infrastructure for a high-performance global network at Category Labs. You will own reliability and networking improvements across a fleet of baremetal systems.",
+		responsibilities: [
+			"Scale and support global networks across dozens of data centers",
+			"Productionize blockchain software for geo-diverse node fleets",
+			"Investigate and resolve network issues to maximize uptime",
+			"Build automation to eliminate operational pain points",
+			"Partner with node operators and core developers on best practices",
+			"Participate in on-call rotation for production support",
+		],
+		qualifications: [
+			"Deep experience with network protocols (TCP/IP, UDP) and hardware debugging",
+			"Experience with container and infra tooling (Docker, Kubernetes, Terraform, Ansible, Puppet)",
+			"Strong Linux command-line proficiency and Git workflows",
+			"Backend language proficiency (Python, Go, or C++)",
+			"Experience writing deployment and maintenance scripts",
+			"Experience improving observability and security practices",
+			"Experience running baremetal nodes at validator or L1 companies is a plus",
+		],
+		benefits: [
+			"World-class medical, dental, and vision coverage (US)",
+			"Unlimited paid time off",
+			"401(k) with company match",
+			"Lunch and dinner stipend (in-office NYC)",
+			"Monthly wellness benefit",
+			"Paid parental leave",
+			"EOR-based benefits for non-US hires",
+		],
+	},
+	{
+		id: "category-labs-senior-software-engineer",
+		title: "Senior Software Engineer",
+		company: companies.categoryLabs,
+		location: "New York or Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://jobs.ashbyhq.com/category-labs/45f674b2-d904-482e-a5e6-ece40b972e5a",
+		tags: ["protocol", "backend", "rust"],
+		salary: "$250,000+",
+		description:
+			"Research, design, and build core improvements to the blockchain protocol. You will work on distributed algorithms, cryptography, and consensus mechanisms in a small, high-performing team.",
+		responsibilities: [
+			"Design and implement improvements to consensus, gossip, and state sync",
+			"Design experiments and iterate based on worst-case testing",
+			"Integrate with rollups, bridges, and staking systems as needed",
+			"Build performant system components from scratch in Rust",
+		],
+		qualifications: [
+			"5+ years of software engineering experience in Rust, C++, or C",
+			"Experience building performant systems from scratch",
+			"Strong instincts for architecture, memory management, and performance tuning",
+			"Bachelor's in Computer Science or equivalent experience",
+			"Strong communication and collaboration skills",
+		],
+		benefits: [
+			"World-class medical, dental, and vision coverage (US)",
+			"Unlimited paid time off",
+			"401(k) with company match",
+			"Lunch and dinner stipend (in-office NYC)",
+			"Monthly wellness benefit",
+			"Paid parental leave",
+			"EOR-based benefits for non-US hires",
+		],
+	},
+	{
+		id: "category-labs-senior-software-engineer-compiler",
+		title: "Senior Software Engineer, Compiler",
+		company: companies.categoryLabs,
+		location: "New York or Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://jobs.ashbyhq.com/category-labs/e5c34899-cea1-4d25-beae-56e21acef3dd",
+		tags: ["infra", "backend"],
+		salary: "$250,000+",
+		description:
+			"Work on compiler and bytecode execution projects that accelerate EVM performance. You will research and build production systems for speculative execution and bytecode acceleration.",
+		responsibilities: [
+			"Drive performance-oriented compiler projects in a fast-paced environment",
+			"Research approaches to accelerate EVM bytecode execution",
+			"Design and implement performant production systems",
+		],
+		qualifications: [
+			"Proven track record in compiler design and system architecture",
+			"Strong software engineering fundamentals",
+			"Experience with industry-standard compiler technologies",
+			"Solid testing and benchmarking practices",
+			"Experience with compilers for parallel architectures",
+			"Strong C++ skills",
+			"Knowledge of type theory is a plus",
+		],
+		benefits: [
+			"World-class medical, dental, and vision coverage (US)",
+			"Unlimited paid time off",
+			"401(k) with company match",
+			"Lunch and dinner stipend (in-office NYC)",
+			"Monthly wellness benefit",
+			"Paid parental leave",
+			"EOR-based benefits for non-US hires",
+		],
+	},
+	{
+		id: "category-labs-smart-contract-engineer",
+		title: "Smart Contract Engineer",
+		company: companies.categoryLabs,
+		location: "New York or Remote",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://jobs.ashbyhq.com/category-labs/776ce314-aa12-471b-921a-98e93d3a8584",
+		tags: ["protocol", "web3"],
+		salary: "$200,000+",
+		description:
+			"Build application-layer smart contracts and primitives enabled by a high-performance EVM client. You will collaborate with internal and external teams to unblock developers.",
+		responsibilities: [
+			"Implement smart contracts tailored to Monad client throughput",
+			"Identify ecosystem needs with core engineering partners",
+			"Work directly with external application and infrastructure teams",
+		],
+		qualifications: [
+			"4+ years of software engineering with 3+ years in Solidity",
+			"Experience with L1/L2 or infrastructure projects",
+			"Expertise with Foundry and Hardhat and security best practices",
+			"Backend systems experience in C, C++, or Rust",
+			"Experience building significant systems from scratch",
+			"Strong communication and documentation skills",
+		],
+		benefits: [
+			"World-class medical, dental, and vision coverage (US)",
+			"Unlimited paid time off",
+			"401(k) with company match",
+			"Lunch and dinner stipend (in-office NYC)",
+			"Monthly wellness benefit",
+			"Paid parental leave",
+			"EOR-based benefits for non-US hires",
+		],
+	},
+	{
+		id: "category-labs-technical-program-manager",
+		title: "Technical Program Manager",
+		company: companies.categoryLabs,
+		location: "New York or Remote",
+		remote: true,
+		type: "full-time",
+		department: "Operations",
+		link: "https://jobs.ashbyhq.com/category-labs/bdfe89a6-83f6-4ab3-b642-180b7e2814a9",
+		tags: ["management"],
+		salary: "$225,000+",
+		description:
+			"Drive operational efficiency across the engineering organization. You will coordinate stakeholders, improve process, and manage releases end-to-end.",
+		responsibilities: [
+			"Drive product deliverables and quality practices with engineering teams",
+			"Coordinate ticket creation, prioritization, and resourcing",
+			"Improve communication and collaboration across engineering and research",
+			"Identify and fix process gaps to increase rigor and velocity",
+			"Anticipate blockers and keep stakeholders aligned",
+			"Own end-to-end release management and communications",
+		],
+		qualifications: [
+			"3+ years managing programs or projects in a technology company",
+			"2+ years improving processes and communication practices",
+			"High EQ and strong communication skills",
+			"Highly organized with strong attention to detail",
+			"Familiarity with Scrum and Kanban practices",
+			"Comfort working with highly technical teams",
+			"Interest in blockchain and continued learning",
+			"Vendor management experience is a plus",
+			"Degree in math, science, or engineering is helpful",
+		],
+		benefits: [
+			"World-class medical, dental, and vision coverage (US)",
+			"Unlimited paid time off",
+			"401(k) with company match",
+			"Lunch and dinner stipend (in-office NYC)",
+			"Monthly wellness benefit",
+			"Paid parental leave",
+		],
+	},
+	{
+		id: "category-labs-senior-researcher-mechanism-design",
+		title: "Senior Researcher, Mechanism Design",
+		company: companies.categoryLabs,
+		location: "Remote",
+		remote: true,
+		type: "full-time",
+		department: "Research",
+		link: "https://jobs.ashbyhq.com/category-labs/96ffb6ca-8c66-4570-9bd0-f8f0eb57c969",
+		tags: ["research", "protocol", "mev"],
+		salary: "$250,000",
+		description:
+			"Lead mechanism design for Monad, optimizing for economic security, decentralization, and performance. Collaborate with engineering to design and evaluate new protocol mechanisms.",
+		responsibilities: [
+			"Design and evaluate mechanisms for security, decentralization, and performance",
+			"Analyze attack vectors and mitigation strategies",
+			"Advise on partnerships with bridges and DeFi protocols",
+			"Stay current on mechanism design across major blockchains",
+			"Collaborate with engineering to test new mechanisms",
+			"Write findings for internal and public audiences",
+		],
+		qualifications: [
+			"Deep knowledge of mechanisms in existing blockchains",
+			"Experience with MEV, staking economics, and consensus designs",
+			"Understanding of spam prevention and trustlessness trade-offs",
+			"Knowledge of DeFi primitives (AMMs, bridges, oracles)",
+			"Excellent technical communication skills",
+			"Strong curiosity, attention to detail, and independence",
+			"Experience at L1/L2 protocols, cryptography, or distributed systems is a plus",
+			"Ability to code simulations is a plus",
+		],
+		benefits: [
+			"World-class medical, dental, and vision coverage (US)",
+			"Unlimited paid time off",
+			"401(k) with company match",
+			"Lunch and dinner stipend (in-office NYC)",
+			"Monthly wellness benefit",
+			"Paid parental leave",
+		],
+	},
+	{
+		id: "category-labs-senior-researcher-systems",
+		title: "Senior Researcher, Systems",
+		company: companies.categoryLabs,
+		location: "New York (Remote)",
+		remote: true,
+		type: "full-time",
+		department: "Research",
+		link: "https://jobs.ashbyhq.com/category-labs/015934c5-66e5-4042-94bb-aae0502cfea2",
+		tags: ["research", "infra"],
+		salary: "$250,000",
+		description:
+			"Research systems algorithms and architectures for storage and recovery in distributed environments. Work with a small, deeply technical team on high-impact systems problems.",
+		responsibilities: [
+			"Design performant algorithms and architectures for storage or recovery",
+			"Research new system architectures",
+			"Contribute to production-grade systems code",
+		],
+		qualifications: [
+			"PhD in Computer Science or equivalent experience",
+			"Research experience in databases or operating systems",
+			"Experience writing performant algorithms and production-grade code",
+			"Resourceful, collaborative, and adaptable",
+			"Curious about low-level system details",
+			"Interest in high-value, distributed systems",
+		],
+		benefits: [
+			"World-class medical, dental, and vision coverage (US)",
+			"Unlimited paid time off",
+			"401(k) with company match",
+			"Lunch and dinner stipend (in-office NYC)",
+			"Monthly wellness benefit",
+			"Paid parental leave",
+		],
+	},
 	{
 		id: "bagel-mts-infra",
 		title: "Member of Technical Staff (Infra)",
@@ -526,8 +828,33 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Engineering",
-		link: "https://jobs.bagel.com/",
-		tags: ["ai", "infra"],
+		link: "https://jobs.bagel.com/jobs/Member%20of%20Technical%20Staff%20(Infra)",
+		tags: ["ai", "infra", "backend"],
+		responsibilities: [
+			"- Build and operate distributed training stacks for diffusion models (U-Net, DiT, video diffusion, world-model variants) across multi-node GPU clusters.",
+			"- Implement and tune parallelism strategies for training and inference, including data parallel, tensor parallel, pipeline parallel, ZeRO/FSDP-style sharding, expert parallel, and diffusion-specific tricks (timestep-level scheduling, CFG parallelism, microbatching).",
+			"- Profile end-to-end GPU performance and remove bottlenecks across kernels, memory, comms, and I/O (CUDA graphs, kernel fusion, attention kernels, NCCL tuning, overlap of compute and comms).",
+			"- Own inference serving for diffusion workloads with high throughput and predictable latency, including dynamic batching, variable resolution handling, caching, prefill/conditioning optimization, and multi-GPU execution.",
+			"- Design robust orchestration for heterogeneous and preemptible environments (on-prem, bare metal, cloud, spot), including checkpointing, resumability, and fault tolerance.",
+			"- Build observability that is actually useful for diffusion: step-time breakdowns, denoising throughput, VRAM headroom, NCCL health, queueing, tail latency, error budgets, and cost per sample.",
+			"- Implement pragmatic quantization and precision strategies for diffusion inference and training, balancing quality, speed, and stability (BF16/FP16/TF32/FP8, weight-only INT8/INT4 where it makes sense, selective quantization of submodules).",
+			"- Improve developer velocity through reproducible environments, CI for performance regressions, and automation for cluster bring-up and rollouts.",
+			"- Write clear internal docs and occasional public technical deep-dives on blog.bagel.com when it helps the community and hiring.",
+			"Who You Might Be",
+			"You are the person teammates call when GPUs underperform, distributed training deadlocks, or a \"simple\" deployment turns into a week of whack-a-mole.",
+			"You like the ugly truth in traces and profiler timelines.",
+		],
+		benefits: [
+			"- Top of the market compensation.",
+			"- A deeply technical culture where bold frontier ideas are debated, stress-tested, and built.",
+			"- High autonomy and direct ownership of critical systems.",
+			"- In-person role at our Toronto office.",
+			"- Work that can set the direction for decentralized AI.",
+			"- Paid travel opportunities to the top ML conferences around the world.",
+			"Your Name (required): Your Email (required): Resume (optional): Accepted formats: PDF, DOC, DOCX (max 10MB) Link to your X or LinkedIn profile (required): Submit Application",
+		],
+		description:
+			"Infrastructure engineer focused on optimizing GPU clusters for training and serving large diffusion models. Build distributed training infrastructure across multi-node GPU clusters, implement parallelism strategies (data parallel, tensor parallel, pipeline parallel, FSDP), and develop high-throughput inference serving with predictable latency. Requires strong Linux/networking fundamentals, deep GPU performance expertise, and PyTorch/NCCL proficiency.",
 	},
 	{
 		id: "bagel-mts-research",
@@ -537,8 +864,32 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Research",
-		link: "https://jobs.bagel.com/",
+		link: "https://jobs.bagel.com/jobs/Member%20of%20Technical%20Staff%20(Research)",
 		tags: ["ai", "research", "cryptography"],
+		responsibilities: [
+			"- Prototype AI methodologies that can redefine distributed machine learning .",
+			"- Pioneer next-generation diffusion architectures including rectified flows, EDM variants, and latent consistency models that can scale across distributed infrastructures.",
+			"- Develop novel sampling algorithms, guidance mechanisms, and conditioning strategies that unlock new capabilities in controllable generation.",
+			"- Partner with cryptographers and economists to embed secure, incentive-aligned protocols into model pipelines.",
+			"- Publish papers at top-tier ML venues, organize workshops, and keep our roadmap aligned with the latest academic advances.",
+			"- Share insights through internal notes, external blog posts, and conference-grade write-ups (e.g., blog.bagel.com ).",
+			"- Contribute to open-source code, and stay active in the ML community.",
+			"Who You Might Be",
+			"You are extremely curious.",
+			"You actively consume the latest ML research - scanning arXiv, attending conferences, dissecting new open-source releases, and integrating breakthroughs into your own experimentation.",
+			"You thrive on first-principles reasoning, see potential in unexplored ideas, and view learning as a perpetual process.",
+			"Desired Skills (Flexible)",
+		],
+		benefits: [
+			"- Top of the market compensation and time to pursue open-ended research.",
+			"- A deeply technical culture where bold, frontier ideas are debated, stress-tested, and built.",
+			"- In-person role at our Toronto office.",
+			"- Ownership of work that can set the direction for decentralized AI.",
+			"- Paid travel opportunities to the top ML conferences around the world.",
+			"Your Name (required): Your Email (required): Resume (optional): Accepted formats: PDF, DOC, DOCX (max 10MB) Link to your Google Scholar or OpenReview profile (required): Submit Application",
+		],
+		description:
+			"Research-focused engineer advancing distributed machine learning and generative AI at Bagel Labs. Develop novel diffusion model architectures, create sampling algorithms for controllable generation, and integrate cryptographic protocols for secure training pipelines. Requires deep expertise in diffusion models (score matching, flow matching, consistency training), hands-on experience with distributed frameworks (DeepSpeed, Megatron-LM), and strong mathematical background in SDEs, ODEs, and optimal transport.",
 	},
 	{
 		id: "bagel-founding-gtm-lead",
@@ -548,8 +899,27 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Business Development",
-		link: "https://jobs.bagel.com/",
-		tags: ["ai", "bd"],
+		link: "https://jobs.bagel.com/jobs/Founding%20GTM",
+		tags: ["ai", "bd", "leadership"],
+		responsibilities: [
+			"- Map partners, rank by impact and pursue.",
+			"- Lead high level technical and commercial conversations.",
+			"- Represent Bagel in ML events.",
+			"- Track metrics, report learning, adjust strategy.",
+			"Requirements (flexible)",
+			"- Record of GTM, BD, or partnerships in an early-stage deep tech startups.",
+			"- Deep understanding of either the AI stack. Knowledge of decentralized-AI tooling is a plus.",
+			"- Existing network of builders, investors, or partners in AI.",
+			"- Bias to action and data.",
+			"- Crisp written and verbal communication.",
+		],
+		benefits: [
+			"- Competitive salary plus founding-team-level equity.",
+			"- Direct influence on company trajectory and culture.",
+			"Your Name (required): Your Email (required): Resume (optional): Accepted formats: PDF, DOC, DOCX (max 10MB) Link to your X or LinkedIn profile (required): Submit Application",
+		],
+		description:
+			"Own go-to-market end-to-end as a founding team member at Bagel Labs. Identify and prioritize partners, conduct strategic technical and business discussions, and represent the company at AI industry events. Looking for experience in GTM, BD, or partnerships at early-stage deep tech ventures with knowledge of AI infrastructure stacks. Competitive salary with significant founding-team equity.",
 	},
 	{
 		id: "letsgo-senior-devops-engineer",
@@ -560,8 +930,24 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "DevOps",
 		salary: "PLN 20,000 - 30,000",
+		benefits: [
+			"- 100% remote work.",
+			"- Negotiable salary if you're really good.",
+			"- Health insurance with PZU, fully covered by Let's Go DevOps.",
+			"- PZU Sport card.",
+			"- Development budget (courses, conferences, certifications - you decide).",
+			"- Equipment budget.",
+			"We're waiting for your application!",
+			"Apply for this position",
+			"Job Details",
+			"Work Schedule",
+			"Fully Remote",
+			"Location",
+		],
 		link: "https://apply.canvider.com/job/74",
-		tags: ["infra"],
+		tags: ["infra", "backend"],
+		description:
+			"Join a 30-person DevOps team managing AWS cloud infrastructure for notable clients like World, AirHelp, and SmartRecruiters. Design and implement CI/CD pipelines with integrated security measures, build Infrastructure as Code solutions using Terraform, and work directly with clients on cloud deployments.",
 	},
 	{
 		id: "wonderland-backend-developer",
@@ -572,7 +958,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://apply.wonderland.xyz/",
-		tags: ["infra", "defi"],
+		tags: ["infra", "defi", "backend"],
+		description:
+			"Build backend infrastructure for Wonderland's DeFi ecosystem. Work on distributed systems, APIs, and data pipelines that power decentralized finance applications used by protocols across the ecosystem.",
 	},
 	{
 		id: "wonderland-partner-lead",
@@ -584,6 +972,8 @@ export const jobs: Job[] = [
 		department: "Business Development",
 		link: "https://apply.wonderland.xyz/",
 		tags: ["bd", "defi"],
+		description:
+			"Drive strategic partnerships for Wonderland across the DeFi ecosystem. Build and nurture relationships with protocols, DAOs, and key stakeholders to expand Wonderland's presence and impact in decentralized finance.",
 	},
 	{
 		id: "wonderland-solidity-developer",
@@ -594,7 +984,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://apply.wonderland.xyz/",
-		tags: ["protocol", "defi"],
+		tags: ["protocol", "defi", "backend"],
+		description:
+			"Develop smart contracts for Wonderland's DeFi products. Design and implement secure, gas-efficient Solidity code for protocols that handle significant value across multiple blockchain networks.",
 	},
 	// Merge Labs Jobs
 	{
@@ -607,7 +999,7 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/5bb3a8fd-eb15-40aa-84ba-71602644ee95",
 		tags: ["ai", "research", "bci"],
-		description: "Join Merge Labs to build automation systems for cutting-edge brain-computer interface research. You'll work on robotic systems, data pipelines, and laboratory automation to accelerate our neuroscience research.",
+		description: "Join Merge Labs to build automation systems accelerating brain-computer interface research. Design and implement robotic systems for high-throughput neuroscience experiments, develop data pipelines for experimental data collection and analysis, and collaborate with research scientists to optimize laboratory protocols. Requires 3+ years experience in automation engineering or robotics with strong Python skills and experience with laboratory automation frameworks.",
 		responsibilities: [
 			"Design and implement automation solutions for laboratory workflows",
 			"Develop and maintain robotic systems for high-throughput experiments",
@@ -631,6 +1023,8 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/32d4669f-55fb-4cf5-ab3a-b878b1bee66d",
 		tags: ["research", "bci", "leadership"],
+		description:
+			"Lead Merge's vivarium operations supporting brain-computer interface research. Oversee animal care programs, ensure regulatory compliance, and manage the facilities enabling cutting-edge neuroscience experiments.",
 	},
 	{
 		id: "merge-ml-research-scientist-bayesian",
@@ -642,6 +1036,8 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/a8440ed8-9e11-4861-8413-fc23e2213790",
 		tags: ["ai", "research", "bci"],
+		description:
+			"Apply Bayesian optimization techniques to accelerate brain-computer interface development at Merge. Design algorithms to efficiently explore parameter spaces and optimize neural interface performance.",
 	},
 	{
 		id: "merge-ml-research-scientist-denovo",
@@ -653,6 +1049,8 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/1f97b001-7c40-4a9b-83a8-cd376c8a9152",
 		tags: ["ai", "research", "bci"],
+		description:
+			"Pioneer de novo protein and molecular design using machine learning at Merge. Develop generative models to create novel biological components for next-generation brain-computer interfaces.",
 	},
 	{
 		id: "merge-optical-systems-engineer",
@@ -663,7 +1061,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/1a505013-1509-4f8e-b2f2-f21528e11106",
-		tags: ["research", "bci"],
+		tags: ["research", "bci", "hardware"],
+		description:
+			"Design and develop optical systems for neural imaging at Merge. Build microscopy and imaging solutions that enable high-resolution observation of neural activity for brain-computer interface research.",
 	},
 	{
 		id: "merge-research-associate",
@@ -675,6 +1075,8 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/18ddbf85-4284-4004-af3c-257e5e23b8f4",
 		tags: ["research", "entry-level", "bci"],
+		description:
+			"Start your career in neuroscience research at Merge. Support cutting-edge brain-computer interface experiments, contribute to data collection and analysis, and work alongside world-class scientists.",
 	},
 	{
 		id: "merge-research-platform-scientist",
@@ -686,6 +1088,8 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/8497c9e7-f801-42af-9c8a-209ebc2c075b",
 		tags: ["research", "bci"],
+		description:
+			"Build and optimize research platforms enabling brain-computer interface development at Merge. Design experimental frameworks, develop protocols, and create tools that accelerate scientific discovery.",
 	},
 	{
 		id: "merge-scientist-biochemistry",
@@ -697,6 +1101,8 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/60c8f298-6d25-4609-8560-8aa282416ba4",
 		tags: ["research", "bci"],
+		description:
+			"Apply biochemistry expertise to advance brain-computer interface technology at Merge. Develop and characterize molecular tools for neural interfacing and contribute to breakthrough neurotechnology.",
 	},
 	{
 		id: "merge-scientist-cell-biology",
@@ -708,6 +1114,8 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/c7441553-d74b-4454-86af-ba8685107f88",
 		tags: ["research", "bci"],
+		description:
+			"Lead cell biology research for neural interface development at Merge. Study cellular responses to brain-computer interfaces and develop strategies for biocompatibility and long-term stability.",
 	},
 	{
 		id: "merge-scientist-gene-delivery",
@@ -719,6 +1127,8 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/4bf43efa-f95e-4978-a63e-ff790124cdff",
 		tags: ["research", "bci"],
+		description:
+			"Develop gene delivery systems for neural applications at Merge. Engineer viral vectors and delivery methods to enable precise genetic modifications in the nervous system for brain-computer interfaces.",
 	},
 	{
 		id: "merge-scientist-immunology",
@@ -730,6 +1140,8 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/6ff1173b-d4ec-4a2e-b2f4-48653c7a2ae1",
 		tags: ["research", "bci"],
+		description:
+			"Study immune responses to neural interfaces at Merge. Develop strategies to minimize immunogenicity and ensure long-term compatibility of brain-computer interface devices in the central nervous system.",
 	},
 	{
 		id: "merge-scientist-neurobiology",
@@ -741,6 +1153,8 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/6cc2b727-b741-4ca0-b4d3-c7bfd19352c2",
 		tags: ["research", "bci"],
+		description:
+			"Advance understanding of neural circuits for brain-computer interfaces at Merge. Study neural activity patterns, develop recording techniques, and contribute to decoding algorithms for next-generation BCIs.",
 	},
 	{
 		id: "merge-scientist-protein-engineering",
@@ -752,6 +1166,8 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/d789ed34-fca5-4e95-9c70-a6bedaf3d370",
 		tags: ["research", "bci"],
+		description:
+			"Engineer proteins for neural interface applications at Merge. Design and optimize biosensors, actuators, and therapeutic proteins that enable high-fidelity communication between brain and machine.",
 	},
 	{
 		id: "merge-computational-neuroscientist",
@@ -763,6 +1179,8 @@ export const jobs: Job[] = [
 		department: "Applications",
 		link: "https://jobs.ashbyhq.com/merge/8d754498-9f68-4bcd-864a-d788709df0d2",
 		tags: ["ai", "research", "bci"],
+		description:
+			"Develop computational models of neural activity for brain-computer interfaces at Merge. Apply machine learning and signal processing to decode brain signals and enable seamless human-machine communication.",
 	},
 	{
 		id: "merge-mle-mlops-fullstack",
@@ -773,7 +1191,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Applications",
 		link: "https://jobs.ashbyhq.com/merge/a606886c-6efd-4bce-aac9-c18cf06c1404",
-		tags: ["ai", "infra", "bci"],
+		tags: ["ai", "infra", "bci", "fullstack"],
+		description:
+			"Build ML infrastructure and full-stack applications for neural interface research at Merge. Deploy deep learning models, create data pipelines, and develop tools that accelerate brain-computer interface development.",
 	},
 	{
 		id: "merge-senior-application-engineer",
@@ -784,7 +1204,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Applications",
 		link: "https://jobs.ashbyhq.com/merge/b1281e16-92fb-4eb5-a39f-090c5cf8089d",
-		tags: ["infra", "bci"],
+		tags: ["infra", "bci", "backend"],
+		description:
+			"Build applications enabling brain-computer interface research at Merge. Develop software systems for data acquisition, real-time processing, and visualization of neural signals at scale.",
 	},
 	{
 		id: "merge-senior-infrastructure-engineer",
@@ -795,7 +1217,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Applications",
 		link: "https://jobs.ashbyhq.com/merge/d236d412-e12e-4589-b7ac-67c231c3becf",
-		tags: ["infra", "bci"],
+		tags: ["infra", "bci", "backend"],
+		description:
+			"Design and manage hybrid cloud and on-premise infrastructure for Merge's research operations. Build secure, high-performance systems that support sensitive neuroscience data and computation-intensive workloads.",
 	},
 	{
 		id: "merge-senior-data-engineer",
@@ -806,7 +1230,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Applications",
 		link: "https://jobs.ashbyhq.com/merge/7d1bbc3b-775a-436c-a0b4-23c6c150bee4",
-		tags: ["ai", "infra", "bci"],
+		tags: ["ai", "infra", "bci", "backend"],
+		description:
+			"Build data infrastructure for neuroscience research at Merge. Design pipelines for processing massive neural datasets, enable researchers with analytics tools, and create systems for managing scientific experiments at scale.",
 	},
 	{
 		id: "merge-electrical-engineer",
@@ -818,6 +1244,8 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/merge/c825475d-c0da-4965-83cf-1cb08538cdb7",
 		tags: ["research", "hardware", "bci"],
+		description:
+			"Design electrical systems for brain-computer interface devices at Merge. Develop circuits for neural signal acquisition, processing, and stimulation with ultra-low noise and high precision requirements.",
 	},
 	{
 		id: "merge-mechanical-engineer",
@@ -829,6 +1257,8 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/merge/52636ec6-b8b4-4218-9c3b-c1370a0df17c",
 		tags: ["research", "hardware", "bci"],
+		description:
+			"Design mechanical systems for neural interface devices at Merge. Create enclosures, implant housings, and precision mechanisms that enable reliable brain-computer interface operation in biological environments.",
 	},
 	{
 		id: "merge-talent-partner",
@@ -840,6 +1270,8 @@ export const jobs: Job[] = [
 		department: "People",
 		link: "https://jobs.ashbyhq.com/merge/6a73fd11-cef7-4547-b65e-ee878b2d4f25",
 		tags: ["talent", "bci"],
+		description:
+			"Build the team advancing brain-computer interfaces at Merge. Source and recruit exceptional scientists, engineers, and operators to join one of the most ambitious neurotechnology companies in the world.",
 	},
 	{
 		id: "morpho-integrations-engineer-apac",
@@ -851,7 +1283,21 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://morpho.org/jobs/integrations-engineer-apac",
 		tags: ["defi", "protocol"],
-		description: "Help grow Morpho's presence in the APAC region by building integrations with key DeFi protocols and partners. You'll work closely with ecosystem teams to onboard new markets and expand Morpho's lending infrastructure across Asia.",
+		responsibilities: [
+			"- Join partner-facing calls alongside Business Development to answer technical questions and scope integrations, building trust and confidence with APAC-based teams",
+			"- Build proof-of-concepts, code snippets, and custom dashboards for integrators to accelerate their implementation of Morpho's protocol",
+			"- Provide hands-on technical support to APAC integrators through Telegram and Slack channels to unblock implementation challenges in real-time",
+			"- Improve developer documentation and tutorials based on integrator feedback to create better onboarding experiences for future partners",
+			"- Forward bugs and product feedback from the field to internal engineering teams to drive continuous improvement of Morpho's products",
+			"- Proactively identify gaps in integration support processes and suggest improvements to enhance how Morpho serves builders globally",
+			"- Bridge language and timezone gaps by communicating technical details clearly with Mandarin-speaking product teams at major platforms",
+			"What Success Looks Like",
+			"In your first 30 days",
+			"You'll immerse yourself in Morpho's codebase, products, and documentation.",
+			"You'll shadow calls with the APAC Growth team, meet key integration partners, and start answering technical questions with support from the existing Integration team.",
+			"You'll have built foundational context on how Morpho works and where integration challenges typically arise.",
+		],
+		description: "Accelerate Morpho's expansion across APAC by providing technical guidance and support to crypto-native partners in their timezone. Participate in partner calls alongside BD to scope integrations, develop proof-of-concepts and custom dashboards for integrators, and provide real-time technical support via Telegram and Slack. Requires 5+ years software development, 3+ years in web3/blockchain, strong TypeScript proficiency, practical Solidity knowledge, and fluency in English and Mandarin.",
 		qualifications: [
 			"Strong experience with Solidity and DeFi protocols",
 			"Understanding of lending markets and yield optimization",
@@ -875,7 +1321,7 @@ export const jobs: Job[] = [
 		department: "Business Development",
 		link: "https://morpho.org/jobs/senior-enterprise-partnerships",
 		tags: ["defi", "bd"],
-		description: "Drive strategic partnerships with institutional players, DAOs, and DeFi protocols to grow Morpho's lending ecosystem. You'll identify, negotiate, and close high-value partnerships.",
+		description: "Drive strategic partnerships with institutional players, DAOs, and DeFi protocols to embed Morpho's lending infrastructure into major distribution platforms. Lead end-to-end commercial discussions from prospecting through onboarding, co-design tailored lending products with partners, and build relationships with fintechs, exchanges, and neobanks. Requires 5+ years BD experience in DeFi with strong crypto network and experience with enterprise sales cycles and complex negotiations.",
 		responsibilities: [
 			"Identify and pursue strategic partnership opportunities with institutions and protocols",
 			"Negotiate partnership terms and structure integration deals",
@@ -899,8 +1345,8 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://morpho.org/jobs/senior-protocol-engineer",
 		featured: true,
-		tags: ["defi", "protocol", "cryptography"],
-		description: "Design and implement core protocol features for Morpho's lending infrastructure. Work on smart contracts that secure billions in TVL across multiple chains.",
+		tags: ["defi", "protocol", "cryptography", "backend"],
+		description: "Design and implement core protocol features for Morpho's lending infrastructure securing over $10B in deposits. Engage in all aspects of protocol development from ideation to implementation and security, contributing to research on lending mechanisms, liquidations, and oracles while building prototypes in Solidity. Requires 4+ years Solidity development with production deployments and deep understanding of DeFi primitives and lending markets.",
 		responsibilities: [
 			"Architect and implement new protocol features in Solidity",
 			"Optimize gas efficiency and protocol performance",
@@ -924,8 +1370,8 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://morpho.org/jobs/staffsenior-backend-engineer",
 		featured: true,
-		tags: ["defi", "infra"],
-		description: "Build the backend infrastructure powering Morpho's DeFi applications. Design scalable systems for indexing blockchain data, managing risk parameters, and serving millions of users.",
+		tags: ["defi", "infra", "backend"],
+		description: "Build backend services in TypeScript/Node and GraphQL delivering reliable, low-latency user-facing experiences for Morpho's DeFi applications. Own backend domains end-to-end from data modeling with PostgreSQL to production system monitoring, while mentoring engineers and driving architectural improvements across teams. Requires 5+ years backend development with strong TypeScript skills and interest in blockchain indexing and real-time data processing.",
 		responsibilities: [
 			"Design and build scalable backend services and APIs",
 			"Implement blockchain indexing and data aggregation pipelines",
@@ -948,8 +1394,8 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://morpho.org/jobs/senior-frontend-engineer-1",
-		tags: ["defi"],
-		description: "Build beautiful, performant interfaces for Morpho's lending platform. Create intuitive DeFi experiences that make complex financial operations accessible to all users.",
+		tags: ["defi", "frontend"],
+		description: "Build world-class DeFi interfaces for Morpho's Prime applications using React, TypeScript, and Next.js. Implement secure Web3 wallet integrations using wagmi and viem, establish scalable frontend patterns for state management, and optimize bundle sizes and Web3 interaction flows to translate complex protocol mechanics into intuitive user experiences.",
 		responsibilities: [
 			"Build and maintain React/Next.js applications for the Morpho interface",
 			"Implement Web3 wallet integrations and transaction flows",
@@ -973,8 +1419,8 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://morpho.org/jobs/staff-fullstack-engineer",
 		featured: true,
-		tags: ["defi"],
-		description: "Lead technical initiatives across the full stack at Morpho. Drive architecture decisions, mentor the team, and build critical features end-to-end.",
+		tags: ["defi", "fullstack"],
+		description: "Design and operate full-stack systems at scale, architecting end-to-end delivery across web applications, APIs, and indexers. Build high-performance data pipelines for on-chain events with sub-second UI latency, design scalable API and SDK strategies enabling hundreds of external integrators, and mentor 5-10 engineers while raising engineering standards.",
 		responsibilities: [
 			"Lead technical design and implementation of major features",
 			"Work across frontend, backend, and smart contract layers",
@@ -998,7 +1444,7 @@ export const jobs: Job[] = [
 		department: "Business",
 		link: "https://morpho.org/jobs/defi-business-analyst",
 		tags: ["defi"],
-		description: "Analyze DeFi market dynamics, competitive landscape, and growth opportunities for Morpho. Provide data-driven insights to guide strategic decisions.",
+		description: "Convert blockchain data into actionable business insights by tracking lending flows across 20+ networks to understand user behavior and growth patterns. Aggregate on-chain data including positions, flows, liquidations, and yields to identify daily business development opportunities, and conduct deep-dive investigations on chains, assets, and competitive activity.",
 		responsibilities: [
 			"Analyze DeFi market trends, competitor strategies, and opportunities",
 			"Build models for market sizing and growth projections",
@@ -1022,7 +1468,7 @@ export const jobs: Job[] = [
 		department: "Support",
 		link: "https://morpho.org/jobs/customer-support-specialist",
 		tags: ["defi"],
-		description: "Be the voice of Morpho for our users. Help users navigate the protocol, resolve issues, and ensure an excellent experience with our lending platform.",
+		description: "Deliver world-class support to Morpho users and integrators across Discord, Telegram, Intercom, and Slack. Use blockchain analysis tools like Etherscan, Phalcon, and Tenderly to troubleshoot technical issues and create clear bug reports, while developing expertise in Morpho protocols and smart contracts to handle advanced questions autonomously. Requires 2+ years customer support in crypto/DeFi with strong understanding of Web3 wallets and excellent communication skills.",
 		responsibilities: [
 			"Respond to user inquiries via Discord, email, and other channels",
 			"Troubleshoot technical issues and guide users through transactions",
@@ -1046,7 +1492,7 @@ export const jobs: Job[] = [
 		department: "Markets",
 		link: "https://morpho.org/jobs/curator-market-specialist",
 		tags: ["defi", "trading"],
-		description: "Manage and optimize Morpho lending markets as a Curator. Analyze market parameters, set risk configurations, and ensure healthy market dynamics across the protocol.",
+		description: "Scale Morpho's curator ecosystem through stakeholder relationship management and operational support. Maintain regular contact with independent risk curators, provide guidance on vault setup and configuration best practices, track liquidity depth and utilization patterns across active markets, and identify optimization opportunities in vault configurations.",
 		responsibilities: [
 			"Monitor and adjust market parameters (LTV, liquidation thresholds, caps)",
 			"Analyze market health metrics and utilization rates",
@@ -1070,7 +1516,7 @@ export const jobs: Job[] = [
 		department: "Risk",
 		link: "https://morpho.org/jobs/risk-analyst",
 		tags: ["defi", "security"],
-		description: "Assess and monitor risks across Morpho's lending protocol. Build models to evaluate collateral risk, liquidation scenarios, and systemic vulnerabilities.",
+		description: "Bridge traditional finance and DeFi expertise by advising TradFi integrators on risk management frameworks for confidently adopting Morpho's protocol. Execute independent analysis using SQL, Python, or Dune to answer critical questions, build dashboards surfacing key risk metrics, and help crypto-native colleagues understand traditional finance conventions.",
 		responsibilities: [
 			"Build risk models for collateral assets and market parameters",
 			"Monitor protocol health and identify potential vulnerabilities",
@@ -1095,7 +1541,7 @@ export const jobs: Job[] = [
 		link: "https://morpho.org/jobs/protocol-security-engineer",
 		featured: true,
 		tags: ["defi", "protocol", "security"],
-		description: "Secure billions in TVL as Morpho's Protocol Security Engineer. Conduct security reviews, work with auditors, and build security tooling for the protocol.",
+		description: "Safeguard Morpho's smart contracts securing billions in TVL through multiple security approaches including formal verification using Certora, thorough security reviews, and bug bounty program management. Reduce attack surface by catching vulnerabilities earlier in development, coordinate with external auditors and researchers, and represent the team's security approaches at conferences.",
 		responsibilities: [
 			"Review smart contract code for security vulnerabilities",
 			"Coordinate with external auditors and bug bounty researchers",
@@ -1118,8 +1564,8 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://morpho.org/jobs/job-dnikd63nc7",
-		tags: ["defi", "infra"],
-		description: "Build and maintain the cloud infrastructure powering Morpho. Ensure high availability, security, and performance for our DeFi applications.",
+		tags: ["defi", "infra", "backend"],
+		description: "Architect multichain production infrastructure with Kubernetes and AWS targeting 99.95%+ uptime for Morpho's DeFi applications. Build self-service CI/CD and GitOps capabilities, design high-throughput event-driven pipelines processing billions of on-chain events with sub-minute latency, and implement end-to-end observability using Prometheus, Grafana, and OpenTelemetry.",
 		responsibilities: [
 			"Design and maintain cloud infrastructure (AWS/GCP)",
 			"Implement CI/CD pipelines and deployment automation",
@@ -1144,7 +1590,7 @@ export const jobs: Job[] = [
 		link: "https://morpho.org/jobs/job-fnaegqvocu",
 		featured: true,
 		tags: ["defi", "talent", "leadership"],
-		description: "Lead Morpho's people function and build a world-class team. Define talent strategy, culture initiatives, and organizational development for a fast-growing DeFi protocol.",
+		description: "Scale Morpho's People function from early stage to 150+ team members, championing culture through hiring, onboarding, and engagement initiatives. Own the complete employee lifecycle from recruitment through retention leveraging AI-driven insights, build and manage a high-performing People team, and connect hiring plans with product and business priorities.",
 		responsibilities: [
 			"Develop and execute talent acquisition strategy",
 			"Build company culture and employee experience programs",
@@ -1168,7 +1614,7 @@ export const jobs: Job[] = [
 		department: "Marketing",
 		link: "https://morpho.org/jobs/job-2xuerfzdn6",
 		tags: ["defi", "marketing", "management"],
-		description: "Drive product marketing for Morpho's lending protocol. Translate complex DeFi concepts into compelling narratives for developers, protocols, and users.",
+		description: "Translate Morpho's technical capabilities into compelling narratives that accelerate enterprise adoption and drive competitive advantage. Develop product messaging and value propositions, create sales enablement materials including pitch decks and product sheets, and lead cross-functional go-to-market launches for features, products, and partnerships.",
 		responsibilities: [
 			"Create technical content (docs, tutorials, blog posts)",
 			"Develop go-to-market strategies for new features and markets",
@@ -1192,7 +1638,7 @@ export const jobs: Job[] = [
 		department: "Legal",
 		link: "https://morpho.org/jobs/job-00x52y1m34",
 		tags: ["defi", "legal"],
-		description: "Lead Morpho's legal function across regulatory, corporate, and protocol governance matters. Navigate the evolving DeFi regulatory landscape.",
+		description: "Build and scale Morpho's Legal and Public Affairs organization, owning legal and public affairs roadmaps aligned with business priorities. Lead negotiations for complex, high-value partnerships with traditional finance and US institutional players, transform ambiguous situations into risk-weighted paths forward, and serve as senior spokesperson with regulators and policymakers.",
 		responsibilities: [
 			"Advise on regulatory compliance across jurisdictions",
 			"Manage corporate legal matters and external counsel",
@@ -1218,7 +1664,7 @@ export const jobs: Job[] = [
 		link: "https://www.megaeth.com/about#career",
 		featured: true,
 		tags: ["legal"],
-		description: "Join MegaETH's legal team to support the development of the first real-time blockchain. Handle regulatory matters, partnerships, and corporate governance.",
+		description: "Join MegaETH's legal team reporting to the General Counsel with significant autonomy and leadership exposure. Handle a wide array of fintech, SaaS, blockchain, and collaboration agreements while advising on novel product development across DeFi, RWAs, tokenized assets, NFTs, gaming, and payments in a business-forward approach to legal risk management.",
 		responsibilities: [
 			"Advise on regulatory compliance and legal risks",
 			"Draft and negotiate partnership and commercial agreements",
@@ -1373,7 +1819,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://ritual.net/careers/4083940007",
-		tags: ["ai", "cryptography"],
+		tags: ["ai", "cryptography", "frontend"],
 		description:
 			"Develop interfaces for Ritual's AI and blockchain infrastructure, creating dashboards and monitoring tools for distributed systems and Ritual Chain applications.",
 		responsibilities: [
@@ -1439,7 +1885,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://ritual.net/careers/4609616007",
-		tags: ["ai", "cryptography", "infra"],
+		tags: ["ai", "cryptography", "infra", "backend"],
 		description:
 			"Build and scale heterogeneous blockchain infrastructure at Ritual with emphasis on node specialization, consensus mechanisms, and distributed AI execution.",
 		responsibilities: [
@@ -1472,7 +1918,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://ritual.net/careers/4614221007",
-		tags: ["ai", "cryptography", "protocol"],
+		tags: ["ai", "cryptography", "protocol", "backend"],
 		description:
 			"Extend the EVM to support advanced computational capabilities through protocol-level modifications at Ritual, developing an execution layer optimized for AI operations.",
 		responsibilities: [
@@ -1774,7 +2220,7 @@ export const jobs: Job[] = [
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/primeintellect/5de44365-7209-4969-b741-945bfae724a0",
 		tags: ["ai", "bd"],
-		description: "Drive revenue growth for Prime Intellect's distributed AI training platform. Sell to AI labs, enterprises, and research institutions building frontier models.",
+		description: "Sell Prime Intellect's compute infrastructure and reinforcement learning post-training services to AI labs and enterprises building frontier models. Manage full sales cycles from prospecting through close, design pilots and negotiate long-term contracts with technical buyers, and identify expansion opportunities to grow accounts into multi-year engagements.",
 		responsibilities: [
 			"Manage full sales cycle from prospecting to close",
 			"Build relationships with AI research teams and enterprise buyers",
@@ -1799,7 +2245,7 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/afa6079a-5a35-4f90-ba88-780e4d36112f",
 		featured: true,
 		tags: ["ai", "research"],
-		description: "Join Prime Intellect's mission to build open-source AGI. Work on cutting-edge research in distributed training, model architectures, and alignment.",
+		description: "Join a paid 3-12 month residency bridging talented individuals into AI research at Prime Intellect. Contribute to developing state-of-the-art AI models across distributed infrastructure, open language models, coding agents, and scientific discovery systems while gaining hands-on experience deploying large-scale models across distributed GPU clusters.",
 		responsibilities: [
 			"Conduct research on distributed training algorithms",
 			"Experiment with novel model architectures and training techniques",
@@ -1824,7 +2270,7 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/bbfe94a6-d1a8-47e9-86af-f117277cdacb",
 		featured: true,
 		tags: ["ai", "research"],
-		description: "Build evaluation frameworks and data pipelines for training frontier AI models. Your work will shape how we measure progress toward AGI.",
+		description: "Bridge research and customers by prototyping solutions and translating real-world insights into technical requirements. Design novel reinforcement learning methods including RLHF and GRPO, build evaluation harnesses and verifiers to measure reasoning and agentic behavior in real-world workflows, and architect distributed training and inference pipelines ensuring scalability.",
 		responsibilities: [
 			"Design and implement model evaluation benchmarks",
 			"Build data curation and quality pipelines",
@@ -1849,7 +2295,7 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/46d9d060-5f48-4491-848f-bafbeb3a4325",
 		featured: true,
 		tags: ["ai", "research"],
-		description: "Advance the state of the art in reinforcement learning and AI agents. Build systems that learn from feedback and operate autonomously in complex environments.",
+		description: "Shape product direction for Prime Intellect's verifiers, Environments Hub, and training services while designing agents and evaluation harnesses for real-world workflows. Implement novel RL and post-training methods for domain-specific alignment, prototype multi-agent and memory-augmented systems, and partner with external researchers on environment design.",
 		responsibilities: [
 			"Research and implement RL algorithms for language models",
 			"Develop AI agent architectures and training methods",
@@ -1873,7 +2319,7 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/primeintellect/32bb58b9-087c-4c67-8c3a-e3842455cc92",
 		tags: ["ai"],
-		description: "Build and optimize Prime Intellect's business operations. Drive efficiency across finance, legal, HR, and administrative functions.",
+		description: "Serve as an operational force multiplier behind Prime Intellect's rapid growth by building and optimizing systems across GTM, finance, and operations. Develop dashboards for key metrics including revenue, compute usage, and burn rate, own vendor coordination across compute suppliers and service providers, and support operating cadence through weekly reviews and quarterly planning.",
 		responsibilities: [
 			"Manage day-to-day business operations and processes",
 			"Coordinate with legal, finance, and HR functions",
@@ -1897,7 +2343,7 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/primeintellect/eb757c35-2741-4eb5-8474-00c4ce1b1cd0",
 		tags: ["ai"],
-		description: "Work directly with Prime Intellect's founders on high-impact initiatives. A fast track to learning how to build an AI company from the ground up.",
+		description: "Function as an extension of Prime Intellect's senior management in this high-trust, high-pace role at the center of cutting-edge AI development. Transform vague challenges into actionable plans, coordinate special projects spanning operations, finance, recruiting, and communications, and establish lightweight systems that make execution predictable across time zones.",
 		responsibilities: [
 			"Support founders on strategic projects and priorities",
 			"Conduct research and analysis on key business decisions",
@@ -1922,7 +2368,7 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/8d1d79bf-0032-4e37-a7dd-ce53ebc5a612",
 		featured: true,
 		tags: ["ai", "bd"],
-		description: "Build Prime Intellect's go-to-market function from scratch. Define positioning, build sales processes, and close the first enterprise customers.",
+		description: "Build Prime Intellect's go-to-market strategy for distributed AI infrastructure from scratch. Develop GTM strategies for U.S. and European markets, establish partnerships with cloud providers and AI tool developers, create complete sales playbooks and SDR programs, and target enterprise deals at $100k+ ACV while maintaining velocity for smaller partnerships.",
 		responsibilities: [
 			"Develop go-to-market strategy and positioning",
 			"Build sales playbooks and processes",
@@ -1947,7 +2393,7 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/3538e5bf-079e-476d-918b-be45f8ed05e5",
 		featured: true,
 		tags: ["ai", "bd", "leadership"],
-		description: "Lead Prime Intellect's enterprise sales motion. Build and manage the team selling distributed training infrastructure to the world's largest AI organizations.",
+		description: "Build and scale Prime Intellect's enterprise sales function from the ground up, leading full-funnel revenue generation from outbound through closing. Develop repeatable sales approaches for compute and RL post-training services targeting AI labs, research organizations, and foundation model builders, while establishing sales processes, playbooks, and quota structures.",
 		responsibilities: [
 			"Build and lead the enterprise sales team",
 			"Develop strategic account plans for key targets",
@@ -1972,7 +2418,7 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/4c6ccfd6-6512-4905-979a-6dcc6d64a935",
 		featured: true,
 		tags: ["ai", "bd", "leadership"],
-		description: "Own Prime Intellect's growth strategy across all channels. Drive user acquisition, activation, and revenue growth for the distributed training platform.",
+		description: "Connect Prime Intellect's open superintelligence infrastructure to market channels, spanning sales, marketing, partnerships, and customer success across enterprise and developer segments. Establish go-to-market positioning for RL infrastructure, close enterprise contracts for post-training and compute services, and build cross-functional growth teams with data-driven activation experiments.",
 		responsibilities: [
 			"Develop and execute comprehensive growth strategy",
 			"Build and lead growth marketing and sales teams",
@@ -1995,7 +2441,7 @@ export const jobs: Job[] = [
 		type: "internship",
 		link: "https://jobs.ashbyhq.com/primeintellect/486b3511-7128-46f9-93a5-fc1d748d8852",
 		tags: ["ai", "research", "entry-level", "internship"],
-		description: "Join Prime Intellect for a summer internship working on distributed AI training. Gain hands-on experience with frontier AI research and infrastructure.",
+		description: "Join Prime Intellect's team building infrastructure for reinforcement learning at scale. Work alongside world-class researchers on the open superintelligence stack, with opportunities to build real systems, contribute to open-source projects, and develop deep expertise in AI, distributed computing, or systems architecture based on your strengths and learning speed.",
 		responsibilities: [
 			"Work on research or engineering projects with the team",
 			"Contribute to open-source AI projects",
@@ -2017,7 +2463,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Product",
 		link: "https://jobs.ashbyhq.com/primeintellect/fd798bc6-b2a5-4d73-ac18-77730e24a6bd",
-		tags: ["ai", "design"],
+		tags: ["ai", "design", "frontend"],
 		description:
 			"Lead the design vision for Prime Intellect's products and brand. You'll shape how developers and researchers interact with our decentralized AI training platform through thoughtful UX, compelling visuals, and cohesive design systems.",
 		responsibilities: [
@@ -2045,7 +2491,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/primeintellect/c074bdd9-bee2-4ee9-ae03-aa8f7537682c",
 		featured: true,
-		tags: ["ai", "infra"],
+		tags: ["ai", "infra", "fullstack"],
 		description:
 			"Build the full-stack platform that enables decentralized AI training at scale. You'll work across the entire stack—from React frontends to Python backends to infrastructure—creating tools that researchers use to train frontier models.",
 		responsibilities: [
@@ -2073,7 +2519,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/primeintellect/297d925e-5a42-40bd-b02f-5c928d226f18",
 		featured: true,
-		tags: ["ai", "infra"],
+		tags: ["ai", "infra", "backend"],
 		description:
 			"Build and scale GPU infrastructure for decentralized AI training across globally distributed compute. You'll work on systems that orchestrate thousands of GPUs, optimize resource utilization, and enable training runs across heterogeneous hardware.",
 		responsibilities: [
@@ -2318,7 +2764,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/monad.foundation/b912ec98-a4d8-43d2-ad6c-d7a3e4312c2d",
-		tags: ["protocol", "design"],
+		tags: ["protocol", "design", "frontend"],
 		description:
 			"Bridge design and engineering at Monad, creating polished interfaces and developer experiences. You'll build beautiful, functional products that showcase Monad's capabilities to developers and users.",
 		responsibilities: [
@@ -2482,8 +2928,10 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDrmsgm_jr0vUukDYYBsb0Ss",
-		tags: ["defi", "trading", "infra", "monad-ecosystem"],
+		tags: ["defi", "trading", "infra", "monad-ecosystem", "backend"],
 		tier: 3,
+		description:
+			"Lead infrastructure engineering at Perpl, building high-performance trading systems on Monad. Design scalable, low-latency systems for a next-generation perpetuals exchange.",
 	},
 	{
 		id: "perpl-founding-backend-engineer",
@@ -2494,8 +2942,10 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDqhJ9YFgDCR8KoKvrxzkLSx",
-		tags: ["defi", "trading", "infra", "monad-ecosystem"],
+		tags: ["defi", "trading", "infra", "monad-ecosystem", "backend"],
 		tier: 3,
+		description:
+			"Join Perpl as a founding backend engineer to build a high-performance perpetuals exchange on Monad. Shape the technical architecture from the ground up at an early-stage DeFi startup.",
 	},
 	{
 		id: "perpl-videographer",
@@ -2508,6 +2958,8 @@ export const jobs: Job[] = [
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDrKAWMgo2bvHF7CV1SWXewv",
 		tags: ["defi", "marketing", "monad-ecosystem"],
 		tier: 3,
+		description:
+			"Create compelling video content for Perpl, a perpetuals exchange on Monad. Lead content strategy and produce videos that engage the crypto trading community.",
 	},
 	{
 		id: "perpl-quant-trader",
@@ -2520,6 +2972,8 @@ export const jobs: Job[] = [
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDqyBNxBzKmbw_SUX-V2EJh1",
 		tags: ["defi", "trading", "monad-ecosystem"],
 		tier: 3,
+		description:
+			"Develop and execute quantitative trading strategies at Perpl. Build models for perpetuals markets on Monad and optimize market-making operations.",
 	},
 	{
 		id: "perpl-staff-backend-engineer",
@@ -2530,8 +2984,10 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.gem.com/aionex-xyz/am9icG9zdDoV4xQA7Au1gx9qORFO21J2",
-		tags: ["defi", "trading", "infra", "monad-ecosystem"],
+		tags: ["defi", "trading", "infra", "monad-ecosystem", "backend"],
 		tier: 3,
+		description:
+			"Build backend systems for Perpl's perpetuals exchange on Monad. Develop high-performance trading infrastructure and APIs for a next-generation DeFi platform.",
 	},
 	// Kuru Jobs (Monad Ecosystem)
 	{
@@ -2545,6 +3001,8 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/kuru-labs/ca804294-8f0c-436c-9c49-33e55d89be48",
 		tags: ["defi", "trading", "monad-ecosystem"],
 		tier: 3,
+		description:
+			"Build quantitative systems at Kuru, an orderbook DEX on Monad. Develop trading algorithms, market-making strategies, and analytics for high-performance decentralized trading.",
 	},
 	// RareBetSports Jobs (Monad Ecosystem)
 	{
@@ -2558,6 +3016,8 @@ export const jobs: Job[] = [
 		link: "https://eco-jobs.monad.xyz/companies/rarebetsports/jobs/64210595-director-of-engineering",
 		tags: ["gaming", "infra", "monad-ecosystem", "leadership"],
 		tier: 3,
+		description:
+			"Lead engineering for RareBetSports on Monad. Build and scale the technical team developing blockchain-based sports betting infrastructure.",
 	},
 	// Lucis Jobs
 	{
@@ -2568,7 +3028,7 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "full-time",
 		department: "Product",
-		link: "https://lucislife.notion.site/join-lucis-team",
+		link: "https://lucislife.notion.site/senior-founding-engineer",
 		featured: true,
 		tags: ["health"],
 		description:
@@ -2596,9 +3056,9 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "full-time",
 		department: "Product",
-		link: "https://lucislife.notion.site/join-lucis-team",
+		link: "https://lucislife.notion.site/ai-engineer",
 		featured: true,
-		tags: ["health", "ai"],
+		tags: ["health", "ai", "backend"],
 		description:
 			"Apply AI and data engineering to personalize health recommendations. You'll build ML models that analyze health data to provide actionable insights and early warning signals.",
 		responsibilities: [
@@ -2624,7 +3084,7 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "full-time",
 		department: "GTM",
-		link: "https://lucislife.notion.site/join-lucis-team",
+		link: "https://lucislifefr.notion.site/Growth-acquisition-manager-24323725846f80b3a207e1d1acdcbd32",
 		featured: true,
 		tags: ["health", "marketing", "management", "growth"],
 		description:
@@ -2652,7 +3112,7 @@ export const jobs: Job[] = [
 		remote: true,
 		type: "full-time",
 		department: "Medical",
-		link: "https://lucislife.notion.site/join-lucis-team",
+		link: "https://lucislife.notion.site/medical-reviewer",
 		featured: true,
 		tags: ["health"],
 		description:
@@ -2683,6 +3143,8 @@ export const jobs: Job[] = [
 		salary: "$175k-225k + Equity",
 		link: "https://sorellalabs.xyz/careers",
 		tags: ["defi", "protocol", "mev"],
+		description:
+			"Join Sorella Labs to stop value leakage in DeFi through efficient protocol design. Open application for candidates with unique skills that can contribute to MEV research, protocol development, or ecosystem growth.",
 	},
 	{
 		id: "sorella-senior-protocol-engineer",
@@ -2693,7 +3155,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		salary: "$400k+ TC",
 		link: "https://sorellalabs.xyz/careers?gh_jid=4196455007&view=jd",
-		tags: ["protocol", "mev"],
+		tags: ["protocol", "mev", "backend", "rust"],
+		description:
+			"Lead protocol engineering at Sorella Labs to eliminate value leakage in DeFi. Design and implement MEV-aware protocols, build high-performance systems, and shape the future of fair markets in decentralized finance.",
 	},
 	// Flashbots Jobs
 	{
@@ -2706,7 +3170,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/flashbots.net/649fc903-8345-4ddc-9535-ddce374fe23b",
 		featured: true,
-		tags: ["protocol", "infra", "mev"],
+		tags: ["protocol", "infra", "mev", "backend"],
 		description:
 			"Build and maintain reliable services in the MEV ecosystem at Flashbots. Work on critical infrastructure that enables fair, transparent markets for block space extraction across rollups and L1.",
 		responsibilities: [
@@ -2741,7 +3205,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/flashbots.net/8fa82d12-baef-4f95-86af-a8354af820d8",
-		tags: ["protocol", "infra", "mev"],
+		tags: ["protocol", "infra", "mev", "backend"],
 		featured: true,
 		description:
 			"Lead infrastructure and DevOps efforts for Flashbots' MEV infrastructure. Design, deploy, and maintain reliable systems that power block building and transaction ordering across Ethereum and L2s.",
@@ -2781,6 +3245,8 @@ export const jobs: Job[] = [
 		department: "Global Policy Strategy",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/221b118a-2d76-4fd6-bffb-c95d5e02076f",
 		tags: ["protocol", "management"],
+		description:
+			"Track regional policy developments across Asia-Pacific for the Ethereum Foundation. Maintain stakeholder networks, produce policy explainers, and coordinate ecosystem strategy to enable effective engagement with regulators and policymakers.",
 	},
 	{
 		id: "ef-associate-global-policy",
@@ -2792,6 +3258,8 @@ export const jobs: Job[] = [
 		department: "Global Policy Strategy",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/6de00daa-be49-4152-898f-c0206199e820",
 		tags: ["protocol"],
+		description:
+			"Support global policy initiatives for the Ethereum Foundation. Research regulatory developments, help translate technical concepts for policymakers, and contribute to educational materials that advance understanding of Ethereum.",
 	},
 	{
 		id: "ef-comms-wizard-devcon",
@@ -2803,6 +3271,8 @@ export const jobs: Job[] = [
 		department: "Devcon Team",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/855e0b50-d6e3-4c64-9b01-8f60015c0493",
 		tags: ["protocol", "marketing"],
+		description:
+			"Lead communications for Devcon 8, Ethereum's flagship developer conference. Craft messaging, manage community engagement, and ensure the event reaches and resonates with developers and builders worldwide.",
 	},
 	{
 		id: "ef-developer-tooling-coordinator",
@@ -2814,6 +3284,8 @@ export const jobs: Job[] = [
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/84f239ee-f61a-48d0-a28f-c95c4a0226c1",
 		tags: ["protocol", "infra"],
+		description:
+			"Coordinate developer tooling efforts across the Ethereum ecosystem. Work with client teams, tool maintainers, and the broader community to improve the developer experience for building on Ethereum.",
 	},
 	{
 		id: "ef-legal-counsel",
@@ -2825,6 +3297,8 @@ export const jobs: Job[] = [
 		department: "Legal",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/e76d5bc9-12b5-4213-b790-4b9d060c4771",
 		tags: ["protocol", "legal"],
+		description:
+			"Provide legal counsel for the Ethereum Foundation across regulatory, corporate, and ecosystem matters. Navigate complex legal landscapes in Europe and globally to support Ethereum's mission as a public good.",
 	},
 	{
 		id: "ef-legal-operations-associate",
@@ -2836,6 +3310,8 @@ export const jobs: Job[] = [
 		department: "Legal",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/731f5ff4-d9f9-4c5b-9421-83c123695c09",
 		tags: ["protocol", "legal"],
+		description:
+			"Support legal operations for the Ethereum Foundation. Manage contracts, coordinate with external counsel, and streamline legal processes to enable efficient support of the Ethereum ecosystem.",
 	},
 	{
 		id: "ef-local-production-devcon",
@@ -2847,6 +3323,8 @@ export const jobs: Job[] = [
 		department: "Devcon Team",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/e04a8e89-bd94-4b89-8d0b-7b1e0561a34f",
 		tags: ["protocol"],
+		description:
+			"Lead local production for Devcon 8 in the APAC region. Manage on-the-ground logistics, vendor relationships, and production elements to deliver an exceptional experience for Ethereum's premier developer conference.",
 	},
 	{
 		id: "ef-programming-lead-devcon",
@@ -2858,6 +3336,8 @@ export const jobs: Job[] = [
 		department: "Devcon Team",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/16d6d109-b782-460e-ab7a-0dcca970159f",
 		tags: ["protocol"],
+		description:
+			"Curate the programming experience for Devcon 8, Ethereum's flagship conference. Select speakers, design tracks, and shape the content that will inform and inspire thousands of developers and builders.",
 	},
 	{
 		id: "ef-protocol-tester-consensus",
@@ -2869,6 +3349,8 @@ export const jobs: Job[] = [
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/ethereum-foundation/f466a83a-e322-4b81-80a8-2d600870d98a",
 		tags: ["protocol", "security"],
+		description:
+			"Test Ethereum's consensus layer implementations for the Ethereum Foundation. Develop test cases, identify edge cases, and ensure the security and correctness of protocol upgrades that affect millions of users.",
 	},
 	// Aztec Jobs
 	{
@@ -2880,7 +3362,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://job-boards.eu.greenhouse.io/aztec/jobs/4700513101",
-		tags: ["infra", "cryptography"],
+		tags: ["infra", "cryptography", "backend"],
 		description:
 			"Lead DevOps engineering at Aztec to enhance development velocity while maintaining quality and security standards. Build infrastructure for privacy-focused Layer 2 solutions on Ethereum using zero-knowledge cryptography.",
 		responsibilities: [
@@ -3242,8 +3724,9 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "World ID",
+		salary: "$220,000 - $250,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/f00b5ae3-1a4e-4959-9bcf-a9bc96f48feb",
-		tags: ["world", "ai", "cryptography"],
+		tags: ["world", "ai", "cryptography", "fullstack"],
 		description:
 			"Build the World ID platform—the global proof of personhood protocol. You'll create systems that enable privacy-preserving identity verification at unprecedented scale.",
 		responsibilities: [
@@ -3386,6 +3869,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Marketing",
+		salary: "$100,000 - $120,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6db2b659-c96e-4748-a4c3-02367d1aa019",
 		tags: ["world", "design"],
 		description:
@@ -3534,6 +4018,7 @@ export const jobs: Job[] = [
 		location: "Dallas",
 		type: "full-time",
 		department: "Operations",
+		salary: "$115,000 - $130,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/f1652f35-9e3b-457b-9a8b-1c8856b81a9e",
 		tags: ["world"],
 		description:
@@ -3643,6 +4128,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Marketing",
+		salary: "$175,000 - $200,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/ec8917e4-0dc5-42be-9cfb-b51a6a2874fc",
 		tags: ["world", "marketing"],
 		description:
@@ -3679,6 +4165,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Operations",
+		salary: "$200,000 - $245,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6937d6a4-09e4-4ed0-a222-e1c2ab898c68",
 		tags: ["world"],
 		description:
@@ -3715,6 +4202,7 @@ export const jobs: Job[] = [
 		location: "San Francisco / Munich",
 		type: "full-time",
 		department: "Legal",
+		salary: "$235,000 - $300,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6b3106d2-00a8-42be-9d09-cad4cb0cdbc4",
 		tags: ["world", "legal"],
 		description:
@@ -3751,6 +4239,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "World ID",
+		salary: "$200,000 - $245,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/e8e75379-b051-4eb3-82db-da63b0c76ef4",
 		tags: ["world", "ai", "product"],
 		description:
@@ -3859,6 +4348,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Finance",
+		salary: "$175,000 - $200,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/285cbc02-bf6c-4f9e-903c-85fb5a9e9c10",
 		tags: ["world", "management"],
 		description:
@@ -3895,6 +4385,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Device",
+		salary: "$220,000 - $270,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6a443ccf-4133-4ba0-aa1a-521f0701e338",
 		tags: ["world", "hardware"],
 		description:
@@ -3968,6 +4459,7 @@ export const jobs: Job[] = [
 		location: "Munich",
 		type: "full-time",
 		department: "Device",
+		salary: "$220,000 - $270,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/04422156-2336-4971-884d-f8c0d063abdc",
 		tags: ["world", "hardware"],
 		description:
@@ -4004,6 +4496,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "People",
+		salary: "$180,000 - $200,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/a00319be-cfc0-42ad-9e02-bd05bcfe5d36",
 		tags: ["world", "talent"],
 		description:
@@ -4077,6 +4570,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Economics and Data Science",
+		salary: "$182,000 - $215,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d829071a-0c9b-425d-b2a7-ad1c5cc2118d",
 		tags: ["world", "ai", "security"],
 		description:
@@ -4372,6 +4866,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "IT",
+		salary: "$174,500 - $190,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/df3338ed-cbdd-4306-ad15-ef0d3e3c35fc",
 		tags: ["world", "infra"],
 		description:
@@ -4556,6 +5051,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Device",
+		salary: "$200,000 - $245,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/c84a5b71-448d-4df2-8ac1-20ce51844e17",
 		tags: ["world", "hardware", "product"],
 		description:
@@ -4592,6 +5088,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Security",
+		salary: "$221,000 - $250,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/075918dc-57c0-4a73-ba3c-a6caafee9412",
 		tags: ["world", "security"],
 		description:
@@ -4628,6 +5125,7 @@ export const jobs: Job[] = [
 		location: "Munich",
 		type: "full-time",
 		department: "Security",
+		salary: "€146,000 - €172,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/aa8e9d73-0209-4109-9116-649ee7f78ab3",
 		tags: ["world", "security"],
 		description:
@@ -4664,6 +5162,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "QA",
+		salary: "$153,500 - $195,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/c068595b-fee3-4112-aa99-718832656a3a",
 		tags: ["world"],
 		description:
@@ -4700,6 +5199,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "World App",
+		salary: "$230,000 - $270,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/9a2229dc-3027-4334-a7e4-cda30da08cc3",
 		tags: ["world"],
 		description:
@@ -4736,6 +5236,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "World App",
+		salary: "$230,000 - $270,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d35baebd-9c2c-43d2-8918-4221df271732",
 		tags: ["world", "defi"],
 		description:
@@ -4772,6 +5273,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "World App",
+		salary: "$221,000 - $250,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/7542c9f2-f6a7-4bc2-be32-8cc2d73f2424",
 		tags: ["world"],
 		description:
@@ -4844,8 +5346,9 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Protocol",
+		salary: "$221,000 - $260,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b069b878-acf7-45db-8b82-8c501cdee06d",
-		tags: ["world", "protocol", "cryptography"],
+		tags: ["world", "protocol", "cryptography", "backend"],
 		description:
 			"Build the protocol layer of World's identity system. Implement privacy-preserving cryptographic systems at global scale.",
 		responsibilities: [
@@ -4880,6 +5383,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Economics and Data Science",
+		salary: "$205,000 - $285,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/641f94f8-034c-4689-a844-a4d7d899056e",
 		featured: true,
 		tags: ["world", "research"],
@@ -4993,6 +5497,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "People",
+		salary: "$160,000 - $190,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6531763f-02a1-45cb-8839-87b78e3a36f8",
 		tags: ["world", "talent"],
 		description:
@@ -5102,8 +5607,9 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "AI",
+		salary: "€125,000 - €153,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/fab8090d-6f45-4f1f-8068-7ed509f3a63c",
-		tags: ["world", "ai", "infra"],
+		tags: ["world", "ai", "infra", "backend"],
 		description:
 			"Build the data infrastructure powering World's AI systems. Enable ML teams to train and deploy models at global scale.",
 		responsibilities: [
@@ -5139,7 +5645,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/a82461c7-31d9-4437-837d-3220f519b9ab",
-		tags: ["world", "infra"],
+		tags: ["world", "infra", "backend"],
 		description:
 			"Build backend services and cloud infrastructure for World's global platform. Create scalable systems that support billions of users.",
 		responsibilities: [
@@ -5175,7 +5681,7 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/ba13f0bb-154a-4019-ab13-6bc7183dd9b3",
-		tags: ["world"],
+		tags: ["world", "fullstack"],
 		description:
 			"Build full-stack applications for World's platform. Create web experiences that support our identity and financial products.",
 		responsibilities: [
@@ -5210,9 +5716,10 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Engineering",
+		salary: "$225,500 - $265,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/daf2307b-b6e8-4fed-a682-f6cc35df05cc",
 		featured: true,
-		tags: ["world", "infra"],
+		tags: ["world", "infra", "backend"],
 		description:
 			"Lead technical direction for World's backend systems. Design and build the infrastructure that powers our global identity network.",
 		responsibilities: [
@@ -5247,6 +5754,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Security",
+		salary: "$276,500 - $310,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/3385936a-e807-4d3d-a7b5-3cb23f7b7d88",
 		featured: true,
 		tags: ["world", "security"],
@@ -5286,7 +5794,7 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/22635bae-cc5a-4d5e-b87a-901752467a94",
 		featured: true,
-		tags: ["world", "infra"],
+		tags: ["world", "infra", "backend"],
 		description:
 			"Lead infrastructure architecture for World's global platform. Build systems that scale to billions of users worldwide.",
 		responsibilities: [
@@ -5322,6 +5830,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Device",
+		salary: "$246,000 - $280,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/18bd79de-2958-412e-b19c-94d13ecc78e7",
 		featured: true,
 		tags: ["world", "design", "hardware"],
@@ -5359,6 +5868,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Security",
+		salary: "$276,000 - $320,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/bdd9f818-2569-4823-8ba3-d37a9d5872b3",
 		featured: true,
 		tags: ["world", "security"],
@@ -5396,6 +5906,7 @@ export const jobs: Job[] = [
 		location: "Munich",
 		type: "full-time",
 		department: "Security",
+		salary: "€182,000 - €210,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/53be510d-300d-4bae-b347-e6e8ce0dd450",
 		featured: true,
 		tags: ["world", "security"],
@@ -5435,7 +5946,7 @@ export const jobs: Job[] = [
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b9132dad-c7ea-49e6-bc53-c8fdc466584a",
 		featured: true,
-		tags: ["world", "protocol", "cryptography"],
+		tags: ["world", "protocol", "cryptography", "backend"],
 		description:
 			"Lead protocol engineering for World's identity system. Design and implement cryptographic protocols at the highest technical level.",
 		responsibilities: [
@@ -5544,6 +6055,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "World ID",
+		salary: "$238,000 - $270,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/92038de9-fb74-4d32-b8b2-fe1474f1d6c0",
 		tags: ["world", "ai", "cryptography"],
 		description:
@@ -5617,6 +6129,7 @@ export const jobs: Job[] = [
 		location: "San Francisco",
 		type: "full-time",
 		department: "Operations",
+		salary: "$115,000",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/85f8c4f7-6125-4d44-8c44-2367a46cc5e2",
 		tags: ["world", "management"],
 		description:
@@ -5656,7 +6169,36 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://handpick.app/agora/19759a8a-7b38-435c-bd64-7149e9ff9c5e",
-		tags: ["protocol"],
+		tags: ["protocol", "fullstack"],
+		description:
+			"Build the next generation of Agora's governance applications, focusing on product quality, scalability, and end user experience. You will collaborate with engineering, design, and product to ship features end to end across the stack.",
+		responsibilities: [
+			"Build and own end-to-end features across the frontend, backend, and contracts",
+			"Partner closely with engineering, design, and product leadership",
+			"Make architectural decisions about data and system boundaries",
+			"Improve scalability, reliability, and performance of the platform",
+			"Raise team leverage with automated tests and strong documentation",
+			"Contribute to upgrades across contracts, architecture, data layer, and mobile experience",
+		],
+		qualifications: [
+			"Experience shipping production-grade systems across multiple stacks",
+			"Strong TypeScript, React, and Next.js experience",
+			"Familiarity with data pipelines in Python and SQL",
+			"Understanding of Ethereum architecture and L2 solutions",
+			"Ability to read Solidity code",
+			"Strong CS fundamentals for scalable, maintainable systems",
+			"Track record of high-quality, collaborative code delivery",
+			"Open-source experience or interest is a plus",
+			"Knowledge of crypto governance ecosystems and EVM indexers is a plus",
+			"Experience building design systems or contributor tooling is a plus",
+		],
+		benefits: [
+			"Meaningful ownership with equity",
+			"Health, vision, and dental benefits",
+			"A strong, experienced team with high trust",
+			"Seat at the table for strategic discussions and offsites",
+			"Clear growth path as the company scales",
+		],
 	},
 	{
 		id: "agora-smart-contract-engineer",
@@ -5667,7 +6209,37 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://handpick.app/agora/18d68421-0d34-41cc-b4d7-3576bca61521",
-		tags: ["protocol", "cryptography"],
+		tags: ["protocol"],
+		description:
+			"Advance Agora's governance smart contracts and deliver scalable solutions with product, engineering, and client-facing teams. You will design, build, and secure onchain systems used by leading crypto protocols.",
+		responsibilities: [
+			"Write clear, maintainable, and secure smart contract code",
+			"Architect modular and upgradeable governance contracts across chains",
+			"Lead rigorous testing, auditing, and security reviews",
+			"Partner with leading clients to design governance features",
+			"Implement privacy and voting systems like MACI and TEE-based solutions",
+			"Integrate ZK systems to unlock scalability and new governance features",
+			"Design cross-chain governance and execution workflows",
+			"Work on identity integrations like WorldID for verified participation",
+			"Develop staking and participation models such as veTokens",
+			"Build modular components for next-generation governance platforms",
+			"Use Foundry for build, testing, scripting, and debugging",
+		],
+		qualifications: [
+			"Critical thinker who can shape the future of decentralized governance",
+			"Detail-oriented with a strong testing mindset",
+			"Protocol-curious and fluent in governance design patterns",
+			"Onchain builder with passion for ZK, account abstraction, and L2s",
+			"Active or aspiring open-source contributor",
+			"Deep passion for decentralization and onchain governance",
+		],
+		benefits: [
+			"Meaningful ownership with equity",
+			"Health, vision, and dental benefits",
+			"A strong, experienced team with high trust",
+			"Seat at the table for strategic discussions and offsites",
+			"Clear growth path as the company scales",
+		],
 	},
 	// Rhinestone Jobs
 	{
@@ -5678,6 +6250,8 @@ export const jobs: Job[] = [
 		type: "full-time",
 		link: "https://rhinestone.notion.site/Rhinestone-Job-Board-faf25f85b9244f8c81fa63387c4f910a?p=060bff1e0e9b4379800be8d06e1f22c4&pm=s",
 		tags: ["protocol", "account-abstraction"],
+		description:
+			"Join Rhinestone to build the future of smart accounts and account abstraction. Open application for talented engineers, researchers, and builders passionate about ERC-4337 and next-generation wallet infrastructure.",
 	},
 	// Berachain Jobs
 	{
@@ -5803,7 +6377,46 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://careers.infrared.finance/29399",
-		tags: ["defi", "berachain-ecosystem"],
+		tags: ["defi", "berachain-ecosystem", "protocol"],
+		responsibilities: [
+			"- Lead the secure development and implementation of our EVM-based liquid staking derivative protocol on Berachain.",
+			"- Architect and develop smart contracts with an emphasis on security, scalability, and efficiency.",
+			"- Proactively identify and mitigate security risks, implementing best practices in smart contract development and blockchain security.",
+			"- Collaborate with internal teams and external auditors to conduct thorough security audits and reviews.",
+			"- Stay updated with Berachains latest developments, integrating security enhancements and protocol upgrades.",
+			"- Mentor and guide junior engineers, fostering a culture of security awareness and best practices.",
+			"- Engage with the broader Cosmos and blockchain community to exchange knowledge and stay ahead of emerging security trends.",
+		],
+		qualifications: [
+			"- Bachelor's or Master's degree in Computer Science, Cybersecurity, Engineering, or a related field.",
+			"- 3+ years of experience in software development, with a strong focus on security in blockchain technologies.",
+			"- Expertise in the Ethereum and/or Cosmos protocol, including in-depth knowledge of consensus and execution clients.",
+			"- Demonstrated experience in identifying and mitigating security vulnerabilities in blockchain applications.",
+			"- Familiarity with Ethereum development tools (Geth, Foundry) and security analysis tools.",
+			"- Knowledge of cryptographic principles and their application in blockchain technologies.",
+			"- Exceptional problem-solving abilities and a meticulous approach to code review and testing.",
+			"- Strong leadership skills and experience in guiding technical teams.",
+			"Preferred Qualifications:",
+			"- Published research or contributions to the field of blockchain security.",
+			"- Experience with additional blockchain platforms and programming languages.",
+			"- Experience running validators on the ethereum blockchain.",
+		],
+		benefits: [
+			"- Competitive salary and equity package.",
+			"- A pivotal role in a cutting-edge project within the DeFi space.",
+			"- A collaborative, and security-focused work environment.",
+			"- Opportunities for professional growth and leadership in blockchain security.",
+			"- Flexible working arrangements.",
+			"Application Process:",
+			"Interested candidates should submit a resume, cover letter, and any relevant work samples or GitHub links showcasing their expertise in blockchain security.",
+			"Shortlisted candidates will be contacted for an interview.",
+			"Posted on January 11, 2024",
+			"Tell a friend",
+			"Share on LinkedIn",
+			"Share on X",
+		],
+		description:
+			"Architect smart contracts for Infrared's liquid staking protocol on Berachain. Design secure, gas-efficient Solidity code for proof-of-liquidity consensus mechanisms, mentor engineers, and collaborate on security audits.",
 	},
 	{
 		id: "infrared-senior-backend-engineer",
@@ -5814,7 +6427,44 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://careers.infrared.finance/29396",
-		tags: ["defi", "infra", "berachain-ecosystem"],
+		tags: ["defi", "infra", "berachain-ecosystem", "backend"],
+		responsibilities: [
+			"- Lead the secure development and implementation of our EVM-based liquid staking derivative protocol on Berachain.",
+			"- Architect and develop smart contracts with an emphasis on security, scalability, and efficiency.",
+			"- Proactively identify and mitigate security risks, implementing best practices in smart contract development and blockchain security.",
+			"- Collaborate with internal teams and external auditors to conduct thorough security audits and reviews.",
+			"- Stay updated with Berachain's latest developments, integrating security enhancements and protocol upgrades.",
+		],
+		qualifications: [
+			"- Bachelor's or Master's degree in Computer Science, Cybersecurity, Engineering, or a related field.",
+			"- 3+ years of experience in software development, with a strong focus on security in blockchain technologies.",
+			"- Expertise in the Ethereum and/or Cosmos protocol, including in-depth knowledge of consensus and execution clients.",
+			"- Demonstrated experience in identifying and mitigating security vulnerabilities in blockchain applications.",
+			"- Familiarity with Ethereum development (Geth, Lido) and security analysis tools.",
+			"- Knowledge of cryptographic principles and their application in blockchain technologies, like major EIPs, consensus/execution clients.",
+			"- Strong leadership skills and experience in guiding technical teams.",
+			"Preferred Qualifications:",
+			"- Experience with building, deploying, and maintaining smart contracts on various blockchain platforms.",
+			"- Experience running validators on the ethereum blockchain.",
+			"- Experience with LSD protocols on Ethereum and or/cosmos.",
+			"- Advanced proficiency in Solidity and secure smart contract development.",
+		],
+		benefits: [
+			"- Competitive salary and equity package.",
+			"- A pivotal role in a cutting-edge project within the DeFi space.",
+			"- A collaborative, and security-focused work environment.",
+			"- Opportunities for professional growth and leadership in blockchain security.",
+			"- Flexible working arrangements.",
+			"Application Process:",
+			"Interested candidates should submit a resume, and any relevant work samples or GitHub links showcasing their expertise in blockchain security.",
+			"Shortlisted candidates will be contacted for an interview.",
+			"Posted on January 11, 2024",
+			"Tell a friend",
+			"Share on LinkedIn",
+			"Share on X",
+		],
+		description:
+			"Lead backend development for Infrared's liquid staking protocol on Berachain. Build secure EVM-based infrastructure for proof-of-liquidity consensus, design scalable systems, and identify security vulnerabilities proactively.",
 	},
 	{
 		id: "infrared-senior-frontend-engineer",
@@ -5825,7 +6475,44 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://careers.infrared.finance/29396",
-		tags: ["defi", "berachain-ecosystem"],
+		tags: ["defi", "berachain-ecosystem", "frontend"],
+		responsibilities: [
+			"- Lead the secure development and implementation of our EVM-based liquid staking derivative protocol on Berachain.",
+			"- Architect and develop smart contracts with an emphasis on security, scalability, and efficiency.",
+			"- Proactively identify and mitigate security risks, implementing best practices in smart contract development and blockchain security.",
+			"- Collaborate with internal teams and external auditors to conduct thorough security audits and reviews.",
+			"- Stay updated with Berachain's latest developments, integrating security enhancements and protocol upgrades.",
+		],
+		qualifications: [
+			"- Bachelor's or Master's degree in Computer Science, Cybersecurity, Engineering, or a related field.",
+			"- 3+ years of experience in software development, with a strong focus on security in blockchain technologies.",
+			"- Expertise in the Ethereum and/or Cosmos protocol, including in-depth knowledge of consensus and execution clients.",
+			"- Demonstrated experience in identifying and mitigating security vulnerabilities in blockchain applications.",
+			"- Familiarity with Ethereum development (Geth, Lido) and security analysis tools.",
+			"- Knowledge of cryptographic principles and their application in blockchain technologies, like major EIPs, consensus/execution clients.",
+			"- Strong leadership skills and experience in guiding technical teams.",
+			"Preferred Qualifications:",
+			"- Experience with building, deploying, and maintaining smart contracts on various blockchain platforms.",
+			"- Experience running validators on the ethereum blockchain.",
+			"- Experience with LSD protocols on Ethereum and or/cosmos.",
+			"- Advanced proficiency in Solidity and secure smart contract development.",
+		],
+		benefits: [
+			"- Competitive salary and equity package.",
+			"- A pivotal role in a cutting-edge project within the DeFi space.",
+			"- A collaborative, and security-focused work environment.",
+			"- Opportunities for professional growth and leadership in blockchain security.",
+			"- Flexible working arrangements.",
+			"Application Process:",
+			"Interested candidates should submit a resume, and any relevant work samples or GitHub links showcasing their expertise in blockchain security.",
+			"Shortlisted candidates will be contacted for an interview.",
+			"Posted on January 11, 2024",
+			"Tell a friend",
+			"Share on LinkedIn",
+			"Share on X",
+		],
+		description:
+			"Build the frontend for Infrared's liquid staking protocol on Berachain. Create intuitive interfaces for DeFi users, implement Web3 integrations, and deliver exceptional UX for proof-of-liquidity features.",
 	},
 	{
 		id: "ooga-booga-lead-defi-developer",
@@ -5836,7 +6523,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://ecojobs.berachain.com/jobs/ooga-booga/b6e79124-dbb6-471b-aec4-8d49ba313918",
-		tags: ["defi", "berachain-ecosystem"],
+		tags: ["defi", "berachain-ecosystem", "protocol"],
+		description:
+			"Lead DeFi development at Ooga Booga on Berachain. Architect and implement smart contracts, design tokenomics, and build decentralized finance products leveraging proof-of-liquidity consensus.",
 	},
 	{
 		id: "kodiak-fullstack-engineer",
@@ -5847,7 +6536,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://ecojobs.berachain.com/jobs/kodiak-finance/5587babe-7b4c-4bbe-83f3-a06faf646ab2",
-		tags: ["defi", "berachain-ecosystem"],
+		tags: ["defi", "berachain-ecosystem", "fullstack"],
+		description:
+			"Build full-stack applications for Kodiak Finance on Berachain. Work across the entire stack from smart contracts to frontend interfaces, creating DeFi products for the proof-of-liquidity ecosystem.",
 	},
 	{
 		id: "goldsky-solutions-engineer",
@@ -5859,6 +6550,8 @@ export const jobs: Job[] = [
 		department: "Support",
 		link: "https://jobs.ashbyhq.com/goldsky/57f856b5-c18d-4993-8a7b-212877f87cc1",
 		tags: ["infra", "berachain-ecosystem"],
+		description:
+			"Support customers using Goldsky's realtime onchain data platform. Develop product expertise, build reusable data solutions, create demos and documentation, and troubleshoot technical challenges across blockchain ecosystems.",
 	},
 	// Inco Jobs
 	{
@@ -5870,7 +6563,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://inco.bamboohr.com/careers/33",
-		tags: ["infra", "cryptography"],
+		tags: ["infra", "cryptography", "backend"],
+		description:
+			"Build and maintain infrastructure for Inco's confidential computing platform. Deploy and scale systems that enable privacy-preserving smart contracts using fully homomorphic encryption (FHE).",
 	},
 	{
 		id: "inco-senior-backend-engineer-rust",
@@ -5881,7 +6576,9 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Engineering",
 		link: "https://inco.bamboohr.com/careers/34",
-		tags: ["cryptography"],
+		tags: ["cryptography", "backend", "rust"],
+		description:
+			"Build Rust-based backend systems for Inco's confidential computing platform. Implement high-performance services that enable privacy-preserving smart contracts using fully homomorphic encryption.",
 	},
 	// TACEO Jobs
 	{
@@ -5964,6 +6661,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "General",
 		link: "https://jobs.ashbyhq.com/nethermind/9ba4666e-a24c-489c-88be-ed1fc0512d75",
+		description:
+			"Join Nethermind's 200+ person team distributed across 66+ countries building critical Ethereum infrastructure. This open application welcomes engineers, Web3 researchers, AI practitioners, product builders, and community builders with expertise in protocol design, zero-knowledge systems, applied cryptography, DeFi, MEV, or governance. Ideal candidates have hands-on experience building products in Web3/DeFi/L1/L2 ecosystems and passion for decentralized networks. Open-source contributions and hackathon experience valued.",
 	},
 	{
 		id: "nethermind-senior-bd-security-solutions",
@@ -5974,7 +6673,9 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Business Development",
 		link: "https://jobs.ashbyhq.com/nethermind/5510755d-e507-4bf7-b80a-63a38274a55f",
-		tags: ["bd", "security"],
+		tags: ["bd", "security", "ai"],
+		description:
+			"Drive sales of Nethermind's AI-powered security products AuditAgent and AgentArena, addressing security needs earlier in the development lifecycle. Build relationships with co-founders, CTOs, and security leads across the blockchain ecosystem. Manage full sales cycles from prospecting through contract negotiations, represent Nethermind at conferences, and ensure smooth customer onboarding. Requires 5+ years B2B sales experience in Web3 security with deep understanding of smart contracts, DeFi protocols, and blockchain infrastructure. US timezone coverage preferred.",
 	},
 	{
 		id: "nethermind-senior-bd-security-audits",
@@ -5986,6 +6687,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		department: "Business Development",
 		link: "https://jobs.ashbyhq.com/nethermind/0ec13ac6-7b14-4c75-854c-95dbed0b023c",
 		tags: ["bd", "security"],
+		description:
+			"Grow Nethermind Security's business unit by driving adoption of security audits, formal verification, and real-time monitoring services. Identify and evaluate new business opportunities through market research, build and maintain client partnerships across Web3 ecosystems, and negotiate and close deals. Requires 2+ years sales experience with documented results and mandatory Web3 expertise including knowledge of blockchain technology, Ethereum, Starknet, and Layer 2 protocols. Remote-first with global team collaboration.",
 	},
 	{
 		id: "nethermind-senior-engineer",
@@ -5996,7 +6699,9 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/nethermind/37c3ee05-b5cd-48ae-98db-fd8ee9ce150a",
-		tags: ["infra"],
+		tags: ["infra", "backend"],
+		description:
+			"Tackle algorithmically intensive, design-heavy projects building decentralized infrastructure at Nethermind. Develop and implement efficient algorithms and complex data structures, create scalable high-performance systems, and build high-throughput low-latency systems with advanced networking protocols. Work on consensus algorithms, VM/compiler optimization, P2P networking protocols, and distributed state structures. Collaborate with industry-leading developers and researchers. Strong software development background required; Rust, Go, or C# familiarity preferred.",
 	},
 	{
 		id: "nethermind-smart-contract-auditor",
@@ -6007,7 +6712,9 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/nethermind/bedb6b20-6056-4b78-a313-099d1aeaca62",
-		tags: ["security"],
+		tags: ["security", "protocol"],
+		description:
+			"Work directly with protocols in the Ethereum and StarkNet ecosystems to review code and help secure their deployments. Enhance and build security analysis tools using modern engineering practices, and consult with clients on security improvements. Requires 1+ year Solidity security analysis experience, deep EVM/Yellow Paper understanding, proficiency deploying smart contracts, and knowledge of common vulnerabilities. Basic Cairo and StarkNet familiarity required. Prior cybersecurity background, published security research, and public audit reports preferred.",
 	},
 	{
 		id: "nethermind-tech-lead",
@@ -6018,7 +6725,9 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/nethermind/1377c78e-fc6a-431b-832d-463233f14730",
-		tags: ["infra"],
+		tags: ["infra", "leadership", "management"],
+		description:
+			"Guide a world-class engineering team building blockchain infrastructure at Nethermind. Design and architect scalable, high-performance systems while remaining hands-on developing efficient algorithms and contributing to the codebase. Lead technical decision-making, champion software development best practices, and mentor engineers. Manage project timelines, facilitate code reviews and architecture discussions, and translate requirements into clear technical roadmaps. Requires exceptional problem-solving abilities, extensive software development experience, and mastery of software architecture. Rust, Go, or C# familiarity preferred.",
 	},
 	// Nascent Jobs
 	{
@@ -6030,8 +6739,38 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "People",
 		salary: "$80k - $120k/year",
+		responsibilities: [
+			"- Talent Acquisition: Work with hiring managers and team leads to lead end-to-end recruiting from scoping roles and creating compelling job descriptions, to building hiring strategies and managing recruiting partners.",
+			"- Onboarding: Leverage and implement tooling to support high efficiency onboarding outcomes and deliver exceptional people experiences.",
+			"- People-Centric Learning & Performance: Collaborate on initiatives to align learners with on job learning opportunities that increase engagement and performance.",
+			"- Strategy Execution: Supporting team leaders to align people and teams behind goals to deliver outcomes.",
+			"- Insights & Impact: Measure the effectiveness of people strategies using data analysis, supporting informed decision-making.",
+			"- Continuous Improvement: Leverage AI tools, LLMs, and automation agents to enhance operational efficiency across people and operations and strategic projects.",
+			"About You",
+			"- 5-10 years of experience: You're comfortable moving across Talent and People Ops, quickly jumping from strategy to execution.",
+			"You've built in ambiguity and learn fast.",
+			"- Leverages a consulting-driven approach to tackle complex, ambiguous challenges with structured problem-solving, strategic agility, and a results-oriented mindset gained through exposure to diverse industries, markets, and organizational contexts.",
+			"- High Digital Proficiency: You're comfortable working with the latest AI tools and LLMs to solve complex operational challenges.",
+			"- High-Energy & Collaborative: You bring enthusiasm and positivity to a collaborative environment and enjoy building strong relationships across teams.",
+		],
+		benefits: [
+			"At Nascent, we offer a competitive total compensation package heavily weighted toward bonus, ensuring that when we perform at our best and the firm wins we all win.",
+			"- The opportunity to learn, experiment and build in an entrepreneurial environment",
+			"- Remote and distributed working environment",
+			"- Comprehensive health benefits package including dental, vision, and life",
+			"- 16 weeks fully paid parental leave & supported return to work",
+			"- Home office setup and stipend or coworking space and wellness stipend",
+			"- Retirement plan matching contributions",
+			"- Open vacation policy as well as flexible work hours and location",
+			"- Team activities and bi-annual in-person team retreats",
+			"We are an equal opportunity employer and celebrate diversity and differences of perspectives.",
+			"We do not discriminate on the basis of any status, inclusive of race, religion, color, national origin, gender, sexual orientation, age, marital status, veteran status, or disability status.",
+			"- %BUTTON_APPLY_TO_POSITION%",
+		],
 		link: "https://nascent-xyz.breezy.hr/p/5a217ca2e8a3-full-stack-talent-partner",
 		tags: ["vc", "talent"],
+		description:
+			"Operate at the intersection of people and systems at Nascent. Lead end-to-end recruiting, implement AI-powered tools for talent operations, and support investing, engineering, and platform teams with strategic hiring.",
 	},
 	{
 		id: "nascent-accounting-analyst",
@@ -6042,8 +6781,38 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Finance",
 		salary: "$80k - $140k/year",
+		responsibilities: [
+			"- Own the books across fiat and crypto, running full-cycles from wallet/exchange to ledger to reporting - clean, tight, and built for speed.",
+			"- Turn messy data into reliable systems by partnering with engineering and operations to architect workflows and controls that make our accounting stack stronger and faster.",
+			"- Be the source of financial truth, keeping reconciliations, ledgers, and documentation crisp and audit-read - you know the story behind every number.",
+			"- Automate what doesn't need to be manual - use integrations, smart tools, or lightweight scripting to eliminate repetitive work and replace fragile processes with scalable ones.",
+			"- Hunt down issues before they become problems, propose solutions, and drive improvements through to implementation.",
+			"- Support the ongoing improvement of Nascent's crypto accounting system, contributing to infrastructure that powers wallet activity, reconciliations, and reporting.",
+			"About You",
+			"- You own outcomes, set clear expectations, and deliver - no hand-holding required.",
+			"- You thrive in ambiguity and move fast in scrappy, high-motion environments.",
+			"- You solve problems at the root, shifting from quick fixes to scalable systems without losing speed.",
+			"- You use AI and automation to work smarter, tighten workflows, and push quality higher.",
+			"- You're hands-on, detail-driven, and unafraid to dive into the weeds to get the work right.",
+		],
+		benefits: [
+			"At Nascent, we offer a competitive total compensation package heavily weighted toward bonus, ensuring that when we perform at our best and the firm wins we all win.",
+			"- The opportunity to learn, experiment and build in an entrepreneurial environment",
+			"- Remote and distributed working environment",
+			"- Comprehensive health benefits package including dental, vision, and life",
+			"- 16 weeks fully paid parental leave & supported return to work",
+			"- Home office setup and stipend or coworking space and wellness stipend",
+			"- Retirement plan matching contributions",
+			"- Open vacation policy as well as flexible work hours and location",
+			"- Team activities and in-person team retreats",
+			"We are an equal opportunity employer and celebrate diversity and differences of perspectives.",
+			"We do not discriminate on the basis of any status, inclusive of race, religion, color, national origin, gender, sexual orientation, age, marital status, veteran status, or disability status",
+			"- %BUTTON_APPLY_TO_POSITION%",
+		],
 		link: "https://nascent-xyz.breezy.hr/p/bea740ff4cd2-accounting-analyst",
 		tags: ["vc", "accounting"],
+		description:
+			"Manage crypto fund accounting at Nascent. Track portfolio positions, reconcile on-chain transactions, and support financial operations for a leading crypto investment firm.",
 	},
 	{
 		id: "nascent-junior-accounting-analyst",
@@ -6054,8 +6823,38 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Finance",
 		salary: "$80k - $130k/year",
+		responsibilities: [
+			"- Own the books across fiat and crypto, running full-cycles from wallet/exchange to ledger to reporting - clean, tight, and built for speed.",
+			"- Partner with engineering and operations to turn messy data into dependable workflows and controls, strengthening the speed and reliability of our accounting stack.",
+			"- Be the source of financial truth, keeping reconciliations, ledgers, and documentation crisp and audit-read - you know the story behind every number.",
+			"- Automate what doesn't need to be manual - use integrations, smart tools, or lightweight scripting to eliminate repetitive work and replace fragile processes with scalable ones.",
+			"- Hunt down issues before they become problems, propose solutions, and drive improvements through to implementation.",
+			"- Support the ongoing improvement of Nascent's crypto accounting system, contributing to infrastructure that powers wallet activity, reconciliations, and reporting.",
+			"About You",
+			"- You own outcomes, set clear expectations, and deliver - no hand-holding required.",
+			"- You thrive in ambiguity and move fast in scrappy, high-motion environments.",
+			"- You solve problems at the root, shifting from quick fixes to scalable systems without losing speed.",
+			"- You use AI and automation to work smarter, tighten workflows, and push quality higher.",
+			"- You're hands-on, detail-driven, and unafraid to dive into the weeds to get the work right.",
+		],
+		benefits: [
+			"At Nascent, we offer a competitive total compensation package heavily weighted toward bonus, ensuring that when we perform at our best and the firm wins we all win.",
+			"- The opportunity to learn, experiment and build in an entrepreneurial environment",
+			"- Remote and distributed working environment",
+			"- Comprehensive health benefits package including dental, vision, and life",
+			"- 16 weeks fully paid parental leave & supported return to work",
+			"- Home office setup and stipend or coworking space and wellness stipend",
+			"- Retirement plan matching contributions",
+			"- Open vacation policy as well as flexible work hours and location",
+			"- Team activities and in-person team retreats",
+			"We are an equal opportunity employer and celebrate diversity and differences of perspectives.",
+			"We do not discriminate on the basis of any status, inclusive of race, religion, color, national origin, gender, sexual orientation, age, marital status, veteran status, or disability status.",
+			"- %BUTTON_APPLY_TO_POSITION%",
+		],
 		link: "https://nascent-xyz.breezy.hr/p/3c1f3c9ccb12-junior-accounting-analyst",
 		tags: ["vc", "accounting", "entry-level"],
+		description:
+			"Start your career in crypto fund accounting at Nascent. Support portfolio tracking, transaction reconciliation, and financial reporting for a leading blockchain investment firm.",
 	},
 	// CoinFund Jobs
 	{
@@ -6067,8 +6866,32 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Investment",
 		salary: "$200k - $400k/year",
+		responsibilities: [
+			"- Survey entire crypto and blockchain technology ecosystem and pursue the highest-quality investment opportunities",
+			"- Achieve round-leading investments in the most important crypto companies across Series A through D stages",
+			"- Build an active portfolio of extraordinary investments",
+			"- Expand CoinFund's (and your) reputation as one of the highest-quality investors in crypto",
+			"- Work closely with CEOs and management teams to provide differentiating insight and deliver resources in order to build out market-leading companies",
+			"- Serve on boards of portfolio companies",
+		],
+		qualifications: [
+			"- Excellent communicator, crypto thought leader, prolific social media presence",
+			"- Demonstrated track record of leading successful venture investments",
+			"- Demonstrated history of winning competitive investment processes",
+			"- Understanding of the concepts of blockchain technology, blockchains, cryptocurrency, NFTs, DeFi, decentralized networks, wallets, and other related concepts; a Computer Science background, or technical understanding of the space, is a plus",
+			"- Strong relationships with CEOs and company leaders who can attest to the candidate's ability to add value and increase likelihood of company successes",
+			"- Ability to think independently with courage and conviction to recommend and pursue non-consensus investments",
+			"- Comfort with venture risk",
+			"- Extremely determined to succeed, prefer to play offense, like to win",
+			"- Deep personal excitement and commitment to the cryptocurrency industry as demonstrated by personal investing experience or similar activity",
+			"How to Apply",
+			"Please reach out to jobs@coinfund.io with a resume and self-introduction; feel free to include any additional information that will help us learn more about you and your candidacy!",
+			"Why Work at CoinFund?",
+		],
 		link: "https://jobs.coinfund.io/companies/coinfund/jobs/29168547-blockchain-venture-investor",
 		tags: ["vc"],
+		description:
+			"Source and lead Series A-D investments at CoinFund, one of crypto's premier venture firms. Identify high-quality blockchain opportunities, build relationships with founders, and serve on portfolio company boards.",
 	},
 	// Blockchain Capital Jobs
 	{
@@ -6080,7 +6903,29 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "part-time",
 		department: "Research",
 		link: "https://jobs.blockchaincapital.com/companies/blockchain-capital-2/jobs/56345831-research-scholar-2026",
-		tags: ["vc", "research"],
+		tags: ["vc", "research", "entry-level", "internship"],
+		responsibilities: [
+			"- Conduct deep research and analysis on industry verticals, technical trends, and more",
+			"- Identify and reason emerging trends in the space, and distill appropriate investment themes",
+			"- Take a qualitative and technically quantitative approach to research projects",
+			"- Present ideas and analysis regularly to the broader investment and research team",
+		],
+		qualifications: [
+			"- A strong understanding of smart contracts, crypto economics and blockchain technologies generally",
+			"- Robust analytical skills that allow for identifying trends and assessing data",
+			"- Ability to aggregate information from a variety of sources and distill data into informed insights and conclusions",
+			"- Strong writing and communication skills",
+			"- Excellent interpersonal skills, ability to think creatively and have a point of view you like to share",
+			"- Technical background in engineering, computer science, math or data science is preferred but not a requirement",
+			"Additional Details",
+			"- Must be able to work in NYC or SF",
+			"- Must have the right/authorization/ability to work in the US over the summer",
+			"- Summer 2026 position, full-time, paid position over 12 weeks",
+			"- Rising Seniors, Grad students, MBAs or older",
+			"Application",
+		],
+		description:
+			"Join Blockchain Capital's 12-week summer research program. Investigate industry sectors, identify emerging trends, and present investment insights to one of crypto's longest-standing venture firms.",
 	},
 	{
 		id: "blockchain-capital-legal-research-scholar",
@@ -6091,7 +6936,28 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "part-time",
 		department: "Legal",
 		link: "https://jobs.blockchaincapital.com/companies/blockchain-capital-2/jobs/27926758-legal-research-scholar",
-		tags: ["vc", "legal", "research", "entry-level"],
+		tags: ["vc", "legal", "research", "entry-level", "internship"],
+		responsibilities: [
+			"- Conduct deep research and analysis on legal and regulatory matters related to the crypto and blockchain industries",
+			"- Select a research project based on the legal and regulatory landscape and present to our research team",
+			"- Take a qualitative and quantitative approach to research projects/discussions",
+		],
+		qualifications: [
+			"- A general understanding of smart contracts, crypto-economics, and blockchain technologies",
+			"- Strong writing and communication skills",
+			"- Excellent interpersonal skills, ability to think creatively and have a point of view you like to share",
+			"- 2L or 3L in law school to work closely with our legal team",
+			"Additional Details",
+			"- Fully remote externship",
+			"- Fall 2024 position, part-time, unpaid position over 8-10 weeks",
+			"Application",
+			"- Please submit the following:",
+			"- Resume",
+			"- A letter of interest outlining your experience and interest in crypto and blockchain technologies",
+			"- Any relevant links (Github, blogs, twitter, etc)",
+		],
+		description:
+			"Conduct legal research at the intersection of crypto and regulation for Blockchain Capital. Analyze emerging legal frameworks, research compliance requirements, and support investment decisions with legal insights.",
 	},
 	// RockawayX Jobs
 	{
@@ -6103,7 +6969,37 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Infrastructure",
 		link: "https://rockawayx.com/careers/senior-rust-developer",
-		tags: ["vc", "infra"],
+		tags: ["vc", "infra", "rust", "backend"],
+		qualifications: [
+			"Must-have",
+			"- Strong experience in Rust and systems programming (3+ years).",
+			"- Strong knowledge of software development practices : Git, CI/CD pipelines, Agile delivery, code reviews.",
+			"- Strong problem-solving ability and attention to detail.",
+			"- Proficiency in at least one other backend language ( TypeScript, Go, or similar ).",
+			"- Experience building APIs and working with REST/JSON .",
+			"- Ability to cooperate with team members on code/features",
+			"Nice-to-have",
+			"- Experience with blockchain platforms and Web3 fundamentals.",
+			"- Exposure to high-performance networking, databases, or distributed systems .",
+			"- Knowledge of performance/load testing methodologies.",
+			"- Contributions to open-source Rust or blockchain projects.",
+		],
+		benefits: [
+			"- Competitive compensation package",
+			"- Cooperation as full-time employment (HPP) or contract (freelance/ICO)",
+			"- Office in Dejvice, Prague with hybrid work (3-4 days/week onsite)",
+			"- Flexible working hours",
+			"- Direct collaboration with the CEO of RockawayX Infra",
+			"- Opportunity to shape a cutting-edge infrastructure product from the ground up",
+			"Apply for this role",
+			"Please email your covering letter and CV to HR@rockawayx.com",
+			"Apply Now Sign-up for our newsletter",
+			"Your email address I agree to receive correspondence from RockawayX and have read the privacy policy.",
+			"Thank you for signing up for our newsletter.",
+			"Oops!",
+		],
+		description:
+			"Build high-performance programmable RPC services for Web3 at RockawayX. Work on execution simulations, observability tools, and core infrastructure in Rust with production-grade testing and CI/CD pipelines.",
 	},
 	{
 		id: "rockawayx-data-engineer-solvers",
@@ -6114,7 +7010,37 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Labs",
 		link: "https://rockawayx.com/careers/data-engineer---solvers",
-		tags: ["vc", "infra", "mev"],
+		tags: ["vc", "infra", "mev", "backend"],
+		responsibilities: [
+			"- Dive deep into data and turn it into actionable insights",
+			"- Develop and maintain data pipelines for internal analytics",
+			"- Build and maintain Grafana dashboards tracking core performance metrics",
+			"- Analyse new protocols to uncover business opportunities",
+			"- Go head-to-head with top organizations in the blockchain space",
+			"Your skillset",
+			"- Strong data analysis skills and excellent SQL",
+			"- Experience writing data transformation code",
+			"- Bonus: Rust",
+			"- Self-driven with strong product ownership",
+			"- Take pride in delivering top-quality work",
+			"- Define yourself through your craft",
+		],
+		benefits: [
+			"- A solid salary you can count on and bonuses that make a real impact",
+			"- A team packed with experts in VC, yield farming, and validator operations",
+			"- A great office in Prague (but we're cool with remote if it's a great fit)",
+			"Apply for this role",
+			"Please email your covering letter and CV to HR@rockawayx.com",
+			"Apply Now Sign-up for our newsletter",
+			"Your email address I agree to receive correspondence from RockawayX and have read the privacy policy.",
+			"Thank you for signing up for our newsletter.",
+			"Oops!",
+			"Something went wrong while submitting the form.",
+			"Home Investments Liquidity Infrastructure Team Insights Funds Careers Contact us",
+			"2026 Blockad s.r.o. | RockawayX (previously Rockaway Blockchain Fund)",
+		],
+		description:
+			"Turn blockchain data into actionable insights for solver protocols at RockawayX. Analyze data across 11+ blockchains, design extraction pipelines, and create Grafana dashboards to identify performance opportunities.",
 	},
 	{
 		id: "rockawayx-junior-quant-research-analyst",
@@ -6126,6 +7052,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		department: "Credit Fund",
 		link: "https://rockawayx.com/careers/junior-quant-research-analyst",
 		tags: ["vc", "trading", "research", "entry-level"],
+		description:
+			"Start your quant career at RockawayX's Credit Fund. Develop quantitative models, analyze market data, and support trading strategies in crypto credit and liquidity markets.",
 	},
 	{
 		id: "rockawayx-quant-trading-analyst",
@@ -6137,6 +7065,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		department: "Credit Fund",
 		link: "https://rockawayx.com/careers/quant-trading-analyst",
 		tags: ["vc", "trading"],
+		description:
+			"Execute quantitative trading strategies at RockawayX's Credit Fund. Apply statistical models to crypto markets, optimize trading algorithms, and manage risk across credit and liquidity positions.",
 	},
 	{
 		id: "rockawayx-quant-research-analyst",
@@ -6148,6 +7078,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		department: "Credit Fund",
 		link: "https://rockawayx.com/careers/quant-research-analyst",
 		tags: ["vc", "trading", "research"],
+		description:
+			"Research quantitative strategies for RockawayX's Credit Fund. Develop models for crypto credit markets, analyze on-chain data, and identify alpha-generating opportunities in DeFi and structured products.",
 	},
 	{
 		id: "rockawayx-blockchain-developer",
@@ -6158,7 +7090,23 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Credit Fund",
 		link: "https://rockawayx.com/careers/blockchain-developer",
-		tags: ["vc", "protocol"],
+		tags: ["vc", "protocol", "backend"],
+		responsibilities: [
+			"Strategy Development",
+			"- Design, implement, and maintain automated strategies for credit, liquidity, and yield generation across CeFi and DeFi venues",
+			"- Build and manage execution systems that interface with centralized exchanges, on-chain protocols, and yield platforms",
+			"- Contribute to the development of monitoring, alerting, and data visualization tools to ensure robustness and performance of strategies",
+			"Infrastructure & Monitoring",
+			"- Develop and maintain secure data pipelines and backend infrastructure for strategy execution and monitoring",
+			"- Set up and manage observability tools (Grafana, PagerDuty, custom dashboards) for both trading systems and on-chain operations",
+			"- Work with the research team to design APIs and data models for tracking portfolio risk, market exposure, and liquidity metrics",
+			"Security & Risk Systems",
+			"- Build systems for real-time security monitoring of wallets, smart contracts, and protocol dependencies",
+			"- Collaborate with the risk team to automate alerting and risk mitigation processes",
+			"- Contribute to internal tooling for auditing and compliance tracking of DeFi credit positions",
+		],
+		description:
+			"Build automated credit and liquidity strategies at RockawayX. Design execution systems interfacing with exchanges and DeFi protocols, develop monitoring tools, and create secure data pipelines for trading operations.",
 	},
 	{
 		id: "rockawayx-cpp-developer",
@@ -6169,7 +7117,23 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Market Making",
 		link: "https://rockawayx.com/careers/c-developer---high-performance-trading-systems",
-		tags: ["vc", "trading", "infra"],
+		tags: ["vc", "trading", "infra", "backend"],
+		responsibilities: [
+			"- Design and develop core components of our high-frequency trading C++ platform",
+			"- Optimize performance-critical code for ultra-low latency and high throughput",
+			"- Collaborate with traders and quants to implement new strategies and features",
+			"- Ensure reliability and maintainability of systems in a fast-paced environment",
+			"- Participate in code reviews and continuous improvement of development practices",
+			"How Do We Picture You:",
+			"- Strong proficiency in modern C++ (C++17 or later)",
+			"- Solid understanding of algorithms, data structures, and memory management",
+			"- Experience with multithreading and low-latency systems",
+			"- Good knowledge of Linux",
+			"- Excellent problem-solving skills and attention to detail",
+			"Nice to Have:",
+		],
+		description:
+			"Build ultra-low-latency trading systems in C++ for RockawayX's market making operations. Optimize performance-critical code, implement exchange connectivity, and develop high-frequency trading infrastructure.",
 	},
 	{
 		id: "rockawayx-infrastructure-principal",
@@ -6181,6 +7145,22 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		department: "Investments",
 		link: "https://rockawayx.com/careers/infrastructure-principal",
 		tags: ["vc", "infra"],
+		responsibilities: [
+			"Deal Sourcing",
+			"- Drive and own the infrastructure investment strategy across all segments (L1/L2, ZK cryptography, dev tools, data infrastructure) - dive into related technologies and identify investment thesis and / or key areas of focus",
+			"- Proactively generate deal flow within the infrastructure vertical",
+			"- Build and maintain relationships with founders, investors, and accelerators in the infrastructure space, that you leverage to source quality deals",
+			"- Identify emerging infrastructure trends and investment opportunities",
+			"Deal Execution",
+			"- Lead due diligence processes on prospective infrastructure investments, creating detailed return models and investment memos for prospective investments",
+			"- Structure and negotiate investment terms",
+			"- Conduct thorough market analysis and build investment theses for various infrastructure segments",
+			"- Work with other members of the investment and engineering teams to evaluate technical aspects of infrastructure deals",
+			"Research & Thought leadership",
+			"- Establish the firm&#x27;s thought leadership presence in the infrastructure space",
+		],
+		description:
+			"Lead infrastructure investments at RockawayX. Source and evaluate blockchain infrastructure opportunities, perform due diligence, and support portfolio companies building foundational crypto infrastructure.",
 	},
 	{
 		id: "rockawayx-solana-venture-analyst",
@@ -6191,7 +7171,23 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Investments",
 		link: "https://rockawayx.com/careers/solana-venture-analyst",
-		tags: ["vc", "research"],
+		tags: ["vc", "research", "solana"],
+		responsibilities: [
+			"Deal Sourcing",
+			"- Proactively generate deal flow within the Solana ecosystem",
+			"- Build and maintain strong relationships with Solana founders, investors, and ecosystem players that you leverage to access high-quality deals",
+			"- Screen and evaluate incoming Solana investment opportunities",
+			"- Map and monitor the Solana ecosystem for emerging opportunities",
+			"Deal Analysis",
+			"- Conduct thorough research on key technical and commercial developments in the Solana ecosystem, and communicate findings in professional, insightful, engaging content that reinforces RockawayX's thought leadership",
+			"- Be a reliable information source, or our resident \"Solana guru,\" to colleagues seeking information on Solana developments and notable projects",
+			"- Represent the firm at selected Solana ecosystem events and conferences",
+			"- Build relationships with key stakeholders in the Solana ecosystem",
+			"Portfolio management",
+			"- Working alongside our growth team, develop a view on the unique challenges Solana founders face, and how we can help to address them, ideally by leveraging our liquidity and engineering expertise",
+		],
+		description:
+			"Research Solana ecosystem investments at RockawayX. Analyze protocols, evaluate founders, and identify high-potential opportunities in the Solana ecosystem for venture investment.",
 	},
 	{
 		id: "rockawayx-software-engineer-solvers",
@@ -6202,7 +7198,23 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Labs",
 		link: "https://rockawayx.com/careers/software-engineer-solvers-rust",
-		tags: ["vc", "mev", "infra"],
+		tags: ["vc", "mev", "infra", "rust"],
+		benefits: [
+			"- Solid base salary, serious bonus upside",
+			"- Team of experts spanning VC, yield, and validator ops",
+			"- Office in Prague with a flexible hybrid setup",
+			"Apply for this role",
+			"Please email your covering letter and CV to HR@rockawayx.com",
+			"Apply Now Sign-up for our newsletter",
+			"Your email address I agree to receive correspondence from RockawayX and have read the privacy policy.",
+			"Thank you for signing up for our newsletter.",
+			"Oops!",
+			"Something went wrong while submitting the form.",
+			"Home Investments Liquidity Infrastructure Team Insights Funds Careers Contact us",
+			"2026 Blockad s.r.o. | RockawayX (previously Rockaway Blockchain Fund)",
+		],
+		description:
+			"Build solver infrastructure at RockawayX Labs. Develop high-performance Rust services for MEV extraction, implement order flow optimization, and compete with top blockchain organizations through technical excellence.",
 	},
 	{
 		id: "rockawayx-defi-analyst",
@@ -6214,6 +7226,22 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		department: "Investments",
 		link: "https://rockawayx.com/careers/defi-analyst",
 		tags: ["vc", "defi", "research"],
+		responsibilities: [
+			"Deal Analysis",
+			"- Conduct thorough analysis of DeFi protocols, tokenomics, and market dynamics, in order to develop conviction on growing segments and attractive technologies or products",
+			"- Create detailed investment memos and financial models for potential investments",
+			"- Monitor market trends and identify emerging opportunities in the DeFi space",
+			"Deal Sourcing",
+			"- Proactively generate deal flow within the DeFi investment strategy, across both venture and liquid investments.",
+			"- Build and maintain relationships with founders and operators in the DeFi ecosystem that you hone to keep growing your network web - ideally resulting in valuable deal flow",
+			"- Screen incoming investment opportunities",
+			"- Support deal flow management and pipeline tracking",
+			"- Attend relevant industry events and network with founders",
+			"Portfolio Management",
+			"- Monitor portfolio company performance and token metrics",
+		],
+		description:
+			"Research DeFi investments at RockawayX. Analyze protocols, evaluate tokenomics, and identify high-potential opportunities across lending, trading, and yield products for venture investment.",
 	},
 	// Ackee Blockchain Jobs
 	{
@@ -6225,7 +7253,23 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Security",
 		link: "https://ackeeblockchain.recruitee.com/o/ethereum-solidity-developer-auditor",
-		tags: ["security"],
+		tags: ["security", "protocol"],
+		responsibilities: [
+			"- Work directly with the leading blockchain industry teams to review their code and help secure their products",
+			"- Design and implement solutions to difficult engineering and research problems",
+			"- Collaborate with teammates to maintain and continually improve our existing blockchain security tools using modern software engineering practices",
+			"Job requirements",
+			"- You are passionate about blockchain technology, crypto-economic protocol design, game theory, and decentralized finance.",
+			"- You have a basic understanding of some common cryptographic vulnerabilities.",
+			"- You have a professional understanding of Solidity or Rust development and deployment of smart contracts.",
+			"- You possess great written and spoken communication skills.",
+			"We highly encourage all engineers to get regular face-time with customers, write company blog posts about their accomplishments, and deliver presentations to the technical community.",
+			"- You care about building high-quality, well-tested code.",
+			"- You are proficient with Git.",
+			"- Ideally in office/hybrid in Prague (CZ), but open to remote (GMT+3 to GMT+0 time zone).",
+		],
+		description:
+			"Audit Solidity smart contracts for Ackee Blockchain's security team. Review code for leading blockchain teams, identify vulnerabilities through manual analysis and proprietary tools, and help secure DeFi protocols.",
 	},
 	{
 		id: "ackee-solana-rust-auditor",
@@ -6236,7 +7280,23 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Security",
 		link: "https://ackeeblockchain.recruitee.com/o/solana-rust-developer-auditor",
-		tags: ["security"],
+		tags: ["security", "rust", "solana"],
+		responsibilities: [
+			"- Work directly with the leading blockchain industry teams to review their code and help secure their products",
+			"- Design and implement solutions to difficult engineering and research problems",
+			"- Collaborate with teammates to maintain and continually improve our existing blockchain security tools using modern software engineering practices",
+			"- Produce open source, visit or speak at conferences",
+			"Job requirements",
+			"- You are passionate about blockchain technology, crypto-economic protocol design, game theory, and decentralized finance.",
+			"- You have a basic understanding of some common cryptographic vulnerabilities.",
+			"Ideally, you have experience as a Pen Tester or White Hat hacker.",
+			"- You have professional experience in C/C++ (or other) development, and you'd like to learn Rust development.",
+			"- You care about building high-quality, well-tested code.",
+			"- You are proficient with Git.",
+			"- Ideally in office/hybrid in Prague (CZ), but open to remote (GMT+3 to GMT+0 time zone).",
+		],
+		description:
+			"Audit Solana programs and Rust smart contracts at Ackee Blockchain. Review code for security vulnerabilities, design solutions to complex problems, and contribute to open-source security tools.",
 	},
 	// Uniswap Labs Jobs (Tier 6)
 	{
@@ -6248,7 +7308,7 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/uniswap/f1dab839-ecb6-4061-b475-b5d8cf264adb",
-		tags: ["defi", "infra"],
+		tags: ["defi", "infra", "backend"],
 		tier: 5,
 		description:
 			"Lead technical architecture and strategy for Uniswap's backend systems, driving innovation and shaping how the organization builds large-scale cryptocurrency infrastructure while mentoring engineering teams.",
@@ -6330,7 +7390,7 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/uniswap/cfd492ff-dd07-432a-84b8-8aef0e8984ec",
-		tags: ["defi", "infra"],
+		tags: ["defi", "infra", "backend"],
 		tier: 5,
 		description:
 			"Build next-generation financial products at Uniswap Labs, contributing to DeFi infrastructure serving millions of users with partial or full remote flexibility from the New York headquarters.",
@@ -6369,7 +7429,7 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/uniswap/945122b5-0968-4224-9c55-17d437f316a7",
-		tags: ["defi", "infra", "protocol"],
+		tags: ["defi", "infra", "protocol", "backend"],
 		tier: 5,
 		description:
 			"Build blockchain infrastructure for Unichain, an L2 chain, owning projects end-to-end while solving complex distributed systems challenges at scale.",
@@ -6409,7 +7469,7 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/uniswap/f475ea4a-b8be-442a-b8e2-9a6003d1a51a",
-		tags: ["defi", "infra"],
+		tags: ["defi", "infra", "backend"],
 		tier: 5,
 		description:
 			"Design and maintain shared services powering Uniswap's DeFi ecosystem, building scalable infrastructure supporting millions of users across multiple blockchain networks.",
@@ -6447,7 +7507,7 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/uniswap/5a3eea2d-92c6-453d-9ff4-3e1393978232",
-		tags: ["defi"],
+		tags: ["defi", "frontend"],
 		tier: 5,
 		description:
 			"Build next-generation financial products and maintain high-quality user experiences across trading interfaces, analytics pages, and documentation portals at Uniswap Labs.",
@@ -6601,7 +7661,33 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		department: "Customer Engineering",
 		link: "https://www.alchemy.com/careers/job/4648724005",
 		tags: ["infra"],
+		responsibilities: [
+			"- Write code while working directly with customers to unblock, support, and delight them",
+			"- Translate real user pain into insights that shape what we build next",
+			"- Surface product gaps, track adoption, and influence the roadmap through data and intuition",
+			"- Onboard and engage new users, helping them ship and guiding them toward activation.",
+			"- Act as the voice of the customer-internally and externally-building trust with technical teams and business leaders alike",
+			"- Partner across Product and Engineering to shape long-term solutions, not just short-term fixes",
+			"- Thrive in ambiguity, move fast, and help us scale what's working",
+			"- Turn great support into growth by driving customer referrals",
+		],
+		qualifications: [
+			"- 1+ years of experience in developer, customer engineering, or technical support roles",
+			"- Technical background - Computer Science degree, bootcamp, or self-taught with real-world projects",
+			"- Proficiency in at least one programming language (e.g. JavaScript, Python, Solidity)",
+			"- Comfortable debugging API requests, dev environments, and blockchain-related tools",
+			"- Excellent written and verbal communication skills - especially in online community settings",
+			"- Strong prioritization, time management, and attention to detail",
+			"- Experience working in crypto / Web3, or built a relevant side project a plus",
+			"- Founder experience is a plus",
+			"Benefits & Perks",
+			"Medical",
+			"Gym Reimbursement",
+			"Wellbeing Perks",
+		],
 		tier: 4,
+		description:
+			"Support Alchemy's enterprise customers in APAC. Help teams integrate blockchain infrastructure, troubleshoot technical issues, and optimize their use of Alchemy's developer platform.",
 	},
 	{
 		id: "alchemy-customer-product-engineer-bucharest",
@@ -6613,7 +7699,33 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		department: "Customer Engineering",
 		link: "https://www.alchemy.com/careers/job/4648719005",
 		tags: ["infra"],
+		responsibilities: [
+			"- Write code while working directly with customers to unblock, support, and delight them",
+			"- Translate real user pain into insights that shape what we build next",
+			"- Surface product gaps, track adoption, and influence the roadmap through data and intuition",
+			"- Onboard and engage new users, helping them ship and guiding them toward activation.",
+			"- Act as the voice of the customer-internally and externally-building trust with technical teams and business leaders alike",
+			"- Partner across Product and Engineering to shape long-term solutions, not just short-term fixes",
+			"- Thrive in ambiguity, move fast, and help us scale what's working",
+			"- Turn great support into growth by driving customer referrals",
+		],
+		qualifications: [
+			"- 1+ years of experience in developer, customer engineering, or technical support roles",
+			"- Technical background - Computer Science degree, bootcamp, or self-taught with real-world projects",
+			"- Proficiency in at least one programming language (e.g. JavaScript, Python, Solidity)",
+			"- Comfortable debugging API requests, dev environments, and blockchain-related tools",
+			"- Excellent written and verbal communication skills - especially in online community settings",
+			"- Strong prioritization, time management, and attention to detail",
+			"- Experience working in crypto / Web3, or built a relevant side project a plus",
+			"- Founder experience is a plus",
+			"Benefits & Perks",
+			"Medical",
+			"Gym Reimbursement",
+			"In-Office Group Meals",
+		],
 		tier: 4,
+		description:
+			"Support Alchemy's enterprise customers from Bucharest. Help teams integrate blockchain infrastructure, troubleshoot technical issues, and optimize their use of Alchemy's platform.",
 	},
 	{
 		id: "alchemy-product-engineer",
@@ -6624,8 +7736,32 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Customer Engineering",
 		link: "https://www.alchemy.com/careers/job/4033855005",
-		tags: ["infra"],
+		tags: ["infra", "fullstack"],
+		responsibilities: [
+			"- Build and ship code while working directly with customers to diagnose system-level issues across APIs, infrastructure, and on-chain workflows",
+			"- Translate real user pain into insights that shape what we build next",
+			"- Partner across Product and Engineering by surfacing product gaps, tracking adoption, and influencing the roadmap through data and intuition",
+			"- Drive developer activation by designing better onboarding flows, examples, and integrations",
+			"- Represent the developer perspective in product and engineering discussions, advocating for usability, reliability, and scale",
+			"- Thrive in ambiguity, move fast, and help us scale what's working",
+		],
+		qualifications: [
+			"- 1+ years of experience in developer, customer engineering, or technical support roles",
+			"- Technical background - Computer Science degree, bootcamp, or self-taught with real-world projects",
+			"- Proficiency in at least one programming language (e.g. JavaScript, Python, Solidity)",
+			"- Comfortable debugging API requests, dev environments, and blockchain-related tools",
+			"- Excellent written and verbal communication skills - especially in online community settings",
+			"- Strong prioritization, time management, and attention to detail",
+			"- Experience working in crypto / Web3, or built a relevant side project a plus",
+			"- Founder experience is a plus",
+			"Why This Role",
+			"- High Ownership: Work on real problems that directly influence product decisions and roadmap priorities",
+			"- Career Accelerator: Strong path toward Product Management, Forward Deployed Engineering, Technical Program Management & more",
+			"- Flex Founder Instincts: Build intuition by working directly with real users, shipping real products",
+		],
 		tier: 4,
+		description:
+			"Build products that power Web3 developers at Alchemy. Work across the stack to create tools and experiences that help teams build better blockchain applications.",
 	},
 	{
 		id: "alchemy-senior-brand-designer",
@@ -6638,6 +7774,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		link: "https://www.alchemy.com/careers/job/4650916005",
 		tags: ["marketing", "design"],
 		tier: 4,
+		description:
+			"Shape Alchemy's visual identity and brand expression. Create compelling designs that communicate blockchain infrastructure to developers and enterprise customers worldwide.",
 	},
 	{
 		id: "alchemy-director-engineering-infra-platform",
@@ -6648,8 +7786,10 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://www.alchemy.com/careers/job/4642174005",
-		tags: ["infra", "leadership"],
+		tags: ["infra", "leadership", "backend"],
 		tier: 4,
+		description:
+			"Lead Alchemy's infrastructure and platform engineering teams. Drive technical strategy and build systems that power millions of blockchain applications across the Web3 ecosystem.",
 	},
 	{
 		id: "alchemy-engineering-manager-platform",
@@ -6660,8 +7800,10 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://www.alchemy.com/careers/job/4637853005",
-		tags: ["infra"],
+		tags: ["infra", "backend", "management"],
 		tier: 4,
+		description:
+			"Manage Alchemy's platform engineering team. Build and scale the infrastructure that powers blockchain developers, from node services to data pipelines.",
 	},
 	{
 		id: "alchemy-principal-software-engineer-backend",
@@ -6672,8 +7814,10 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://www.alchemy.com/careers/job/4600128005",
-		tags: ["infra"],
+		tags: ["infra", "backend"],
 		tier: 4,
+		description:
+			"Lead technical architecture for Alchemy's backend systems. Design scalable, high-performance infrastructure that handles billions of blockchain API requests.",
 	},
 	{
 		id: "alchemy-protocol-engineer",
@@ -6684,8 +7828,10 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://www.alchemy.com/careers/job/4020810005",
-		tags: ["protocol", "infra"],
+		tags: ["protocol", "infra", "backend"],
 		tier: 4,
+		description:
+			"Work on blockchain protocol integrations at Alchemy. Build infrastructure to support new chains and optimize node performance across the Web3 ecosystem.",
 	},
 	{
 		id: "alchemy-software-engineer-backend-transactions",
@@ -6696,8 +7842,10 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://www.alchemy.com/careers/job/4648514005",
-		tags: ["infra"],
+		tags: ["infra", "backend"],
 		tier: 4,
+		description:
+			"Build Alchemy's transaction engine. Develop systems that process and optimize blockchain transactions at scale for developers building Web3 applications.",
 	},
 	{
 		id: "alchemy-software-engineer-solutions",
@@ -6708,8 +7856,32 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://www.alchemy.com/careers/job/4538329005",
-		tags: ["infra"],
+		tags: ["infra", "fullstack"],
+		responsibilities: [
+			"Help top-tier teams design, scale, and optimize their use of Alchemy's infrastructure - from smart contract automation to custom data pipelines.",
+			"Deeply understand customer goals and proactively guide them through onboarding, integration, and long-term success.",
+			"Write code to help customers unlock the full potential of our stack.",
+			"Be a voice of the customer - translate needs from our most demanding users into product insights and roadmap priorities.",
+			"Act as the technical point of contact for strategic accounts, navigating technical blockers, future planning, and success metrics.",
+			"Work across Product, Engineering, and BD to uplevel the full customer experience and close feedback loops fast.",
+		],
+		qualifications: [
+			"5+ years of experience in technical roles (solutions engineering, software engineering, devrel, or similar)",
+			"Strong foundation in systems design, APIs, and distributed architecture",
+			"Experience working directly with customers - ideally in B2B SaaS or infra",
+			"Comfortable writing and reading code - Python, TypeScript, or similar scripting languages",
+			"Stellar communicator who can translate technical concepts for both builders and execs",
+			"Passion for blockchain, crypto, and the infrastructure powering it - you don't need to be a degen, but you're curious and hungry to learn",
+			"Bonus: experience at a high-growth startup or scaling a product in a fast-moving environment",
+			"Why This Role",
+			"You&#x27;ll operate at the intersection of product, engineering, and real-world adoption.",
+			"You'll shape how top-tier crypto companies bring products to life.",
+			"You&#x27;ll have massive scope and autonomy on a small, high-leverage team.",
+			"Define the customer experience for Web3's infrastructure layer.",
+		],
 		tier: 4,
+		description:
+			"Build custom solutions for Alchemy's enterprise customers. Develop integrations, tools, and applications that help teams leverage blockchain infrastructure effectively.",
 	},
 	{
 		id: "alchemy-executive-assistant-founders-sf",
@@ -6721,6 +7893,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		department: "Leaders",
 		link: "https://www.alchemy.com/careers/job/4595576005",
 		tier: 4,
+		description:
+			"Support Alchemy's founders with executive operations. Manage calendars, coordinate meetings, and enable leadership to focus on building the leading Web3 infrastructure platform.",
 	},
 	{
 		id: "alchemy-executive-assistant-founders-ny",
@@ -6732,6 +7906,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		department: "Leaders",
 		link: "https://www.alchemy.com/careers/job/4514511005",
 		tier: 4,
+		description:
+			"Support Alchemy's founders from New York. Manage executive operations, coordinate with teams, and help leadership drive the company's growth in Web3 infrastructure.",
 	},
 	{
 		id: "alchemy-product-marketing-manager",
@@ -6744,6 +7920,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		link: "https://www.alchemy.com/careers/job/4616104005",
 		tags: ["marketing", "management"],
 		tier: 4,
+		description:
+			"Drive product marketing at Alchemy. Position developer tools, create compelling narratives, and help teams understand how Alchemy's infrastructure can power their blockchain applications.",
 	},
 	{
 		id: "alchemy-product-lead-chain-services",
@@ -6754,8 +7932,10 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Product",
 		link: "https://www.alchemy.com/careers/job/4493804005",
-		tags: ["infra", "management"],
+		tags: ["infra", "management", "product"],
 		tier: 4,
+		description:
+			"Lead product strategy for Alchemy's chain services. Define roadmap and features for blockchain infrastructure products that support developers across multiple networks.",
 	},
 	{
 		id: "alchemy-product-lead-node-services",
@@ -6766,8 +7946,10 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Product",
 		link: "https://www.alchemy.com/careers/job/4437123005",
-		tags: ["infra"],
+		tags: ["infra", "product"],
 		tier: 4,
+		description:
+			"Lead product strategy for Alchemy's node services. Define features and roadmap for the infrastructure that powers millions of blockchain API requests.",
 	},
 	{
 		id: "alchemy-product-lead-solana",
@@ -6780,6 +7962,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		link: "https://www.alchemy.com/careers/job/4642183005",
 		tags: ["infra", "product", "solana"],
 		tier: 4,
+		description:
+			"Lead Alchemy's Solana product strategy. Define the roadmap for Solana infrastructure services and help developers build better applications on Solana.",
 	},
 	{
 		id: "alchemy-account-executive",
@@ -6792,6 +7976,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		link: "https://www.alchemy.com/careers/job/4461901005",
 		tags: ["bd"],
 		tier: 4,
+		description:
+			"Sell Alchemy's blockchain infrastructure to Web3 companies. Build relationships with developers and enterprises, and help them adopt the platform powering the decentralized web.",
 	},
 	{
 		id: "alchemy-account-executive-enterprise",
@@ -6804,6 +7990,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		link: "https://www.alchemy.com/careers/job/4600392005",
 		tags: ["bd"],
 		tier: 4,
+		description:
+			"Close enterprise deals for Alchemy's blockchain infrastructure. Work with large organizations to integrate Web3 capabilities and scale their blockchain applications.",
 	},
 	{
 		id: "alchemy-account-executive-solana",
@@ -6814,8 +8002,10 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Sales",
 		link: "https://www.alchemy.com/careers/job/4600351005",
-		tags: ["bd"],
+		tags: ["bd", "solana"],
 		tier: 4,
+		description:
+			"Drive Solana adoption on Alchemy's platform. Build relationships with Solana developers and projects, helping them leverage Alchemy's infrastructure services.",
 	},
 	{
 		id: "alchemy-sales-dev-rep-singapore",
@@ -6826,8 +8016,24 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Sales",
 		link: "https://www.alchemy.com/careers/job/4539418005",
-		tags: ["bd"],
+		tags: ["bd", "entry-level"],
+		qualifications: [
+			"- Strong desire to work in sales at an early-stage startup",
+			"- Deep knowledge and passion for the crypto/blockchain industry",
+			"- An existing network / rolodex of crypto founders and projects in the APAC region",
+			"- An active presence on \"Crypto Twitter\"",
+			"- 2-4 years experience with inbound, outbound, and client-facing sales positioning SaaS, PaaS, or IaaS offerings",
+			"- Skilled in prospecting techniques",
+			"- Ability to operate independently and proactively in an effort to source and progress new business, across multiple global time zones",
+			"- Proficiency using CRM software, forecasting, and opportunity management",
+			"- Excellent listening, verbal and written communication skills",
+			"- Capable of understanding of customer pain points, requirements and correlating potential business to value that can be provided by technical services",
+			"- Experience managing numerous requests and time demands concurrently",
+			"Preferred Qualifications",
+		],
 		tier: 4,
+		description:
+			"Generate leads and qualify prospects for Alchemy in APAC. Engage with blockchain developers and companies to introduce them to the leading Web3 infrastructure platform.",
 	},
 	{
 		id: "alchemy-sales-dev-rep-us",
@@ -6838,8 +8044,24 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Sales",
 		link: "https://www.alchemy.com/careers/job/4593927005",
-		tags: ["bd"],
+		tags: ["bd", "entry-level"],
+		responsibilities: [
+			"- Collaborate across our internal business and technology teams to drive the desired business outcomes for our customers",
+			"- Reaching out to new leads via various communication channels and getting them excited for an introductory call",
+			"- Educating cryptocurrency companies about blockchain nodes and how to troubleshoot their infrastructure issues (We have plenty of resources to bring you up to speed)",
+			"- Contact, prospect, and qualify potential customers and partners through inbound and outbound sales efforts and campaigns",
+			"- Drive client retention, renewals, upsells and client satisfaction",
+			"- Refine and establish processes to support our business's evolving needs",
+			"- Own, manage, and report using a CRM: ensure the system is up to date and that all relevant metrics are input",
+			"- Serve as an initial point of contact and ongoing relationship manager for customers",
+			"- Provide customer feedback to the product and engineering teams and inform product development",
+			"- Work with support and communicate with customers both pre and post-sales",
+			"- Respond and communicate quickly with customers",
+			"What We&#x27;re Looking For:",
+		],
 		tier: 4,
+		description:
+			"Generate leads and qualify prospects for Alchemy's sales team. Engage with blockchain developers and companies to introduce them to Web3 infrastructure solutions.",
 	},
 	{
 		id: "alchemy-sales-manager",
@@ -6851,7 +8073,37 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		department: "Sales",
 		link: "https://www.alchemy.com/careers/job/4635122005",
 		tags: ["bd", "management"],
+		responsibilities: [
+			"- Leadership & Management",
+			"- Manage, mentor, and motivate a team of Account Executives fostering professional growth, accountability, and consistent performance",
+			"- Act as a player-coach, maintaining an active sales pipeline while modeling best-in-class selling behavior",
+			"- Lead weekly pipeline reviews, deal strategy sessions, and performance check-ins.",
+			"- Partner with leadership to define and execute sales strategy, quotas, and key performance metrics.",
+			"- Recruit, onboard, and train new Account Executives to ensure ramp-up success.",
+			"- Provide ongoing coaching on sales methodology, objection handling, and value-based selling.",
+			"- Collaborate with Marketing, Product, and Solutions Engineering to ensure alignment across the customer journey.",
+			"- Sales Execution",
+			"- Oversee full-funnel execution across prospecting, qualification, trials, usage activation, pricing, negotiation, and close",
+			"- Drive consistent excellence in high-velocity commercial motions while supporting reps on strategic upsell or cross-sell opportunities",
+			"- Ensure reps are confident and consistent in new GTM motions + product rollouts",
+		],
+		qualifications: [
+			"- 5-7+ years of B2B SaaS/PaaS/IaaS sales experience, including 2+ years managing AEs",
+			"- Proven track record managing high-velocity teams and exceeding team quota targets",
+			"- Demonstrated ability to build operating cadences, enforce process, and coach reps to strong discovery and qualification",
+			"- Experience hiring, onboarding, and scaling teams in a fast-growth environment",
+			"- Strong fluency in data-driven pipeline management, SFDC, forecast mechanics, and rep performance diagnostics",
+			"- Ability to work cross-functionally and influence product, engineering, and marketing stakeholders",
+			"- Strong communication and executive presence; able to speak fluently about technical products and developer infrastructure",
+			"- Comfort working in an entrepreneurial, ambiguous, fast-paced environment.",
+			"Nice to Haves",
+			"- Experience scaling enablement programs at Series B-D startup or similar hypergrowth company",
+			"- Familiarity with blockchain nodes, infrastructure management, or developer tools",
+			"- Experience leading teams through new GTM + Product rollouts",
+		],
 		tier: 4,
+		description:
+			"Lead Alchemy's sales team. Coach account executives, develop sales strategies, and drive revenue growth for the leading blockchain infrastructure platform.",
 	},
 	// Dune Jobs
 	{
@@ -6863,7 +8115,7 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering - Infrastructure",
 		link: "https://jobs.ashbyhq.com/dune/ebb65f56-8265-4888-a078-c22ca15a10b4",
-		tags: ["infra"],
+		tags: ["infra", "backend"],
 		tier: 5,
 		description:
 			"Design and operate cloud infrastructure powering Dune's multi-chain analytics platform. This is a hands-on engineering role focused on building systems that enable other teams to move fast and safely.",
@@ -6905,7 +8157,7 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/dune/c840e65b-c1de-4550-8b14-c55e03d302d8",
-		tags: ["infra"],
+		tags: ["infra", "backend"],
 		tier: 5,
 		description:
 			"Help scale Dune's multi-chain analytics platform. Dune is on a mission to make crypto data accessible, serving thousands of developers and analysts exploring blockchain ecosystems like Bitcoin, Ethereum, and Solana.",
@@ -7218,8 +8470,10 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Investment",
 		link: "https://variant.fund/careers/",
-		tags: ["vc"],
+		tags: ["vc", "trading"],
 		tier: 4,
+		description:
+			"Lead liquid venture investments at Variant, one of crypto's most respected venture firms. Source opportunities, manage positions, and build thesis-driven exposure to liquid crypto assets.",
 	},
 	// Electric Capital Jobs
 	{
@@ -7231,8 +8485,10 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		type: "full-time",
 		department: "Content",
 		link: "https://jobs.electriccapital.com/companies/electric-capital",
-		tags: ["vc", "research"],
+		tags: ["vc", "research", "marketing"],
 		tier: 4,
+		description:
+			"Create content around Electric Capital's renowned crypto data and developer reports. Transform blockchain insights into compelling narratives that inform the industry.",
 	},
 	{
 		id: "electric-capital-investor-relations-associate",
@@ -7245,6 +8501,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		link: "https://jobs.electriccapital.com/companies/electric-capital",
 		tags: ["vc"],
 		tier: 4,
+		description:
+			"Manage LP relationships at Electric Capital. Communicate fund performance, coordinate investor updates, and support fundraising for one of crypto's leading venture firms.",
 	},
 	{
 		id: "electric-capital-finance-associate",
@@ -7257,6 +8515,8 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		link: "https://jobs.electriccapital.com/companies/electric-capital",
 		tags: ["vc", "accounting"],
 		tier: 4,
+		description:
+			"Support finance operations at Electric Capital. Manage fund accounting, track portfolio positions, and help scale financial infrastructure for a growing crypto venture firm.",
 	},
 	{
 		id: "electric-capital-finance-associate-tax",
@@ -7269,5 +8529,25 @@ As our Business Development Lead, you will drive strategic partnerships, develop
 		link: "https://jobs.electriccapital.com/companies/electric-capital",
 		tags: ["vc", "accounting"],
 		tier: 4,
+		description:
+			"Lead tax strategy and compliance at Electric Capital. Navigate crypto-specific tax complexities, support LP reporting, and optimize tax efficiency across fund operations.",
+	},
+	// Tempo Jobs
+	{
+		id: "tempo-rust-engineer",
+		title: "Rust Engineer",
+		company: companies.tempo,
+		location: "Global (SF/NYC offices)",
+		remote: true,
+		type: "full-time",
+		department: "Engineering",
+		link: "https://jobs.ashbyhq.com/tempo-xyz/aab97703-13e2-42e8-9fb9-9175f3895de9",
+		tags: ["protocol", "infra", "backend", "rust"],
+		tier: 5,
+		description: `Tempo is building the first L1 blockchain purpose-built for stablecoins, payments, and real-world assets. The team comes from leading crypto and fintech companies and is backed by top investors.
+
+As a Rust Engineer, you'll work on cutting-edge blockchain infrastructure, contributing to the core protocol development. This role involves building performant, secure, and scalable systems that will power the next generation of financial infrastructure.
+
+The ideal candidate has strong Rust experience, understanding of distributed systems or blockchain technology, and a passion for building foundational technology.`,
 	},
 ];
