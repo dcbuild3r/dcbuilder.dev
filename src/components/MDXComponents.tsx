@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { MDXComponents } from "mdx/types";
+import type { ReactNode } from "react";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MDXComponents = Record<string, (props: any) => ReactNode>;
 
 export const mdxComponents: MDXComponents = {
 	// Replace img with Next.js optimized Image

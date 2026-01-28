@@ -220,7 +220,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       .flatMap((tier) => tierGroups[tier]);
 
     return [...hot, ...featured, ...sortedNonFeatured];
-  }, [filteredJobs]);
+  }, [filteredJobs, getTier]);
 
   // Shuffle jobs in useEffect after hydration (React-safe)
   useEffect(() => {
@@ -469,7 +469,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
               onClick={(e) => {
                 // Don't navigate if clicking on nested links
                 if ((e.target as HTMLElement).closest("a")) return;
-                window.open(job.link, "_blank", "noopener,noreferrer");
+                const newWindow = window.open(job.link, "_blank", "noopener,noreferrer");
+                // Fallback for popup blockers
+                if (!newWindow) {
+                  window.location.href = job.link;
+                }
               }}
               role="link"
               tabIndex={0}
@@ -477,7 +481,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  window.open(job.link, "_blank", "noopener,noreferrer");
+                  const newWindow = window.open(job.link, "_blank", "noopener,noreferrer");
+                  // Fallback for popup blockers
+                  if (!newWindow) {
+                    window.location.href = job.link;
+                  }
                 }
               }}
               className={`group block p-4 rounded-xl border transition-all cursor-pointer ${
@@ -497,10 +505,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                       height={80}
                       className="w-full h-full object-contain bg-white rounded-lg p-2 sm:p-1 group-hover:scale-[1.08] transition-transform duration-150"
                       onError={(e) => {
+                        e.currentTarget.onerror = null; // Prevent infinite loop
                         console.warn(
                           `[JobsGrid] Failed to load logo for ${job.company.name}`,
                         );
-                        e.currentTarget.style.display = "none";
+                        e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
                       }}
                     />
                   </div>

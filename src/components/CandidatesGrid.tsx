@@ -441,6 +441,7 @@ function CandidateCard({
 						height={48}
 						className="object-cover w-full h-full"
 						onError={(e) => {
+							e.currentTarget.onerror = null; // Prevent infinite loop
 							console.warn(`[CandidatesGrid] Failed to load image for ${displayName}`);
 							e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
 						}}
@@ -927,6 +928,8 @@ function ExpandedCandidateView({
 												height={24}
 												className="rounded"
 												onError={(e) => {
+													e.currentTarget.onerror = null; // Prevent infinite loop
+													console.warn(`[CandidatesGrid] Failed to load logo for ${company.name}`);
 													e.currentTarget.style.display = "none";
 												}}
 											/>
