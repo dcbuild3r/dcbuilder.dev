@@ -118,9 +118,9 @@ export function Navbar() {
 			{/* Mobile Menu Overlay */}
 			{mobileMenuOpen && (
 				<div className="md:hidden fixed inset-0 top-[65px] bg-white dark:bg-neutral-900 z-40">
-					<div className="flex flex-col items-end p-6 space-y-6">
-						{/* Nav Links - right aligned for thumb reach on large phones */}
-						<div className="flex flex-col items-end space-y-4">
+					<div className="flex flex-col items-center p-6 space-y-6">
+						{/* Nav Links - centered for easy thumb reach */}
+						<div className="flex flex-col items-center space-y-4">
 							{navLinks.map((link) => (
 								<Link
 									key={link.href}
