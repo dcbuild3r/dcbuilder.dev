@@ -20,6 +20,7 @@ export function Navbar() {
 
 	// Close mobile menu on route change
 	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: sync menu state with navigation
 		setMobileMenuOpen(false);
 	}, [pathname]);
 

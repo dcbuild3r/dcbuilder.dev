@@ -47,6 +47,7 @@ export function CustomSelect({
 	// Reset focused index when opening
 	useEffect(() => {
 		if (isOpen) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: sync focus with dropdown open state
 			setFocusedIndex(selectedIndex >= 0 ? selectedIndex : 0);
 		}
 	}, [isOpen, selectedIndex]);
