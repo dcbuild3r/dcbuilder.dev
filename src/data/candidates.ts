@@ -52,6 +52,42 @@ export type VisibilityMode = "public" | "anonymous";
 export type ExperienceLevel = "0-1" | "1-3" | "3-5" | "5-10" | "10+";
 export type CandidateTier = 1 | 2 | 3 | 4;
 
+// What type of position the candidate is looking for
+export type RoleType =
+	| "leadership"
+	| "management"
+	| "engineer"
+	| "contractor"
+	| "intern"
+	| "part-time"
+	| "co-founder"
+	| "counsel"
+	| "advisor"
+	| "researcher"
+	| "designer"
+	| "marketing"
+	| "bd"
+	| "operations"
+	| "investor";
+
+export const roleTypeLabels: Record<RoleType, string> = {
+	leadership: "Leadership",
+	management: "Management",
+	engineer: "Engineer",
+	contractor: "Contractor",
+	intern: "Intern",
+	"part-time": "Part-time",
+	"co-founder": "Co-founder",
+	counsel: "Counsel",
+	advisor: "Advisor",
+	researcher: "Researcher",
+	designer: "Designer",
+	marketing: "Marketing",
+	bd: "Business Development",
+	operations: "Operations",
+	investor: "VC Role",
+};
+
 export const availabilityLabels: Record<AvailabilityStatus, string> = {
 	looking: "Actively Looking",
 	open: "Open to Opportunities",
@@ -102,6 +138,7 @@ export interface Candidate {
 	experience: ExperienceLevel;
 	availability: AvailabilityStatus;
 	preferredRoles: string[];
+	lookingFor?: RoleType[]; // Types of positions the candidate is looking for
 	achievements?: Achievement[];
 	companies?: CompanyReference[];
 	socials?: SocialLinks;
@@ -134,6 +171,7 @@ export const candidates: Candidate[] = [
 			"VC Investment",
 			"Co-founder",
 		],
+		lookingFor: ["leadership", "management", "investor", "co-founder"],
 		companies: [
 			{ name: "Optimism", url: "https://optimism.io" },
 			{ name: "Happy Devs", url: "https://docs.happy.tech/" },
@@ -170,6 +208,7 @@ export const candidates: Candidate[] = [
 			"Senior Backend Engineer",
 			"Security Researcher",
 		],
+		lookingFor: ["engineer", "researcher"],
 		companies: [
 			{ name: "Camp Network", url: "https://campnetwork.xyz" },
 			{ name: "Fuel Labs", url: "https://fuel.network" },
@@ -207,6 +246,7 @@ export const candidates: Candidate[] = [
 			"Solidity Engineer",
 			"Smart Contract Developer",
 		],
+		lookingFor: ["engineer"],
 		companies: [
 			{ name: "Pixelcraft Studios", url: "https://pixelcraft.studio" },
 			{ name: "Web3Bridge", url: "https://web3bridge.com" },
@@ -239,6 +279,7 @@ export const candidates: Candidate[] = [
 			"Product Marketing Manager",
 			"Marketing Manager",
 		],
+		lookingFor: ["marketing", "management"],
 		companies: [
 			{ name: "OpenZeppelin", url: "https://openzeppelin.com" },
 			{ name: "Firewall", url: "https://usefirewall.com" },
@@ -273,6 +314,7 @@ export const candidates: Candidate[] = [
 			"Senior Full Stack Software Engineer",
 			"Senior Software Engineer",
 		],
+		lookingFor: ["engineer"],
 		companies: [
 			{ name: "AI Startup Founder" },
 			{ name: "Reth Contributor", url: "https://github.com/paradigmxyz/reth" },

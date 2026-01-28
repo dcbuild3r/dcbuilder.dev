@@ -7,9 +7,11 @@ import {
 	AvailabilityStatus,
 	ExperienceLevel,
 	SkillTag,
+	RoleType,
 	tagLabels,
 	availabilityLabels,
 	experienceLabels,
+	roleTypeLabels,
 	DCBUILDER_TELEGRAM,
 } from "@/data/candidates";
 import { CustomSelect } from "./CustomSelect";
@@ -35,6 +37,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const [experienceFilter, setExperienceFilter] = useState<
 		"all" | ExperienceLevel
 	>("all");
+	const [roleFilter, setRoleFilter] = useState<"all" | RoleType>("all");
 	const [selectedTags, setSelectedTags] = useState<SkillTag[]>([]);
 	const [tagsExpanded, setTagsExpanded] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -88,6 +91,13 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		return Array.from(tags).sort();
 	}, [candidates]);
 
+	// Get all unique role types from candidates
+	const allRoleTypes = useMemo(() => {
+		const roles = new Set<RoleType>();
+		candidates.forEach((c) => c.lookingFor?.forEach((role) => roles.add(role)));
+		return Array.from(roles).sort();
+	}, [candidates]);
+
 	const toggleTag = (tag: SkillTag) => {
 		setSelectedTags((prev) =>
 			prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
@@ -110,6 +120,13 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				candidate.experience !== experienceFilter
 			) {
 				return false;
+			}
+
+			// Role type filter
+			if (roleFilter !== "all") {
+				if (!candidate.lookingFor?.includes(roleFilter)) {
+					return false;
+				}
 			}
 
 			// Tag filter (candidate must have ALL selected tags)
@@ -285,6 +302,31 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 							className="flex-1 sm:flex-none sm:min-w-[160px]"
 						/>
 					</div>
+
+					{/* Role Type Filter */}
+					{allRoleTypes.length > 0 && (
+						<div className="flex items-center gap-2">
+							<label
+								htmlFor="role-filter"
+								className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
+							>
+								Looking For:
+							</label>
+							<CustomSelect
+								id="role-filter"
+								value={roleFilter}
+								onChange={(value) => setRoleFilter(value as "all" | RoleType)}
+								options={[
+									{ value: "all", label: "All Roles" },
+									...allRoleTypes.map((role) => ({
+										value: role,
+										label: roleTypeLabels[role],
+									})),
+								]}
+								className="flex-1 sm:flex-none sm:min-w-[160px]"
+							/>
+						</div>
+					)}
 				</div>
 
 				{/* Row 2: Search */}

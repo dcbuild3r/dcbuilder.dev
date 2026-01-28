@@ -656,6 +656,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
   }, [jobs]);
 
   // Get all unique locations from jobs (split on "/", " or ", ",", "(", ")" for multi-location jobs)
+  // But keep "Remote (...)" as a single entry (timezone info in parens)
   const allLocations = useMemo(() => {
     const locations = new Set<string>();
     jobs.forEach((job) => {
@@ -665,12 +666,21 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       }
       // Split location on various separators and add each part
       if (job.location) {
-        job.location.split(/[\/(),]| or /i).forEach((part) => {
-          const trimmed = part.trim();
-          if (trimmed && trimmed.toLowerCase() !== "remote") {
+        // If location starts with "Remote", keep the whole thing (it's timezone info)
+        if (job.location.toLowerCase().startsWith("remote")) {
+          const trimmed = job.location.trim();
+          if (trimmed.toLowerCase() !== "remote") {
             locations.add(trimmed);
           }
-        });
+        } else {
+          // For non-remote locations, split on separators
+          job.location.split(/[\/(),]| or /i).forEach((part) => {
+            const trimmed = part.trim();
+            if (trimmed && trimmed.toLowerCase() !== "remote") {
+              locations.add(trimmed);
+            }
+          });
+        }
       }
     });
     return Array.from(locations).sort();
@@ -692,6 +702,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       if (selectedLocation !== "all") {
         if (selectedLocation === "Remote") {
           if (!job.remote) {
+            return false;
+          }
+        } else if (selectedLocation.toLowerCase().startsWith("remote")) {
+          // For "Remote (timezone)" selections, match exactly
+          if (job.location !== selectedLocation) {
             return false;
           }
         } else {
