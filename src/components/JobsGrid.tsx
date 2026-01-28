@@ -1209,27 +1209,24 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                   openJob(job);
                 }
               }}
-              className={`group block p-4 rounded-xl border transition-all cursor-pointer ${
+              className={`group block p-3 sm:p-4 rounded-xl border transition-all cursor-pointer ${
                 isHotJob(job)
                   ? "border-orange-400 dark:border-orange-500 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 shadow-[0_0_15px_rgba(251,146,60,0.3)] dark:shadow-[0_0_20px_rgba(251,146,60,0.2)] hover:shadow-[0_0_25px_rgba(251,146,60,0.5)] dark:hover:shadow-[0_0_30px_rgba(251,146,60,0.4)]"
                   : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
               }`}
             >
-              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                {/* Company Logo - centered and larger on mobile */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                {/* Company Logo */}
                 <div className="w-full sm:w-auto flex justify-center sm:justify-start">
-                  <div className="w-20 h-20 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center">
+                  <div className="w-16 h-16 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center">
                     <Image
                       src={job.company.logo}
                       alt={job.company.name}
-                      width={80}
-                      height={80}
-                      className="w-full h-full object-contain bg-white rounded-lg p-2 sm:p-1 group-hover:scale-[1.08] transition-transform duration-150"
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-contain bg-white rounded-lg p-1.5 sm:p-1 group-hover:scale-[1.08] transition-transform duration-150"
                       onError={(e) => {
-                        e.currentTarget.onerror = null; // Prevent infinite loop
-                        console.warn(
-                          `[JobsGrid] Failed to load logo for ${job.company.name}`,
-                        );
+                        e.currentTarget.onerror = null;
                         e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
                       }}
                     />
@@ -1238,154 +1235,117 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 
                 {/* Job Details */}
                 <div className="flex-1 min-w-0 text-center sm:text-left">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2">
-                    <div className="min-w-0">
-                      <h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
-                        {job.title}
-                        {job.featured && (
-                          <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
-                            ★
-                          </span>
-                        )}
-                      </h3>
-                      <p className="text-sm text-neutral-600 dark:text-neutral-400 flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
-                        <span>{job.company.name}</span>
-                        <span className="hidden sm:inline-flex items-center gap-1.5">
-                          {/* Website */}
-                          <a
-                            href={job.company.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-                            title="Website"
-                            aria-label={`Visit ${job.company.name} website`}
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <circle cx="12" cy="12" r="10" />
-                              <line x1="2" y1="12" x2="22" y2="12" />
-                              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                            </svg>
-                          </a>
-                          {/* X */}
-                          {job.company.x && (
-                            <a
-                              href={job.company.x}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-                              title="X"
-                              aria-label={`Visit ${job.company.name} on X`}
-                            >
-                              <svg
-                                className="w-4 h-4"
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                              >
-                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                              </svg>
-                            </a>
-                          )}
-                          {/* GitHub */}
-                          {job.company.github && (
-                            <a
-                              href={job.company.github}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-                              title="GitHub"
-                              aria-label={`Visit ${job.company.name} on GitHub`}
-                            >
-                              <svg
-                                className="w-4 h-4"
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                              >
-                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                              </svg>
-                            </a>
-                          )}
-                        </span>
-                      </p>
-                    </div>
+                  {/* Title row */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors truncate">
+                      {job.title}
+                      {job.featured && (
+                        <span className="ml-1.5 text-xs text-amber-600 dark:text-amber-400">★</span>
+                      )}
+                    </h3>
+                    <span className="hidden sm:inline text-neutral-400">·</span>
+                    <span className="text-sm text-neutral-600 dark:text-neutral-400">{job.company.name}</span>
                     <span
-                      className={`self-center sm:self-start flex-shrink-0 px-2 py-0.5 text-xs rounded-full ${
+                      className={`hidden sm:inline-flex flex-shrink-0 px-2 py-0.5 text-xs rounded-full ${
                         job.company.category === "portfolio"
                           ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                           : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                       }`}
                     >
-                      {job.company.category === "portfolio"
-                        ? "Portfolio"
-                        : "Network"}
+                      {job.company.category === "portfolio" ? "Portfolio" : "Network"}
                     </span>
                   </div>
 
-                  {/* Meta info */}
-                  <div className="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-xs sm:text-sm text-neutral-500">
-                    <span>{job.location}</span>
-                    {job.type && (
-                      <span className="capitalize">
-                        {job.type.replace("-", " ")}
-                      </span>
-                    )}
-                    {job.department && (
-                      <span className="hidden sm:inline">{job.department}</span>
-                    )}
-                    {job.salary && <span>{job.salary}</span>}
-                  </div>
-
-                  {/* Tags - show all, CSS handles visibility */}
-                  {job.tags && job.tags.length > 0 && (
-                    <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-1">
-                      {job.tags.map((tag, index) => (
-                        <span
-                          key={tag}
-                          className={`px-2 py-0.5 text-xs rounded-full ${index >= 3 ? "hidden sm:inline-flex" : ""} ${
-                            tag === "hot"
-                              ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.5)] animate-pulse"
-                              : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
-                          }`}
-                        >
-                          {tagLabels[tag] ?? tag}
-                        </span>
-                      ))}
-                      {job.tags.length > 3 && (
-                        <span className="sm:hidden px-2 py-0.5 text-xs text-neutral-500">
-                          +{job.tags.length - 3}
-                        </span>
+                  {/* Meta row: location, tags, and actions inline */}
+                  <div className="mt-1.5 flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* Location and meta */}
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1 text-xs text-neutral-500">
+                      <span>{job.location}</span>
+                      {job.type && (
+                        <>
+                          <span className="text-neutral-300 dark:text-neutral-600">·</span>
+                          <span className="capitalize">{job.type.replace("-", " ")}</span>
+                        </>
+                      )}
+                      {job.salary && (
+                        <>
+                          <span className="text-neutral-300 dark:text-neutral-600">·</span>
+                          <span className="text-green-600 dark:text-green-400">{job.salary}</span>
+                        </>
                       )}
                     </div>
-                  )}
 
-                  {/* Actions */}
-                  <div className="mt-4 flex flex-wrap justify-center sm:justify-end gap-2">
-                    <a
-                      href={job.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors"
+                    {/* Tags */}
+                    {job.tags && job.tags.length > 0 && (
+                      <div className="hidden sm:flex items-center gap-1">
+                        {job.tags.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className={`px-2 py-0.5 text-xs rounded-full ${
+                              tag === "hot"
+                                ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold"
+                                : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+                            }`}
+                          >
+                            {tagLabels[tag] ?? tag}
+                          </span>
+                        ))}
+                        {job.tags.length > 3 && (
+                          <span className="text-xs text-neutral-400">+{job.tags.length - 3}</span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Spacer to push buttons right */}
+                    <div className="hidden sm:flex flex-1" />
+
+                    {/* Actions - inline on desktop */}
+                    <div className="flex items-center justify-center sm:justify-end gap-2 mt-2 sm:mt-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openJob(job);
+                        }}
+                        className="px-3 py-1 text-xs font-medium rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      >
+                        Details
+                      </button>
+                      <a
+                        href={job.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="px-3 py-1 text-xs font-medium rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors"
+                      >
+                        Apply →
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Mobile-only: category badge and tags */}
+                  <div className="sm:hidden mt-2 flex flex-wrap items-center justify-center gap-1.5">
+                    <span
+                      className={`px-2 py-0.5 text-xs rounded-full ${
+                        job.company.category === "portfolio"
+                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                          : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      }`}
                     >
-                      Apply →
-                    </a>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openJob(job);
-                      }}
-                      className="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                    >
-                      View details
-                    </button>
+                      {job.company.category === "portfolio" ? "Portfolio" : "Network"}
+                    </span>
+                    {job.tags?.slice(0, 2).map((tag) => (
+                      <span
+                        key={tag}
+                        className={`px-2 py-0.5 text-xs rounded-full ${
+                          tag === "hot"
+                            ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold"
+                            : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+                        }`}
+                      >
+                        {tagLabels[tag] ?? tag}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
