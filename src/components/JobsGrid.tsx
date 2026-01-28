@@ -628,7 +628,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     return Array.from(companies.values()).sort();
   }, [jobs]);
 
-  // Get all unique locations from jobs
+  // Get all unique locations from jobs (split on "/" for multi-location jobs)
   const allLocations = useMemo(() => {
     const locations = new Set<string>();
     jobs.forEach((job) => {
@@ -636,9 +636,14 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       if (job.remote) {
         locations.add("Remote");
       }
-      // Add full location if it's not just "Remote"
-      if (job.location && job.location.toLowerCase() !== "remote") {
-        locations.add(job.location);
+      // Split location on "/" and add each part
+      if (job.location) {
+        job.location.split("/").forEach((part) => {
+          const trimmed = part.trim();
+          if (trimmed && trimmed.toLowerCase() !== "remote") {
+            locations.add(trimmed);
+          }
+        });
       }
     });
     return Array.from(locations).sort();
