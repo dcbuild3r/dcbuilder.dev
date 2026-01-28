@@ -4,7 +4,7 @@ import { candidates } from "@/data/candidates";
 
 export const metadata = {
 	title: "Candidates",
-	description: "Talented builders looking for opportunities in crypto",
+	description: "Talented builders looking for new opportunities",
 };
 
 export default function Candidates() {
@@ -17,7 +17,7 @@ export default function Candidates() {
 					<section className="text-center space-y-4">
 						<h1 className="text-4xl font-bold">Candidates</h1>
 						<p className="max-w-2xl mx-auto text-lg text-neutral-700 dark:text-neutral-300">
-							Talented builders looking for new opportunities in crypto.
+							Talented builders looking for new opportunities.
 							I&apos;ve personally vouched for each of these candidates.
 						</p>
 					</section>
