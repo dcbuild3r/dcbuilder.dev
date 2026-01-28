@@ -62,7 +62,7 @@ export function Navbar() {
 
 	return (
 		<nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
-			<div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+			<div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center">
 				{/* Logo */}
 				<Link
 					href="/"
@@ -71,8 +71,8 @@ export function Navbar() {
 					dcbuilder.eth
 				</Link>
 
-				{/* Desktop: Center - Social Links */}
-				<div className="hidden md:flex items-center gap-4">
+				{/* Desktop: Center - Social Links (centered in remaining space) */}
+				<div className="hidden md:flex flex-1 items-center justify-center gap-4">
 					<a
 						href="https://x.com/dcbuilder"
 						target="_blank"
