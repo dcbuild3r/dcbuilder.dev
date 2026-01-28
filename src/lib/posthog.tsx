@@ -82,3 +82,18 @@ export function trackCompanyLinkClick(props: {
 }) {
 	posthog.capture("company_link_click", props);
 }
+
+// News events
+type NewsEventProperties = {
+	news_id: string;
+	news_title: string;
+	news_type: "curated" | "blog" | "announcement";
+	category: string;
+	source?: string; // For curated links
+	company?: string; // For announcements
+	is_featured?: boolean;
+};
+
+export function trackNewsClick(props: NewsEventProperties) {
+	posthog.capture("news_click", props);
+}

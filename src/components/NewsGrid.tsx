@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AggregatedNewsItem } from "@/lib/news";
 import { NewsCategory, categoryLabels } from "@/data/news";
 import { CustomSelect } from "./CustomSelect";
+import { trackNewsClick } from "@/lib/posthog";
 
 type NewsType = "all" | "blog" | "curated" | "announcement";
 
@@ -102,6 +103,19 @@ export function NewsGrid({ news }: NewsGridProps) {
 	// Check if link is external (not blog post)
 	const isExternalLink = (item: AggregatedNewsItem) => {
 		return item.type !== "blog";
+	};
+
+	// Track news click
+	const handleNewsClick = (item: AggregatedNewsItem) => {
+		trackNewsClick({
+			news_id: item.id,
+			news_title: item.title,
+			news_type: item.type,
+			category: item.category,
+			source: item.source,
+			company: item.company,
+			is_featured: item.featured,
+		});
 	};
 
 	return (
@@ -206,6 +220,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 							href={item.url}
 							target={isExternalLink(item) ? "_blank" : undefined}
 							rel={isExternalLink(item) ? "noopener noreferrer" : undefined}
+							onClick={() => handleNewsClick(item)}
 							className="group block p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all"
 						>
 							<div className="flex items-start gap-3">

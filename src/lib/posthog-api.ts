@@ -105,3 +105,24 @@ export function determineHotCandidates(
     .filter((c) => c.count > 0)
     .map((c) => c.id);
 }
+
+// News analytics
+export async function getNewsClicksLast7Days(): Promise<ClickCount[]> {
+  return fetchPostHogTrend("news_click", "news_id");
+}
+
+export function determineHotNews(
+  clicks: ClickCount[],
+  topN: number = 5
+): string[] {
+  if (clicks.length === 0) return [];
+
+  // Sort by count descending
+  const sorted = [...clicks].sort((a, b) => b.count - a.count);
+
+  // Take top N with at least 1 click
+  return sorted
+    .slice(0, topN)
+    .filter((c) => c.count > 0)
+    .map((c) => c.id);
+}
