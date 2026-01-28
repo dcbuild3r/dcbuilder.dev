@@ -1392,6 +1392,28 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers/4614247007",
 		tags: ["ai", "cryptography"],
+		description:
+			"Architect foundational developer tools at Ritual that enable building on AI-blockchain infrastructure, designing best-in-class development frameworks comparable to what Foundry did for the EVM.",
+		responsibilities: [
+			"Design and implement best-in-class development frameworks for AI-enabled chains",
+			"Build fast local development environments for seamless testing",
+			"Develop intuitive CLIs and SDKs for AI-blockchain interactions",
+			"Create tooling for deploying and testing AI-enabled smart contracts",
+			"Produce technical documentation and tutorials",
+		],
+		qualifications: [
+			"Strong proficiency in Rust, TypeScript, or Python",
+			"Open-source project contribution experience",
+			"Proven track record building developer tools",
+			"Deep EVM architecture and smart contract knowledge",
+			"Modern AI development workflow and MLOps experience",
+		],
+		benefits: [
+			"Competitive compensation with annual discretionary bonus",
+			"100% healthcare premium coverage",
+			"Aggressive 401(k) matching",
+			"Fully remote or hybrid arrangement",
+		],
 	},
 	{
 		id: "ritual-distributed-systems-engineer",
@@ -1403,6 +1425,28 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers/4609616007",
 		tags: ["ai", "cryptography", "infra"],
+		description:
+			"Build and scale heterogeneous blockchain infrastructure at Ritual with emphasis on node specialization, consensus mechanisms, and distributed AI execution.",
+		responsibilities: [
+			"Design distributed systems components for the heterogeneous compute network",
+			"Develop peer-to-peer networking protocols optimized for AI model execution",
+			"Build infrastructure for node monitoring, metrics collection, and observability",
+			"Architect state management and synchronization solutions across specialized nodes",
+			"Create testing frameworks for distributed system components",
+		],
+		qualifications: [
+			"Deep expertise in Go and/or Rust with production-grade distributed systems experience",
+			"Strong peer-to-peer systems and networking protocol knowledge",
+			"Proven blockchain node development and operation experience",
+			"Kubernetes infrastructure orchestration skills",
+			"Fault-tolerant, high-performance distributed application design experience",
+		],
+		benefits: [
+			"Competitive compensation with annual bonus",
+			"100% healthcare premium coverage",
+			"Aggressive 401(k) matching",
+			"Fully remote or hybrid work options",
+		],
 	},
 	{
 		id: "ritual-core-protocol-engineer",
@@ -1414,6 +1458,28 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers/4614221007",
 		tags: ["ai", "cryptography", "protocol"],
+		description:
+			"Extend the EVM to support advanced computational capabilities through protocol-level modifications at Ritual, developing an execution layer optimized for AI operations.",
+		responsibilities: [
+			"Design and implement EVM client extensions (Geth/Reth) enabling stateful precompiles",
+			"Integrate mechanism design innovations into the execution layer",
+			"Optimize transaction processing for diverse computational workloads",
+			"Contribute to core protocol development and EIP implementations",
+			"Establish comprehensive testing frameworks for client modifications",
+		],
+		qualifications: [
+			"Deep proficiency with EVM internals and execution clients (Geth/Reth)",
+			"Strong precompile implementation and optimization experience",
+			"Systems programming expertise in Go and/or Rust; Solidity competency",
+			"Active knowledge of Ethereum's development roadmap",
+			"Production-grade blockchain system development track record",
+		],
+		benefits: [
+			"Competitive compensation with annual discretionary bonus",
+			"100% healthcare premium coverage",
+			"Aggressive 401(k) matching",
+			"Flexible remote/hybrid arrangement",
+		],
 	},
 	{
 		id: "ritual-growth-engineer",
@@ -1425,6 +1491,28 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers/4324604007",
 		tags: ["ai", "cryptography"],
+		description:
+			"Lead integration of Ritual's AI infrastructure with partner applications and protocols, expanding network reach in the web3 space through technical partnerships.",
+		responsibilities: [
+			"Manage full partner integration lifecycle from scoping through maintenance",
+			"Provide technical support and develop reusable integration standards",
+			"Extend and maintain comprehensive documentation for integration APIs and SDKs",
+			"Work across AI/ML, distributed systems, and blockchain technologies",
+			"Evaluate and adopt new tools to improve integration capabilities",
+		],
+		qualifications: [
+			"Blockchain engineering expertise, particularly in deployed environments",
+			"Familiarity with web3 tools (Ethers, Viem, Foundry, etc.)",
+			"Fluency in Python or TypeScript",
+			"Hands-on Solidity and EVM smart contract experience",
+			"Strong written and collaborative communication skills",
+		],
+		benefits: [
+			"Competitive compensation with annual discretionary bonus",
+			"100% healthcare premium coverage",
+			"Aggressive 401(k) matching",
+			"Fully remote or hybrid flexibility",
+		],
 	},
 	{
 		id: "ritual-ml-engineer",
@@ -1436,6 +1524,27 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers/4029531007",
 		tags: ["ai", "research"],
+		description:
+			"Scale up model inference and run predictions on cutting-edge AI models at Ritual, connecting ML models to user interfaces and building large-scale data and ML pipeline systems.",
+		responsibilities: [
+			"Scale up model inference and running predictions at scale on cutting-edge models",
+			"Connect ML models to user interfaces including APIs, browsers, and applications",
+			"Design and implement large-scale data and ML pipeline systems",
+			"Collaborate across engineering, research, product, design, and operations teams",
+		],
+		qualifications: [
+			"Software engineering background with deployed ML model experience",
+			"Familiarity with Python and related ML frameworks (PyTorch, TensorFlow, Jax)",
+			"Ability to evaluate ML system tradeoffs",
+			"Strong self-direction and end-to-end ownership",
+			"Interest in privacy-focused and censorship-resistant technology",
+		],
+		benefits: [
+			"Competitive compensation with annual bonus",
+			"100% healthcare premium coverage",
+			"Aggressive 401(k) matching",
+			"Flexible remote/hybrid work arrangements",
+		],
 	},
 	{
 		id: "ritual-smart-contract-engineer",
