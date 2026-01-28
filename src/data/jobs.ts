@@ -1556,6 +1556,27 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers/4135728007",
 		tags: ["ai", "cryptography", "protocol"],
+		description:
+			"Build and maintain open-source smart contract libraries at Ritual while working on core protocol development for their AI execution layer blockchain.",
+		responsibilities: [
+			"Develop and support smart contract frameworks and libraries",
+			"Oversee contract release cycles including audits and post-launch support",
+			"Investigate novel smart contract capabilities beyond standard EVM functions",
+			"Collaborate cross-functionally on product development",
+		],
+		qualifications: [
+			"Strong software engineering fundamentals",
+			"Advanced Solidity expertise plus proficiency in another programming language",
+			"Comprehensive EVM knowledge including L1/L2/L3 distinctions",
+			"Familiarity with node architectures (geth, reth, op-stack, orbit)",
+			"Prior involvement in smart contract security audits",
+		],
+		benefits: [
+			"Competitive salary with discretionary bonuses",
+			"100% healthcare premium coverage",
+			"Substantial 401(k) matching",
+			"Flexible remote/hybrid work arrangements",
+		],
 	},
 	{
 		id: "ritual-software-engineer-intern",
@@ -1567,6 +1588,18 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers/4068271007",
 		tags: ["ai", "cryptography", "entry-level", "internship"],
+		description:
+			"Work at the frontier of modern cryptographic schemes and open-source AI at Ritual, prototyping rapidly and contributing to the open-source community.",
+		responsibilities: [
+			"Prototype rapidly, iterate and execute quickly based on technical guidance",
+			"Work with cutting-edge cryptographic systems and open-source AI technologies",
+			"Contribute work to the open-source community alongside Ritual's developer base",
+		],
+		qualifications: [
+			"Intellectual curiosity about interdisciplinary fields (game theory, cryptography, ML)",
+			"Ability to work in rapid iteration cycles on code and proof-of-concept projects",
+			"Background in cryptographic systems or machine learning development (preferred)",
+		],
 	},
 	{
 		id: "ritual-legal-counsel",
@@ -1578,6 +1611,28 @@ export const jobs: Job[] = [
 		department: "Legal",
 		link: "https://ritual.net/careers/4635587007",
 		tags: ["ai", "cryptography", "legal"],
+		description:
+			"Establish and manage Ritual's complete legal framework as their first in-house legal hire, building the legal function from the ground up at an AI infrastructure startup.",
+		responsibilities: [
+			"Build the legal function from the ground up, including policies and templates",
+			"Oversee corporate governance, compliance, and board documentation",
+			"Draft, review, and negotiate commercial and partnership agreements",
+			"Develop compliance frameworks addressing GDPR, AML, OFAC, and data privacy",
+			"Provide guidance on term sheets, equity issuance, and investor agreements",
+		],
+		qualifications: [
+			"J.D. from accredited law school with active U.S. state bar membership",
+			"3+ years of relevant legal experience, including time at a top-tier law firm",
+			"Early-stage/high-growth company experience, preferably web3/AI sector",
+			"Expertise in corporate governance, contracts, and regulatory compliance",
+			"Independent work capability in fast-paced environments",
+		],
+		benefits: [
+			"Competitive compensation with annual discretionary bonus",
+			"100% healthcare premium coverage",
+			"Aggressive 401(k) matching",
+			"Fully remote or hybrid work arrangement",
+		],
 	},
 	{
 		id: "ritual-research-intern",
@@ -1589,6 +1644,20 @@ export const jobs: Job[] = [
 		department: "Research",
 		link: "https://ritual.net/careers/4358496007",
 		tags: ["ai", "research", "entry-level", "internship"],
+		description:
+			"Prototype cryptographic mechanisms and AI systems at Ritual, then work to productionize research alongside engineering teams and release work into the open-source world.",
+		responsibilities: [
+			"Prototype new mechanisms and work to productionize research",
+			"Work at the frontier of modern cryptographic schemes and open-source AI",
+			"Collaborate with engineering and product teams for real-world applicability",
+			"Release work into the open-source world and build alongside the community",
+		],
+		qualifications: [
+			"Strong curiosity about machine learning and cryptography intersections",
+			"Motivation to move research beyond academic papers into applications",
+			"Ability to progress from concept to prototype or implementation",
+			"Capacity for rapid iteration on proofs-of-concept and technical writing",
+		],
 	},
 	// Succinct Jobs
 	{
