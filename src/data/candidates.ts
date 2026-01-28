@@ -136,7 +136,7 @@ export const candidates: Candidate[] = [
 		},
 		tier: 3,
 		featured: false,
-		vouched: false,
+		vouched: true,
 		dateAdded: "2025-01-28",
 	},
 ];
