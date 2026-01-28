@@ -1228,6 +1228,28 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://ritual.net/careers/4981486007",
 		tags: ["ai", "cryptography"],
+		description:
+			"Build and oversee Ritual's financial operations as they scale, managing accounting, reporting, and compliance across both traditional and cryptocurrency assets while partnering directly with founders.",
+		responsibilities: [
+			"Oversee complete financial operations and accounting functions",
+			"Establish internal controls for fiat and digital asset management",
+			"Manage company treasury including crypto holdings and vendor payments",
+			"Support token operations, vesting, and warrant tracking",
+			"Ensure compliance, custody practices, and KYC/AML adherence",
+		],
+		qualifications: [
+			"Bachelor's or Master's degree in Accounting/Finance (CPA preferred)",
+			"5+ years accounting/finance experience in startups or growth companies",
+			"Strong US GAAP knowledge",
+			"Crypto transaction and digital asset management experience",
+			"Process design and implementation capability in startup settings",
+		],
+		benefits: [
+			"Competitive compensation with discretionary bonuses",
+			"100% healthcare premium coverage",
+			"Aggressive 401(k) matching",
+			"Flexible remote/hybrid arrangement",
+		],
 	},
 	{
 		id: "ritual-validator-engineer",
@@ -1239,6 +1261,27 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers/4815356007",
 		tags: ["ai", "cryptography", "infra"],
+		description:
+			"Manage the uptime, performance, and reliability of validators on Ritual's AI-focused blockchain, bridging infrastructure operations with developer support.",
+		responsibilities: [
+			"Deploy and automate validator infrastructure across bare-metal and cloud environments",
+			"Manage upgrades, forks, and parameter changes with zero downtime",
+			"Optimize execution and consensus client performance through profiling and patching",
+			"Create documentation and provide technical support to validator operators via Discord",
+		],
+		qualifications: [
+			"4+ years operating distributed systems with PoS validator experience on EVM chains",
+			"Proficiency in Go and Rust for debugging client code",
+			"Understanding of blockchain concepts including fork-choice and slashing conditions",
+			"Kubernetes, Helm, Terraform, and CI/CD expertise",
+			"Advanced Linux administration with networking and security focus",
+		],
+		benefits: [
+			"Competitive compensation with discretionary bonuses",
+			"100% healthcare premium coverage",
+			"Aggressive 401(k) matching",
+			"Fully remote or hybrid work arrangements",
+		],
 	},
 	{
 		id: "ritual-tee-specialist",
@@ -1250,6 +1293,28 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers/4614256007",
 		tags: ["ai", "cryptography", "security"],
+		description:
+			"Design and deploy TEE-based systems for secure AI model execution at Ritual, optimizing the integration of trusted execution environments with GPU workloads for high-performance AI.",
+		responsibilities: [
+			"Design and deploy TEE-based systems for secure AI model execution",
+			"Optimize TEE and GPU integration for high-performance AI workloads",
+			"Develop verification systems for computational integrity",
+			"Create secure network traffic attestation mechanisms",
+			"Maintain production TEE environments",
+		],
+		qualifications: [
+			"Deep expertise in TEE technologies (SGX, TDX, SEV-SNP) with demonstrated implementation experience",
+			"Systems programming proficiency in C++ or Rust for enclave development",
+			"GPU integration experience within TEE contexts",
+			"Linux and kernel-level programming knowledge",
+			"Production-grade TEE deployment track record",
+		],
+		benefits: [
+			"Competitive salary with discretionary bonus",
+			"100% healthcare premium coverage",
+			"Aggressive 401(k) matching",
+			"Flexible remote/hybrid arrangements",
+		],
 	},
 	{
 		id: "ritual-ecosystem-engineer",
@@ -1261,6 +1326,28 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers/4614234007",
 		tags: ["ai", "cryptography"],
+		description:
+			"Drive ecosystem growth at Ritual by building proof-of-concepts, researching emerging AI and blockchain technologies, and creating reference implementations that demonstrate the platform's capabilities.",
+		responsibilities: [
+			"Drive ecosystem growth experiments to optimize developer onboarding and adoption",
+			"Research emerging AI and blockchain technologies, particularly autonomous agents",
+			"Build proof-of-concepts demonstrating Ritual's platform capabilities",
+			"Create reference implementations and sample applications",
+			"Produce tutorials and educational content for developers",
+		],
+		qualifications: [
+			"Strong TypeScript and/or Python expertise",
+			"Rapid prototyping and technology validation skills",
+			"Experience with autonomous agent and AI orchestration frameworks",
+			"Solidity and EVM smart contract development experience",
+			"Proficiency with web3 tools (Ethers, Viem, Foundry)",
+		],
+		benefits: [
+			"Competitive compensation with annual discretionary bonuses",
+			"100% healthcare premium coverage",
+			"Aggressive 401(k) matching",
+			"Fully remote or hybrid flexibility",
+		],
 	},
 	{
 		id: "ritual-frontend-engineer",
@@ -1272,6 +1359,28 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://ritual.net/careers/4083940007",
 		tags: ["ai", "cryptography"],
+		description:
+			"Develop interfaces for Ritual's AI and blockchain infrastructure, creating dashboards and monitoring tools for distributed systems and Ritual Chain applications.",
+		responsibilities: [
+			"Design transaction monitoring interfaces visualizing infrastructure lifecycle",
+			"Build dashboard interfaces for node deployment and management",
+			"Develop applications enabling users to provision node infrastructure",
+			"Create responsive dashboards for real-time distributed compute monitoring",
+			"Implement DeFi-style protocol interaction interfaces",
+		],
+		qualifications: [
+			"Strong proficiency in HTML/CSS, TypeScript, and React",
+			"Production experience building decentralized application interfaces for EVM blockchains",
+			"Expertise with Web3 wallet libraries (wagmi, ethers)",
+			"Experience building monitoring dashboards and data visualization",
+			"State management and real-time data handling expertise",
+		],
+		benefits: [
+			"Competitive compensation with discretionary bonuses",
+			"100% healthcare premium coverage",
+			"Aggressive 401(k) matching",
+			"Fully remote or hybrid work options",
+		],
 	},
 	{
 		id: "ritual-devex-engineer",
