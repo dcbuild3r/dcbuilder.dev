@@ -1244,7 +1244,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                           <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">★</span>
                         )}
                         {isHotJob(job) && (
-                          <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white">
+                          <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(251,146,60,0.5)] animate-pulse">
                             🔥 HOT
                           </span>
                         )}
@@ -1270,7 +1270,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                     {job.type && (
                       <span className="capitalize">{job.type.replace("-", " ")}</span>
                     )}
-                    {job.salary && <span className="text-green-600 dark:text-green-400">{job.salary}</span>}
+                    {job.salary && <span>{job.salary}</span>}
                   </div>
 
                   {/* Row 3: Tags + Buttons */}
@@ -1281,13 +1281,13 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                         {job.tags.filter(t => t !== "hot").map((tag, index) => (
                           <span
                             key={tag}
-                            className={`px-2 py-0.5 text-xs rounded-full ${index >= 3 ? "hidden sm:inline-flex" : ""} bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400`}
+                            className={`px-2.5 py-1 text-sm rounded-full ${index >= 3 ? "hidden sm:inline-flex" : ""} bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400`}
                           >
                             {tagLabels[tag] ?? tag}
                           </span>
                         ))}
                         {job.tags.filter(t => t !== "hot").length > 3 && (
-                          <span className="sm:hidden px-2 py-0.5 text-xs text-neutral-500">
+                          <span className="sm:hidden px-2.5 py-1 text-sm text-neutral-500">
                             +{job.tags.filter(t => t !== "hot").length - 3}
                           </span>
                         )}
