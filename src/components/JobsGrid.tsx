@@ -1209,22 +1209,22 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                   openJob(job);
                 }
               }}
-              className={`group block p-3 sm:p-4 rounded-xl border transition-all cursor-pointer ${
+              className={`group block p-4 rounded-xl border transition-all cursor-pointer ${
                 isHotJob(job)
                   ? "border-orange-400 dark:border-orange-500 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 shadow-[0_0_15px_rgba(251,146,60,0.3)] dark:shadow-[0_0_20px_rgba(251,146,60,0.2)] hover:shadow-[0_0_25px_rgba(251,146,60,0.5)] dark:hover:shadow-[0_0_30px_rgba(251,146,60,0.4)]"
                   : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
               }`}
             >
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                 {/* Company Logo */}
                 <div className="w-full sm:w-auto flex justify-center sm:justify-start">
-                  <div className="w-16 h-16 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center">
+                  <div className="w-20 h-20 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center">
                     <Image
                       src={job.company.logo}
                       alt={job.company.name}
-                      width={64}
-                      height={64}
-                      className="w-full h-full object-contain bg-white rounded-lg p-1.5 sm:p-1 group-hover:scale-[1.08] transition-transform duration-150"
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-contain bg-white rounded-lg p-2 sm:p-1 group-hover:scale-[1.08] transition-transform duration-150"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
@@ -1235,18 +1235,21 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 
                 {/* Job Details */}
                 <div className="flex-1 min-w-0 text-center sm:text-left">
-                  {/* Title row */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                    <h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors truncate">
-                      {job.title}
-                      {job.featured && (
-                        <span className="ml-1.5 text-xs text-amber-600 dark:text-amber-400">★</span>
-                      )}
-                    </h3>
-                    <span className="hidden sm:inline text-neutral-400">·</span>
-                    <span className="text-sm text-neutral-600 dark:text-neutral-400">{job.company.name}</span>
+                  {/* Row 1: Title and company */}
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
+                        {job.title}
+                        {job.featured && (
+                          <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">★</span>
+                        )}
+                      </h3>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                        {job.company.name}
+                      </p>
+                    </div>
                     <span
-                      className={`hidden sm:inline-flex flex-shrink-0 px-2 py-0.5 text-xs rounded-full ${
+                      className={`self-center sm:self-start flex-shrink-0 px-2 py-0.5 text-xs rounded-full ${
                         job.company.category === "portfolio"
                           ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                           : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
@@ -1256,97 +1259,66 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                     </span>
                   </div>
 
-                  {/* Meta row: location, tags, and actions inline */}
-                  <div className="mt-1.5 flex flex-col sm:flex-row sm:items-center gap-2">
-                    {/* Location and meta */}
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1 text-xs text-neutral-500">
+                  {/* Row 2: Location + buttons */}
+                  <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* Location and meta info */}
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-xs sm:text-sm text-neutral-500">
                       <span>{job.location}</span>
                       {job.type && (
-                        <>
-                          <span className="text-neutral-300 dark:text-neutral-600">·</span>
-                          <span className="capitalize">{job.type.replace("-", " ")}</span>
-                        </>
+                        <span className="capitalize">{job.type.replace("-", " ")}</span>
                       )}
-                      {job.salary && (
-                        <>
-                          <span className="text-neutral-300 dark:text-neutral-600">·</span>
-                          <span className="text-green-600 dark:text-green-400">{job.salary}</span>
-                        </>
-                      )}
+                      {job.salary && <span className="text-green-600 dark:text-green-400">{job.salary}</span>}
                     </div>
 
-                    {/* Tags */}
-                    {job.tags && job.tags.length > 0 && (
-                      <div className="hidden sm:flex items-center gap-1">
-                        {job.tags.slice(0, 3).map((tag) => (
-                          <span
-                            key={tag}
-                            className={`px-2 py-0.5 text-xs rounded-full ${
-                              tag === "hot"
-                                ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold"
-                                : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
-                            }`}
-                          >
-                            {tagLabels[tag] ?? tag}
-                          </span>
-                        ))}
-                        {job.tags.length > 3 && (
-                          <span className="text-xs text-neutral-400">+{job.tags.length - 3}</span>
-                        )}
-                      </div>
-                    )}
+                    {/* Spacer */}
+                    <div className="hidden sm:block flex-1" />
 
-                    {/* Spacer to push buttons right */}
-                    <div className="hidden sm:flex flex-1" />
-
-                    {/* Actions - inline on desktop */}
-                    <div className="flex items-center justify-center sm:justify-end gap-2 mt-2 sm:mt-0">
+                    {/* Buttons */}
+                    <div className="flex items-center justify-center sm:justify-end gap-2">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           openJob(job);
                         }}
-                        className="px-3 py-1 text-xs font-medium rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        className="px-4 py-2 text-sm font-medium rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                       >
-                        Details
+                        View details
                       </button>
                       <a
                         href={job.link}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="px-3 py-1 text-xs font-medium rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors"
+                        className="px-4 py-2 text-sm font-medium rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors"
                       >
                         Apply →
                       </a>
                     </div>
                   </div>
 
-                  {/* Mobile-only: category badge and tags */}
-                  <div className="sm:hidden mt-2 flex flex-wrap items-center justify-center gap-1.5">
-                    <span
-                      className={`px-2 py-0.5 text-xs rounded-full ${
-                        job.company.category === "portfolio"
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      }`}
-                    >
-                      {job.company.category === "portfolio" ? "Portfolio" : "Network"}
-                    </span>
-                    {job.tags?.slice(0, 2).map((tag) => (
-                      <span
-                        key={tag}
-                        className={`px-2 py-0.5 text-xs rounded-full ${
-                          tag === "hot"
-                            ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold"
-                            : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
-                        }`}
-                      >
-                        {tagLabels[tag] ?? tag}
-                      </span>
-                    ))}
-                  </div>
+                  {/* Row 3: Tags */}
+                  {job.tags && job.tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-1">
+                      {job.tags.map((tag, index) => (
+                        <span
+                          key={tag}
+                          className={`px-2 py-0.5 text-xs rounded-full ${index >= 3 ? "hidden sm:inline-flex" : ""} ${
+                            tag === "hot"
+                              ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.5)]"
+                              : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+                          }`}
+                        >
+                          {tagLabels[tag] ?? tag}
+                        </span>
+                      ))}
+                      {job.tags.length > 3 && (
+                        <span className="sm:hidden px-2 py-0.5 text-xs text-neutral-500">
+                          +{job.tags.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
