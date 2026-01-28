@@ -127,7 +127,7 @@ export const candidates: Candidate[] = [
 			"Security Researcher",
 		],
 		socials: {
-			x: "https://twitter.com/Viraz04",
+			x: "https://x.com/Viraz04",
 			github: "https://github.com/viraj124",
 			linkedin: "https://www.linkedin.com/in/viraz-malhotra-8a1639118/",
 			telegram: "https://t.me/Viraz04",
