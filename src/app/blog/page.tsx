@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
-import { getAllPosts } from "@/lib/blog";
+import { formatBlogDate, getAllPosts } from "@/lib/blog";
 
 export const metadata = {
 	title: "Blog",
@@ -26,13 +26,7 @@ export default function BlogPage() {
 							{posts.map((post) => (
 								<article key={post.slug}>
 									<div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-500">
-										<time>
-											{new Date(post.date).toLocaleDateString("en-US", {
-												year: "numeric",
-												month: "long",
-												day: "numeric",
-											})}
-										</time>
+									<time dateTime={post.date}>{formatBlogDate(post.date)}</time>
 										{post.source && post.sourceUrl && (
 											<>
 												<span>·</span>

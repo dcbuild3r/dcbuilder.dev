@@ -3,6 +3,8 @@ import path from "path";
 import matter from "gray-matter";
 
 const BLOG_DIR = path.join(process.cwd(), "content/blog");
+const FALLBACK_DATE = "1970-01-01";
+const DATE_ONLY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export interface BlogPost {
 	slug: string;
@@ -31,17 +33,42 @@ function calculateReadingTime(content: string): number {
 	return Math.ceil(words / wordsPerMinute);
 }
 
+function normalizeDate(dateString: string): string {
+	return DATE_ONLY_RE.test(dateString) ? `${dateString}T00:00:00.000Z` : dateString;
+}
+
 function parseDate(dateString: string | undefined, context: string): string {
 	if (!dateString) {
 		console.warn(`[blog.ts] ${context}: Missing date in frontmatter`);
-		return new Date().toISOString();
+		return FALLBACK_DATE;
 	}
-	const parsed = new Date(dateString);
+	const parsed = new Date(normalizeDate(dateString));
 	if (isNaN(parsed.getTime())) {
 		console.warn(`[blog.ts] ${context}: Invalid date format "${dateString}"`);
-		return new Date().toISOString();
+		return FALLBACK_DATE;
 	}
 	return dateString;
+}
+
+function getDateValue(dateString: string): number {
+	const parsed = new Date(normalizeDate(dateString));
+	return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+}
+
+export function formatBlogDate(dateString: string): string {
+	if (dateString === FALLBACK_DATE) {
+		return "Unknown date";
+	}
+	const parsed = new Date(normalizeDate(dateString));
+	if (isNaN(parsed.getTime())) {
+		return "Unknown date";
+	}
+	return new Intl.DateTimeFormat("en-US", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+		timeZone: "UTC",
+	}).format(parsed);
 }
 
 export function getAllPosts(): BlogPostMeta[] {
@@ -85,7 +112,7 @@ export function getAllPosts(): BlogPostMeta[] {
 			}
 		})
 		.filter((post): post is BlogPostMeta => post !== null)
-		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+		.sort((a, b) => getDateValue(b.date) - getDateValue(a.date));
 
 	return posts;
 }

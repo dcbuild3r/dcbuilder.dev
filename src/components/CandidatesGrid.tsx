@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import {
 	Candidate,
@@ -39,14 +39,17 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const [tagsExpanded, setTagsExpanded] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [shuffledCandidates, setShuffledCandidates] = useState<Candidate[]>([]);
+	const [shuffledCandidatesKey, setShuffledCandidatesKey] = useState("");
 	const [isHydrated, setIsHydrated] = useState(false);
 	const [showAll, setShowAll] = useState(false);
 	const [expandedCandidate, setExpandedCandidate] = useState<Candidate | null>(
 		null
 	);
+	const lastActiveRef = useRef<HTMLElement | null>(null);
 
 	// Mark as hydrated after mount
 	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration flag set post-mount.
 		setIsHydrated(true);
 	}, []);
 
@@ -66,6 +69,17 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			document.body.style.overflow = previousOverflow;
 		};
 	}, [expandedCandidate]);
+
+	useEffect(() => {
+		if (!expandedCandidate && lastActiveRef.current) {
+			lastActiveRef.current.focus();
+		}
+	}, [expandedCandidate]);
+
+	const handleExpand = useCallback((candidate: Candidate) => {
+		lastActiveRef.current = document.activeElement as HTMLElement | null;
+		setExpandedCandidate(candidate);
+	}, []);
 
 	// Get all unique tags from candidates
 	const allTags = useMemo(() => {
@@ -136,6 +150,17 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		});
 	}, [candidates, availabilityFilter, experienceFilter, searchQuery, selectedTags]);
 
+	const filterKey = useMemo(
+		() =>
+			[
+				availabilityFilter,
+				experienceFilter,
+				searchQuery,
+				selectedTags.join(","),
+			].join("|"),
+		[availabilityFilter, experienceFilter, searchQuery, selectedTags]
+	);
+
 	// Sort: hot first, then featured, then by tier (deterministic - no shuffle)
 	const sortedCandidates = useMemo(() => {
 		const hot = filteredCandidates.filter((c) => c.hot);
@@ -184,13 +209,22 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			.sort((a, b) => a - b)
 			.flatMap((tier) => shuffleArray(tierGroups[tier]));
 
-		setShuffledCandidates([...shuffledHot, ...shuffledFeatured, ...sortedNonFeatured]);
-	}, [filteredCandidates, isHydrated]);
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- Shuffle is derived after hydration.
+		setShuffledCandidates([
+			...shuffledHot,
+			...shuffledFeatured,
+			...sortedNonFeatured,
+		]);
+		setShuffledCandidatesKey(filterKey);
+	}, [filteredCandidates, isHydrated, filterKey]);
 
 	// Use shuffled after hydration, otherwise use deterministic sort
-	const candidatesToDisplay = isHydrated && shuffledCandidates.length > 0
-		? shuffledCandidates
-		: sortedCandidates;
+	const candidatesToDisplay =
+		isHydrated &&
+		shuffledCandidates.length > 0 &&
+		shuffledCandidatesKey === filterKey
+			? shuffledCandidates
+			: sortedCandidates;
 
 	// Limit display unless showAll is true
 	const displayedCandidates = showAll
@@ -199,7 +233,11 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const hasMore = candidatesToDisplay.length > 12 && !showAll;
 
 	return (
-		<div className="space-y-6">
+		<div
+			className="space-y-6"
+			data-testid="candidates-grid"
+			data-hydrated={isHydrated ? "true" : "false"}
+		>
 			{/* Filters */}
 			<div className="space-y-4">
 				{/* Row 1: Status and Experience filters */}
@@ -383,7 +421,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 						<CandidateCard
 							key={candidate.id}
 							candidate={candidate}
-							onExpand={() => setExpandedCandidate(candidate)}
+							onExpand={() => handleExpand(candidate)}
 						/>
 					))
 				)}
@@ -426,7 +464,6 @@ function CandidateCard({
 	const profileImage = isAnonymous
 		? "/images/candidates/anonymous-placeholder.svg"
 		: candidate.profileImage || "/images/candidates/anonymous-placeholder.svg";
-
 	const availabilityColor = {
 		looking:
 			"bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -551,9 +588,13 @@ function CandidateCard({
 							Request Introduction
 						</a>
 						<button
-							onClick={onExpand}
+							onClick={(event) => {
+								event.stopPropagation();
+								onExpand();
+							}}
 							className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all hover:scale-110"
 							title="View full profile"
+							aria-label="View full profile"
 						>
 							<svg
 								className="w-5 h-5"
@@ -578,6 +619,7 @@ function CandidateCard({
 								rel="noopener noreferrer"
 								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="X"
+								aria-label={`X profile for ${displayName}`}
 							>
 								<svg
 									className="w-5 h-5 sm:w-4 sm:h-4"
@@ -595,6 +637,7 @@ function CandidateCard({
 								rel="noopener noreferrer"
 								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="GitHub"
+								aria-label={`GitHub profile for ${displayName}`}
 							>
 								<svg
 									className="w-5 h-5 sm:w-4 sm:h-4"
@@ -612,6 +655,7 @@ function CandidateCard({
 								rel="noopener noreferrer"
 								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="LinkedIn"
+								aria-label={`LinkedIn profile for ${displayName}`}
 							>
 								<svg
 									className="w-5 h-5 sm:w-4 sm:h-4"
@@ -627,6 +671,7 @@ function CandidateCard({
 								href={`mailto:${candidate.socials.email}`}
 								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="Email"
+								aria-label={`Email ${displayName}`}
 							>
 								<svg
 									className="w-5 h-5 sm:w-4 sm:h-4"
@@ -649,6 +694,7 @@ function CandidateCard({
 								rel="noopener noreferrer"
 								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="Website"
+								aria-label={`Website for ${displayName}`}
 							>
 								<svg
 									className="w-5 h-5 sm:w-4 sm:h-4"
@@ -672,6 +718,7 @@ function CandidateCard({
 								rel="noopener noreferrer"
 								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="Telegram"
+								aria-label={`Telegram for ${displayName}`}
 							>
 								<svg
 									className="w-5 h-5 sm:w-4 sm:h-4"
@@ -689,6 +736,7 @@ function CandidateCard({
 								rel="noopener noreferrer"
 								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
 								title="CV / Resume"
+								aria-label={`CV or resume for ${displayName}`}
 							>
 								<svg
 									className="w-5 h-5 sm:w-4 sm:h-4"
@@ -709,9 +757,13 @@ function CandidateCard({
 						)}
 						</div>
 						<button
-							onClick={onExpand}
+							onClick={(event) => {
+								event.stopPropagation();
+								onExpand();
+							}}
 							className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all hover:scale-110"
 							title="View full profile"
+							aria-label="View full profile"
 						>
 							<svg
 								className="w-5 h-5"
@@ -746,6 +798,10 @@ function ExpandedCandidateView({
 	const profileImage = isAnonymous
 		? "/images/candidates/anonymous-placeholder.svg"
 		: candidate.profileImage || "/images/candidates/anonymous-placeholder.svg";
+	const dialogRef = useRef<HTMLDivElement>(null);
+	const closeButtonRef = useRef<HTMLButtonElement>(null);
+	const titleId = `candidate-${candidate.id}-title`;
+	const descriptionId = `candidate-${candidate.id}-bio`;
 
 	const availabilityColor = {
 		looking:
@@ -755,12 +811,42 @@ function ExpandedCandidateView({
 			"bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
 	};
 
+	useEffect(() => {
+		closeButtonRef.current?.focus();
+	}, []);
+
+	const handleDialogKeyDown = useCallback((e: React.KeyboardEvent) => {
+		if (e.key !== "Tab") return;
+
+		const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+			'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+		);
+		if (!focusable || focusable.length === 0) return;
+
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+		if (e.shiftKey && document.activeElement === first) {
+			e.preventDefault();
+			last.focus();
+		} else if (!e.shiftKey && document.activeElement === last) {
+			e.preventDefault();
+			first.focus();
+		}
+	}, []);
+
 	return (
 		<div
 			className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
 			onClick={onClose}
 		>
 			<div
+				ref={dialogRef}
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby={titleId}
+				aria-describedby={descriptionId}
+				tabIndex={-1}
+				onKeyDown={handleDialogKeyDown}
 				className={`relative w-full sm:max-w-4xl h-[90vh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
 					candidate.hot
 						? "ring-2 ring-orange-400 dark:ring-orange-500"
@@ -775,8 +861,10 @@ function ExpandedCandidateView({
 
 				{/* Close Button - larger touch target on mobile */}
 				<button
+					ref={closeButtonRef}
 					onClick={onClose}
 					className="absolute top-4 right-4 z-10 p-3 sm:p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
+					aria-label="Close profile"
 				>
 					<svg
 						className="w-5 h-5 sm:w-6 sm:h-6"
@@ -818,7 +906,9 @@ function ExpandedCandidateView({
 
 						<div className="flex-1">
 							<div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
-								<h2 className="text-xl sm:text-3xl font-bold">{displayName}</h2>
+								<h2 id={titleId} className="text-xl sm:text-3xl font-bold">
+									{displayName}
+								</h2>
 								{candidate.featured && (
 									<span className="text-lg text-amber-600 dark:text-amber-400">
 										★
@@ -875,7 +965,10 @@ function ExpandedCandidateView({
 					{/* Bio */}
 					<div>
 						<h3 className="text-lg font-semibold mb-3">About</h3>
-						<p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+						<p
+							id={descriptionId}
+							className="text-neutral-600 dark:text-neutral-400 leading-relaxed"
+						>
 							{candidate.bio}
 						</p>
 					</div>
