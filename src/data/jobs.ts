@@ -5604,7 +5604,7 @@ export const jobs: Job[] = [
 		id: "world-software-engineer-ai-data-infra",
 		title: "Software Engineer, AI Data Infrastructure",
 		company: companies.world,
-		location: "San Francisco",
+		location: "Munich",
 		type: "full-time",
 		department: "AI",
 		salary: "€125,000 - €153,000",
