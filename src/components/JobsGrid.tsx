@@ -5,6 +5,11 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
 import { CustomSelect } from "./CustomSelect";
+import {
+	trackJobView,
+	trackJobApplyClick,
+	trackJobDetailsClick,
+} from "@/lib/posthog";
 
 // Job type labels for display
 const jobTypeLabels: Record<string, string> = {
@@ -30,12 +35,14 @@ function ExpandedJobView({
 	jobUrl,
 	onViewOtherJobs,
 	otherJobsCount,
+	onApplyClick,
 }: {
 	job: Job;
 	onClose: () => void;
 	jobUrl: string;
 	onViewOtherJobs: () => void;
 	otherJobsCount: number;
+	onApplyClick?: () => void;
 }) {
 	const isHot = job.tags?.includes("hot");
 	const [copiedLink, setCopiedLink] = useState<"job" | "apply" | null>(null);
@@ -309,6 +316,7 @@ function ExpandedJobView({
 							href={job.link}
 							target="_blank"
 							rel="noopener noreferrer"
+							onClick={onApplyClick}
 							className="w-full sm:w-auto px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors text-center"
 						>
 							Apply Now →
@@ -546,6 +554,17 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     return map;
   }, [jobs]);
 
+  // Helper to build job event properties for analytics
+  const getJobEventProps = useCallback((job: Job) => ({
+    job_id: job.id,
+    job_title: job.title,
+    company_name: job.company.name,
+    company_category: job.company.category,
+    location: job.location,
+    is_featured: job.featured ?? false,
+    is_hot: job.tags?.includes("hot") ?? false,
+  }), []);
+
   // Helper to update URL params without React re-render
   const updateUrlParams = useCallback((updates: Record<string, string | null>) => {
     const url = new URL(window.location.href);
@@ -563,7 +582,8 @@ export function JobsGrid({ jobs }: JobsGridProps) {
   const openJob = useCallback((job: Job) => {
     setExpandedJob(job);
     updateUrlParams({ job: job.id });
-  }, [updateUrlParams]);
+    trackJobView(getJobEventProps(job));
+  }, [updateUrlParams, getJobEventProps]);
 
   const closeJob = useCallback(() => {
     setExpandedJob(null);
@@ -1303,6 +1323,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
+                          trackJobDetailsClick(getJobEventProps(job));
                           openJob(job);
                         }}
                         className="px-4 py-2 text-sm font-medium rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -1313,7 +1334,10 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                         href={job.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          trackJobApplyClick(getJobEventProps(job));
+                        }}
                         className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
                           isHotJob(job)
                             ? "bg-orange-400 dark:bg-orange-700 text-white hover:bg-orange-500 dark:hover:bg-orange-600 shadow-[0_0_10px_rgba(251,146,60,0.4)]"
@@ -1342,6 +1366,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
             closeJob();
           }}
           otherJobsCount={jobs.filter(j => j.company.name === expandedJob.company.name && j.id !== expandedJob.id).length}
+          onApplyClick={() => trackJobApplyClick(getJobEventProps(expandedJob))}
         />
       )}
     </div>
