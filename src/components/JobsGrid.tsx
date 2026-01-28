@@ -628,7 +628,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     return Array.from(companies.values()).sort();
   }, [jobs]);
 
-  // Get all unique locations from jobs (split on "/" for multi-location jobs)
+  // Get all unique locations from jobs (split on "/" or " or " for multi-location jobs)
   const allLocations = useMemo(() => {
     const locations = new Set<string>();
     jobs.forEach((job) => {
@@ -636,9 +636,9 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       if (job.remote) {
         locations.add("Remote");
       }
-      // Split location on "/" and add each part
+      // Split location on "/" or " or " and add each part
       if (job.location) {
-        job.location.split("/").forEach((part) => {
+        job.location.split(/\/| or /i).forEach((part) => {
           const trimmed = part.trim();
           if (trimmed && trimmed.toLowerCase() !== "remote") {
             locations.add(trimmed);
@@ -668,7 +668,9 @@ export function JobsGrid({ jobs }: JobsGridProps) {
             return false;
           }
         } else {
-          if (!job.location.includes(selectedLocation)) {
+          // Check if any part of the job's location matches
+          const jobLocations = job.location.split(/\/| or /i).map((p) => p.trim());
+          if (!jobLocations.some((loc) => loc === selectedLocation)) {
             return false;
           }
         }
