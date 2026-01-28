@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
 import { CustomSelect } from "./CustomSelect";
@@ -454,7 +454,6 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export function JobsGrid({ jobs }: JobsGridProps) {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [filterCategory, setFilterCategory] = useState<FilterCategory>("all");
   const [selectedCompany, setSelectedCompany] = useState<string>("all");
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
@@ -475,31 +474,119 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     return map;
   }, [jobs]);
 
-  // Sync URL with modal state (use history.replaceState to avoid React re-render flicker)
-  const openJob = useCallback((job: Job) => {
-    setExpandedJob(job);
+  // Helper to update URL params without React re-render
+  const updateUrlParams = useCallback((updates: Record<string, string | null>) => {
     const url = new URL(window.location.href);
-    url.searchParams.set("job", job.id);
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === "" || value === "all") {
+        url.searchParams.delete(key);
+      } else {
+        url.searchParams.set(key, value);
+      }
+    });
     window.history.replaceState(null, "", url.pathname + url.search);
   }, []);
+
+  // Sync URL with modal state
+  const openJob = useCallback((job: Job) => {
+    setExpandedJob(job);
+    updateUrlParams({ job: job.id });
+  }, [updateUrlParams]);
 
   const closeJob = useCallback(() => {
     setExpandedJob(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete("job");
-    window.history.replaceState(null, "", url.pathname + url.search);
-  }, []);
+    updateUrlParams({ job: null });
+  }, [updateUrlParams]);
 
-  // Open job from URL on initial load only
+  // Filter update handlers that sync to URL
+  const handleCategoryChange = useCallback((value: FilterCategory) => {
+    setFilterCategory(value);
+    updateUrlParams({ type: value === "all" ? null : value });
+  }, [updateUrlParams]);
+
+  const handleCompanyChange = useCallback((value: string) => {
+    setSelectedCompany(value);
+    updateUrlParams({ company: value === "all" ? null : value });
+  }, [updateUrlParams]);
+
+  const handleLocationChange = useCallback((value: string) => {
+    setSelectedLocation(value);
+    updateUrlParams({ location: value === "all" ? null : value });
+  }, [updateUrlParams]);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value);
+    updateUrlParams({ q: value || null });
+  }, [updateUrlParams]);
+
+  const handleFeaturedToggle = useCallback(() => {
+    const newValue = !showFeaturedOnly;
+    setShowFeaturedOnly(newValue);
+    updateUrlParams({ featured: newValue ? "1" : null });
+  }, [showFeaturedOnly, updateUrlParams]);
+
+  const handleTagToggle = useCallback((tag: JobTag) => {
+    setSelectedTags((prev) => {
+      const newTags = prev.includes(tag)
+        ? prev.filter((t) => t !== tag)
+        : [...prev, tag];
+      updateUrlParams({ tags: newTags.length > 0 ? newTags.join(",") : null });
+      return newTags;
+    });
+  }, [updateUrlParams]);
+
+  const handleClearTags = useCallback(() => {
+    setSelectedTags([]);
+    updateUrlParams({ tags: null });
+  }, [updateUrlParams]);
+
+  // Initialize all state from URL on first load
   useEffect(() => {
     if (hasInitializedFromUrl.current) return;
     hasInitializedFromUrl.current = true;
 
+    // Job modal
     const jobId = searchParams.get("job");
     if (jobId) {
       const job = jobsById.get(jobId);
       if (job) {
         setExpandedJob(job);
+      }
+    }
+
+    // Filters
+    const type = searchParams.get("type") as FilterCategory | null;
+    if (type && (type === "portfolio" || type === "network")) {
+      setFilterCategory(type);
+    }
+
+    const company = searchParams.get("company");
+    if (company) {
+      setSelectedCompany(company);
+    }
+
+    const location = searchParams.get("location");
+    if (location) {
+      setSelectedLocation(location);
+    }
+
+    const q = searchParams.get("q");
+    if (q) {
+      setSearchQuery(q);
+    }
+
+    const featured = searchParams.get("featured");
+    if (featured === "1") {
+      setShowFeaturedOnly(true);
+    }
+
+    const tags = searchParams.get("tags");
+    if (tags) {
+      const tagList = tags.split(",").filter((t): t is JobTag =>
+        Object.keys(tagLabels).includes(t)
+      );
+      if (tagList.length > 0) {
+        setSelectedTags(tagList);
       }
     }
   }, [searchParams, jobsById]);
@@ -557,12 +644,6 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     });
     return Array.from(locations).sort();
   }, [jobs]);
-
-  const toggleTag = (tag: JobTag) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-    );
-  };
 
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
@@ -739,7 +820,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
             <CustomSelect
               id="category-filter"
               value={filterCategory}
-              onChange={(value) => setFilterCategory(value as FilterCategory)}
+              onChange={(value) => handleCategoryChange(value as FilterCategory)}
               options={[
                 { value: "all", label: "All" },
                 { value: "portfolio", label: "Portfolio" },
@@ -760,7 +841,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
             <CustomSelect
               id="company-filter"
               value={selectedCompany}
-              onChange={setSelectedCompany}
+              onChange={handleCompanyChange}
               options={[
                 { value: "all", label: "All Companies" },
                 ...allCompanies.map((company) => ({ value: company, label: company })),
@@ -803,7 +884,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
             <CustomSelect
               id="location-filter"
               value={selectedLocation}
-              onChange={setSelectedLocation}
+              onChange={handleLocationChange}
               options={[
                 { value: "all", label: "All Locations" },
                 ...allLocations.map((location) => ({ value: location, label: location })),
@@ -818,13 +899,13 @@ export function JobsGrid({ jobs }: JobsGridProps) {
               type="text"
               placeholder="Search jobs..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
             />
             {searchQuery && (
               <button
                 type="button"
-                onClick={() => setSearchQuery("")}
+                onClick={() => handleSearchChange("")}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
                 aria-label="Clear search"
               >
@@ -850,7 +931,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
           <div className="flex flex-wrap items-center gap-2">
             {/* Featured only toggle */}
             <button
-              onClick={() => setShowFeaturedOnly(!showFeaturedOnly)}
+              onClick={handleFeaturedToggle}
               className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
                 showFeaturedOnly
                   ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700"
@@ -891,7 +972,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
               >
                 {tagLabels[tag]}
                 <button
-                  onClick={() => toggleTag(tag)}
+                  onClick={() => handleTagToggle(tag)}
                   className="ml-1 hover:opacity-70"
                   aria-label={`Remove ${tagLabels[tag]} filter`}
                 >
@@ -913,7 +994,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
             ))}
             {selectedTags.length > 0 && (
               <button
-                onClick={() => setSelectedTags([])}
+                onClick={handleClearTags}
                 className="px-3 py-1.5 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
               >
                 Clear all
@@ -927,7 +1008,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
               {allTags.map((tag) => (
                 <button
                   key={tag}
-                  onClick={() => toggleTag(tag)}
+                  onClick={() => handleTagToggle(tag)}
                   className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all ${
                     tag === "hot"
                       ? selectedTags.includes(tag)
@@ -1158,7 +1239,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
           onClose={closeJob}
           jobUrl={typeof window !== "undefined" ? `${window.location.origin}/jobs?job=${expandedJob.id}` : `/jobs?job=${expandedJob.id}`}
           onViewOtherJobs={() => {
-            setSelectedCompany(expandedJob.company.name);
+            handleCompanyChange(expandedJob.company.name);
             closeJob();
           }}
           otherJobsCount={jobs.filter(j => j.company.name === expandedJob.company.name && j.id !== expandedJob.id).length}

@@ -36,7 +36,9 @@ export type JobTag =
 	| "internship"
 	| "growth"
 	| "sales"
-	| "account-abstraction";
+	| "account-abstraction"
+	| "privacy"
+	| "web3";
 
 export const tagLabels: Record<JobTag, string> = {
 	hot: "🔥 HOT",
@@ -73,6 +75,8 @@ export const tagLabels: Record<JobTag, string> = {
 	growth: "Growth",
 	sales: "Sales",
 	"account-abstraction": "Account Abstraction",
+	privacy: "Privacy",
+	web3: "Web3",
 };
 
 // Job tiers match portfolio tiers: 1-4 for portfolio companies, 5 for network, 6 for ecosystem
