@@ -279,7 +279,7 @@ export const candidates: Candidate[] = [
 			{ name: "Penumbra Labs", url: "https://penumbra.zone" },
 			{ name: "Moralis", url: "https://moralis.io" },
 			{ name: "3PillarGlobal", url: "https://www.3pillarglobal.com" },
-			{ name: "Abradatas", url: "https://www.abradatas.com" },
+			{ name: "Abradatas", url: "https://abradatas.cz/" },
 		],
 		socials: {
 			x: "https://x.com/atris_eth",
