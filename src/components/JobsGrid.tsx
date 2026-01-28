@@ -1244,7 +1244,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                           <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">★</span>
                         )}
                         {isHotJob(job) && (
-                          <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-600 dark:to-amber-600 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(234,88,12,0.5)] animate-pulse">
+                          <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-gradient-to-r from-orange-700 to-amber-700 dark:from-orange-800 dark:to-amber-800 text-white shadow-[0_0_12px_rgba(194,65,12,0.6)] dark:shadow-[0_0_16px_rgba(146,64,14,0.5)] animate-pulse">
                             🔥 HOT
                           </span>
                         )}
@@ -1316,7 +1316,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                         onClick={(e) => e.stopPropagation()}
                         className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
                           isHotJob(job)
-                            ? "bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-600 dark:to-amber-600 text-white hover:from-orange-600 hover:to-amber-600 dark:hover:from-orange-500 dark:hover:to-amber-500 shadow-[0_0_10px_rgba(251,146,60,0.4)]"
+                            ? "bg-gradient-to-r from-orange-700 to-amber-700 dark:from-orange-800 dark:to-amber-800 text-white hover:from-orange-800 hover:to-amber-800 dark:hover:from-orange-700 dark:hover:to-amber-700 shadow-[0_0_10px_rgba(194,65,12,0.4)]"
                             : "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-700 dark:hover:bg-neutral-200"
                         }`}
                       >
