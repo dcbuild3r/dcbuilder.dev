@@ -116,6 +116,7 @@ export const candidates: Candidate[] = [
 		name: "Viraz Malhotra",
 		title: "Senior Smart Contract & Backend Engineer",
 		bio: "EVM developer with 6 years of experience building smart contracts and backend applications for DeFi and Infrastructure projects (L1s, L2s). Also experienced as a security researcher in both EVM and Solana domains.",
+		profileImage: "/images/candidates/viraz.jpg",
 		skills: ["defi", "infra", "security", "solana", "protocol"],
 		location: "Remote",
 		remote: true,
