@@ -544,6 +544,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
   const [shuffledJobsKey, setShuffledJobsKey] = useState("");
   const [isHydrated, setIsHydrated] = useState(false);
   const [expandedJob, setExpandedJob] = useState<Job | null>(null);
+  const [dataHotJobIds, setDataHotJobIds] = useState<Set<string>>(new Set());
   const hasInitializedFromUrl = useRef(false);
 	const shuffledJobsKeyRef = useRef("");
 
@@ -553,6 +554,18 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     jobs.forEach((job) => map.set(job.id, job));
     return map;
   }, [jobs]);
+
+  // Fetch data-driven hot jobs from analytics
+  useEffect(() => {
+    fetch("/api/hot-jobs")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.hotJobIds) {
+          setDataHotJobIds(new Set(data.hotJobIds));
+        }
+      })
+      .catch((error) => console.warn("Failed to fetch hot jobs:", error));
+  }, []);
 
   // Helper to build job event properties for analytics
   const getJobEventProps = useCallback((job: Job) => ({
@@ -875,8 +888,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     [filterCategory, selectedCompany, selectedLocation, searchQuery, selectedTags, showFeaturedOnly],
   );
 
-  // Helper to check if job is hot
-  const isHotJob = (job: Job) => job.tags?.includes("hot");
+  // Helper to check if job is hot (manual tag OR data-driven)
+  const isHotJob = useCallback(
+    (job: Job) => job.tags?.includes("hot") || dataHotJobIds.has(job.id),
+    [dataHotJobIds]
+  );
 
   // Helper to get company tier (useCallback for stable reference in useEffect)
   const getTier = useCallback(
@@ -907,7 +923,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       .flatMap((tier) => tierGroups[tier]);
 
     return [...hot, ...featured, ...sortedNonFeatured];
-  }, [filteredJobs, getTier]);
+  }, [filteredJobs, getTier, isHotJob]);
 
   // Shuffle jobs in useEffect after hydration (React-safe)
   useEffect(() => {
@@ -943,7 +959,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     ]);
 		shuffledJobsKeyRef.current = filterKey;
     setShuffledJobsKey(filterKey);
-  }, [filteredJobs, isHydrated, getTier, filterKey]);
+  }, [filteredJobs, isHydrated, getTier, filterKey, isHotJob]);
 
   // Use shuffled jobs after hydration, otherwise use deterministic sort
   const displayJobs =
