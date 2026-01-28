@@ -37,7 +37,6 @@ export default async function Image() {
 						display: "flex",
 					}}
 				>
-					{/* eslint-disable-next-line @next/next/no-img-element */}
 					<img
 						src="https://dcbuilder.dev/images/dcbuilder.png"
 						alt="dcbuilder"

@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getPostBySlug } from "@/lib/blog";
+import { formatBlogDate, getPostBySlug } from "@/lib/blog";
 
 export const runtime = "nodejs";
 
@@ -19,13 +19,7 @@ export default async function Image({ params }: Props) {
 	const post = getPostBySlug(slug);
 
 	const title = post?.title || "Blog Post";
-	const date = post?.date
-		? new Date(post.date).toLocaleDateString("en-US", {
-				year: "numeric",
-				month: "long",
-				day: "numeric",
-			})
-		: "";
+	const date = post?.date ? formatBlogDate(post.date) : "";
 
 	return new ImageResponse(
 		(
@@ -53,8 +47,7 @@ export default async function Image({ params }: Props) {
 							display: "flex",
 						}}
 					>
-						{/* eslint-disable-next-line @next/next/no-img-element */}
-						<img
+					<img
 							src="https://dcbuilder.dev/images/dcbuilder.png"
 							alt="dcbuilder"
 							width={56}

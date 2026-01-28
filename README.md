@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# dcbuilder.dev
 
-## Getting Started
+Personal site built with Next.js (App Router) for dcbuilder.eth. It includes a homepage, about page, blog (MDX), portfolio, jobs board, and candidates directory.
 
-First, run the development server:
+## Overview
+
+- Home: brief focus areas and hero image.
+- About: bio plus affiliations.
+- Blog: MDX posts from `content/blog`, rendered server-side.
+- Portfolio: investment cards from `src/data/investments.ts`.
+- Jobs: filterable job board from `src/data/jobs.ts`.
+- Candidates: filterable candidate directory with modal profiles from `src/data/candidates.ts`.
+
+## How the site works
+
+- Data sources: all structured data lives in `src/data/*.ts`. Update those files to change jobs, candidates, affiliations, and portfolio items.
+- Blog: posts live in `content/blog/*.mdx`. Frontmatter is parsed by `gray-matter` in `src/lib/blog.ts`.
+- MDX rendering: `next-mdx-remote` plus custom renderers in `src/components/MDXComponents.tsx`.
+- Theming: `next-themes` toggles a `dark` class on `html`, with styles in `src/app/globals.css`.
+- Open Graph images: generated with `next/og` in `src/app/**/opengraph-image.tsx`.
+- Interactive UI: filters, tags, shuffles, and modals are client components in `src/components/*`.
+
+## Packages
+
+### Dependencies
+- `next`: App Router framework.
+- `react`, `react-dom`: UI runtime.
+- `next-themes`: theme toggle with system support.
+- `next-mdx-remote`: MDX rendering for blog posts.
+- `gray-matter`: frontmatter parsing.
+
+### Dev dependencies
+- `typescript`: type checking.
+- `eslint`, `eslint-config-next`: linting.
+- `tailwindcss`, `@tailwindcss/postcss`: styling pipeline.
+- `@types/node`, `@types/react`, `@types/react-dom`: TypeScript types.
+- `@playwright/test`: end-to-end smoke tests.
+
+## Commands (Bun)
+
+Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun install
+```
+
+Run the dev server:
+
+```bash
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Build and run production:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+bun run build
+bun run start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Lint:
 
-## Learn More
+```bash
+bun run lint
+```
 
-To learn more about Next.js, take a look at the following resources:
+Run Playwright tests (first-time setup required):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+bunx playwright install
+bun run test
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Playwright uses port 3001 by default; override with:
 
-## Deploy on Vercel
+```bash
+PORT=3000 bun run test
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing / updating content
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Blog posts: add MDX files to `content/blog/` with frontmatter (`title`, `date`, `description`, optional `source`, `sourceUrl`).
+- Jobs: update `src/data/jobs.ts`.
+- Candidates: update `src/data/candidates.ts`.
+- Portfolio: update `src/data/investments.ts`.
+- Affiliations: update `src/data/affiliations.ts`.
+
+## Contact
+
+You can reach me on Telegram: `https://t.me/dcbuilder`.
+
+## Notes
+
+- This repo uses Bun (see `bun.lock`).
+- The UI is built with TailwindCSS utility classes and custom components in `src/components`.
+- The site is deployed as a standard Next.js app; no backend or database is required.

@@ -25,6 +25,7 @@ export function CustomSelect({
 	const [isOpen, setIsOpen] = useState(false);
 	const [focusedIndex, setFocusedIndex] = useState(-1);
 	const containerRef = useRef<HTMLDivElement>(null);
+	const triggerRef = useRef<HTMLButtonElement>(null);
 	const listboxRef = useRef<HTMLDivElement>(null);
 
 	const selectedOption = options.find((opt) => opt.value === value);
@@ -49,7 +50,12 @@ export function CustomSelect({
 		if (isOpen) {
 			// eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: sync focus with dropdown open state
 			setFocusedIndex(selectedIndex >= 0 ? selectedIndex : 0);
+			const focusTimeout = window.setTimeout(() => {
+				listboxRef.current?.focus();
+			}, 0);
+			return () => window.clearTimeout(focusTimeout);
 		}
+		return undefined;
 	}, [isOpen, selectedIndex]);
 
 	// Handle keyboard navigation
@@ -66,6 +72,10 @@ export function CustomSelect({
 			case "Escape":
 				e.preventDefault();
 				setIsOpen(false);
+				triggerRef.current?.focus();
+				break;
+			case "Tab":
+				setIsOpen(false);
 				break;
 			case "ArrowDown":
 				e.preventDefault();
@@ -81,6 +91,7 @@ export function CustomSelect({
 				if (focusedIndex >= 0 && focusedIndex < options.length) {
 					onChange(options[focusedIndex].value);
 					setIsOpen(false);
+					triggerRef.current?.focus();
 				}
 				break;
 			case "Home":
@@ -105,15 +116,16 @@ export function CustomSelect({
 	}, [isOpen, focusedIndex]);
 
 	return (
-		<div ref={containerRef} className={`relative ${className}`} onKeyDown={handleKeyDown}>
-			{/* Trigger button */}
-			<button
-				id={id}
-				type="button"
-				onClick={() => setIsOpen(!isOpen)}
-				aria-haspopup="listbox"
-				aria-expanded={isOpen}
-				aria-controls={id ? `${id}-listbox` : undefined}
+			<div ref={containerRef} className={`relative ${className}`} onKeyDown={handleKeyDown}>
+				{/* Trigger button */}
+				<button
+					id={id}
+					type="button"
+					ref={triggerRef}
+					onClick={() => setIsOpen(!isOpen)}
+					aria-haspopup="listbox"
+					aria-expanded={isOpen}
+					aria-controls={id ? `${id}-listbox` : undefined}
 				className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
 			>
 				<span className="truncate">{selectedOption?.label ?? value}</span>
@@ -141,6 +153,8 @@ export function CustomSelect({
 						ref={listboxRef}
 						id={id ? `${id}-listbox` : undefined}
 						role="listbox"
+						tabIndex={-1}
+						aria-labelledby={id}
 						aria-activedescendant={focusedIndex >= 0 && id ? `${id}-option-${focusedIndex}` : undefined}
 						className="absolute z-[var(--z-dropdown)] mt-1 w-full min-w-[200px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg max-h-[60vh] sm:max-h-60 overflow-y-auto"
 					>
