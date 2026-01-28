@@ -473,7 +473,7 @@ export const candidates: Candidate[] = [
 			cv: "https://www.kiasaki.com/cv.pdf",
 		},
 		tier: 2,
-		featured: false,
+		featured: true,
 		dateAdded: "2025-01-28",
 	},
 	{
