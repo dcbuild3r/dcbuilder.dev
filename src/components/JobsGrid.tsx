@@ -540,6 +540,33 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     updateUrlParams({ tags: null });
   }, [updateUrlParams]);
 
+  const handleResetAllFilters = useCallback(() => {
+    setFilterCategory("all");
+    setSelectedCompany("all");
+    setSelectedLocation("all");
+    setSearchQuery("");
+    setSelectedTags([]);
+    setShowFeaturedOnly(false);
+    // Clear all filter params from URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete("type");
+    url.searchParams.delete("company");
+    url.searchParams.delete("location");
+    url.searchParams.delete("q");
+    url.searchParams.delete("tags");
+    url.searchParams.delete("featured");
+    window.history.replaceState(null, "", url.pathname + url.search);
+  }, []);
+
+  // Check if any filter is active
+  const hasActiveFilters =
+    filterCategory !== "all" ||
+    selectedCompany !== "all" ||
+    selectedLocation !== "all" ||
+    searchQuery !== "" ||
+    selectedTags.length > 0 ||
+    showFeaturedOnly;
+
   // Initialize all state from URL on first load
   useEffect(() => {
     if (hasInitializedFromUrl.current) return;
@@ -927,9 +954,19 @@ export function JobsGrid({ jobs }: JobsGridProps) {
           </div>
         </div>
 
-        {/* Results count */}
-        <div className="text-sm text-neutral-500">
-          {sortedJobs.length} {sortedJobs.length === 1 ? "job" : "jobs"}
+        {/* Results count and reset */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-neutral-500">
+            {sortedJobs.length} {sortedJobs.length === 1 ? "job" : "jobs"}
+          </span>
+          {hasActiveFilters && (
+            <button
+              onClick={handleResetAllFilters}
+              className="text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 underline underline-offset-2"
+            >
+              Reset filters
+            </button>
+          )}
         </div>
       </div>
 
