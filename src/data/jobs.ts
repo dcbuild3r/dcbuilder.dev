@@ -98,6 +98,10 @@ export interface Job {
 	featured?: boolean;
 	tags?: JobTag[];
 	tier?: JobTier; // 1 = highest priority, 2 = medium, 3 = lower
+	description?: string;
+	responsibilities?: string[];
+	qualifications?: string[];
+	benefits?: string[];
 }
 
 // Reusable company definitions
@@ -541,6 +545,19 @@ export const jobs: Job[] = [
 		department: "Bioengineering",
 		link: "https://jobs.ashbyhq.com/merge/5bb3a8fd-eb15-40aa-84ba-71602644ee95",
 		tags: ["ai", "research", "bci"],
+		description: "Join Merge Labs to build automation systems for cutting-edge brain-computer interface research. You'll work on robotic systems, data pipelines, and laboratory automation to accelerate our neuroscience research.",
+		responsibilities: [
+			"Design and implement automation solutions for laboratory workflows",
+			"Develop and maintain robotic systems for high-throughput experiments",
+			"Build data pipelines for experimental data collection and analysis",
+			"Collaborate with research scientists to optimize experimental protocols",
+		],
+		qualifications: [
+			"3+ years experience in automation engineering or robotics",
+			"Proficiency in Python and experience with automation frameworks",
+			"Experience with laboratory equipment and scientific workflows",
+			"Strong problem-solving skills and attention to detail",
+		],
 	},
 	{
 		id: "merge-head-of-vivarium",
@@ -772,6 +789,19 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://morpho.org/jobs/integrations-engineer-apac",
 		tags: ["defi", "protocol"],
+		description: "Help grow Morpho's presence in the APAC region by building integrations with key DeFi protocols and partners. You'll work closely with ecosystem teams to onboard new markets and expand Morpho's lending infrastructure across Asia.",
+		qualifications: [
+			"Strong experience with Solidity and DeFi protocols",
+			"Understanding of lending markets and yield optimization",
+			"Excellent communication skills for partner relationships",
+			"Based in or willing to work APAC timezone hours",
+		],
+		benefits: [
+			"Competitive salary with token compensation",
+			"Remote-first culture",
+			"Work with leading DeFi protocols",
+			"Conference and travel budget",
+		],
 	},
 	{
 		id: "morpho-senior-enterprise-partnerships",
@@ -783,6 +813,19 @@ export const jobs: Job[] = [
 		department: "Business Development",
 		link: "https://morpho.org/jobs/senior-enterprise-partnerships",
 		tags: ["defi", "bd"],
+		description: "Drive strategic partnerships with institutional players, DAOs, and DeFi protocols to grow Morpho's lending ecosystem. You'll identify, negotiate, and close high-value partnerships.",
+		responsibilities: [
+			"Identify and pursue strategic partnership opportunities with institutions and protocols",
+			"Negotiate partnership terms and structure integration deals",
+			"Manage relationships with key ecosystem partners",
+			"Collaborate with product and engineering on integration requirements",
+		],
+		qualifications: [
+			"5+ years in business development or partnerships, preferably in DeFi",
+			"Strong network within the crypto/DeFi ecosystem",
+			"Experience with enterprise sales cycles and complex negotiations",
+			"Deep understanding of DeFi lending markets",
+		],
 	},
 	{
 		id: "morpho-senior-protocol-engineer",
@@ -795,6 +838,19 @@ export const jobs: Job[] = [
 		link: "https://morpho.org/jobs/senior-protocol-engineer",
 		featured: true,
 		tags: ["defi", "protocol", "cryptography"],
+		description: "Design and implement core protocol features for Morpho's lending infrastructure. Work on smart contracts that secure billions in TVL across multiple chains.",
+		responsibilities: [
+			"Architect and implement new protocol features in Solidity",
+			"Optimize gas efficiency and protocol performance",
+			"Conduct thorough security reviews and work with auditors",
+			"Contribute to protocol governance and technical specifications",
+		],
+		qualifications: [
+			"4+ years of Solidity development with production deployments",
+			"Deep understanding of DeFi primitives and lending markets",
+			"Experience with security best practices and audit processes",
+			"Strong computer science fundamentals",
+		],
 	},
 	{
 		id: "morpho-staff-senior-backend-engineer",
@@ -807,6 +863,19 @@ export const jobs: Job[] = [
 		link: "https://morpho.org/jobs/staffsenior-backend-engineer",
 		featured: true,
 		tags: ["defi", "infra"],
+		description: "Build the backend infrastructure powering Morpho's DeFi applications. Design scalable systems for indexing blockchain data, managing risk parameters, and serving millions of users.",
+		responsibilities: [
+			"Design and build scalable backend services and APIs",
+			"Implement blockchain indexing and data aggregation pipelines",
+			"Optimize system performance and reliability",
+			"Mentor junior engineers and drive technical excellence",
+		],
+		qualifications: [
+			"5+ years backend engineering with distributed systems",
+			"Experience with blockchain data indexing (The Graph, custom solutions)",
+			"Strong proficiency in TypeScript/Node.js or Go",
+			"Experience with PostgreSQL, Redis, and cloud infrastructure",
+		],
 	},
 	{
 		id: "morpho-senior-frontend-engineer",
@@ -818,6 +887,19 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://morpho.org/jobs/senior-frontend-engineer-1",
 		tags: ["defi"],
+		description: "Build beautiful, performant interfaces for Morpho's lending platform. Create intuitive DeFi experiences that make complex financial operations accessible to all users.",
+		responsibilities: [
+			"Build and maintain React/Next.js applications for the Morpho interface",
+			"Implement Web3 wallet integrations and transaction flows",
+			"Optimize performance and user experience across devices",
+			"Collaborate with design on new features and improvements",
+		],
+		qualifications: [
+			"4+ years of frontend development with React/TypeScript",
+			"Experience with Web3 libraries (wagmi, viem, ethers.js)",
+			"Strong understanding of DeFi UX patterns",
+			"Eye for design and attention to detail",
+		],
 	},
 	{
 		id: "morpho-staff-fullstack-engineer",
@@ -830,6 +912,19 @@ export const jobs: Job[] = [
 		link: "https://morpho.org/jobs/staff-fullstack-engineer",
 		featured: true,
 		tags: ["defi"],
+		description: "Lead technical initiatives across the full stack at Morpho. Drive architecture decisions, mentor the team, and build critical features end-to-end.",
+		responsibilities: [
+			"Lead technical design and implementation of major features",
+			"Work across frontend, backend, and smart contract layers",
+			"Set technical direction and best practices for the team",
+			"Mentor engineers and drive code quality improvements",
+		],
+		qualifications: [
+			"7+ years of fullstack development experience",
+			"Experience leading technical projects and mentoring engineers",
+			"Strong proficiency in React, Node.js, and ideally Solidity",
+			"Track record of shipping complex products in fast-paced environments",
+		],
 	},
 	{
 		id: "morpho-defi-business-analyst",
@@ -841,6 +936,19 @@ export const jobs: Job[] = [
 		department: "Business",
 		link: "https://morpho.org/jobs/defi-business-analyst",
 		tags: ["defi"],
+		description: "Analyze DeFi market dynamics, competitive landscape, and growth opportunities for Morpho. Provide data-driven insights to guide strategic decisions.",
+		responsibilities: [
+			"Analyze DeFi market trends, competitor strategies, and opportunities",
+			"Build models for market sizing and growth projections",
+			"Create dashboards and reports for leadership",
+			"Support business development with market research",
+		],
+		qualifications: [
+			"3+ years in business analysis or strategy consulting",
+			"Deep knowledge of DeFi protocols and market dynamics",
+			"Strong analytical skills with SQL and data visualization tools",
+			"Excellent communication and presentation skills",
+		],
 	},
 	{
 		id: "morpho-customer-support-specialist",
@@ -852,6 +960,19 @@ export const jobs: Job[] = [
 		department: "Support",
 		link: "https://morpho.org/jobs/customer-support-specialist",
 		tags: ["defi"],
+		description: "Be the voice of Morpho for our users. Help users navigate the protocol, resolve issues, and ensure an excellent experience with our lending platform.",
+		responsibilities: [
+			"Respond to user inquiries via Discord, email, and other channels",
+			"Troubleshoot technical issues and guide users through transactions",
+			"Document common issues and contribute to help documentation",
+			"Escalate bugs and feature requests to the product team",
+		],
+		qualifications: [
+			"2+ years in customer support, preferably in crypto/DeFi",
+			"Strong understanding of DeFi concepts and Web3 wallets",
+			"Excellent written communication skills",
+			"Patient, empathetic, and detail-oriented",
+		],
 	},
 	{
 		id: "morpho-curator-market-specialist",
@@ -863,6 +984,19 @@ export const jobs: Job[] = [
 		department: "Markets",
 		link: "https://morpho.org/jobs/curator-market-specialist",
 		tags: ["defi", "trading"],
+		description: "Manage and optimize Morpho lending markets as a Curator. Analyze market parameters, set risk configurations, and ensure healthy market dynamics across the protocol.",
+		responsibilities: [
+			"Monitor and adjust market parameters (LTV, liquidation thresholds, caps)",
+			"Analyze market health metrics and utilization rates",
+			"Identify new market opportunities and expansion strategies",
+			"Collaborate with risk team on parameter recommendations",
+		],
+		qualifications: [
+			"3+ years in DeFi or traditional finance risk/trading roles",
+			"Deep understanding of lending market mechanics and liquidations",
+			"Strong analytical skills with experience in data analysis",
+			"Experience with on-chain data analysis tools",
+		],
 	},
 	{
 		id: "morpho-risk-analyst",
@@ -874,6 +1008,19 @@ export const jobs: Job[] = [
 		department: "Risk",
 		link: "https://morpho.org/jobs/risk-analyst",
 		tags: ["defi", "security"],
+		description: "Assess and monitor risks across Morpho's lending protocol. Build models to evaluate collateral risk, liquidation scenarios, and systemic vulnerabilities.",
+		responsibilities: [
+			"Build risk models for collateral assets and market parameters",
+			"Monitor protocol health and identify potential vulnerabilities",
+			"Analyze liquidation scenarios and stress test the protocol",
+			"Produce risk reports and recommendations for governance",
+		],
+		qualifications: [
+			"3+ years in risk management or quantitative analysis",
+			"Strong understanding of DeFi lending and liquidation mechanics",
+			"Proficiency in Python/SQL for data analysis and modeling",
+			"Experience with on-chain analytics and blockchain data",
+		],
 	},
 	{
 		id: "morpho-protocol-security-engineer",
@@ -886,6 +1033,19 @@ export const jobs: Job[] = [
 		link: "https://morpho.org/jobs/protocol-security-engineer",
 		featured: true,
 		tags: ["defi", "protocol", "security"],
+		description: "Secure billions in TVL as Morpho's Protocol Security Engineer. Conduct security reviews, work with auditors, and build security tooling for the protocol.",
+		responsibilities: [
+			"Review smart contract code for security vulnerabilities",
+			"Coordinate with external auditors and bug bounty researchers",
+			"Build security monitoring and alerting systems",
+			"Develop security best practices and documentation",
+		],
+		qualifications: [
+			"4+ years in smart contract security or software security",
+			"Experience auditing Solidity code and finding vulnerabilities",
+			"Familiarity with common attack vectors (reentrancy, oracle manipulation, etc.)",
+			"Track record of responsible disclosure or bug bounty findings",
+		],
 	},
 	{
 		id: "morpho-infrastructure-engineer",
@@ -897,6 +1057,19 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://morpho.org/jobs/job-dnikd63nc7",
 		tags: ["defi", "infra"],
+		description: "Build and maintain the cloud infrastructure powering Morpho. Ensure high availability, security, and performance for our DeFi applications.",
+		responsibilities: [
+			"Design and maintain cloud infrastructure (AWS/GCP)",
+			"Implement CI/CD pipelines and deployment automation",
+			"Monitor system performance and optimize costs",
+			"Ensure security best practices across infrastructure",
+		],
+		qualifications: [
+			"4+ years in infrastructure/DevOps engineering",
+			"Experience with Kubernetes, Terraform, and cloud platforms",
+			"Strong understanding of networking and security",
+			"Experience with blockchain node operations a plus",
+		],
 	},
 	{
 		id: "morpho-head-of-people",
@@ -909,6 +1082,19 @@ export const jobs: Job[] = [
 		link: "https://morpho.org/jobs/job-fnaegqvocu",
 		featured: true,
 		tags: ["defi", "talent", "leadership"],
+		description: "Lead Morpho's people function and build a world-class team. Define talent strategy, culture initiatives, and organizational development for a fast-growing DeFi protocol.",
+		responsibilities: [
+			"Develop and execute talent acquisition strategy",
+			"Build company culture and employee experience programs",
+			"Manage compensation, benefits, and HR operations",
+			"Drive organizational design as the company scales",
+		],
+		qualifications: [
+			"7+ years in HR/People leadership roles",
+			"Experience scaling teams in fast-paced tech environments",
+			"Strong understanding of crypto/DeFi talent landscape",
+			"Excellent interpersonal and leadership skills",
+		],
 	},
 	{
 		id: "morpho-technical-product-marketing-manager",
@@ -920,6 +1106,19 @@ export const jobs: Job[] = [
 		department: "Marketing",
 		link: "https://morpho.org/jobs/job-2xuerfzdn6",
 		tags: ["defi", "marketing", "management"],
+		description: "Drive product marketing for Morpho's lending protocol. Translate complex DeFi concepts into compelling narratives for developers, protocols, and users.",
+		responsibilities: [
+			"Create technical content (docs, tutorials, blog posts)",
+			"Develop go-to-market strategies for new features and markets",
+			"Enable sales and BD with technical collateral",
+			"Analyze competitors and market positioning",
+		],
+		qualifications: [
+			"4+ years in product marketing, preferably in crypto/DeFi",
+			"Strong technical writing and content creation skills",
+			"Deep understanding of DeFi protocols and developer audiences",
+			"Experience with developer marketing and community building",
+		],
 	},
 	{
 		id: "morpho-general-counsel",
@@ -931,6 +1130,19 @@ export const jobs: Job[] = [
 		department: "Legal",
 		link: "https://morpho.org/jobs/job-00x52y1m34",
 		tags: ["defi", "legal"],
+		description: "Lead Morpho's legal function across regulatory, corporate, and protocol governance matters. Navigate the evolving DeFi regulatory landscape.",
+		responsibilities: [
+			"Advise on regulatory compliance across jurisdictions",
+			"Manage corporate legal matters and external counsel",
+			"Support protocol governance and DAO legal structures",
+			"Draft and review commercial agreements",
+		],
+		qualifications: [
+			"10+ years legal experience with 3+ in crypto/fintech",
+			"Deep understanding of DeFi regulatory landscape",
+			"Experience with DAO governance and token structures",
+			"JD from accredited law school, bar admission required",
+		],
 	},
 	// MegaETH Jobs
 	{
@@ -944,6 +1156,19 @@ export const jobs: Job[] = [
 		link: "https://www.megaeth.com/about#career",
 		featured: true,
 		tags: ["legal"],
+		description: "Join MegaETH's legal team to support the development of the first real-time blockchain. Handle regulatory matters, partnerships, and corporate governance.",
+		responsibilities: [
+			"Advise on regulatory compliance and legal risks",
+			"Draft and negotiate partnership and commercial agreements",
+			"Support corporate governance and fundraising",
+			"Manage relationships with external legal counsel",
+		],
+		qualifications: [
+			"5+ years legal experience with 2+ in blockchain/crypto",
+			"Strong understanding of securities and regulatory frameworks",
+			"Experience with technology company transactions",
+			"JD from accredited law school required",
+		],
 	},
 	// Ritual Jobs
 	{
@@ -1148,6 +1373,19 @@ export const jobs: Job[] = [
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/primeintellect/5de44365-7209-4969-b741-945bfae724a0",
 		tags: ["ai", "bd"],
+		description: "Drive revenue growth for Prime Intellect's distributed AI training platform. Sell to AI labs, enterprises, and research institutions building frontier models.",
+		responsibilities: [
+			"Manage full sales cycle from prospecting to close",
+			"Build relationships with AI research teams and enterprise buyers",
+			"Develop and execute account strategies for key targets",
+			"Collaborate with product on customer feedback and requirements",
+		],
+		qualifications: [
+			"3+ years B2B SaaS or infrastructure sales experience",
+			"Track record of exceeding quota in technical sales",
+			"Understanding of AI/ML infrastructure and training workflows",
+			"Excellent communication and presentation skills",
+		],
 	},
 	{
 		id: "prime-intellect-ai-research-resident",
@@ -1160,6 +1398,19 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/afa6079a-5a35-4f90-ba88-780e4d36112f",
 		featured: true,
 		tags: ["ai", "research"],
+		description: "Join Prime Intellect's mission to build open-source AGI. Work on cutting-edge research in distributed training, model architectures, and alignment.",
+		responsibilities: [
+			"Conduct research on distributed training algorithms",
+			"Experiment with novel model architectures and training techniques",
+			"Contribute to open-source AI projects and publications",
+			"Collaborate with the team on research direction and priorities",
+		],
+		qualifications: [
+			"Strong ML research background (publications preferred)",
+			"Experience with large-scale model training",
+			"Proficiency in PyTorch and distributed training frameworks",
+			"Passion for open-source and democratizing AI",
+		],
 	},
 	{
 		id: "prime-intellect-applied-research-evals",
@@ -1172,6 +1423,19 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/bbfe94a6-d1a8-47e9-86af-f117277cdacb",
 		featured: true,
 		tags: ["ai", "research"],
+		description: "Build evaluation frameworks and data pipelines for training frontier AI models. Your work will shape how we measure progress toward AGI.",
+		responsibilities: [
+			"Design and implement model evaluation benchmarks",
+			"Build data curation and quality pipelines",
+			"Analyze model capabilities and failure modes",
+			"Develop automated evaluation infrastructure",
+		],
+		qualifications: [
+			"Experience with LLM evaluation and benchmarking",
+			"Strong programming skills in Python",
+			"Understanding of data quality and curation challenges",
+			"Research background in ML evaluation preferred",
+		],
 	},
 	{
 		id: "prime-intellect-applied-research-rl",
@@ -1184,6 +1448,19 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/46d9d060-5f48-4491-848f-bafbeb3a4325",
 		featured: true,
 		tags: ["ai", "research"],
+		description: "Advance the state of the art in reinforcement learning and AI agents. Build systems that learn from feedback and operate autonomously in complex environments.",
+		responsibilities: [
+			"Research and implement RL algorithms for language models",
+			"Develop AI agent architectures and training methods",
+			"Build environments and reward models for agent training",
+			"Publish research and contribute to open-source projects",
+		],
+		qualifications: [
+			"Strong background in reinforcement learning",
+			"Experience with RLHF, PPO, or similar algorithms",
+			"Proficiency in PyTorch and RL libraries",
+			"Track record of ML research (publications preferred)",
+		],
 	},
 	{
 		id: "prime-intellect-business-ops-lead",
@@ -1195,6 +1472,19 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/primeintellect/32bb58b9-087c-4c67-8c3a-e3842455cc92",
 		tags: ["ai"],
+		description: "Build and optimize Prime Intellect's business operations. Drive efficiency across finance, legal, HR, and administrative functions.",
+		responsibilities: [
+			"Manage day-to-day business operations and processes",
+			"Coordinate with legal, finance, and HR functions",
+			"Build systems and tools for operational efficiency",
+			"Support leadership on strategic initiatives",
+		],
+		qualifications: [
+			"4+ years in business operations or similar role",
+			"Experience in fast-paced startup environments",
+			"Strong project management and organizational skills",
+			"Ability to wear multiple hats and prioritize effectively",
+		],
 	},
 	{
 		id: "prime-intellect-founders-associate",
@@ -1206,6 +1496,19 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/primeintellect/eb757c35-2741-4eb5-8474-00c4ce1b1cd0",
 		tags: ["ai"],
+		description: "Work directly with Prime Intellect's founders on high-impact initiatives. A fast track to learning how to build an AI company from the ground up.",
+		responsibilities: [
+			"Support founders on strategic projects and priorities",
+			"Conduct research and analysis on key business decisions",
+			"Manage cross-functional initiatives and communications",
+			"Handle high-priority tasks with speed and quality",
+		],
+		qualifications: [
+			"2+ years in consulting, operations, or high-growth startups",
+			"Exceptional analytical and problem-solving skills",
+			"Strong written and verbal communication",
+			"Self-starter who thrives in ambiguous environments",
+		],
 	},
 	{
 		id: "prime-intellect-founding-gtm-lead",
@@ -1218,6 +1521,19 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/8d1d79bf-0032-4e37-a7dd-ce53ebc5a612",
 		featured: true,
 		tags: ["ai", "bd"],
+		description: "Build Prime Intellect's go-to-market function from scratch. Define positioning, build sales processes, and close the first enterprise customers.",
+		responsibilities: [
+			"Develop go-to-market strategy and positioning",
+			"Build sales playbooks and processes",
+			"Close early enterprise customers and partnerships",
+			"Hire and scale the GTM team",
+		],
+		qualifications: [
+			"5+ years in B2B sales or go-to-market roles",
+			"Experience selling AI/ML infrastructure or developer tools",
+			"Track record of building GTM functions at startups",
+			"Strong network in AI/ML ecosystem",
+		],
 	},
 	{
 		id: "prime-intellect-head-of-enterprise",
@@ -1230,6 +1546,19 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/3538e5bf-079e-476d-918b-be45f8ed05e5",
 		featured: true,
 		tags: ["ai", "bd", "leadership"],
+		description: "Lead Prime Intellect's enterprise sales motion. Build and manage the team selling distributed training infrastructure to the world's largest AI organizations.",
+		responsibilities: [
+			"Build and lead the enterprise sales team",
+			"Develop strategic account plans for key targets",
+			"Close large enterprise deals with AI labs and tech companies",
+			"Partner with product and engineering on enterprise requirements",
+		],
+		qualifications: [
+			"8+ years in enterprise sales with 3+ in leadership",
+			"Experience selling AI/ML or cloud infrastructure",
+			"Track record of closing $1M+ deals",
+			"Strong relationships with AI research organizations",
+		],
 	},
 	{
 		id: "prime-intellect-head-of-growth",
@@ -1242,6 +1571,19 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/4c6ccfd6-6512-4905-979a-6dcc6d64a935",
 		featured: true,
 		tags: ["ai", "bd", "leadership"],
+		description: "Own Prime Intellect's growth strategy across all channels. Drive user acquisition, activation, and revenue growth for the distributed training platform.",
+		responsibilities: [
+			"Develop and execute comprehensive growth strategy",
+			"Build and lead growth marketing and sales teams",
+			"Optimize conversion funnels and user acquisition",
+			"Identify and pursue new market opportunities",
+		],
+		qualifications: [
+			"7+ years in growth roles with leadership experience",
+			"Track record of scaling B2B SaaS or infrastructure companies",
+			"Data-driven approach with strong analytical skills",
+			"Experience with AI/ML or developer-focused products",
+		],
 	},
 	{
 		id: "prime-intellect-internship",
@@ -1252,6 +1594,18 @@ export const jobs: Job[] = [
 		type: "internship",
 		link: "https://jobs.ashbyhq.com/primeintellect/486b3511-7128-46f9-93a5-fc1d748d8852",
 		tags: ["ai", "research", "entry-level", "internship"],
+		description: "Join Prime Intellect for a summer internship working on distributed AI training. Gain hands-on experience with frontier AI research and infrastructure.",
+		responsibilities: [
+			"Work on research or engineering projects with the team",
+			"Contribute to open-source AI projects",
+			"Present your work and learnings to the team",
+		],
+		qualifications: [
+			"Currently pursuing BS/MS/PhD in CS, ML, or related field",
+			"Strong programming skills in Python",
+			"Interest in distributed systems or ML research",
+			"Available for 12+ week commitment",
+		],
 	},
 	{
 		id: "prime-intellect-lead-design-engineer",
@@ -1263,6 +1617,22 @@ export const jobs: Job[] = [
 		department: "Product",
 		link: "https://jobs.ashbyhq.com/primeintellect/fd798bc6-b2a5-4d73-ac18-77730e24a6bd",
 		tags: ["ai", "design"],
+		description:
+			"Lead the design vision for Prime Intellect's products and brand. You'll shape how developers and researchers interact with our decentralized AI training platform through thoughtful UX, compelling visuals, and cohesive design systems.",
+		responsibilities: [
+			"Define and execute design strategy across product and brand",
+			"Create intuitive interfaces for complex AI training workflows",
+			"Build and maintain design systems and component libraries",
+			"Collaborate with engineering to ship polished experiences",
+			"Lead user research and iterate based on feedback",
+		],
+		qualifications: [
+			"7+ years of product design experience",
+			"Strong portfolio showing end-to-end product design",
+			"Experience designing developer tools or technical products",
+			"Proficiency in Figma and prototyping tools",
+			"Ability to work across brand, product, and marketing design",
+		],
 	},
 	{
 		id: "prime-intellect-mts-fullstack",
@@ -1275,6 +1645,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/c074bdd9-bee2-4ee9-ae03-aa8f7537682c",
 		featured: true,
 		tags: ["ai", "infra"],
+		description:
+			"Build the full-stack platform that enables decentralized AI training at scale. You'll work across the entire stack—from React frontends to Python backends to infrastructure—creating tools that researchers use to train frontier models.",
+		responsibilities: [
+			"Develop web applications for monitoring and managing distributed training",
+			"Build APIs and backend services for the training platform",
+			"Create dashboards and visualization tools for training metrics",
+			"Integrate with distributed systems and GPU clusters",
+			"Improve developer experience and platform reliability",
+		],
+		qualifications: [
+			"Strong proficiency in TypeScript/React and Python",
+			"Experience building production web applications",
+			"Familiarity with modern infrastructure (Docker, K8s, cloud)",
+			"Understanding of ML workflows and distributed systems a plus",
+			"Ability to move fast and ship iteratively",
+		],
 	},
 	{
 		id: "prime-intellect-mts-gpu-infra",
@@ -1287,6 +1673,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/297d925e-5a42-40bd-b02f-5c928d226f18",
 		featured: true,
 		tags: ["ai", "infra"],
+		description:
+			"Build and scale GPU infrastructure for decentralized AI training across globally distributed compute. You'll work on systems that orchestrate thousands of GPUs, optimize resource utilization, and enable training runs across heterogeneous hardware.",
+		responsibilities: [
+			"Design and implement GPU cluster management systems",
+			"Build tooling for monitoring and optimizing GPU utilization",
+			"Develop infrastructure for multi-node, multi-datacenter training",
+			"Work on networking and storage systems for distributed compute",
+			"Debug and resolve complex infrastructure issues at scale",
+		],
+		qualifications: [
+			"Strong systems programming skills (Rust, C++, or Go)",
+			"Experience with GPU programming (CUDA) and cluster management",
+			"Understanding of networking, storage, and distributed systems",
+			"Familiarity with Kubernetes, Slurm, or similar orchestration",
+			"Track record of building reliable infrastructure at scale",
+		],
 	},
 	{
 		id: "prime-intellect-mts-inference",
@@ -1299,6 +1701,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/abfa70f7-a6f1-44d2-a6c1-560e1c8477d4",
 		featured: true,
 		tags: ["ai", "infra"],
+		description:
+			"Build high-performance inference systems for serving large language models. You'll optimize model serving, implement efficient batching strategies, and create infrastructure that delivers fast, reliable inference at scale.",
+		responsibilities: [
+			"Develop and optimize LLM inference pipelines",
+			"Implement efficient batching and scheduling algorithms",
+			"Build infrastructure for serving models across distributed GPUs",
+			"Optimize memory usage and throughput for large models",
+			"Create APIs and tooling for model deployment",
+		],
+		qualifications: [
+			"Deep experience with ML inference optimization",
+			"Proficiency in Python and systems languages (C++/Rust)",
+			"Understanding of transformer architectures and attention mechanisms",
+			"Experience with inference frameworks (vLLM, TensorRT, etc.)",
+			"Strong background in performance optimization and profiling",
+		],
 	},
 	{
 		id: "prime-intellect-research-distributed",
@@ -1311,6 +1729,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/8bd52610-175c-42a7-a7cd-b29c45f9d305",
 		featured: true,
 		tags: ["ai", "research", "infra"],
+		description:
+			"Push the boundaries of distributed training for large-scale AI models. You'll research and implement novel parallelism strategies, optimize communication patterns, and enable training across globally distributed, heterogeneous compute.",
+		responsibilities: [
+			"Research and implement distributed training algorithms",
+			"Develop new parallelism strategies (data, tensor, pipeline, expert)",
+			"Optimize gradient synchronization and communication efficiency",
+			"Build fault-tolerant training systems for unreliable networks",
+			"Publish research and contribute to open-source projects",
+		],
+		qualifications: [
+			"PhD or equivalent experience in distributed systems or ML",
+			"Deep expertise in distributed training frameworks (PyTorch, JAX)",
+			"Strong understanding of parallelism strategies and their trade-offs",
+			"Experience with large-scale training (100+ GPU runs)",
+			"Track record of research publications or open-source contributions",
+		],
 	},
 	{
 		id: "prime-intellect-research-rl",
@@ -1323,6 +1757,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/primeintellect/ee13090e-3fea-40f0-b785-19316f52bf08",
 		featured: true,
 		tags: ["ai", "research"],
+		description:
+			"Advance the state of the art in reinforcement learning for language models. You'll develop RLHF pipelines, explore new reward modeling approaches, and build systems for aligning AI systems through human feedback and automated evaluation.",
+		responsibilities: [
+			"Design and implement RLHF training pipelines at scale",
+			"Research novel reward modeling and alignment techniques",
+			"Develop evaluation frameworks for model capabilities",
+			"Build infrastructure for efficient RL training",
+			"Collaborate with research team on alignment experiments",
+		],
+		qualifications: [
+			"PhD or equivalent experience in RL or ML",
+			"Strong background in RLHF, PPO, DPO, or related methods",
+			"Experience training and fine-tuning large language models",
+			"Proficiency in PyTorch and distributed training",
+			"Publications in top ML venues preferred",
+		],
 	},
 	{
 		id: "prime-intellect-revenue-ops",
@@ -1334,6 +1784,22 @@ export const jobs: Job[] = [
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/primeintellect/7f57964f-88d5-4811-8033-17ab2f232f15",
 		tags: ["ai", "leadership"],
+		description:
+			"Build and scale revenue operations for Prime Intellect's compute marketplace. You'll create systems to track compute utilization, manage customer relationships, and optimize the economics of decentralized AI training.",
+		responsibilities: [
+			"Design and implement revenue tracking and forecasting systems",
+			"Build dashboards for monitoring compute marketplace metrics",
+			"Develop pricing strategies for compute resources",
+			"Manage relationships with compute providers and customers",
+			"Optimize unit economics and marketplace efficiency",
+		],
+		qualifications: [
+			"5+ years in revenue operations or business operations",
+			"Experience building and scaling marketplace businesses",
+			"Strong analytical skills and proficiency with data tools",
+			"Understanding of cloud computing economics",
+			"Track record of building operational processes from scratch",
+		],
 	},
 	{
 		id: "prime-intellect-open-application",
@@ -1344,6 +1810,21 @@ export const jobs: Job[] = [
 		type: "full-time",
 		link: "https://jobs.ashbyhq.com/primeintellect/b9343f5d-326d-4b01-b6a7-acf56cffe3ac",
 		tags: ["ai"],
+		description:
+			"Don't see a role that fits? We're always looking for exceptional people who can help us build the future of decentralized AI. If you're passionate about open-source AI, distributed systems, or frontier research, we want to hear from you.",
+		responsibilities: [
+			"Shape your own role based on your unique skills",
+			"Contribute to our mission of democratizing AI development",
+			"Work alongside world-class researchers and engineers",
+			"Help define new areas of focus for the company",
+		],
+		qualifications: [
+			"Exceptional skills in a relevant domain",
+			"Track record of significant accomplishments",
+			"Passion for open-source and decentralized AI",
+			"Self-directed with strong initiative",
+			"Ability to thrive in ambiguous environments",
+		],
 	},
 	// Monad Foundation Jobs
 	{
@@ -1356,6 +1837,22 @@ export const jobs: Job[] = [
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/monad.foundation/66cbe700-0039-4df3-a06f-3acb9f0b9ffb",
 		tags: ["protocol", "marketing"],
+		description:
+			"Lead Monad Foundation's global events strategy, creating memorable experiences that bring the Monad community together. You'll plan and execute conferences, hackathons, and community gatherings worldwide.",
+		responsibilities: [
+			"Plan and execute global events including conferences and hackathons",
+			"Manage event budgets, venues, and logistics",
+			"Coordinate with regional teams for localized events",
+			"Build relationships with event partners and sponsors",
+			"Create memorable experiences that strengthen the Monad community",
+		],
+		qualifications: [
+			"5+ years of experience in event management",
+			"Track record of executing large-scale tech or crypto events",
+			"Strong project management and organizational skills",
+			"Experience with global event logistics",
+			"Passion for the crypto and Web3 ecosystem",
+		],
 	},
 	{
 		id: "monad-foundation-head-of-korea",
@@ -1367,6 +1864,22 @@ export const jobs: Job[] = [
 		department: "Regional",
 		link: "https://jobs.ashbyhq.com/monad.foundation/d5c22aae-9697-4077-bc4c-fa082863104f",
 		tags: ["protocol", "bd", "leadership"],
+		description:
+			"Lead Monad's expansion in Korea, one of the most active crypto markets globally. You'll build the Korean community, establish partnerships, and represent Monad at local events and with institutional partners.",
+		responsibilities: [
+			"Develop and execute Monad's Korea market strategy",
+			"Build and grow the Korean developer and user community",
+			"Establish partnerships with Korean exchanges, funds, and projects",
+			"Represent Monad at Korean conferences and events",
+			"Manage local marketing, PR, and communications",
+		],
+		qualifications: [
+			"Deep connections in the Korean crypto ecosystem",
+			"5+ years experience in crypto/Web3 business development",
+			"Native Korean speaker with strong English skills",
+			"Track record of building communities in Korea",
+			"Understanding of Korean regulatory landscape",
+		],
 	},
 	{
 		id: "monad-foundation-technical-program-manager",
@@ -1378,6 +1891,22 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/monad.foundation/3241c294-b313-421b-8486-e55b2105ac19",
 		tags: ["protocol", "infra", "management"],
+		description:
+			"Drive execution of Monad's technical initiatives, coordinating across engineering, research, and ecosystem teams. You'll ensure complex projects ship on time while maintaining technical excellence.",
+		responsibilities: [
+			"Coordinate cross-functional technical programs and releases",
+			"Define project milestones, timelines, and dependencies",
+			"Facilitate communication between engineering and stakeholders",
+			"Identify and mitigate technical and execution risks",
+			"Drive process improvements for engineering efficiency",
+		],
+		qualifications: [
+			"5+ years as a Technical Program Manager or similar role",
+			"Experience managing blockchain or distributed systems projects",
+			"Strong technical background (CS degree or equivalent)",
+			"Excellent communication and stakeholder management skills",
+			"Track record of delivering complex technical projects",
+		],
 	},
 	{
 		id: "monad-foundation-design-engineer",
@@ -1389,6 +1918,22 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/monad.foundation/b912ec98-a4d8-43d2-ad6c-d7a3e4312c2d",
 		tags: ["protocol", "design"],
+		description:
+			"Bridge design and engineering at Monad, creating polished interfaces and developer experiences. You'll build beautiful, functional products that showcase Monad's capabilities to developers and users.",
+		responsibilities: [
+			"Design and implement user interfaces for Monad products",
+			"Create interactive prototypes and production-ready code",
+			"Build and maintain design systems and component libraries",
+			"Collaborate with designers and engineers on product execution",
+			"Ensure consistent, high-quality visual experiences",
+		],
+		qualifications: [
+			"Strong proficiency in React/TypeScript and modern CSS",
+			"Experience building polished, production web applications",
+			"Eye for design with ability to translate mockups to code",
+			"Understanding of animation and interaction design",
+			"Portfolio demonstrating design engineering work",
+		],
 	},
 	{
 		id: "monad-foundation-latam-bd",
@@ -1399,7 +1944,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Business Development",
 		link: "https://jobs.ashbyhq.com/monad.foundation/200be835-5b50-4ffd-a37c-7992a8c4f021",
-		tags: ["protocol"],
+		tags: ["protocol", "bd"],
+		description:
+			"Lead Monad's institutional business development across Latin America. You'll build relationships with major institutions, exchanges, and ecosystem partners throughout the region.",
+		responsibilities: [
+			"Develop and execute LATAM institutional BD strategy",
+			"Build relationships with exchanges, funds, and enterprises",
+			"Identify and close strategic partnership opportunities",
+			"Represent Monad at regional conferences and events",
+			"Coordinate with global BD team on regional initiatives",
+		],
+		qualifications: [
+			"5+ years in institutional BD or partnerships in crypto",
+			"Strong network in LATAM crypto ecosystem",
+			"Native Spanish speaker, Portuguese a plus",
+			"Experience with exchange listings and institutional deals",
+			"Track record of closing significant partnerships",
+		],
 	},
 	{
 		id: "monad-foundation-graphic-designer",
@@ -1411,6 +1972,22 @@ export const jobs: Job[] = [
 		department: "Design",
 		link: "https://jobs.ashbyhq.com/monad.foundation/b4a24a16-25bd-4214-962a-78182284dbf8",
 		tags: ["protocol", "design"],
+		description:
+			"Create stunning visual content that defines Monad's brand identity. You'll design graphics for social media, events, marketing campaigns, and community engagement.",
+		responsibilities: [
+			"Design graphics for social media, web, and print",
+			"Create visual assets for events and conferences",
+			"Develop marketing and campaign creative",
+			"Maintain and evolve brand guidelines",
+			"Support community with branded templates and assets",
+		],
+		qualifications: [
+			"3+ years of professional graphic design experience",
+			"Strong portfolio showing diverse design work",
+			"Proficiency in Figma, Illustrator, and Photoshop",
+			"Understanding of crypto/Web3 visual culture",
+			"Ability to work quickly and iterate on feedback",
+		],
 	},
 	{
 		id: "monad-foundation-motion-designer",
@@ -1422,6 +1999,22 @@ export const jobs: Job[] = [
 		department: "Design",
 		link: "https://jobs.ashbyhq.com/monad.foundation/73534b84-588b-4239-9d0d-ba218aaac365",
 		tags: ["protocol", "design"],
+		description:
+			"Bring Monad's brand to life through motion. You'll create animations, video content, and motion graphics that captivate the community and explain complex concepts.",
+		responsibilities: [
+			"Create motion graphics and animations for social and web",
+			"Produce video content for marketing and education",
+			"Develop animated explainers for technical concepts",
+			"Design motion systems and guidelines for the brand",
+			"Collaborate with marketing on campaign creative",
+		],
+		qualifications: [
+			"3+ years of motion design experience",
+			"Strong portfolio of motion and video work",
+			"Proficiency in After Effects, Premiere, and Cinema 4D",
+			"Understanding of storytelling through motion",
+			"Experience with crypto or technical content a plus",
+		],
 	},
 	{
 		id: "monad-foundation-bd-lead-payments",
@@ -1434,6 +2027,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/monad.foundation/dccd3d0f-e491-45fa-b311-980021976d62",
 		featured: true,
 		tags: ["protocol", "defi", "bd"],
+		description:
+			"Drive adoption of Monad for payment use cases, working with payment processors, fintechs, and merchants. Leverage Monad's high throughput and low latency to enable real-time payment applications.",
+		responsibilities: [
+			"Develop strategy for payments vertical on Monad",
+			"Build relationships with payment processors and fintechs",
+			"Identify and close partnerships with merchants and platforms",
+			"Work with ecosystem teams to support payment projects",
+			"Define requirements for payment-focused infrastructure",
+		],
+		qualifications: [
+			"5+ years in payments, fintech, or crypto BD",
+			"Strong network in payments ecosystem",
+			"Understanding of blockchain technology and DeFi",
+			"Experience with B2B enterprise sales cycles",
+			"Track record of closing strategic partnerships",
+		],
 	},
 	{
 		id: "monad-foundation-ecosystem-nyc",
@@ -1444,7 +2053,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Ecosystem",
 		link: "https://jobs.ashbyhq.com/monad.foundation/5558059f-664c-4059-9d0d-a6dec98b34d8",
-		tags: ["protocol"],
+		tags: ["protocol", "marketing"],
+		description:
+			"Build and energize the Monad community in New York City. You'll organize events, connect with local builders, and make NYC a hub of Monad activity and innovation.",
+		responsibilities: [
+			"Plan and execute community events in NYC",
+			"Build relationships with local developers and projects",
+			"Coordinate with venues and partners for activations",
+			"Represent Monad at NYC crypto meetups and conferences",
+			"Grow the local Monad community and developer base",
+		],
+		qualifications: [
+			"Based in NYC with strong local network",
+			"Experience in community building or event management",
+			"Passion for crypto and Web3 technology",
+			"Strong interpersonal and communication skills",
+			"Self-starter able to work independently",
+		],
 	},
 	// Perpl Jobs (Monad Ecosystem)
 	{
@@ -1545,6 +2170,22 @@ export const jobs: Job[] = [
 		link: "https://lucislife.notion.site/join-lucis-team",
 		featured: true,
 		tags: ["health"],
+		description:
+			"Build the future of preventive healthcare at Lucis. You'll develop mobile and web applications that help people optimize their health through personalized insights and actionable recommendations.",
+		responsibilities: [
+			"Architect and build scalable mobile and web applications",
+			"Integrate with health data sources and wearables",
+			"Implement features for health tracking and recommendations",
+			"Collaborate with medical and data science teams",
+			"Ensure security and privacy of health data",
+		],
+		qualifications: [
+			"5+ years of software engineering experience",
+			"Strong proficiency in React Native or Flutter",
+			"Experience with health data and APIs (HealthKit, Google Fit)",
+			"Understanding of data privacy requirements (HIPAA)",
+			"Passion for health and wellness technology",
+		],
 	},
 	{
 		id: "lucis-ai-data-engineer",
@@ -1557,6 +2198,22 @@ export const jobs: Job[] = [
 		link: "https://lucislife.notion.site/join-lucis-team",
 		featured: true,
 		tags: ["health", "ai"],
+		description:
+			"Apply AI and data engineering to personalize health recommendations. You'll build ML models that analyze health data to provide actionable insights and early warning signals.",
+		responsibilities: [
+			"Develop ML models for health prediction and personalization",
+			"Build data pipelines for health metrics and biomarkers",
+			"Create recommendation engines for lifestyle interventions",
+			"Analyze population health patterns and trends",
+			"Collaborate with medical team on model validation",
+		],
+		qualifications: [
+			"3+ years in ML engineering or data science",
+			"Experience with health or biomedical data",
+			"Proficiency in Python, ML frameworks, and SQL",
+			"Understanding of statistical methods and experimentation",
+			"Interest in preventive medicine and longevity",
+		],
 	},
 	{
 		id: "lucis-growth-acquisition-manager",
@@ -1568,7 +2225,23 @@ export const jobs: Job[] = [
 		department: "GTM",
 		link: "https://lucislife.notion.site/join-lucis-team",
 		featured: true,
-		tags: ["health", "marketing", "management"],
+		tags: ["health", "marketing", "management", "growth"],
+		description:
+			"Drive user acquisition and growth for Lucis's health platform. You'll develop and execute strategies to reach health-conscious individuals and convert them into engaged users.",
+		responsibilities: [
+			"Develop and execute user acquisition strategies",
+			"Manage paid and organic acquisition channels",
+			"Optimize conversion funnels and user onboarding",
+			"Analyze growth metrics and experiment with new tactics",
+			"Build partnerships with health and wellness brands",
+		],
+		qualifications: [
+			"4+ years in growth marketing or user acquisition",
+			"Experience with health, wellness, or consumer apps",
+			"Strong analytical skills and data-driven approach",
+			"Proficiency with marketing tools and attribution",
+			"Track record of scaling user bases efficiently",
+		],
 	},
 	{
 		id: "lucis-preventive-medicine-doctor",
@@ -1581,6 +2254,22 @@ export const jobs: Job[] = [
 		link: "https://lucislife.notion.site/join-lucis-team",
 		featured: true,
 		tags: ["health"],
+		description:
+			"Shape Lucis's medical strategy and ensure clinical rigor. You'll guide product development with evidence-based preventive medicine principles and help users optimize their healthspan.",
+		responsibilities: [
+			"Define clinical protocols for health assessments",
+			"Guide product features with medical expertise",
+			"Review and validate AI-generated health recommendations",
+			"Stay current on preventive medicine research",
+			"Ensure compliance with medical standards and regulations",
+		],
+		qualifications: [
+			"MD with specialization in preventive or lifestyle medicine",
+			"5+ years of clinical experience",
+			"Interest in digital health and AI applications",
+			"Strong communication skills for non-medical audiences",
+			"Passion for longevity and preventive healthcare",
+		],
 	},
 	// Sorella Jobs
 	{
@@ -1773,6 +2462,22 @@ export const jobs: Job[] = [
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6588e344-8314-4a9c-a6d4-c84e026057ae",
 		tags: ["world", "design"],
+		description:
+			"Define and evolve World's visual identity as we build the global proof of personhood network. Create brand experiences that communicate our mission to billions of people worldwide.",
+		responsibilities: [
+			"Develop and maintain World's brand identity system",
+			"Create visual assets across digital and physical touchpoints",
+			"Design marketing materials and campaign creative",
+			"Ensure brand consistency across global markets",
+			"Collaborate with product and marketing teams",
+		],
+		qualifications: [
+			"5+ years of brand design experience",
+			"Strong portfolio showing brand system work",
+			"Proficiency in Figma and Adobe Creative Suite",
+			"Experience with global or consumer brands",
+			"Ability to balance creativity with brand guidelines",
+		],
 	},
 	{
 		id: "world-bd-lead-japan",
@@ -1783,6 +2488,22 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/2505ce27-2f4a-4685-a971-418b62608a62",
 		tags: ["world", "bd"],
+		description:
+			"Lead World's expansion in Japan, building partnerships and driving adoption in one of the world's most tech-forward markets. Establish World as the trusted identity solution in Japan.",
+		responsibilities: [
+			"Develop and execute Japan market entry strategy",
+			"Build relationships with enterprises, government, and institutions",
+			"Identify and close strategic partnership opportunities",
+			"Navigate Japan's regulatory and business landscape",
+			"Coordinate with global teams on Japan initiatives",
+		],
+		qualifications: [
+			"7+ years in BD or partnerships in Japan market",
+			"Strong network in Japanese tech and enterprise sectors",
+			"Native Japanese with excellent English",
+			"Experience with technology or fintech market entry",
+			"Understanding of identity and privacy in Japan context",
+		],
 	},
 	{
 		id: "world-bd-manager-central-europe",
@@ -1793,6 +2514,22 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/3b149493-c040-4658-9a4d-4685be87fc00",
 		tags: ["world", "bd"],
+		description:
+			"Drive World's growth across Central Europe, establishing partnerships and expanding our presence in the DACH region and neighboring markets.",
+		responsibilities: [
+			"Build and manage partnerships in Central Europe",
+			"Develop go-to-market strategies for the region",
+			"Establish relationships with local enterprises and institutions",
+			"Support expansion into new Central European markets",
+			"Work with local teams on operational execution",
+		],
+		qualifications: [
+			"5+ years in business development or partnerships",
+			"Experience in German-speaking markets",
+			"Fluent German and English required",
+			"Background in tech, fintech, or identity solutions",
+			"Strong networking and relationship-building skills",
+		],
 	},
 	{
 		id: "world-bd-manager-western-europe",
@@ -1803,6 +2540,22 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/9ab1a3ac-290a-4e80-93dd-0ccfa827cc6d",
 		tags: ["world", "bd"],
+		description:
+			"Lead business development efforts across Western Europe, building strategic partnerships to drive World adoption in key markets including UK, France, Spain, and Benelux.",
+		responsibilities: [
+			"Develop partnerships across Western European markets",
+			"Create and execute regional growth strategies",
+			"Build relationships with enterprises and institutions",
+			"Identify integration opportunities with local platforms",
+			"Coordinate with country managers on execution",
+		],
+		qualifications: [
+			"5+ years in business development in European markets",
+			"Strong network in UK and Western European tech sectors",
+			"Experience with multi-market expansion",
+			"Excellent communication in English; other languages a plus",
+			"Background in identity, fintech, or consumer tech",
+		],
 	},
 	{
 		id: "world-chief-privacy-officer",
@@ -1814,6 +2567,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/669fa0ce-d0ca-469d-bd2a-4c289482ae38",
 		featured: true,
 		tags: ["world", "legal"],
+		description:
+			"Lead privacy strategy for World's global identity network, ensuring we set the standard for privacy-preserving technology while navigating complex regulatory landscapes worldwide.",
+		responsibilities: [
+			"Define and execute global privacy strategy",
+			"Ensure compliance with GDPR, CCPA, and global privacy laws",
+			"Guide product development with privacy-by-design principles",
+			"Build relationships with privacy regulators worldwide",
+			"Lead privacy reviews and impact assessments",
+		],
+		qualifications: [
+			"15+ years in privacy law or policy leadership",
+			"Experience as CPO or senior privacy counsel at scale",
+			"Deep expertise in global privacy regulations",
+			"Understanding of privacy-enhancing technologies",
+			"Track record of working with regulators",
+		],
 	},
 	{
 		id: "world-director-central-ops",
@@ -1825,6 +2594,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/e5b0781d-8a66-46ea-ba39-ebf0feb6053a",
 		featured: true,
 		tags: ["world", "leadership"],
+		description:
+			"Oversee World's global operations, coordinating across regions to ensure consistent, high-quality execution of our verification and distribution network worldwide.",
+		responsibilities: [
+			"Lead central operations team and processes",
+			"Coordinate between regional operations teams globally",
+			"Develop operational playbooks and best practices",
+			"Drive operational efficiency and scalability",
+			"Manage cross-functional operational projects",
+		],
+		qualifications: [
+			"10+ years in operations leadership",
+			"Experience scaling global consumer operations",
+			"Track record of building operational excellence",
+			"Strong analytical and process improvement skills",
+			"Ability to manage distributed teams across time zones",
+		],
 	},
 	{
 		id: "world-field-ops-lead",
@@ -1835,6 +2620,22 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/865cd1c6-3609-44b8-aa2e-e2137552758d",
 		tags: ["world"],
+		description:
+			"Lead on-the-ground operations in Buenos Aires, managing the network of verification locations and ensuring high-quality user experiences across Argentina.",
+		responsibilities: [
+			"Manage field operations team and verification locations",
+			"Ensure quality and consistency of verification experiences",
+			"Optimize location performance and operational efficiency",
+			"Handle local logistics and vendor relationships",
+			"Report on metrics and drive improvements",
+		],
+		qualifications: [
+			"5+ years in field operations or retail management",
+			"Experience managing distributed teams",
+			"Strong problem-solving and analytical skills",
+			"Fluent Spanish and English",
+			"Ability to thrive in fast-paced environments",
+		],
 	},
 	{
 		id: "world-fullstack-engineer-world-id",
@@ -1845,6 +2646,22 @@ export const jobs: Job[] = [
 		department: "World ID",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/f00b5ae3-1a4e-4959-9bcf-a9bc96f48feb",
 		tags: ["world", "ai", "cryptography"],
+		description:
+			"Build the World ID platform—the global proof of personhood protocol. You'll create systems that enable privacy-preserving identity verification at unprecedented scale.",
+		responsibilities: [
+			"Develop full-stack features for the World ID platform",
+			"Build APIs and SDKs for third-party integrations",
+			"Implement privacy-preserving verification flows",
+			"Scale systems to handle billions of verifications",
+			"Collaborate with protocol and cryptography teams",
+		],
+		qualifications: [
+			"5+ years of full-stack engineering experience",
+			"Strong proficiency in TypeScript and backend languages",
+			"Experience building high-scale consumer systems",
+			"Interest in cryptography and privacy technologies",
+			"Track record of shipping production software",
+		],
 	},
 	{
 		id: "world-gm-germany",
@@ -1854,7 +2671,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/f8be9cf4-1433-4be3-902d-abcb0746bc85",
-		tags: ["world"],
+		tags: ["world", "leadership"],
+		description:
+			"Lead all aspects of World's business in Germany—one of our key European markets. Own strategy, operations, partnerships, and growth for the German market.",
+		responsibilities: [
+			"Own P&L and strategy for Germany operations",
+			"Build and lead the German team",
+			"Drive growth and market expansion",
+			"Manage regulatory relationships and compliance",
+			"Represent World with German partners and stakeholders",
+		],
+		qualifications: [
+			"10+ years with GM or country lead experience",
+			"Track record scaling operations in Germany",
+			"Strong network in German tech and business ecosystem",
+			"Native German with excellent English",
+			"Experience navigating German regulatory environment",
+		],
 	},
 	{
 		id: "world-gm-mexico",
@@ -1864,7 +2697,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/20c24519-eb3f-462a-b7bf-ac5033cbd31a",
-		tags: ["world"],
+		tags: ["world", "leadership"],
+		description:
+			"Lead World's expansion across Mexico and Central America. Own all operations, growth, and partnerships in this high-potential region.",
+		responsibilities: [
+			"Own strategy and execution for Mexico and Central America",
+			"Build and manage regional operations team",
+			"Drive user growth and market penetration",
+			"Establish strategic partnerships in the region",
+			"Navigate regulatory and business environments",
+		],
+		qualifications: [
+			"10+ years with regional leadership experience",
+			"Strong track record in Mexico market",
+			"Deep network in Mexican business ecosystem",
+			"Native Spanish with excellent English",
+			"Experience scaling consumer or tech operations",
+		],
 	},
 	{
 		id: "world-gm-south-cone",
@@ -1874,7 +2723,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/7671a095-15d8-4ae9-9f99-ee0a9f8b91ef",
-		tags: ["world"],
+		tags: ["world", "leadership"],
+		description:
+			"Lead World's operations across Argentina, Chile, and the Southern Cone region. Drive growth in one of World's most active markets.",
+		responsibilities: [
+			"Own strategy and P&L for Southern Cone region",
+			"Scale operations and verification network",
+			"Build and lead regional team",
+			"Manage key partnerships and relationships",
+			"Drive market expansion and user growth",
+		],
+		qualifications: [
+			"10+ years regional leadership experience",
+			"Strong track record in Argentina or Chile",
+			"Deep understanding of Southern Cone markets",
+			"Native Spanish with excellent English",
+			"Experience with high-growth consumer operations",
+		],
 	},
 	{
 		id: "world-graphic-designer",
@@ -1885,6 +2750,22 @@ export const jobs: Job[] = [
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6db2b659-c96e-4748-a4c3-02367d1aa019",
 		tags: ["world", "design"],
+		description:
+			"Create visual content that communicates World's mission to a global audience. Design graphics for marketing, social media, and product that resonate across cultures.",
+		responsibilities: [
+			"Design graphics for digital and print marketing",
+			"Create social media content and campaign assets",
+			"Support product team with UI assets and illustrations",
+			"Maintain visual consistency with brand guidelines",
+			"Iterate quickly based on feedback and data",
+		],
+		qualifications: [
+			"3+ years of graphic design experience",
+			"Strong portfolio showing diverse design work",
+			"Proficiency in Figma and Adobe Creative Suite",
+			"Experience with motion graphics a plus",
+			"Ability to work quickly in a fast-paced environment",
+		],
 	},
 	{
 		id: "world-growth-ops-lead-italy",
@@ -1894,7 +2775,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/2d7ec5bd-87bd-4a79-b59a-0b2b0b410ee2",
-		tags: ["world"],
+		tags: ["world", "growth"],
+		description:
+			"Drive World's growth and operations in Italy. Build the verification network, grow the user base, and establish World as a trusted identity solution in the Italian market.",
+		responsibilities: [
+			"Lead growth strategy and execution in Italy",
+			"Build and scale the verification network",
+			"Manage local operations and team",
+			"Develop partnerships with Italian businesses",
+			"Report on market performance and opportunities",
+		],
+		qualifications: [
+			"5+ years in operations or growth roles",
+			"Experience scaling consumer tech in Italy",
+			"Native Italian with excellent English",
+			"Strong operational and analytical skills",
+			"Entrepreneurial mindset and bias for action",
+		],
 	},
 	{
 		id: "world-head-product-design",
@@ -1906,6 +2803,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/5e1c4da2-e096-4f37-842a-b01a522e3314",
 		featured: true,
 		tags: ["world", "design", "leadership"],
+		description:
+			"Lead product design for World App, creating intuitive experiences that make identity verification and financial services accessible to billions of people worldwide.",
+		responsibilities: [
+			"Define product design vision and strategy",
+			"Lead and grow the product design team",
+			"Drive UX excellence across all product surfaces",
+			"Establish design processes and systems",
+			"Collaborate with product and engineering leadership",
+		],
+		qualifications: [
+			"10+ years in product design with 5+ in leadership",
+			"Experience designing consumer products at scale",
+			"Track record of building and leading design teams",
+			"Strong systems thinking and strategic skills",
+			"Portfolio showing world-class mobile and web design",
+		],
 	},
 	{
 		id: "world-head-protocol",
@@ -1917,6 +2830,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d91841c6-72dd-42cb-bd5c-0b7299a6d74b",
 		featured: true,
 		tags: ["world", "protocol", "cryptography", "leadership"],
+		description:
+			"Lead the design and development of World's core protocol infrastructure. Shape the technical architecture of a global identity system that serves billions of users.",
+		responsibilities: [
+			"Define protocol architecture and technical roadmap",
+			"Lead the protocol engineering team",
+			"Design privacy-preserving identity systems",
+			"Drive protocol security and decentralization",
+			"Collaborate with ecosystem partners on standards",
+		],
+		qualifications: [
+			"10+ years in distributed systems or cryptography",
+			"Deep expertise in blockchain protocols",
+			"Track record leading protocol development",
+			"Understanding of zero-knowledge proofs and privacy tech",
+			"Strong technical leadership and communication skills",
+		],
 	},
 	{
 		id: "world-logistics-ops-lead-na",
@@ -1927,6 +2856,22 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/f1652f35-9e3b-457b-9a8b-1c8856b81a9e",
 		tags: ["world"],
+		description:
+			"Lead logistics operations for World's verification device network across North America. Ensure efficient deployment, maintenance, and supply chain for our Orb devices.",
+		responsibilities: [
+			"Manage device logistics and supply chain for NA",
+			"Coordinate deployment of verification devices",
+			"Optimize inventory and distribution networks",
+			"Work with vendors and logistics partners",
+			"Track and improve logistics KPIs",
+		],
+		qualifications: [
+			"5+ years in logistics or supply chain management",
+			"Experience with hardware device logistics",
+			"Strong analytical and operational skills",
+			"Track record of optimizing logistics operations",
+			"Ability to manage vendors and partner relationships",
+		],
 	},
 	{
 		id: "world-manager-device-automation-qa",
@@ -1937,6 +2882,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/73771c91-eddd-4602-9195-91e11bbbbf71",
 		tags: ["world", "hardware"],
+		description:
+			"Lead device testing and quality assurance for World's Orb hardware. Build automated testing infrastructure to ensure device reliability at global scale.",
+		responsibilities: [
+			"Build and lead device QA and automation team",
+			"Develop automated testing frameworks for hardware",
+			"Define quality standards and testing processes",
+			"Ensure device reliability and performance",
+			"Coordinate with manufacturing on quality control",
+		],
+		qualifications: [
+			"7+ years in hardware QA or test automation",
+			"Experience leading QA teams",
+			"Strong background in embedded systems testing",
+			"Proficiency in test automation frameworks",
+			"Track record of improving product quality",
+		],
 	},
 	{
 		id: "world-marketing-manager-central-europe",
@@ -1947,6 +2908,22 @@ export const jobs: Job[] = [
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/15ce3f89-89bb-4299-a85e-370e98e97223",
 		tags: ["world", "marketing"],
+		description:
+			"Drive marketing strategy and execution for World across Central Europe. Build brand awareness and drive user acquisition in the DACH region.",
+		responsibilities: [
+			"Develop and execute regional marketing strategy",
+			"Plan and run marketing campaigns",
+			"Manage local PR and communications",
+			"Coordinate with global marketing team",
+			"Track and optimize marketing performance",
+		],
+		qualifications: [
+			"5+ years in marketing, ideally in tech",
+			"Experience with consumer marketing in DACH region",
+			"Fluent German and English",
+			"Strong analytical and creative skills",
+			"Track record of driving brand awareness and growth",
+		],
 	},
 	{
 		id: "world-marketing-manager-us",
@@ -1957,6 +2934,22 @@ export const jobs: Job[] = [
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/ec8917e4-0dc5-42be-9cfb-b51a6a2874fc",
 		tags: ["world", "marketing"],
+		description:
+			"Lead marketing efforts in the US market. Drive brand awareness, user acquisition, and engagement as World expands across the United States.",
+		responsibilities: [
+			"Own US marketing strategy and execution",
+			"Plan and execute marketing campaigns",
+			"Manage US PR and media relationships",
+			"Coordinate events and partnerships",
+			"Track metrics and optimize performance",
+		],
+		qualifications: [
+			"5+ years in consumer marketing",
+			"Experience with tech or fintech brands",
+			"Strong creative and analytical skills",
+			"Track record of successful campaigns",
+			"Excellent communication and storytelling",
+		],
 	},
 	{
 		id: "world-ops-manager-us",
@@ -1967,6 +2960,22 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6937d6a4-09e4-4ed0-a222-e1c2ab898c68",
 		tags: ["world"],
+		description:
+			"Manage day-to-day operations for World in the US. Ensure smooth execution of verification operations as we scale across the country.",
+		responsibilities: [
+			"Manage US verification operations",
+			"Coordinate with field teams and locations",
+			"Optimize operational processes and efficiency",
+			"Handle vendor and partner relationships",
+			"Report on operational metrics and performance",
+		],
+		qualifications: [
+			"5+ years in operations management",
+			"Experience with distributed operations",
+			"Strong analytical and problem-solving skills",
+			"Track record of operational excellence",
+			"Ability to work in fast-paced environments",
+		],
 	},
 	{
 		id: "world-product-counsel",
@@ -1977,6 +2986,22 @@ export const jobs: Job[] = [
 		department: "Legal",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6b3106d2-00a8-42be-9d09-cad4cb0cdbc4",
 		tags: ["world", "legal"],
+		description:
+			"Provide legal guidance for World's product development. Navigate complex privacy, identity, and financial regulations to enable product innovation.",
+		responsibilities: [
+			"Advise product teams on legal and regulatory requirements",
+			"Review product features for compliance",
+			"Draft and negotiate commercial agreements",
+			"Monitor regulatory developments affecting products",
+			"Work with external counsel on specialized matters",
+		],
+		qualifications: [
+			"JD and admission to at least one US state bar",
+			"5+ years in tech product counsel or similar role",
+			"Experience with privacy, data, and consumer law",
+			"Understanding of identity and financial regulations",
+			"Ability to provide practical, business-focused advice",
+		],
 	},
 	{
 		id: "world-pm-human-modalities",
@@ -1986,7 +3011,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "World ID",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/e8e75379-b051-4eb3-82db-da63b0c76ef4",
-		tags: ["world", "ai"],
+		tags: ["world", "ai", "product"],
+		description:
+			"Define product strategy for World's biometric verification modalities. Shape how we use AI and computer vision to verify human identity in privacy-preserving ways.",
+		responsibilities: [
+			"Define roadmap for biometric verification products",
+			"Work with ML and engineering teams on implementation",
+			"Balance privacy, security, and user experience",
+			"Conduct user research on verification experiences",
+			"Track metrics and iterate on product performance",
+		],
+		qualifications: [
+			"5+ years in product management",
+			"Experience with ML-powered products",
+			"Understanding of biometrics and identity verification",
+			"Strong analytical and communication skills",
+			"Ability to work with technical teams on complex problems",
+		],
 	},
 	{
 		id: "world-regional-logistics-manager-eu-apac",
@@ -1997,6 +3038,22 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/80eebe75-fba4-48ac-8ee9-5cb0a150755a",
 		tags: ["world"],
+		description:
+			"Manage device logistics across Europe and Asia-Pacific. Ensure efficient deployment, maintenance, and supply chain operations for Orb devices in these regions.",
+		responsibilities: [
+			"Oversee device logistics for EU and APAC regions",
+			"Manage regional supply chain and distribution",
+			"Coordinate with local teams on device deployment",
+			"Optimize inventory and logistics costs",
+			"Work with global logistics on best practices",
+		],
+		qualifications: [
+			"5+ years in logistics or supply chain",
+			"Experience with international logistics",
+			"Strong operational and analytical skills",
+			"Ability to work across time zones",
+			"Track record in hardware device logistics",
+		],
 	},
 	{
 		id: "world-security-engineering-intern",
@@ -2007,6 +3064,22 @@ export const jobs: Job[] = [
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/adffedc8-6e73-431d-93a2-04095c6ad07f",
 		tags: ["world", "security", "entry-level", "internship"],
+		description:
+			"Gain hands-on experience in security engineering at World. Work alongside experienced security engineers protecting a global identity system.",
+		responsibilities: [
+			"Assist with security assessments and testing",
+			"Help identify and remediate vulnerabilities",
+			"Contribute to security automation tools",
+			"Learn about cryptographic systems and protocols",
+			"Support the security team on projects",
+		],
+		qualifications: [
+			"Currently pursuing degree in CS or security",
+			"Interest in security engineering and cryptography",
+			"Basic programming skills in Python or similar",
+			"Familiarity with security concepts",
+			"Available for 12+ week commitment",
+		],
 	},
 	{
 		id: "world-sr-accounting-ops-manager",
@@ -2017,6 +3090,22 @@ export const jobs: Job[] = [
 		department: "Finance",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/285cbc02-bf6c-4f9e-903c-85fb5a9e9c10",
 		tags: ["world", "management"],
+		description:
+			"Lead accounting operations for World's global business. Build scalable processes to support our rapid international expansion.",
+		responsibilities: [
+			"Manage day-to-day accounting operations",
+			"Build and scale accounting processes globally",
+			"Ensure compliance with multi-jurisdiction requirements",
+			"Coordinate month-end and year-end closes",
+			"Work with external auditors and tax advisors",
+		],
+		qualifications: [
+			"7+ years in accounting operations",
+			"Experience with international accounting",
+			"CPA or equivalent certification preferred",
+			"Strong systems and process mindset",
+			"Experience with high-growth companies",
+		],
 	},
 	{
 		id: "world-sr-android-engineer-orbmini",
@@ -2027,6 +3116,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6a443ccf-4133-4ba0-aa1a-521f0701e338",
 		tags: ["world", "hardware"],
+		description:
+			"Build Android applications for World's OrbMini device. Create software that enables seamless identity verification experiences on our portable hardware.",
+		responsibilities: [
+			"Develop Android applications for OrbMini device",
+			"Optimize performance on embedded Android systems",
+			"Integrate with device sensors and hardware",
+			"Work with product on verification user flows",
+			"Ensure reliability and stability of device software",
+		],
+		qualifications: [
+			"5+ years of Android development experience",
+			"Experience with embedded or device software",
+			"Strong Kotlin and Android SDK skills",
+			"Understanding of camera and sensor integration",
+			"Track record of shipping production Android apps",
+		],
 	},
 	{
 		id: "world-sr-android-framework-engineer",
@@ -2037,6 +3142,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/392e10be-5451-4fb1-bb0f-4a0bdab22110",
 		tags: ["world", "hardware"],
+		description:
+			"Work at the Android framework level to enable World's verification devices. Build system-level software that powers our hardware platform.",
+		responsibilities: [
+			"Develop Android framework modifications for Orb devices",
+			"Optimize system performance and resource usage",
+			"Integrate custom hardware with Android framework",
+			"Work on security and privacy at the system level",
+			"Collaborate with hardware and application teams",
+		],
+		qualifications: [
+			"5+ years in Android framework or system development",
+			"Deep knowledge of Android internals and AOSP",
+			"Experience with embedded systems preferred",
+			"Strong C++ and Java skills",
+			"Track record of framework-level contributions",
+		],
 	},
 	{
 		id: "world-sr-android-kernel-engineer",
@@ -2047,6 +3168,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/04422156-2336-4971-884d-f8c0d063abdc",
 		tags: ["world", "hardware"],
+		description:
+			"Work on the Linux kernel for World's Android-based verification devices. Enable the low-level hardware features that power secure identity verification.",
+		responsibilities: [
+			"Develop and maintain Linux kernel for Orb devices",
+			"Write and optimize device drivers",
+			"Ensure kernel security and stability",
+			"Work with hardware teams on bring-up",
+			"Debug low-level system issues",
+		],
+		qualifications: [
+			"5+ years in Linux kernel development",
+			"Experience with Android kernel and drivers",
+			"Strong C programming skills",
+			"Understanding of embedded systems",
+			"Track record of kernel contributions",
+		],
 	},
 	{
 		id: "world-sr-business-recruiter",
@@ -2057,6 +3194,22 @@ export const jobs: Job[] = [
 		department: "People",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/a00319be-cfc0-42ad-9e02-bd05bcfe5d36",
 		tags: ["world", "talent"],
+		description:
+			"Recruit exceptional business talent for World's global operations. Build relationships with top candidates and help scale teams across the organization.",
+		responsibilities: [
+			"Source and recruit business function candidates",
+			"Partner with hiring managers on requirements",
+			"Build talent pipelines for critical roles",
+			"Deliver excellent candidate experiences",
+			"Track and improve recruiting metrics",
+		],
+		qualifications: [
+			"5+ years in recruiting, preferably tech",
+			"Experience recruiting business roles at scale",
+			"Strong sourcing and closing skills",
+			"Data-driven approach to recruiting",
+			"Excellent communication and relationship skills",
+		],
 	},
 	{
 		id: "world-sr-camera-validation-engineer",
@@ -2067,6 +3220,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b4a132c2-d0f5-4ebd-982b-6d821198d62d",
 		tags: ["world", "hardware"],
+		description:
+			"Validate camera systems for World's Orb devices. Ensure imaging hardware meets the demanding requirements for secure identity verification.",
+		responsibilities: [
+			"Develop camera validation test plans and procedures",
+			"Validate image quality and sensor performance",
+			"Debug camera system issues",
+			"Work with hardware teams on camera integration",
+			"Define imaging specifications and acceptance criteria",
+		],
+		qualifications: [
+			"5+ years in camera or imaging systems validation",
+			"Experience with mobile or embedded cameras",
+			"Understanding of image quality metrics and testing",
+			"Strong analytical and debugging skills",
+			"Experience with camera sensor characterization",
+		],
 	},
 	{
 		id: "world-sr-data-scientist-fraud",
@@ -2077,6 +3246,22 @@ export const jobs: Job[] = [
 		department: "Economics and Data Science",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d829071a-0c9b-425d-b2a7-ad1c5cc2118d",
 		tags: ["world", "ai", "security"],
+		description:
+			"Build ML models to detect and prevent fraud in World's identity verification system. Protect the integrity of our global proof of personhood network.",
+		responsibilities: [
+			"Develop ML models for fraud detection",
+			"Analyze fraud patterns and attack vectors",
+			"Build real-time fraud scoring systems",
+			"Collaborate with security team on fraud prevention",
+			"Monitor and improve model performance",
+		],
+		qualifications: [
+			"5+ years in data science or ML",
+			"Experience with fraud detection systems",
+			"Strong Python and ML framework skills",
+			"Understanding of adversarial ML challenges",
+			"Track record of deploying production ML models",
+		],
 	},
 	{
 		id: "world-sr-electrical-engineer-concept",
@@ -2087,6 +3272,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/ba189695-ac42-465d-8e18-84c19f69473d",
 		tags: ["world", "hardware"],
+		description:
+			"Design next-generation verification hardware at World. Work on concept development for future devices that will enable identity verification at global scale.",
+		responsibilities: [
+			"Design electrical systems for new device concepts",
+			"Prototype and validate new hardware architectures",
+			"Evaluate new components and technologies",
+			"Collaborate with ID and mechanical teams",
+			"Define electrical requirements and specifications",
+		],
+		qualifications: [
+			"5+ years in electrical engineering",
+			"Experience with consumer electronics design",
+			"Strong PCB design and prototyping skills",
+			"Understanding of embedded systems",
+			"Track record of concept-to-production development",
+		],
 	},
 	{
 		id: "world-sr-embedded-engineer-concept",
@@ -2097,6 +3298,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/368eb1ef-ec72-48bc-89a9-9122548aa4b3",
 		tags: ["world", "hardware"],
+		description:
+			"Develop embedded software for World's next-generation verification devices. Prototype and validate new concepts that will shape the future of our hardware.",
+		responsibilities: [
+			"Develop embedded software for device prototypes",
+			"Evaluate new hardware platforms and sensors",
+			"Build proof-of-concept implementations",
+			"Collaborate with hardware on architecture",
+			"Define software requirements for new concepts",
+		],
+		qualifications: [
+			"5+ years in embedded software development",
+			"Experience with rapid prototyping",
+			"Strong C/C++ and embedded systems skills",
+			"Understanding of sensors and hardware interfaces",
+			"Ability to work in fast-paced R&D environment",
+		],
 	},
 	{
 		id: "world-sr-embedded-engineer-orb-sf",
@@ -2107,6 +3324,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d9fdfbaf-02df-46c5-8e07-9f98f41bc0a8",
 		tags: ["world", "hardware"],
+		description:
+			"Build embedded software for the Orb—World's biometric verification device. Create robust, secure software that powers identity verification worldwide.",
+		responsibilities: [
+			"Develop embedded software for Orb devices",
+			"Optimize performance and power consumption",
+			"Integrate with sensors and hardware components",
+			"Ensure software security and reliability",
+			"Debug and resolve device issues",
+		],
+		qualifications: [
+			"5+ years in embedded software development",
+			"Strong C/C++ and real-time systems skills",
+			"Experience with camera and sensor systems",
+			"Understanding of security best practices",
+			"Track record of shipping production devices",
+		],
 	},
 	{
 		id: "world-sr-embedded-engineer-orb-munich",
@@ -2117,6 +3350,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/cef8f78c-bcae-4586-a21f-820124a0b9d7",
 		tags: ["world", "hardware"],
+		description:
+			"Build embedded software for the Orb from our Munich office. Work with our European hardware team to create robust verification device software.",
+		responsibilities: [
+			"Develop embedded software for Orb devices",
+			"Collaborate with European hardware team",
+			"Optimize software for performance and reliability",
+			"Integrate with device sensors and systems",
+			"Support manufacturing and production",
+		],
+		qualifications: [
+			"5+ years in embedded software development",
+			"Strong C/C++ and systems programming skills",
+			"Experience with embedded Linux or RTOS",
+			"Understanding of hardware-software integration",
+			"Based in or willing to relocate to Munich",
+		],
 	},
 	{
 		id: "world-sr-embedded-engineer-orbmini",
@@ -2127,6 +3376,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/081258fe-1322-4e2e-b217-ce8deedd1fc5",
 		tags: ["world", "hardware"],
+		description:
+			"Build embedded software for OrbMini—World's portable verification device. Create optimized software for this compact form factor.",
+		responsibilities: [
+			"Develop embedded software for OrbMini",
+			"Optimize for power and thermal constraints",
+			"Integrate with mobile phone applications",
+			"Ensure reliable operation in varied conditions",
+			"Work with hardware on form factor optimization",
+		],
+		qualifications: [
+			"5+ years in embedded software development",
+			"Experience with power-constrained devices",
+			"Strong C/C++ and mobile integration skills",
+			"Understanding of BLE and wireless protocols",
+			"Track record of shipping portable devices",
+		],
 	},
 	{
 		id: "world-sr-embedded-engineer-test",
@@ -2137,6 +3402,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b8f6ace6-949a-4876-82d6-75ca6ecaaadc",
 		tags: ["world", "hardware"],
+		description:
+			"Build test infrastructure for World's embedded software. Ensure device software quality through comprehensive automated testing.",
+		responsibilities: [
+			"Develop embedded software test frameworks",
+			"Create automated hardware-in-the-loop tests",
+			"Build CI/CD pipelines for embedded software",
+			"Define test strategies and coverage requirements",
+			"Support manufacturing test development",
+		],
+		qualifications: [
+			"5+ years in embedded software testing",
+			"Experience with test automation frameworks",
+			"Strong Python and C/C++ skills",
+			"Understanding of embedded systems testing",
+			"Track record of improving software quality",
+		],
 	},
 	{
 		id: "world-sr-fraud-engineer",
@@ -2147,6 +3428,22 @@ export const jobs: Job[] = [
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/977184cf-3f52-4252-a91f-5a312914f759",
 		tags: ["world", "security"],
+		description:
+			"Build systems to detect and prevent fraud in World's identity network. Protect the integrity of proof of personhood verification at global scale.",
+		responsibilities: [
+			"Design and build fraud detection systems",
+			"Analyze fraud patterns and develop countermeasures",
+			"Implement real-time fraud prevention rules",
+			"Work with data science on ML-based detection",
+			"Respond to fraud incidents and attacks",
+		],
+		qualifications: [
+			"5+ years in fraud engineering or trust & safety",
+			"Experience building production fraud systems",
+			"Strong backend engineering skills",
+			"Understanding of fraud patterns and techniques",
+			"Track record of stopping sophisticated attacks",
+		],
 	},
 	{
 		id: "world-sr-it-engineer",
@@ -2157,6 +3454,22 @@ export const jobs: Job[] = [
 		department: "IT",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/df3338ed-cbdd-4306-ad15-ef0d3e3c35fc",
 		tags: ["world", "infra"],
+		description:
+			"Build and maintain IT infrastructure for World's global workforce. Enable teams to work effectively and securely across offices worldwide.",
+		responsibilities: [
+			"Design and manage corporate IT infrastructure",
+			"Implement security policies and controls",
+			"Support global office IT needs",
+			"Manage SaaS applications and integrations",
+			"Automate IT operations and provisioning",
+		],
+		qualifications: [
+			"5+ years in IT engineering",
+			"Experience supporting distributed teams",
+			"Strong macOS and SaaS administration skills",
+			"Understanding of corporate security",
+			"Ability to work across time zones",
+		],
 	},
 	{
 		id: "world-sr-product-design-engineer",
@@ -2167,6 +3480,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/2cceef10-e016-495b-80b6-47f8eb40f6db",
 		tags: ["world", "design", "hardware"],
+		description:
+			"Bridge industrial design and engineering for World's verification devices. Create manufacturable designs that deliver exceptional user experiences.",
+		responsibilities: [
+			"Develop mechanical designs for verification devices",
+			"Work with ID on design feasibility and DFM",
+			"Create prototypes and validate designs",
+			"Collaborate with manufacturing on production",
+			"Define mechanical specifications and tolerances",
+		],
+		qualifications: [
+			"5+ years in product design engineering",
+			"Experience with consumer electronics",
+			"Strong CAD and prototyping skills",
+			"Understanding of DFM and mass production",
+			"Track record of concept-to-production development",
+		],
 	},
 	{
 		id: "world-sr-pm-growth-incentives",
@@ -2176,7 +3505,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/ccdba5bb-b4d1-46c2-b767-454d91654d59",
-		tags: ["world"],
+		tags: ["world", "growth", "product"],
+		description:
+			"Define product strategy for World's growth incentive programs. Design mechanisms that drive user acquisition and engagement globally.",
+		responsibilities: [
+			"Define growth incentive product roadmap",
+			"Design and optimize referral and reward programs",
+			"Analyze incentive program performance",
+			"Work with economics team on program design",
+			"Collaborate with engineering on implementation",
+		],
+		qualifications: [
+			"5+ years in product management",
+			"Experience with growth or incentive products",
+			"Strong analytical and quantitative skills",
+			"Understanding of behavioral economics",
+			"Track record of driving measurable growth",
+		],
 	},
 	{
 		id: "world-sr-pm-growth-lifecycle",
@@ -2186,7 +3531,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/45d0fc2c-ed91-48ec-b1cd-fc69052f2040",
-		tags: ["world"],
+		tags: ["world", "growth", "product"],
+		description:
+			"Own the user lifecycle product strategy at World. Design experiences that drive retention, engagement, and long-term user value.",
+		responsibilities: [
+			"Define user lifecycle product roadmap",
+			"Design onboarding and engagement experiences",
+			"Optimize retention and activation metrics",
+			"Analyze user behavior and lifecycle stages",
+			"Collaborate with engineering on implementation",
+		],
+		qualifications: [
+			"5+ years in product management",
+			"Experience with lifecycle or retention products",
+			"Strong analytical and experimental skills",
+			"Understanding of user psychology",
+			"Track record of improving user engagement",
+		],
 	},
 	{
 		id: "world-sr-pm-growth-modalities",
@@ -2196,7 +3557,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Growth",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d3cede81-cd25-446e-9387-1658715c7464",
-		tags: ["world"],
+		tags: ["world", "growth", "product"],
+		description:
+			"Define product strategy for World's verification modalities. Expand the ways users can verify their personhood to drive growth.",
+		responsibilities: [
+			"Own growth modalities product roadmap",
+			"Design new verification experiences",
+			"Optimize verification conversion rates",
+			"Analyze modality performance across markets",
+			"Work with operations on rollout strategy",
+		],
+		qualifications: [
+			"5+ years in product management",
+			"Experience with growth or identity products",
+			"Strong analytical and user research skills",
+			"Understanding of verification technologies",
+			"Track record of launching new product experiences",
+		],
 	},
 	{
 		id: "world-sr-pm-hardware-devices",
@@ -2206,7 +3583,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/c84a5b71-448d-4df2-8ac1-20ce51844e17",
-		tags: ["world", "hardware"],
+		tags: ["world", "hardware", "product"],
+		description:
+			"Define product strategy for World's verification hardware devices. Shape the roadmap for Orb and future devices.",
+		responsibilities: [
+			"Own hardware product roadmap and strategy",
+			"Define requirements for new device features",
+			"Work with engineering on device development",
+			"Coordinate with operations on deployment",
+			"Analyze device performance and user feedback",
+		],
+		qualifications: [
+			"5+ years in product management",
+			"Experience with hardware or IoT products",
+			"Strong technical and analytical skills",
+			"Understanding of hardware development cycles",
+			"Track record of shipping consumer devices",
+		],
 	},
 	{
 		id: "world-sr-product-security-engineer-sf",
@@ -2217,6 +3610,22 @@ export const jobs: Job[] = [
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/075918dc-57c0-4a73-ba3c-a6caafee9412",
 		tags: ["world", "security"],
+		description:
+			"Secure World's products from design through deployment. Identify and fix vulnerabilities across our identity verification platform.",
+		responsibilities: [
+			"Perform security reviews of new features",
+			"Identify and remediate vulnerabilities",
+			"Build security into the development process",
+			"Work with engineering on secure design",
+			"Respond to security incidents",
+		],
+		qualifications: [
+			"5+ years in product security",
+			"Experience securing consumer products",
+			"Strong understanding of web and mobile security",
+			"Knowledge of cryptography and privacy tech",
+			"Track record of finding and fixing vulnerabilities",
+		],
 	},
 	{
 		id: "world-sr-product-security-engineer-munich",
@@ -2227,6 +3636,22 @@ export const jobs: Job[] = [
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/aa8e9d73-0209-4109-9116-649ee7f78ab3",
 		tags: ["world", "security"],
+		description:
+			"Secure World's products from our Munich office. Work with European teams on device and platform security.",
+		responsibilities: [
+			"Perform security reviews of products and features",
+			"Identify and remediate security vulnerabilities",
+			"Support European engineering teams on security",
+			"Work on device and embedded security",
+			"Coordinate with global security team",
+		],
+		qualifications: [
+			"5+ years in product security",
+			"Experience with embedded or device security",
+			"Strong understanding of security fundamentals",
+			"Knowledge of European security standards",
+			"Based in or willing to relocate to Munich",
+		],
 	},
 	{
 		id: "world-sr-qa-engineer",
@@ -2237,6 +3662,22 @@ export const jobs: Job[] = [
 		department: "QA",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/c068595b-fee3-4112-aa99-718832656a3a",
 		tags: ["world"],
+		description:
+			"Ensure product quality across World's applications and services. Build testing infrastructure and processes for high-quality releases.",
+		responsibilities: [
+			"Develop QA strategies and test plans",
+			"Build and maintain test automation",
+			"Perform manual and exploratory testing",
+			"Track and improve quality metrics",
+			"Work with engineering on quality processes",
+		],
+		qualifications: [
+			"5+ years in QA engineering",
+			"Experience with mobile and web testing",
+			"Strong test automation skills",
+			"Understanding of CI/CD and release processes",
+			"Track record of improving product quality",
+		],
 	},
 	{
 		id: "world-sr-software-engineer-android",
@@ -2247,6 +3688,22 @@ export const jobs: Job[] = [
 		department: "World App",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/9a2229dc-3027-4334-a7e4-cda30da08cc3",
 		tags: ["world"],
+		description:
+			"Build the World App for Android—the primary interface for billions of users to access their World ID and financial services.",
+		responsibilities: [
+			"Develop features for World App on Android",
+			"Ensure app performance and reliability",
+			"Work with design on polished user experiences",
+			"Integrate with backend services and APIs",
+			"Maintain code quality and best practices",
+		],
+		qualifications: [
+			"5+ years of Android development experience",
+			"Strong Kotlin and Android SDK skills",
+			"Experience with modern Android architecture",
+			"Understanding of performance optimization",
+			"Track record of shipping production apps",
+		],
 	},
 	{
 		id: "world-sr-software-engineer-android-financial",
@@ -2257,6 +3714,22 @@ export const jobs: Job[] = [
 		department: "World App",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d35baebd-9c2c-43d2-8918-4221df271732",
 		tags: ["world", "defi"],
+		description:
+			"Build financial product features in World App for Android. Create secure, reliable experiences for payments, transfers, and digital assets.",
+		responsibilities: [
+			"Develop financial features for Android",
+			"Build secure transaction flows",
+			"Integrate with blockchain and payment systems",
+			"Ensure reliability and accuracy in financial operations",
+			"Work with product on financial user experiences",
+		],
+		qualifications: [
+			"5+ years of Android development experience",
+			"Experience with financial or payment apps",
+			"Strong security and privacy mindset",
+			"Understanding of blockchain and crypto",
+			"Track record of shipping fintech products",
+		],
 	},
 	{
 		id: "world-sr-software-engineer-ios-sf",
@@ -2267,6 +3740,22 @@ export const jobs: Job[] = [
 		department: "World App",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/7542c9f2-f6a7-4bc2-be32-8cc2d73f2424",
 		tags: ["world"],
+		description:
+			"Build the World App for iOS—delivering a premium identity and financial experience to users worldwide.",
+		responsibilities: [
+			"Develop features for World App on iOS",
+			"Create polished, performant user experiences",
+			"Work with design on pixel-perfect implementation",
+			"Integrate with backend services and APIs",
+			"Maintain code quality and testing coverage",
+		],
+		qualifications: [
+			"5+ years of iOS development experience",
+			"Strong Swift and UIKit/SwiftUI skills",
+			"Experience with modern iOS architecture",
+			"Understanding of iOS performance optimization",
+			"Track record of shipping App Store apps",
+		],
 	},
 	{
 		id: "world-sr-software-engineer-ios-munich",
@@ -2277,6 +3766,22 @@ export const jobs: Job[] = [
 		department: "World App",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/d3eb5c44-0a36-4db5-aa15-3c1fe5cd6063",
 		tags: ["world"],
+		description:
+			"Build World App iOS features from our Munich office. Collaborate with European teams on mobile development.",
+		responsibilities: [
+			"Develop iOS features for World App",
+			"Collaborate with European engineering team",
+			"Ensure app quality and performance",
+			"Work with design on user experiences",
+			"Coordinate with global mobile team",
+		],
+		qualifications: [
+			"5+ years of iOS development experience",
+			"Strong Swift and iOS SDK skills",
+			"Experience with collaborative mobile development",
+			"Understanding of iOS best practices",
+			"Based in or willing to relocate to Munich",
+		],
 	},
 	{
 		id: "world-sr-software-engineer-protocol",
@@ -2287,6 +3792,22 @@ export const jobs: Job[] = [
 		department: "Protocol",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b069b878-acf7-45db-8b82-8c501cdee06d",
 		tags: ["world", "protocol", "cryptography"],
+		description:
+			"Build the protocol layer of World's identity system. Implement privacy-preserving cryptographic systems at global scale.",
+		responsibilities: [
+			"Develop protocol infrastructure and services",
+			"Implement cryptographic primitives and protocols",
+			"Build scalable distributed systems",
+			"Work with research on protocol improvements",
+			"Ensure protocol security and reliability",
+		],
+		qualifications: [
+			"5+ years in backend or distributed systems",
+			"Strong systems programming skills (Rust, Go)",
+			"Understanding of cryptography and ZK proofs",
+			"Experience with blockchain protocols",
+			"Track record of building protocol infrastructure",
+		],
 	},
 	{
 		id: "world-sr-staff-economist",
@@ -2298,6 +3819,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/641f94f8-034c-4689-a844-a4d7d899056e",
 		featured: true,
 		tags: ["world", "research"],
+		description:
+			"Shape the economic design of World's global identity and financial network. Apply economics to design incentives, analyze behavior, and inform strategy.",
+		responsibilities: [
+			"Design economic mechanisms and incentives",
+			"Analyze user behavior and market dynamics",
+			"Build econometric models and forecasts",
+			"Advise product and strategy teams",
+			"Publish research on identity economics",
+		],
+		qualifications: [
+			"PhD in Economics or related field",
+			"5+ years of applied economics experience",
+			"Strong quantitative and analytical skills",
+			"Experience with mechanism design or behavioral econ",
+			"Track record of impactful economic analysis",
+		],
 	},
 	{
 		id: "world-sr-staff-embedded-engineer-orb-sf",
@@ -2309,6 +3846,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/0f22bdfe-7d40-474c-a668-e2f8bf18886e",
 		featured: true,
 		tags: ["world", "hardware"],
+		description:
+			"Lead embedded software architecture for World's Orb devices. Define the technical direction for device software at the highest level.",
+		responsibilities: [
+			"Define embedded software architecture and strategy",
+			"Lead technical design for complex device features",
+			"Mentor and grow embedded engineering team",
+			"Drive technical excellence and best practices",
+			"Collaborate with hardware on system design",
+		],
+		qualifications: [
+			"10+ years in embedded software development",
+			"Track record of technical leadership",
+			"Deep expertise in embedded systems architecture",
+			"Strong C/C++ and systems skills",
+			"Experience shipping consumer devices at scale",
+		],
 	},
 	{
 		id: "world-sr-staff-embedded-engineer-orb-munich",
@@ -2320,6 +3873,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/401855c9-ae93-47a2-8b9e-7bb98d8e51dc",
 		featured: true,
 		tags: ["world", "hardware"],
+		description:
+			"Lead embedded software development for World's Orb devices from Munich. Drive technical direction for European device engineering.",
+		responsibilities: [
+			"Lead embedded architecture for Munich team",
+			"Define technical direction and roadmap",
+			"Mentor and grow European embedded team",
+			"Coordinate with SF on global device strategy",
+			"Drive quality and performance improvements",
+		],
+		qualifications: [
+			"10+ years in embedded software development",
+			"Strong technical leadership experience",
+			"Deep expertise in embedded systems",
+			"Experience with consumer device development",
+			"Based in or willing to relocate to Munich",
+		],
 	},
 	{
 		id: "world-sr-technical-recruiter",
@@ -2330,6 +3899,22 @@ export const jobs: Job[] = [
 		department: "People",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6531763f-02a1-45cb-8839-87b78e3a36f8",
 		tags: ["world", "talent"],
+		description:
+			"Recruit world-class engineers for World. Build the team that's creating the global proof of personhood network.",
+		responsibilities: [
+			"Source and recruit technical candidates",
+			"Partner with hiring managers on requirements",
+			"Build pipelines for engineering roles",
+			"Deliver excellent candidate experiences",
+			"Track and improve recruiting metrics",
+		],
+		qualifications: [
+			"5+ years in technical recruiting",
+			"Experience recruiting engineers at scale",
+			"Strong sourcing and closing skills",
+			"Understanding of technical roles and skills",
+			"Track record of hiring top engineering talent",
+		],
 	},
 	{
 		id: "world-snr-growth-lead-uk",
@@ -2339,7 +3924,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/e4d9819d-dcb0-4bc7-a6eb-3c8f36176e45",
-		tags: ["world"],
+		tags: ["world", "growth"],
+		description:
+			"Drive user growth for World in the UK market. Build and scale operations to grow World's presence across the United Kingdom.",
+		responsibilities: [
+			"Lead growth strategy and execution in UK",
+			"Scale verification operations and network",
+			"Develop partnerships and channel strategies",
+			"Analyze market performance and opportunities",
+			"Coordinate with regional teams on execution",
+		],
+		qualifications: [
+			"5+ years in growth or operations",
+			"Experience scaling consumer tech in UK",
+			"Strong analytical and strategic skills",
+			"Understanding of UK market dynamics",
+			"Track record of driving measurable growth",
+		],
 	},
 	{
 		id: "world-snr-growth-ops-lead-rola",
@@ -2350,7 +3951,23 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/f99db0df-ba16-46d5-9159-637f231b1541",
-		tags: ["world"],
+		tags: ["world", "growth"],
+		description:
+			"Lead growth and operations for World across the Rest of Latin America region. Scale World's presence beyond core LATAM markets.",
+		responsibilities: [
+			"Own growth strategy for ROLA markets",
+			"Scale operations across multiple countries",
+			"Manage regional team and resources",
+			"Develop market-specific strategies",
+			"Coordinate with global operations team",
+		],
+		qualifications: [
+			"5+ years in growth or operations",
+			"Experience in Latin American markets",
+			"Strong Spanish; Portuguese a plus",
+			"Understanding of regional market dynamics",
+			"Track record of scaling regional operations",
+		],
 	},
 	{
 		id: "world-software-engineer-ai-data-infra",
@@ -2361,6 +3978,22 @@ export const jobs: Job[] = [
 		department: "AI",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/fab8090d-6f45-4f1f-8068-7ed509f3a63c",
 		tags: ["world", "ai", "infra"],
+		description:
+			"Build the data infrastructure powering World's AI systems. Enable ML teams to train and deploy models at global scale.",
+		responsibilities: [
+			"Build data pipelines for ML training",
+			"Develop infrastructure for model deployment",
+			"Optimize data processing and storage",
+			"Work with ML teams on infrastructure needs",
+			"Ensure data quality and reliability",
+		],
+		qualifications: [
+			"3+ years in data or ML infrastructure",
+			"Strong Python and distributed systems skills",
+			"Experience with ML training pipelines",
+			"Understanding of data processing frameworks",
+			"Track record of building reliable data systems",
+		],
 	},
 	{
 		id: "world-software-engineer-backend-cloud",
@@ -2371,6 +4004,22 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/a82461c7-31d9-4437-837d-3220f519b9ab",
 		tags: ["world", "infra"],
+		description:
+			"Build backend services and cloud infrastructure for World's global platform. Create scalable systems that support billions of users.",
+		responsibilities: [
+			"Develop backend services and APIs",
+			"Build and maintain cloud infrastructure",
+			"Optimize for scale and reliability",
+			"Implement security and privacy requirements",
+			"Collaborate with teams across the organization",
+		],
+		qualifications: [
+			"3+ years in backend development",
+			"Strong Python, Go, or Rust skills",
+			"Experience with cloud infrastructure (AWS, GCP)",
+			"Understanding of distributed systems",
+			"Track record of building production services",
+		],
 	},
 	{
 		id: "world-software-engineer-fullstack",
@@ -2381,6 +4030,22 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/ba13f0bb-154a-4019-ab13-6bc7183dd9b3",
 		tags: ["world"],
+		description:
+			"Build full-stack applications for World's platform. Create web experiences that support our identity and financial products.",
+		responsibilities: [
+			"Develop full-stack web applications",
+			"Build APIs and backend services",
+			"Create responsive frontend interfaces",
+			"Work with design on user experiences",
+			"Ensure code quality and performance",
+		],
+		qualifications: [
+			"3+ years in full-stack development",
+			"Strong TypeScript and React skills",
+			"Experience with backend frameworks",
+			"Understanding of web performance",
+			"Track record of shipping web products",
+		],
 	},
 	{
 		id: "world-staff-backend-engineer",
@@ -2392,6 +4057,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/daf2307b-b6e8-4fed-a682-f6cc35df05cc",
 		featured: true,
 		tags: ["world", "infra"],
+		description:
+			"Lead technical direction for World's backend systems. Design and build the infrastructure that powers our global identity network.",
+		responsibilities: [
+			"Lead backend architecture and design",
+			"Build scalable distributed systems",
+			"Mentor and grow engineering team",
+			"Drive technical excellence and standards",
+			"Solve complex technical challenges",
+		],
+		qualifications: [
+			"8+ years in backend engineering",
+			"Track record of technical leadership",
+			"Deep expertise in distributed systems",
+			"Strong Go, Rust, or similar language skills",
+			"Experience building systems at global scale",
+		],
 	},
 	{
 		id: "world-staff-fraud-engineer",
@@ -2403,6 +4084,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/3385936a-e807-4d3d-a7b5-3cb23f7b7d88",
 		featured: true,
 		tags: ["world", "security"],
+		description:
+			"Lead fraud prevention strategy and systems for World's identity network. Protect proof of personhood from sophisticated attacks.",
+		responsibilities: [
+			"Lead fraud prevention architecture",
+			"Design and build fraud detection systems",
+			"Analyze attack vectors and develop defenses",
+			"Mentor fraud engineering team",
+			"Respond to and investigate fraud incidents",
+		],
+		qualifications: [
+			"8+ years in fraud engineering or trust & safety",
+			"Track record of stopping sophisticated attacks",
+			"Strong technical leadership experience",
+			"Understanding of ML-based fraud detection",
+			"Experience with identity or financial fraud",
+		],
 	},
 	{
 		id: "world-staff-infra-engineer",
@@ -2414,6 +4111,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/22635bae-cc5a-4d5e-b87a-901752467a94",
 		featured: true,
 		tags: ["world", "infra"],
+		description:
+			"Lead infrastructure architecture for World's global platform. Build systems that scale to billions of users worldwide.",
+		responsibilities: [
+			"Lead infrastructure architecture and strategy",
+			"Build scalable, reliable global infrastructure",
+			"Mentor and grow infrastructure team",
+			"Drive operational excellence and reliability",
+			"Optimize cost and performance",
+		],
+		qualifications: [
+			"8+ years in infrastructure engineering",
+			"Track record of technical leadership",
+			"Deep expertise in cloud and distributed systems",
+			"Experience with global-scale infrastructure",
+			"Strong Kubernetes and cloud platform skills",
+		],
 	},
 	{
 		id: "world-staff-product-design-engineer",
@@ -2425,6 +4138,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/18bd79de-2958-412e-b19c-94d13ecc78e7",
 		featured: true,
 		tags: ["world", "design", "hardware"],
+		description:
+			"Lead mechanical design for World's verification devices. Define the physical architecture of products used worldwide.",
+		responsibilities: [
+			"Lead mechanical architecture and design",
+			"Define product design strategies",
+			"Mentor and grow design engineering team",
+			"Drive DFM and manufacturing excellence",
+			"Collaborate with ID and engineering leadership",
+		],
+		qualifications: [
+			"10+ years in product design engineering",
+			"Track record of technical leadership",
+			"Deep expertise in consumer device design",
+			"Experience with high-volume manufacturing",
+			"Strong CAD and prototyping skills",
+		],
 	},
 	{
 		id: "world-staff-product-security-engineer-sf",
@@ -2436,6 +4165,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/bdd9f818-2569-4823-8ba3-d37a9d5872b3",
 		featured: true,
 		tags: ["world", "security"],
+		description:
+			"Lead product security for World's identity platform. Define security architecture and practices across all products.",
+		responsibilities: [
+			"Lead product security architecture",
+			"Define security standards and practices",
+			"Mentor and grow security team",
+			"Drive security culture across engineering",
+			"Respond to critical security incidents",
+		],
+		qualifications: [
+			"8+ years in product security",
+			"Track record of security leadership",
+			"Deep expertise in application security",
+			"Experience securing consumer products at scale",
+			"Strong communication and leadership skills",
+		],
 	},
 	{
 		id: "world-staff-product-security-engineer-munich",
@@ -2447,6 +4192,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/53be510d-300d-4bae-b347-e6e8ce0dd450",
 		featured: true,
 		tags: ["world", "security"],
+		description:
+			"Lead product security from Munich, with focus on device and European operations. Define security strategy for hardware and local teams.",
+		responsibilities: [
+			"Lead product security for European operations",
+			"Define device and hardware security strategy",
+			"Mentor and grow Munich security team",
+			"Coordinate with global security leadership",
+			"Ensure compliance with European security requirements",
+		],
+		qualifications: [
+			"8+ years in product security",
+			"Experience with hardware or device security",
+			"Strong technical leadership skills",
+			"Understanding of European security standards",
+			"Based in or willing to relocate to Munich",
+		],
 	},
 	{
 		id: "world-staff-software-engineer-protocol",
@@ -2458,6 +4219,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b9132dad-c7ea-49e6-bc53-c8fdc466584a",
 		featured: true,
 		tags: ["world", "protocol", "cryptography"],
+		description:
+			"Lead protocol engineering for World's identity system. Design and implement cryptographic protocols at the highest technical level.",
+		responsibilities: [
+			"Lead protocol architecture and design",
+			"Implement advanced cryptographic systems",
+			"Mentor and grow protocol engineering team",
+			"Drive technical excellence in protocol development",
+			"Collaborate with research on protocol innovations",
+		],
+		qualifications: [
+			"8+ years in protocol or systems engineering",
+			"Deep expertise in cryptography and ZK proofs",
+			"Track record of technical leadership",
+			"Strong Rust, Go, or systems language skills",
+			"Experience with blockchain or identity protocols",
+		],
 	},
 	{
 		id: "world-systems-delivery-lead",
@@ -2468,6 +4245,22 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/013cc590-b4af-4392-bb35-c8d2a4f70b2c",
 		tags: ["world"],
+		description:
+			"Lead systems delivery and operational excellence for World. Ensure reliable systems and processes support our global operations.",
+		responsibilities: [
+			"Lead systems delivery and operations",
+			"Implement operational processes and tooling",
+			"Coordinate across engineering and ops teams",
+			"Drive reliability and efficiency improvements",
+			"Manage vendor and partner relationships",
+		],
+		qualifications: [
+			"5+ years in systems or delivery management",
+			"Experience with operational systems at scale",
+			"Strong project management skills",
+			"Understanding of technical systems",
+			"Track record of delivering complex projects",
+		],
 	},
 	{
 		id: "world-tpm-device-compliance",
@@ -2478,6 +4271,22 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/37073900-4f09-4d41-b820-d0e3ec8e129e",
 		tags: ["world", "hardware"],
+		description:
+			"Manage device compliance programs for World's verification hardware. Ensure devices meet regulatory requirements across global markets.",
+		responsibilities: [
+			"Manage device certification programs",
+			"Coordinate compliance testing and approvals",
+			"Track regulatory requirements by market",
+			"Work with engineering on compliance features",
+			"Maintain certification documentation",
+		],
+		qualifications: [
+			"5+ years in hardware compliance or certification",
+			"Experience with CE, FCC, and global certifications",
+			"Strong program management skills",
+			"Understanding of hardware development",
+			"Track record of shipping certified products",
+		],
 	},
 	{
 		id: "world-tpm-world-id",
@@ -2488,6 +4297,22 @@ export const jobs: Job[] = [
 		department: "World ID",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/92038de9-fb74-4d32-b8b2-fe1474f1d6c0",
 		tags: ["world", "ai", "cryptography"],
+		description:
+			"Drive execution of World ID technical programs. Coordinate across engineering, research, and product to deliver the identity platform.",
+		responsibilities: [
+			"Manage World ID technical programs",
+			"Coordinate cross-functional teams",
+			"Track milestones and dependencies",
+			"Identify and mitigate program risks",
+			"Drive process improvements",
+		],
+		qualifications: [
+			"5+ years as Technical Program Manager",
+			"Experience with identity or security products",
+			"Strong technical background",
+			"Excellent communication and coordination skills",
+			"Track record of delivering complex programs",
+		],
 	},
 	{
 		id: "world-engineering-fellowship",
@@ -2499,6 +4324,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/5e076db5-ef04-46d2-a586-dc7675485808",
 		tags: ["hot", "world", "entry-level", "internship"],
 		featured: true,
+		description:
+			"Join World as an engineering fellow. Work alongside world-class engineers on cutting-edge technology that will reach billions of people.",
+		responsibilities: [
+			"Contribute to production engineering projects",
+			"Work with experienced mentors",
+			"Learn about identity and cryptographic systems",
+			"Ship code that impacts real users",
+			"Present your work to the team",
+		],
+		qualifications: [
+			"Currently pursuing CS or engineering degree",
+			"Strong programming skills",
+			"Interest in identity, privacy, or cryptography",
+			"Available for full-time fellowship",
+			"Ability to work in San Francisco",
+		],
 	},
 	{
 		id: "world-spaces-manager",
@@ -2509,6 +4350,22 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/85f8c4f7-6125-4d44-8c44-2367a46cc5e2",
 		tags: ["world", "management"],
+		description:
+			"Manage World's physical spaces and facilities. Create inspiring workplaces that support our teams and mission.",
+		responsibilities: [
+			"Manage office facilities and spaces",
+			"Coordinate with landlords and vendors",
+			"Plan and execute office buildouts",
+			"Ensure workplace safety and compliance",
+			"Support events and employee experience",
+		],
+		qualifications: [
+			"5+ years in facilities or workplace management",
+			"Experience with office buildouts",
+			"Strong vendor management skills",
+			"Understanding of workplace safety requirements",
+			"Ability to manage multiple locations",
+		],
 	},
 	// Agora Jobs
 	{
