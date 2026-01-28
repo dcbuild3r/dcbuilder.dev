@@ -18,9 +18,9 @@ export interface AggregatedNewsItem {
   readingTime?: string; // For blog posts
 }
 
-export async function getAllNews(): Promise<AggregatedNewsItem[]> {
+export function getAllNews(): AggregatedNewsItem[] {
   // Get blog posts
-  const blogPosts = await getAllPosts();
+  const blogPosts = getAllPosts();
   const blogItems: AggregatedNewsItem[] = blogPosts.map((post) => ({
     id: `blog-${post.slug}`,
     type: "blog" as const,
@@ -29,7 +29,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     date: post.date,
     description: post.description,
     category: "general" as NewsCategory,
-    readingTime: post.readingTime,
+    readingTime: `${post.readingTime} min read`,
   }));
 
   // Get curated links
