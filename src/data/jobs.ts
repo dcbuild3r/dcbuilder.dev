@@ -2478,7 +2478,6 @@ export const jobs: Job[] = [
 			"Experience with global or consumer brands",
 			"Ability to balance creativity with brand guidelines",
 		],
-		salary: "$140,000 - $200,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2515,7 +2514,6 @@ export const jobs: Job[] = [
 			"Experience with technology or fintech market entry",
 			"Understanding of identity and privacy in Japan context",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2552,7 +2550,6 @@ export const jobs: Job[] = [
 			"Background in tech, fintech, or identity solutions",
 			"Strong networking and relationship-building skills",
 		],
-		salary: "$150,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2589,7 +2586,6 @@ export const jobs: Job[] = [
 			"Excellent communication in English; other languages a plus",
 			"Background in identity, fintech, or consumer tech",
 		],
-		salary: "$150,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2627,7 +2623,7 @@ export const jobs: Job[] = [
 			"Understanding of privacy-enhancing technologies",
 			"Track record of working with regulators",
 		],
-		salary: "$300,000 - $400,000",
+		salary: "$300,000 - $375,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2665,7 +2661,7 @@ export const jobs: Job[] = [
 			"Strong analytical and process improvement skills",
 			"Ability to manage distributed teams across time zones",
 		],
-		salary: "$300,000 - $400,000",
+		salary: "$290,000 - $320,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2702,7 +2698,6 @@ export const jobs: Job[] = [
 			"Fluent Spanish and English",
 			"Ability to thrive in fast-paced environments",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2739,7 +2734,6 @@ export const jobs: Job[] = [
 			"Interest in cryptography and privacy technologies",
 			"Track record of shipping production software",
 		],
-		salary: "$140,000 - $200,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2776,7 +2770,6 @@ export const jobs: Job[] = [
 			"Native German with excellent English",
 			"Experience navigating German regulatory environment",
 		],
-		salary: "$220,000 - $300,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2813,7 +2806,6 @@ export const jobs: Job[] = [
 			"Native Spanish with excellent English",
 			"Experience scaling consumer or tech operations",
 		],
-		salary: "$220,000 - $300,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2850,7 +2842,6 @@ export const jobs: Job[] = [
 			"Native Spanish with excellent English",
 			"Experience with high-growth consumer operations",
 		],
-		salary: "$220,000 - $300,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2887,7 +2878,6 @@ export const jobs: Job[] = [
 			"Experience with motion graphics a plus",
 			"Ability to work quickly in a fast-paced environment",
 		],
-		salary: "$140,000 - $200,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2924,7 +2914,6 @@ export const jobs: Job[] = [
 			"Strong operational and analytical skills",
 			"Entrepreneurial mindset and bias for action",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -2962,7 +2951,6 @@ export const jobs: Job[] = [
 			"Strong systems thinking and strategic skills",
 			"Portfolio showing world-class mobile and web design",
 		],
-		salary: "$250,000 - $350,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3000,7 +2988,7 @@ export const jobs: Job[] = [
 			"Understanding of zero-knowledge proofs and privacy tech",
 			"Strong technical leadership and communication skills",
 		],
-		salary: "$250,000 - $350,000",
+		salary: "$400,000+",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3037,7 +3025,6 @@ export const jobs: Job[] = [
 			"Track record of optimizing logistics operations",
 			"Ability to manage vendors and partner relationships",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3074,7 +3061,7 @@ export const jobs: Job[] = [
 			"Proficiency in test automation frameworks",
 			"Track record of improving product quality",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$217,000 - $260,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3111,7 +3098,6 @@ export const jobs: Job[] = [
 			"Strong analytical and creative skills",
 			"Track record of driving brand awareness and growth",
 		],
-		salary: "$150,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3148,7 +3134,6 @@ export const jobs: Job[] = [
 			"Track record of successful campaigns",
 			"Excellent communication and storytelling",
 		],
-		salary: "$150,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3185,7 +3170,6 @@ export const jobs: Job[] = [
 			"Track record of operational excellence",
 			"Ability to work in fast-paced environments",
 		],
-		salary: "$150,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3222,7 +3206,6 @@ export const jobs: Job[] = [
 			"Understanding of identity and financial regulations",
 			"Ability to provide practical, business-focused advice",
 		],
-		salary: "$130,000 - $200,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3259,7 +3242,6 @@ export const jobs: Job[] = [
 			"Strong analytical and communication skills",
 			"Ability to work with technical teams on complex problems",
 		],
-		salary: "$150,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3296,7 +3278,6 @@ export const jobs: Job[] = [
 			"Ability to work across time zones",
 			"Track record in hardware device logistics",
 		],
-		salary: "$150,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3333,7 +3314,6 @@ export const jobs: Job[] = [
 			"Familiarity with security concepts",
 			"Available for 12+ week commitment",
 		],
-		salary: "$140,000 - $200,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3370,7 +3350,6 @@ export const jobs: Job[] = [
 			"Strong systems and process mindset",
 			"Experience with high-growth companies",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3407,7 +3386,6 @@ export const jobs: Job[] = [
 			"Understanding of camera and sensor integration",
 			"Track record of shipping production Android apps",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3444,7 +3422,7 @@ export const jobs: Job[] = [
 			"Strong C++ and Java skills",
 			"Track record of framework-level contributions",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$220,000 - $270,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3481,7 +3459,6 @@ export const jobs: Job[] = [
 			"Understanding of embedded systems",
 			"Track record of kernel contributions",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3518,7 +3495,6 @@ export const jobs: Job[] = [
 			"Data-driven approach to recruiting",
 			"Excellent communication and relationship skills",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3555,7 +3531,7 @@ export const jobs: Job[] = [
 			"Strong analytical and debugging skills",
 			"Experience with camera sensor characterization",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$200,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3592,7 +3568,6 @@ export const jobs: Job[] = [
 			"Understanding of adversarial ML challenges",
 			"Track record of deploying production ML models",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3629,7 +3604,7 @@ export const jobs: Job[] = [
 			"Understanding of embedded systems",
 			"Track record of concept-to-production development",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$200,000 - $255,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3666,7 +3641,7 @@ export const jobs: Job[] = [
 			"Understanding of sensors and hardware interfaces",
 			"Ability to work in fast-paced R&D environment",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$220,000 - $270,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3703,7 +3678,7 @@ export const jobs: Job[] = [
 			"Understanding of security best practices",
 			"Track record of shipping production devices",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$220,000 - $270,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3740,7 +3715,7 @@ export const jobs: Job[] = [
 			"Understanding of hardware-software integration",
 			"Based in or willing to relocate to Munich",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$220,000 - $270,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3777,7 +3752,7 @@ export const jobs: Job[] = [
 			"Understanding of BLE and wireless protocols",
 			"Track record of shipping portable devices",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$220,000 - $270,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3814,7 +3789,7 @@ export const jobs: Job[] = [
 			"Understanding of embedded systems testing",
 			"Track record of improving software quality",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$176,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3851,7 +3826,6 @@ export const jobs: Job[] = [
 			"Understanding of fraud patterns and techniques",
 			"Track record of stopping sophisticated attacks",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3888,7 +3862,6 @@ export const jobs: Job[] = [
 			"Understanding of corporate security",
 			"Ability to work across time zones",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3925,7 +3898,7 @@ export const jobs: Job[] = [
 			"Understanding of DFM and mass production",
 			"Track record of concept-to-production development",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$200,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3962,7 +3935,7 @@ export const jobs: Job[] = [
 			"Understanding of behavioral economics",
 			"Track record of driving measurable growth",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$220,000 - $280,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -3999,7 +3972,7 @@ export const jobs: Job[] = [
 			"Understanding of user psychology",
 			"Track record of improving user engagement",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$220,000 - $280,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4036,7 +4009,7 @@ export const jobs: Job[] = [
 			"Understanding of verification technologies",
 			"Track record of launching new product experiences",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$220,000 - $280,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4073,7 +4046,6 @@ export const jobs: Job[] = [
 			"Understanding of hardware development cycles",
 			"Track record of shipping consumer devices",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4110,7 +4082,6 @@ export const jobs: Job[] = [
 			"Knowledge of cryptography and privacy tech",
 			"Track record of finding and fixing vulnerabilities",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4147,7 +4118,6 @@ export const jobs: Job[] = [
 			"Knowledge of European security standards",
 			"Based in or willing to relocate to Munich",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4184,7 +4154,6 @@ export const jobs: Job[] = [
 			"Understanding of CI/CD and release processes",
 			"Track record of improving product quality",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4221,7 +4190,6 @@ export const jobs: Job[] = [
 			"Understanding of performance optimization",
 			"Track record of shipping production apps",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4258,7 +4226,6 @@ export const jobs: Job[] = [
 			"Understanding of blockchain and crypto",
 			"Track record of shipping fintech products",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4295,7 +4262,6 @@ export const jobs: Job[] = [
 			"Understanding of iOS performance optimization",
 			"Track record of shipping App Store apps",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4332,7 +4298,6 @@ export const jobs: Job[] = [
 			"Understanding of iOS best practices",
 			"Based in or willing to relocate to Munich",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4369,7 +4334,6 @@ export const jobs: Job[] = [
 			"Experience with blockchain protocols",
 			"Track record of building protocol infrastructure",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4407,7 +4371,6 @@ export const jobs: Job[] = [
 			"Experience with mechanism design or behavioral econ",
 			"Track record of impactful economic analysis",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4445,7 +4408,7 @@ export const jobs: Job[] = [
 			"Strong C/C++ and systems skills",
 			"Experience shipping consumer devices at scale",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$270,000 - $325,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4483,7 +4446,7 @@ export const jobs: Job[] = [
 			"Experience with consumer device development",
 			"Based in or willing to relocate to Munich",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$270,000 - $325,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4520,7 +4483,6 @@ export const jobs: Job[] = [
 			"Understanding of technical roles and skills",
 			"Track record of hiring top engineering talent",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4557,7 +4519,6 @@ export const jobs: Job[] = [
 			"Understanding of UK market dynamics",
 			"Track record of driving measurable growth",
 		],
-		salary: "$130,000 - $200,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4595,7 +4556,6 @@ export const jobs: Job[] = [
 			"Understanding of regional market dynamics",
 			"Track record of scaling regional operations",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4632,7 +4592,6 @@ export const jobs: Job[] = [
 			"Understanding of data processing frameworks",
 			"Track record of building reliable data systems",
 		],
-		salary: "$140,000 - $200,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4669,7 +4628,6 @@ export const jobs: Job[] = [
 			"Understanding of distributed systems",
 			"Track record of building production services",
 		],
-		salary: "$140,000 - $200,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4706,7 +4664,6 @@ export const jobs: Job[] = [
 			"Understanding of web performance",
 			"Track record of shipping web products",
 		],
-		salary: "$140,000 - $200,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4744,7 +4701,6 @@ export const jobs: Job[] = [
 			"Strong Go, Rust, or similar language skills",
 			"Experience building systems at global scale",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4782,7 +4738,6 @@ export const jobs: Job[] = [
 			"Understanding of ML-based fraud detection",
 			"Experience with identity or financial fraud",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4820,7 +4775,7 @@ export const jobs: Job[] = [
 			"Experience with global-scale infrastructure",
 			"Strong Kubernetes and cloud platform skills",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$276,000 - $300,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4858,7 +4813,6 @@ export const jobs: Job[] = [
 			"Experience with high-volume manufacturing",
 			"Strong CAD and prototyping skills",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4896,7 +4850,6 @@ export const jobs: Job[] = [
 			"Experience securing consumer products at scale",
 			"Strong communication and leadership skills",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4934,7 +4887,6 @@ export const jobs: Job[] = [
 			"Understanding of European security standards",
 			"Based in or willing to relocate to Munich",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -4972,7 +4924,7 @@ export const jobs: Job[] = [
 			"Strong Rust, Go, or systems language skills",
 			"Experience with blockchain or identity protocols",
 		],
-		salary: "$180,000 - $250,000",
+		salary: "$225,000 - $275,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -5009,7 +4961,6 @@ export const jobs: Job[] = [
 			"Understanding of technical systems",
 			"Track record of delivering complex projects",
 		],
-		salary: "$180,000 - $250,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -5046,7 +4997,7 @@ export const jobs: Job[] = [
 			"Understanding of hardware development",
 			"Track record of shipping certified products",
 		],
-		salary: "$150,000 - $220,000",
+		salary: "$180,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -5083,7 +5034,6 @@ export const jobs: Job[] = [
 			"Excellent communication and coordination skills",
 			"Track record of delivering complex programs",
 		],
-		salary: "$150,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -5121,7 +5071,6 @@ export const jobs: Job[] = [
 			"Available for full-time fellowship",
 			"Ability to work in San Francisco",
 		],
-		salary: "$140,000 - $200,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -5158,7 +5107,6 @@ export const jobs: Job[] = [
 			"Understanding of workplace safety requirements",
 			"Ability to manage multiple locations",
 		],
-		salary: "$150,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
