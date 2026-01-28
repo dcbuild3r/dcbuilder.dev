@@ -6,7 +6,7 @@ export const revalidate = 3600; // Cache for 1 hour
 export async function GET() {
   try {
     const clicks = await getJobApplyClicksLast7Days();
-    const hotJobIds = determineHotJobs(clicks, 10); // 10+ clicks = hot
+    const hotJobIds = determineHotJobs(clicks, 5); // Top 5% by clicks
 
     return NextResponse.json({
       hotJobIds,

@@ -55,6 +55,25 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		null
 	);
 	const lastActiveRef = useRef<HTMLElement | null>(null);
+	const [dataHotCandidateIds, setDataHotCandidateIds] = useState<Set<string>>(new Set());
+
+	// Fetch data-driven hot candidates from analytics
+	useEffect(() => {
+		fetch("/api/hot-candidates")
+			.then((res) => res.json())
+			.then((data) => {
+				if (data.hotCandidateIds) {
+					setDataHotCandidateIds(new Set(data.hotCandidateIds));
+				}
+			})
+			.catch((error) => console.warn("Failed to fetch hot candidates:", error));
+	}, []);
+
+	// Helper to check if candidate is hot (manual flag OR data-driven)
+	const isHotCandidate = useCallback(
+		(candidate: Candidate) => candidate.hot || dataHotCandidateIds.has(candidate.id),
+		[dataHotCandidateIds]
+	);
 
 	// Helper to update URL params without React re-render
 	const updateUrlParams = useCallback((updates: Record<string, string | null>) => {
@@ -228,9 +247,9 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 
 	// Sort: hot first, then featured, then by tier (deterministic - no shuffle)
 	const sortedCandidates = useMemo(() => {
-		const hot = filteredCandidates.filter((c) => c.hot);
-		const featured = filteredCandidates.filter((c) => c.featured && !c.hot);
-		const nonFeatured = filteredCandidates.filter((c) => !c.featured && !c.hot);
+		const hot = filteredCandidates.filter((c) => isHotCandidate(c));
+		const featured = filteredCandidates.filter((c) => c.featured && !isHotCandidate(c));
+		const nonFeatured = filteredCandidates.filter((c) => !c.featured && !isHotCandidate(c));
 
 		// Group non-featured by tier
 		const tierGroups: Record<number, Candidate[]> = {};
@@ -247,15 +266,15 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			.flatMap((tier) => tierGroups[tier]);
 
 		return [...hot, ...featured, ...sortedNonFeatured];
-	}, [filteredCandidates]);
+	}, [filteredCandidates, isHotCandidate]);
 
 	// Shuffle in useEffect after hydration (React-safe)
 	useEffect(() => {
 		if (!isHydrated) return;
 
-		const hot = filteredCandidates.filter((c) => c.hot);
-		const featured = filteredCandidates.filter((c) => c.featured && !c.hot);
-		const nonFeatured = filteredCandidates.filter((c) => !c.featured && !c.hot);
+		const hot = filteredCandidates.filter((c) => isHotCandidate(c));
+		const featured = filteredCandidates.filter((c) => c.featured && !isHotCandidate(c));
+		const nonFeatured = filteredCandidates.filter((c) => !c.featured && !isHotCandidate(c));
 
 		// Shuffle each group
 		const shuffledHot = shuffleArray(hot);
@@ -281,7 +300,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			...sortedNonFeatured,
 		]);
 		setShuffledCandidatesKey(filterKey);
-	}, [filteredCandidates, isHydrated, filterKey]);
+	}, [filteredCandidates, isHydrated, filterKey, isHotCandidate]);
 
 	// Use shuffled after hydration, otherwise use deterministic sort
 	const candidatesToDisplay =
@@ -511,6 +530,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 						<CandidateCard
 							key={candidate.id}
 							candidate={candidate}
+							isHot={isHotCandidate(candidate)}
 							onExpand={() => openCandidate(candidate)}
 						/>
 					))
@@ -521,6 +541,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			{expandedCandidate && (
 				<ExpandedCandidateView
 					candidate={expandedCandidate}
+					isHot={isHotCandidate(expandedCandidate)}
 					onClose={closeCandidate}
 					onCVClick={() => trackCandidateCVClick(getCandidateEventProps(expandedCandidate))}
 					onSocialClick={(platform, url) => trackCandidateSocialClick({
@@ -552,9 +573,11 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 
 function CandidateCard({
 	candidate,
+	isHot,
 	onExpand,
 }: {
 	candidate: Candidate;
+	isHot: boolean;
 	onExpand: () => void;
 }) {
 	const isAnonymous = candidate.visibility === "anonymous";
@@ -575,7 +598,7 @@ function CandidateCard({
 	return (
 		<div
 			className={`p-4 rounded-xl border transition-all overflow-hidden ${
-				candidate.hot
+				isHot
 					? "border-orange-400 dark:border-orange-500 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 shadow-[0_0_15px_rgba(251,146,60,0.3)] dark:shadow-[0_0_20px_rgba(251,146,60,0.2)]"
 					: "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
 			}`}
@@ -886,12 +909,14 @@ function CandidateCard({
 
 function ExpandedCandidateView({
 	candidate,
+	isHot,
 	onClose,
 	onCVClick,
 	onSocialClick,
 	onContactClick,
 }: {
 	candidate: Candidate;
+	isHot: boolean;
 	onClose: () => void;
 	onCVClick?: () => void;
 	onSocialClick?: (platform: string, url: string) => void;
@@ -967,7 +992,7 @@ function ExpandedCandidateView({
 				tabIndex={-1}
 				onKeyDown={handleDialogKeyDown}
 				className={`relative w-full sm:max-w-4xl h-[90vh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
-					candidate.hot
+					isHot
 						? "ring-2 ring-orange-400 dark:ring-orange-500"
 						: "ring-1 ring-neutral-200 dark:ring-neutral-700"
 				}`}
@@ -1044,7 +1069,7 @@ function ExpandedCandidateView({
 				{/* Header Section */}
 				<div
 					className={`p-6 sm:p-8 ${
-						candidate.hot
+						isHot
 							? "bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20"
 							: "bg-neutral-50 dark:bg-neutral-800/50"
 					}`}
@@ -1090,7 +1115,7 @@ function ExpandedCandidateView({
 										◇
 									</span>
 								)}
-								{candidate.hot && (
+								{isHot && (
 									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_0_10px_rgba(251,146,60,0.5)]">
 										🔥 HOT
 									</span>
