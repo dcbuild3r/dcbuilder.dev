@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
@@ -47,7 +47,7 @@ function ExpandedJobView({
 			onClick={onClose}
 		>
 			<div
-				className={`relative w-full sm:max-w-4xl h-[90vh] sm:h-auto sm:max-h-[90vh] flex flex-col rounded-t-2xl sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
+				className={`relative w-full sm:max-w-4xl h-[90vh] sm:h-auto sm:max-h-[90vh] flex flex-col rounded-t-2xl sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl overflow-hidden ${
 					isHot
 						? "ring-2 ring-orange-400 dark:ring-orange-500"
 						: "ring-1 ring-neutral-200 dark:ring-neutral-700"
@@ -466,6 +466,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
   const [shuffledJobsKey, setShuffledJobsKey] = useState("");
   const [isHydrated, setIsHydrated] = useState(false);
   const [expandedJob, setExpandedJob] = useState<Job | null>(null);
+  const hasInitializedFromUrl = useRef(false);
 
   // Create job lookup map
   const jobsById = useMemo(() => {
@@ -474,31 +475,34 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     return map;
   }, [jobs]);
 
-  // Sync URL with modal state
+  // Sync URL with modal state (use history.replaceState to avoid React re-render flicker)
   const openJob = useCallback((job: Job) => {
     setExpandedJob(job);
     const url = new URL(window.location.href);
     url.searchParams.set("job", job.id);
-    router.replace(url.pathname + url.search, { scroll: false });
-  }, [router]);
+    window.history.replaceState(null, "", url.pathname + url.search);
+  }, []);
 
   const closeJob = useCallback(() => {
     setExpandedJob(null);
     const url = new URL(window.location.href);
     url.searchParams.delete("job");
-    router.replace(url.pathname + url.search, { scroll: false });
-  }, [router]);
+    window.history.replaceState(null, "", url.pathname + url.search);
+  }, []);
 
-  // Open job from URL on initial load
+  // Open job from URL on initial load only
   useEffect(() => {
+    if (hasInitializedFromUrl.current) return;
+    hasInitializedFromUrl.current = true;
+
     const jobId = searchParams.get("job");
-    if (jobId && !expandedJob) {
+    if (jobId) {
       const job = jobsById.get(jobId);
       if (job) {
         setExpandedJob(job);
       }
     }
-  }, [searchParams, jobsById, expandedJob]);
+  }, [searchParams, jobsById]);
 
   // Mark as hydrated after mount
   useEffect(() => {

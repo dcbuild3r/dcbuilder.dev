@@ -35,7 +35,8 @@ export type JobTag =
 	| "solana"
 	| "internship"
 	| "growth"
-	| "sales";
+	| "sales"
+	| "account-abstraction";
 
 export const tagLabels: Record<JobTag, string> = {
 	hot: "🔥 HOT",
@@ -71,6 +72,7 @@ export const tagLabels: Record<JobTag, string> = {
 	internship: "Internship",
 	growth: "Growth",
 	sales: "Sales",
+	"account-abstraction": "Account Abstraction",
 };
 
 // Job tiers match portfolio tiers: 1-4 for portfolio companies, 5 for network, 6 for ecosystem
@@ -5671,7 +5673,7 @@ export const jobs: Job[] = [
 		location: "London",
 		type: "full-time",
 		link: "https://rhinestone.notion.site/Rhinestone-Job-Board-faf25f85b9244f8c81fa63387c4f910a?p=060bff1e0e9b4379800be8d06e1f22c4&pm=s",
-		tags: ["protocol", "cryptography"],
+		tags: ["protocol", "account-abstraction"],
 	},
 	// Berachain Jobs
 	{
@@ -5882,13 +5884,38 @@ export const jobs: Job[] = [
 		id: "taceo-business-development-lead",
 		title: "Business Development Lead",
 		company: companies.taceo,
-		location: "Remote",
+		location: "Remote (US)",
 		remote: true,
 		type: "full-time",
 		department: "Business Development",
 		link: "https://www.notion.so/Business-Development-Lead-26852d23baea800fad4bd4e39ef7a65e",
 		featured: true,
-		tags: ["bd", "cryptography"],
+		tags: ["bd", "cryptography", "privacy", "web3"],
+		description: `TACEO develops open-source coSNARKs, a form of MPC-powered SNARKs that enables privacy-preserving applications previously not possible. This technology is broadly applicable, with strong early demand from Web3 projects focused on compliance, identity, and DeFi.
+
+As our Business Development Lead, you will drive strategic partnerships, develop key verticals, and shape our go-to-market (GTM) strategy. You'll work directly with the co-founders to identify, pursue, and close high-value opportunities that align with our vision of making privacy technology accessible and impactful.`,
+		responsibilities: [
+			"Lead pipeline development: Identify and engage partners working on compliance, identity, and DeFi. Communicate how TACEO enables use cases that competitors cannot",
+			"Design partner engagement: Develop and iterate on outbound strategies, from initial contact to closing deals. Create content and collateral that clearly articulates the value of our coSNARK approach",
+			"Research verticals & GTM strategy: Explore and validate emerging verticals (e.g., healthcare, enterprise blockchain) and help define how TACEO enters new markets",
+			"Narrative building: Work with co-founders to translate complex cryptographic concepts into a market-oriented narrative that resonates with both technical and non-technical partners",
+			"Internal alignment: Collaborate closely with the engineering team to ensure customer needs inform product development priorities",
+		],
+		qualifications: [
+			"BD experience at a tech scale-up: You've successfully sold complex technical products and can manage long, multi-stakeholder deal cycles",
+			"Technical understanding: You can understand (and explain) the fundamentals of cryptographic primitives, SNARKs, and MPC",
+			"Proactive & structured: You take ownership, set priorities, and know when to pivot or escalate",
+			"Excellent communication skills: You can turn dense technical material into compelling narratives",
+			"US-based and willing to travel: Our partners are largely US-based. Preferably NYC or SF for on-site visits",
+		],
+		benefits: [
+			"Mission-driven team: Join a team with deep cryptographic expertise building foundational privacy infrastructure",
+			"Drive privacy use cases: Shape the adoption of privacy technology in Web3 and enterprise",
+			"Grow a new category: coSNARKs are emerging as a distinctive approach to privacy—help establish and lead this category",
+			"Build TACEO's commercial foundation: You'll have a direct impact on establishing TACEO as a market leader",
+			"Shape the ecosystem: Work with leading protocols and institutions to help integrate privacy into the core of Web3 and beyond",
+			"Competitive salary and equity: A compensation package that reflects the ambition of the role and impact on the company",
+		],
 	},
 	// Nethermind Jobs
 	{
