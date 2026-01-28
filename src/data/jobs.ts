@@ -1384,6 +1384,23 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/succinct/d8eb38a0-89b9-4242-9fb1-0054ebd6da4f",
 		featured: true,
 		tags: ["cryptography", "protocol", "bd"],
+		salary: "$125K - $175K",
+		description:
+			"Spearhead Succinct's presence, partnerships, and growth across Asia in a relationship-driven role bridging global ecosystem partners into key regional markets.",
+		responsibilities: [
+			"Drive APAC strategy by building networks among developers, exchanges, VCs, miners, and founders",
+			"Represent the company in Asian crypto markets with equal recognition as Western presence",
+			"Organize high-impact activations including developer events, ecosystem meetups, and founder visit itineraries",
+			"Drive product adoption through partnerships and community engagement",
+			"Serve as cultural bridge explaining local market dynamics and relationship structures to global leadership",
+		],
+		qualifications: [
+			"Experience launching token projects or working at leading exchanges",
+			"Extensive network across Asia (builders, VCs, miners, founders)",
+			"Fluency in English + Korean or Chinese",
+			"Deep understanding of Asian crypto market differences versus Western ecosystems",
+			"Strong communication skills for relationship meetings and public representation",
+		],
 	},
 	{
 		id: "succinct-head-of-marketing",
@@ -1396,6 +1413,25 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/succinct/7e7db7f4-7abd-485b-b28e-96a727cb4a65",
 		featured: true,
 		tags: ["cryptography", "marketing", "leadership"],
+		salary: "$175K - $225K",
+		description:
+			"Shape Succinct's narrative and architect creative campaigns during a critical phase of company growth, driving attention and cultural resonance across crypto and mainstream audiences.",
+		responsibilities: [
+			"Develop overarching brand narrative and create high-impact campaigns",
+			"Build and maintain brand presence across both crypto and mainstream consumer audiences",
+			"Execute major product launches, ecosystem announcements, and attention-generating activations",
+			"Partner with leadership, engineering, BD, product, and design teams to execute ideas",
+			"Oversee external agencies, partners, and creators while maintaining quality standards",
+			"Shape social media and content strategy by identifying cultural signals",
+		],
+		qualifications: [
+			"Proven experience as a seasoned marketing or brand strategist",
+			"Demonstrated success crafting compelling narratives and breakthrough campaigns",
+			"Deep understanding of cultural dynamics and how ideas gain online momentum",
+			"Excellent creative judgment with strong perspective on positioning and aesthetics",
+			"Skill translating technical concepts into emotionally resonant messaging",
+			"High-agency operator thriving in fast-paced, uncertain environments",
+		],
 	},
 	{
 		id: "succinct-head-of-product",
@@ -2633,6 +2669,7 @@ export const jobs: Job[] = [
 		department: "Marketing",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/6588e344-8314-4a9c-a6d4-c84e026057ae",
 		tags: ["world", "design"],
+		salary: "$148,000 - $175,000",
 		description:
 			"Define and evolve World's visual identity as we build the global proof of personhood network. Create brand experiences that communicate our mission to billions of people worldwide.",
 		responsibilities: [
@@ -3106,6 +3143,7 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/5e1c4da2-e096-4f37-842a-b01a522e3314",
 		featured: true,
 		tags: ["world", "design", "leadership"],
+		salary: "$300,000 - $350,000",
 		description:
 			"Lead product design for World App, creating intuitive experiences that make identity verification and financial services accessible to billions of people worldwide.",
 		responsibilities: [
@@ -3944,6 +3982,7 @@ export const jobs: Job[] = [
 		department: "Device",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/b8f6ace6-949a-4876-82d6-75ca6ecaaadc",
 		tags: ["world", "hardware"],
+		salary: "$176,000 - $220,000",
 		description:
 			"Build test infrastructure for World's embedded software. Ensure device software quality through comprehensive automated testing.",
 		responsibilities: [
@@ -3981,6 +4020,7 @@ export const jobs: Job[] = [
 		department: "Security",
 		link: "https://jobs.ashbyhq.com/Tools%20for%20Humanity/977184cf-3f52-4252-a91f-5a312914f759",
 		tags: ["world", "security"],
+		salary: "$221,000 - $250,000",
 		description:
 			"Build systems to detect and prevent fraud in World's identity network. Protect the integrity of proof of personhood verification at global scale.",
 		responsibilities: [
