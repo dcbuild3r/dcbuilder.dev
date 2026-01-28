@@ -419,7 +419,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                 <button
                   key={tag}
                   onClick={() => toggleTag(tag)}
-                  className={`px-5 py-3 text-sm sm:text-sm font-medium rounded-xl sm:rounded-full transition-all ${
+                  className={`px-5 py-3 text-xl sm:text-sm font-medium rounded-xl sm:rounded-full transition-all ${
                     tag === "hot"
                       ? selectedTags.includes(tag)
                         ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_15px_rgba(251,146,60,0.6)]"
