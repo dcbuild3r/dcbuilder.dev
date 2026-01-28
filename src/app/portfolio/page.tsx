@@ -10,8 +10,8 @@ export default function Portfolio() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen pt-24 px-6">
-        <div className="max-w-6xl mx-auto py-12 space-y-16">
+      <main className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto py-8 sm:py-12 space-y-10 sm:space-y-16">
           {/* Disclaimer */}
           <section className="text-center space-y-6">
             <h1 className="text-4xl font-bold">Disclaimer</h1>

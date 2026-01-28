@@ -2,6 +2,17 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  /* Layout */
+  --navbar-height: 65px;
+
+  /* Z-index scale */
+  --z-dropdown: 50;
+  --z-sticky: 40;
+  --z-modal: 60;
+  --z-modal-backdrop: 55;
+}
+
 html {
   background-color: #ffffff;
   color: #171717;
@@ -19,3 +30,23 @@ body {
 code, pre, .font-mono {
   font-family: var(--font-mono), ui-monospace, monospace;
 }
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Video/iframe size in blog posts - match image width */
+.prose-custom iframe,
+.prose-custom video {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+

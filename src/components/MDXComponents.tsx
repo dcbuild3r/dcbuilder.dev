@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { MDXComponents } from "mdx/types";
+import type { ReactNode } from "react";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MDXComponents = Record<string, (props: any) => ReactNode>;
 
 export const mdxComponents: MDXComponents = {
 	// Replace img with Next.js optimized Image
@@ -152,6 +155,16 @@ export const mdxComponents: MDXComponents = {
 			className="my-8 border-neutral-200 dark:border-neutral-700"
 			{...props}
 		/>
+	),
+
+	// Style iframes (YouTube embeds, etc.)
+	iframe: (props) => (
+		<span className="block my-6">
+			<iframe
+				{...props}
+				className="w-full rounded-lg aspect-video"
+			/>
+		</span>
 	),
 
 	// Style strong and emphasis
