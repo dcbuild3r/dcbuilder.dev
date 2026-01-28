@@ -565,14 +565,14 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                             </svg>
                           </a>
-                          {/* X (Twitter) */}
+                          {/* X */}
                           {job.company.x && (
                             <a
                               href={job.company.x}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-                              title="X (Twitter)"
+                              title="X"
                             >
                               <svg
                                 className="w-4 h-4"

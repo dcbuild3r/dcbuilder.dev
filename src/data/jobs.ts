@@ -33,7 +33,9 @@ export type JobTag =
 	| "management"
 	| "product"
 	| "solana"
-	| "internship";
+	| "internship"
+	| "growth"
+	| "sales";
 
 export const tagLabels: Record<JobTag, string> = {
 	hot: "🔥 HOT",
@@ -67,6 +69,8 @@ export const tagLabels: Record<JobTag, string> = {
 	product: "Product",
 	solana: "Solana",
 	internship: "Internship",
+	growth: "Growth",
+	sales: "Sales",
 };
 
 // Job tiers match portfolio tiers: 1-4 for portfolio companies, 5 for network, 6 for ecosystem
@@ -2822,10 +2826,10 @@ export const jobs: Job[] = [
 		company: companies.blockchainCapital,
 		location: "San Francisco / New York",
 		remote: false,
-		type: "internship",
+		type: "part-time",
 		department: "Research",
 		link: "https://jobs.blockchaincapital.com/companies/blockchain-capital-2/jobs/56345831-research-scholar-2026",
-		tags: ["vc", "research", "entry-level", "internship"],
+		tags: ["vc", "research"],
 	},
 	{
 		id: "blockchain-capital-legal-research-scholar",
