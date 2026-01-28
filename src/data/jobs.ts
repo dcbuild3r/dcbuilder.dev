@@ -1444,6 +1444,22 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/succinct/1cf47bb4-5ebb-418e-baa9-26cef32b4af2",
 		featured: true,
 		tags: ["cryptography", "protocol", "leadership"],
+		salary: "$200K - $250K",
+		description:
+			"Lead product strategy during Succinct's critical growth phase, defining product direction for zero-knowledge proof technology platforms as the company prepares for a major evolution of its vision and ecosystem strategy.",
+		responsibilities: [
+			"Direct product strategy and execution across all product surfaces",
+			"Partner strategically with founders to translate vision into clear priorities",
+			"Establish roadmaps, rituals, and organizational alignment systems",
+			"Maintain close relationships with customers and ecosystem partners",
+		],
+		qualifications: [
+			"Proven founder-level ownership of an entire product or major surface area",
+			"Strong product intuition and ability to anticipate market direction",
+			"Experience navigating complex products from concept through launch and iteration",
+			"Comfort operating in ambiguous environments with rapid decision-making",
+			"Technical fluency sufficient to collaborate with engineers without coding",
+		],
 	},
 	// Prime Intellect Jobs
 	{
@@ -3999,7 +4015,6 @@ export const jobs: Job[] = [
 			"Understanding of embedded systems testing",
 			"Track record of improving software quality",
 		],
-		salary: "$176,000 - $220,000",
 		benefits: [
 			"Comprehensive health, dental, and vision insurance",
 			"Mental health benefits",
@@ -5522,6 +5537,27 @@ export const jobs: Job[] = [
 		link: "https://jobs.ashbyhq.com/nethermind/e9de9b9b-acc0-44c8-91be-4a082836e746",
 		featured: true,
 		tags: ["ai", "protocol"],
+		description:
+			"Join ChaosChain (via Nethermind) to build the accountability protocol for the on-chain AI economy, enabling cryptographic verification for AI agents in commercial deployment.",
+		responsibilities: [
+			"Design and deploy Solidity smart contracts including ChaosCore factory and RewardsDistributor engine",
+			"Implement off-chain components via XMTP and permanent storage on IPFS/Arweave",
+			"Write unit, integration, and fork tests; participate in security audits",
+			"Enhance Python and TypeScript SDKs for developer adoption",
+			"Shape technical roadmap and strategy with founding team",
+		],
+		qualifications: [
+			"Deep Solidity/EVM expertise with demonstrable experience in secure, gas-efficient smart contracts",
+			"Expert-level TypeScript/Node.js proficiency with Ethers.js/Viem libraries",
+			"Backend services experience (Fastify, Postgres/Supabase)",
+			"Understanding of cross-chain communication and hybrid on-chain/off-chain systems",
+			"Portfolio demonstrating rapid MVP shipping capability",
+		],
+		benefits: [
+			"Significant equity/token allocation as early hire",
+			"Direct influence on technology, product, and culture development",
+			"Collaboration with Ethereum Foundation, EigenLayer, and Chainlink ecosystem leaders",
+		],
 	},
 	{
 		id: "nethermind-general-application",
