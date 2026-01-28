@@ -1243,6 +1243,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                         {job.featured && (
                           <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">★</span>
                         )}
+                        {isHotJob(job) && (
+                          <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white">
+                            🔥 HOT
+                          </span>
+                        )}
                       </h3>
                       <p className="text-sm text-neutral-600 dark:text-neutral-400">
                         {job.company.name}
@@ -1259,16 +1264,35 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                     </span>
                   </div>
 
-                  {/* Row 2: Location + buttons */}
+                  {/* Row 2: Location */}
+                  <div className="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-xs sm:text-sm text-neutral-500">
+                    <span>{job.location}</span>
+                    {job.type && (
+                      <span className="capitalize">{job.type.replace("-", " ")}</span>
+                    )}
+                    {job.salary && <span className="text-green-600 dark:text-green-400">{job.salary}</span>}
+                  </div>
+
+                  {/* Row 3: Tags + Buttons */}
                   <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2">
-                    {/* Location and meta info */}
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-xs sm:text-sm text-neutral-500">
-                      <span>{job.location}</span>
-                      {job.type && (
-                        <span className="capitalize">{job.type.replace("-", " ")}</span>
-                      )}
-                      {job.salary && <span className="text-green-600 dark:text-green-400">{job.salary}</span>}
-                    </div>
+                    {/* Tags (excluding "hot" which is shown next to title) */}
+                    {job.tags && job.tags.filter(t => t !== "hot").length > 0 && (
+                      <div className="flex flex-wrap justify-center sm:justify-start gap-1">
+                        {job.tags.filter(t => t !== "hot").map((tag, index) => (
+                          <span
+                            key={tag}
+                            className={`px-2 py-0.5 text-xs rounded-full ${index >= 3 ? "hidden sm:inline-flex" : ""} bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400`}
+                          >
+                            {tagLabels[tag] ?? tag}
+                          </span>
+                        ))}
+                        {job.tags.filter(t => t !== "hot").length > 3 && (
+                          <span className="sm:hidden px-2 py-0.5 text-xs text-neutral-500">
+                            +{job.tags.filter(t => t !== "hot").length - 3}
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     {/* Spacer */}
                     <div className="hidden sm:block flex-1" />
@@ -1296,29 +1320,6 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                       </a>
                     </div>
                   </div>
-
-                  {/* Row 3: Tags */}
-                  {job.tags && job.tags.length > 0 && (
-                    <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-1">
-                      {job.tags.map((tag, index) => (
-                        <span
-                          key={tag}
-                          className={`px-2 py-0.5 text-xs rounded-full ${index >= 3 ? "hidden sm:inline-flex" : ""} ${
-                            tag === "hot"
-                              ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.5)]"
-                              : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
-                          }`}
-                        >
-                          {tagLabels[tag] ?? tag}
-                        </span>
-                      ))}
-                      {job.tags.length > 3 && (
-                        <span className="sm:hidden px-2 py-0.5 text-xs text-neutral-500">
-                          +{job.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
