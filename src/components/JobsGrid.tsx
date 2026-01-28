@@ -1244,7 +1244,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                           <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">★</span>
                         )}
                         {isHotJob(job) && (
-                          <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(251,146,60,0.5)] animate-pulse">
+                          <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-600 dark:to-amber-600 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(234,88,12,0.5)] animate-pulse">
                             🔥 HOT
                           </span>
                         )}
