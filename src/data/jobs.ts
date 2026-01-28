@@ -2430,6 +2430,31 @@ export const jobs: Job[] = [
 		department: "Engineering",
 		link: "https://job-boards.eu.greenhouse.io/aztec/jobs/4700513101",
 		tags: ["infra", "cryptography"],
+		description:
+			"Lead DevOps engineering at Aztec to enhance development velocity while maintaining quality and security standards. Build infrastructure for privacy-focused Layer 2 solutions on Ethereum using zero-knowledge cryptography.",
+		responsibilities: [
+			"Manage internal platforms for development, testing, deployment, and code monitoring",
+			"Design infrastructure-as-code and CI/CD automation to reduce lead times",
+			"Establish observability, monitoring, and incident response best practices",
+			"Build scalable, secure cloud infrastructure on GCP/AWS",
+			"Lead technical design reviews and post-mortems",
+			"Proactively identify performance and security vulnerabilities",
+		],
+		qualifications: [
+			"7+ years industry experience",
+			"Expertise in cloud platforms, bare metal infrastructure, and distributed systems",
+			"Hands-on Terraform and Kubernetes proficiency",
+			"Knowledge of observability tools (Prometheus, Grafana)",
+			"Strong scripting and automation skills, particularly Bash",
+			"Web3/startup experience preferred",
+		],
+		benefits: [
+			"Remote-first, flexible work culture",
+			"Competitive salary with equity/token options",
+			"25 days annual leave plus bank holidays",
+			"Health, dental, and retirement benefits",
+			"Conference and professional development budget",
+		],
 	},
 	{
 		id: "aztec-executive-assistant",
@@ -2440,6 +2465,31 @@ export const jobs: Job[] = [
 		type: "full-time",
 		department: "Marketing",
 		link: "https://job-boards.eu.greenhouse.io/aztec/jobs/4738156101",
+		description:
+			"Support the Chief Marketing Officer while driving operational excellence across the marketing team at Aztec, building privacy infrastructure for Ethereum through zero-knowledge technology.",
+		responsibilities: [
+			"Support the CMO with calendar management, email triage, meeting scheduling and preparation",
+			"Prepare presentations, decks, and internal materials for marketing team",
+			"Maintain project momentum by tracking progress and holding owners accountable",
+			"Oversee weekly meetings and build accountability processes",
+			"Manage Notion workspace setup and documentation",
+			"Handle contracts, DocuSign workflows, and vendor invoice tracking",
+			"Organize team offsites and support conference attendance coordination",
+		],
+		qualifications: [
+			"2-4+ years executive assistance experience",
+			"Strong project management with demonstrated delivery track record",
+			"Exceptional organizational skills managing multiple workstreams",
+			"Proficiency with Google Workspace, Notion, Slack, and project management tools",
+			"Proactive mindset and autonomous work ability in fast-paced environments",
+		],
+		benefits: [
+			"Competitive salary with equity/token options",
+			"25 days annual leave plus bank holidays",
+			"Health, dental, and retirement benefits",
+			"Regular team offsites",
+			"Conference and learning budget",
+		],
 	},
 	{
 		id: "aztec-senior-legal-counsel",
@@ -2451,6 +2501,30 @@ export const jobs: Job[] = [
 		department: "Operations",
 		link: "https://job-boards.eu.greenhouse.io/aztec/jobs/4763296101",
 		tags: ["legal"],
+		salary: "$175,000 - $250,000",
+		description:
+			"Work closely with the General Counsel to navigate legal and regulatory challenges at Aztec Labs, building the first open-source, permissionless Layer 2 with private smart contracts on Ethereum.",
+		responsibilities: [
+			"Draft and negotiate diverse legal contracts including code audits and advisor agreements",
+			"Develop and maintain compliance policies aligned with regulations and industry standards",
+			"Build internal contract templates and manage legal documentation systems",
+			"Collaborate cross-functionally on legal strategy, product development, and partnerships",
+			"Manage corporate affairs, board processes, resolutions, and regulatory filings",
+			"Monitor regulatory developments and assist with policy research and consultation responses",
+		],
+		qualifications: [
+			"JD, LLB, or equivalent with 5+ years UK or US qualified legal experience",
+			"Background in global law firms or substantial in-house roles, preferably crypto/tech/fintech",
+			"Strong knowledge of web3 regulations, financial market laws, securities, and IP/open-source law",
+			"Excellent problem-solving, communication, and interpersonal skills",
+			"Deep understanding or passion for cryptocurrency and privacy",
+		],
+		benefits: [
+			"Competitive salary ($175k-$250k) plus equity",
+			"25 days holiday plus bank holidays",
+			"Flexible, remote work environment",
+			"Work with world-class cryptography and engineering teams",
+		],
 	},
 	// World Jobs
 	{
