@@ -6,7 +6,7 @@ import {
 	Candidate,
 	AvailabilityStatus,
 	ExperienceLevel,
-	JobTag,
+	SkillTag,
 	tagLabels,
 	availabilityLabels,
 	experienceLabels,
@@ -35,7 +35,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const [experienceFilter, setExperienceFilter] = useState<
 		"all" | ExperienceLevel
 	>("all");
-	const [selectedTags, setSelectedTags] = useState<JobTag[]>([]);
+	const [selectedTags, setSelectedTags] = useState<SkillTag[]>([]);
 	const [tagsExpanded, setTagsExpanded] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [shuffledCandidates, setShuffledCandidates] = useState<Candidate[]>([]);
@@ -69,12 +69,12 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 
 	// Get all unique tags from candidates
 	const allTags = useMemo(() => {
-		const tags = new Set<JobTag>();
+		const tags = new Set<SkillTag>();
 		candidates.forEach((c) => c.skills?.forEach((tag) => tags.add(tag)));
 		return Array.from(tags).sort();
 	}, [candidates]);
 
-	const toggleTag = (tag: JobTag) => {
+	const toggleTag = (tag: SkillTag) => {
 		setSelectedTags((prev) =>
 			prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
 		);

@@ -1,8 +1,51 @@
 // Import JobTag from jobs for skill consistency
-import { JobTag, tagLabels } from "./jobs";
+import { JobTag, tagLabels as jobTagLabels } from "./jobs";
 
-export { tagLabels };
 export type { JobTag };
+
+// Candidate-specific skill tags (not used for job listings)
+export type CandidateTag =
+	| "reth"
+	| "alloy"
+	| "web3-devtools"
+	| "solidity"
+	| "typescript"
+	| "rust"
+	| "fullstack"
+	| "java"
+	| "python"
+	| "c"
+	| "compilers"
+	| "evm"
+	| "anchor"
+	| "javascript";
+
+// Combined skill type for candidates
+export type SkillTag = JobTag | CandidateTag;
+
+// Candidate-specific tag labels
+export const candidateTagLabels: Record<CandidateTag, string> = {
+	reth: "Reth",
+	alloy: "Alloy",
+	"web3-devtools": "Web3 DevTools",
+	solidity: "Solidity",
+	typescript: "TypeScript",
+	rust: "Rust",
+	fullstack: "Full Stack",
+	java: "Java",
+	python: "Python",
+	c: "C",
+	compilers: "Compilers",
+	evm: "EVM",
+	anchor: "Anchor",
+	javascript: "JavaScript",
+};
+
+// Merged tag labels for display
+export const tagLabels: Record<SkillTag, string> = {
+	...jobTagLabels,
+	...candidateTagLabels,
+};
 
 export type AvailabilityStatus = "looking" | "open" | "not-looking";
 export type VisibilityMode = "public" | "anonymous";
@@ -53,7 +96,7 @@ export interface Candidate {
 	title: string;
 	bio: string;
 	profileImage?: string;
-	skills: JobTag[];
+	skills: SkillTag[];
 	location: string;
 	remote: boolean;
 	experience: ExperienceLevel;
@@ -75,11 +118,11 @@ export const candidates: Candidate[] = [
 	{
 		id: "norswap",
 		visibility: "public",
-		name: "Norswap",
+		name: "Nicolas \"Norswap\" Laurent",
 		title: "Tech Lead / Protocol Engineer",
 		bio: "Experienced crypto tech leader with strong track record in protocol design at Optimism and leading teams to ship at Happy Devs. Open to tech leadership, VC investment roles, or co-founding opportunities.",
 		profileImage: "/images/candidates/norswap.jpg",
-		skills: ["top", "protocol", "infra", "vc", "research"],
+		skills: ["top", "protocol", "infra", "vc", "research", "compilers", "java", "typescript", "python", "c"],
 		location: "Remote",
 		remote: true,
 		experience: "10+",
@@ -117,7 +160,7 @@ export const candidates: Candidate[] = [
 		title: "Senior Smart Contract & Backend Engineer",
 		bio: "EVM developer with 6 years of experience building smart contracts and backend applications for DeFi and Infrastructure projects (L1s, L2s). Also experienced as a security researcher in both EVM and Solana domains.",
 		profileImage: "/images/candidates/viraz.jpg",
-		skills: ["defi", "infra", "security", "solana", "protocol"],
+		skills: ["defi", "infra", "security", "solana", "protocol", "solidity", "evm", "anchor", "typescript", "javascript", "rust"],
 		location: "Remote",
 		remote: true,
 		experience: "5-10",
@@ -155,7 +198,7 @@ export const candidates: Candidate[] = [
 		title: "Mid-Level Solidity Engineer",
 		bio: "Solidity engineer with hands-on experience in production EVM smart contracts, diamond patterns (EIP-2535), upgradeable systems, and on-chain tooling. Contributed to Aavegotchi's smart contract infrastructure.",
 		profileImage: "/images/candidates/temitayo.jpg",
-		skills: ["defi", "protocol", "infra"],
+		skills: ["defi", "protocol", "infra", "solidity"],
 		location: "Remote",
 		remote: true,
 		experience: "3-5",
@@ -212,6 +255,44 @@ export const candidates: Candidate[] = [
 		tier: 3,
 		featured: false,
 		vouched: true,
+		dateAdded: "2025-01-28",
+	},
+	{
+		id: "atris",
+		visibility: "public",
+		name: "Josef Vacek (atris)",
+		title: "Senior Full Stack Software Engineer",
+		bio: "AI startup founder and senior software engineer. Built his first website at age 9, programming professionally since 12. Reth contributor. Previously at Penumbra Labs focused on financial privacy, led system rewrites at Moralis, built critical tools deployed by AWS and US DHS at 3PillarGlobal. Angel investor in AI and web3 (Monad, Succinct, Praxis). TypeScript, Rust, and Solidity developer.",
+		profileImage: "/images/candidates/atris.jpg",
+		skills: ["top", "protocol", "infra", "defi", "ai", "web3-devtools", "reth", "alloy", "solidity", "typescript", "rust", "fullstack"],
+		location: "Czech Republic",
+		remote: true,
+		experience: "5-10",
+		availability: "looking",
+		preferredRoles: [
+			"Senior Full Stack Software Engineer",
+			"Senior Software Engineer",
+		],
+		companies: [
+			{ name: "AI Startup Founder" },
+			{ name: "Reth Contributor", url: "https://github.com/paradigmxyz/reth" },
+			{ name: "Penumbra Labs", url: "https://penumbra.zone" },
+			{ name: "Moralis", url: "https://moralis.io" },
+			{ name: "3PillarGlobal", url: "https://www.3pillarglobal.com" },
+			{ name: "Abradatas", url: "https://www.abradatas.com" },
+		],
+		socials: {
+			x: "https://x.com/atris_eth",
+			github: "https://github.com/vacekj",
+			linkedin: "https://www.linkedin.com/in/josef-v-19021b128/",
+			telegram: "https://t.me/vacekj",
+			email: "atriscrypto@protonmail.com",
+			website: "https://atris.cc/",
+			cv: "https://docs.google.com/document/d/18l4skXiywdVEOvRzFMZe5J7inykgmMaq8EvGD-xYHec/edit?tab=t.0",
+		},
+		tier: 3,
+		featured: false,
+		hot: true,
 		dateAdded: "2025-01-28",
 	},
 ];
