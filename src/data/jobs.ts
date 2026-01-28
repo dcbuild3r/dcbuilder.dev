@@ -535,7 +535,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/5bb3a8fd-eb15-40aa-84ba-71602644ee95",
 		tags: ["ai", "research", "bci"],
 	},
 	{
@@ -546,7 +546,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/32d4669f-55fb-4cf5-ab3a-b878b1bee66d",
 		tags: ["research", "bci", "leadership"],
 	},
 	{
@@ -557,7 +557,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/a8440ed8-9e11-4861-8413-fc23e2213790",
 		tags: ["ai", "research", "bci"],
 	},
 	{
@@ -568,7 +568,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/1f97b001-7c40-4a9b-83a8-cd376c8a9152",
 		tags: ["ai", "research", "bci"],
 	},
 	{
@@ -579,7 +579,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/1a505013-1509-4f8e-b2f2-f21528e11106",
 		tags: ["research", "bci"],
 	},
 	{
@@ -590,7 +590,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/18ddbf85-4284-4004-af3c-257e5e23b8f4",
 		tags: ["research", "entry-level", "bci"],
 	},
 	{
@@ -601,7 +601,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/8497c9e7-f801-42af-9c8a-209ebc2c075b",
 		tags: ["research", "bci"],
 	},
 	{
@@ -612,7 +612,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/60c8f298-6d25-4609-8560-8aa282416ba4",
 		tags: ["research", "bci"],
 	},
 	{
@@ -623,7 +623,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/c7441553-d74b-4454-86af-ba8685107f88",
 		tags: ["research", "bci"],
 	},
 	{
@@ -634,7 +634,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/4bf43efa-f95e-4978-a63e-ff790124cdff",
 		tags: ["research", "bci"],
 	},
 	{
@@ -645,7 +645,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/6ff1173b-d4ec-4a2e-b2f4-48653c7a2ae1",
 		tags: ["research", "bci"],
 	},
 	{
@@ -656,7 +656,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/6cc2b727-b741-4ca0-b4d3-c7bfd19352c2",
 		tags: ["research", "bci"],
 	},
 	{
@@ -667,7 +667,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Bioengineering",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/d789ed34-fca5-4e95-9c70-a6bedaf3d370",
 		tags: ["research", "bci"],
 	},
 	{
@@ -678,7 +678,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Applications",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/8d754498-9f68-4bcd-864a-d788709df0d2",
 		tags: ["ai", "research", "bci"],
 	},
 	{
@@ -689,7 +689,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Applications",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/a606886c-6efd-4bce-aac9-c18cf06c1404",
 		tags: ["ai", "infra", "bci"],
 	},
 	{
@@ -700,7 +700,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Applications",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/b1281e16-92fb-4eb5-a39f-090c5cf8089d",
 		tags: ["infra", "bci"],
 	},
 	{
@@ -711,7 +711,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Applications",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/d236d412-e12e-4589-b7ac-67c231c3becf",
 		tags: ["infra", "bci"],
 	},
 	{
@@ -722,7 +722,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Applications",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/7d1bbc3b-775a-436c-a0b4-23c6c150bee4",
 		tags: ["ai", "infra", "bci"],
 	},
 	{
@@ -733,7 +733,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Device",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/c825475d-c0da-4965-83cf-1cb08538cdb7",
 		tags: ["research", "hardware", "bci"],
 	},
 	{
@@ -744,7 +744,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "Device",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/52636ec6-b8b4-4218-9c3b-c1370a0df17c",
 		tags: ["research", "hardware", "bci"],
 	},
 	{
@@ -755,7 +755,7 @@ export const jobs: Job[] = [
 		remote: false,
 		type: "full-time",
 		department: "People",
-		link: "https://merge.io/careers",
+		link: "https://jobs.ashbyhq.com/merge/6a73fd11-cef7-4547-b65e-ee878b2d4f25",
 		tags: ["talent", "bci"],
 	},
 	{
