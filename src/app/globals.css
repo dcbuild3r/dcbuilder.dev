@@ -2,6 +2,17 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  /* Layout */
+  --navbar-height: 65px;
+
+  /* Z-index scale */
+  --z-dropdown: 50;
+  --z-sticky: 40;
+  --z-modal: 60;
+  --z-modal-backdrop: 55;
+}
+
 html {
   background-color: #ffffff;
   color: #171717;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
@@ -17,6 +17,9 @@ const navLinks = [
 export function Navbar() {
 	const pathname = usePathname();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const menuButtonRef = useRef<HTMLButtonElement>(null);
+	const firstLinkRef = useRef<HTMLAnchorElement>(null);
+	const lastLinkRef = useRef<HTMLAnchorElement>(null);
 
 	// Close mobile menu on route change
 	useEffect(() => {
@@ -24,10 +27,12 @@ export function Navbar() {
 		setMobileMenuOpen(false);
 	}, [pathname]);
 
-	// Prevent body scroll when menu is open
+	// Prevent body scroll when menu is open and manage focus
 	useEffect(() => {
 		if (mobileMenuOpen) {
 			document.body.style.overflow = "hidden";
+			// Focus first link when menu opens
+			setTimeout(() => firstLinkRef.current?.focus(), 100);
 		} else {
 			document.body.style.overflow = "";
 		}
@@ -35,6 +40,24 @@ export function Navbar() {
 			document.body.style.overflow = "";
 		};
 	}, [mobileMenuOpen]);
+
+	// Handle keyboard navigation for focus trap
+	const handleMenuKeyDown = useCallback((e: React.KeyboardEvent) => {
+		if (e.key === "Escape") {
+			setMobileMenuOpen(false);
+			menuButtonRef.current?.focus();
+		}
+		// Trap focus within menu
+		if (e.key === "Tab") {
+			if (e.shiftKey && document.activeElement === firstLinkRef.current) {
+				e.preventDefault();
+				lastLinkRef.current?.focus();
+			} else if (!e.shiftKey && document.activeElement === lastLinkRef.current) {
+				e.preventDefault();
+				firstLinkRef.current?.focus();
+			}
+		}
+	}, []);
 
 	return (
 		<nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
@@ -95,10 +118,12 @@ export function Navbar() {
 				<div className="flex md:hidden items-center gap-2">
 					<ThemeToggle />
 					<button
+						ref={menuButtonRef}
 						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 						className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
 						aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
 						aria-expanded={mobileMenuOpen}
+						aria-controls="mobile-menu"
 					>
 						{mobileMenuOpen ? (
 							<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -118,13 +143,21 @@ export function Navbar() {
 
 			{/* Mobile Menu Overlay */}
 			{mobileMenuOpen && (
-				<div className="md:hidden fixed inset-0 top-[65px] bg-white dark:bg-neutral-900 z-40">
+				<div
+					id="mobile-menu"
+					role="dialog"
+					aria-modal="true"
+					aria-label="Navigation menu"
+					onKeyDown={handleMenuKeyDown}
+					className="md:hidden fixed inset-0 top-[var(--navbar-height)] bg-white dark:bg-neutral-900 z-[var(--z-sticky)]"
+				>
 					<div className="flex flex-col items-center p-6 space-y-6">
 						{/* Nav Links - centered for easy thumb reach */}
 						<div className="flex flex-col items-center space-y-4">
-							{navLinks.map((link) => (
+							{navLinks.map((link, index) => (
 								<Link
 									key={link.href}
+									ref={index === 0 ? firstLinkRef : index === navLinks.length - 1 ? lastLinkRef : undefined}
 									href={link.href}
 									className={`text-xl py-2 ${
 										pathname === link.href

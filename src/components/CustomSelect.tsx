@@ -132,7 +132,7 @@ export function CustomSelect({
 				<>
 					{/* Backdrop for mobile */}
 					<div
-						className="sm:hidden fixed inset-0 z-40"
+						className="sm:hidden fixed inset-0 z-[var(--z-sticky)]"
 						onClick={() => setIsOpen(false)}
 					/>
 
@@ -142,7 +142,7 @@ export function CustomSelect({
 						id={id ? `${id}-listbox` : undefined}
 						role="listbox"
 						aria-activedescendant={focusedIndex >= 0 && id ? `${id}-option-${focusedIndex}` : undefined}
-						className="absolute z-50 mt-1 w-full min-w-[200px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg max-h-[60vh] sm:max-h-60 overflow-y-auto"
+						className="absolute z-[var(--z-dropdown)] mt-1 w-full min-w-[200px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg max-h-[60vh] sm:max-h-60 overflow-y-auto"
 					>
 						{options.map((option, index) => (
 							<button
