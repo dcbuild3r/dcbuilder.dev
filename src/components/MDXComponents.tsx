@@ -154,6 +154,16 @@ export const mdxComponents: MDXComponents = {
 		/>
 	),
 
+	// Style iframes (YouTube embeds, etc.)
+	iframe: (props) => (
+		<span className="block my-6">
+			<iframe
+				{...props}
+				className="w-full rounded-lg aspect-video"
+			/>
+		</span>
+	),
+
 	// Style strong and emphasis
 	strong: ({ children, ...props }) => (
 		<strong className="font-bold" {...props}>

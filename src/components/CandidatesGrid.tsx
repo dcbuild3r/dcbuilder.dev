@@ -12,6 +12,7 @@ import {
 	experienceLabels,
 	DCBUILDER_TELEGRAM,
 } from "@/data/candidates";
+import { CustomSelect } from "./CustomSelect";
 
 interface CandidatesGridProps {
 	candidates: Candidate[];
@@ -35,6 +36,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		"all" | ExperienceLevel
 	>("all");
 	const [selectedTags, setSelectedTags] = useState<JobTag[]>([]);
+	const [tagsExpanded, setTagsExpanded] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [shuffledCandidates, setShuffledCandidates] = useState<Candidate[]>([]);
 	const [isHydrated, setIsHydrated] = useState(false);
@@ -210,21 +212,18 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 						>
 							Status:
 						</label>
-						<select
+						<CustomSelect
 							id="availability-filter"
 							value={availabilityFilter}
-							onChange={(e) =>
-								setAvailabilityFilter(
-									e.target.value as "all" | AvailabilityStatus
-								)
-							}
-							className="flex-1 sm:flex-none px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-						>
-							<option value="all">All</option>
-							<option value="looking">Actively Looking</option>
-							<option value="open">Open to Opportunities</option>
-							<option value="not-looking">Not Currently Looking</option>
-						</select>
+							onChange={(value) => setAvailabilityFilter(value as "all" | AvailabilityStatus)}
+							options={[
+								{ value: "all", label: "All" },
+								{ value: "looking", label: "Actively Looking" },
+								{ value: "open", label: "Open to Opportunities" },
+								{ value: "not-looking", label: "Not Currently Looking" },
+							]}
+							className="flex-1 sm:flex-none sm:min-w-[180px]"
+						/>
 					</div>
 
 					{/* Experience Filter */}
@@ -235,23 +234,18 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 						>
 							Experience:
 						</label>
-						<select
+						<CustomSelect
 							id="experience-filter"
 							value={experienceFilter}
-							onChange={(e) =>
-								setExperienceFilter(e.target.value as "all" | ExperienceLevel)
-							}
-							className="flex-1 sm:flex-none px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-						>
-							<option value="all">All Experience</option>
-							{(
-								Object.entries(experienceLabels) as [ExperienceLevel, string][]
-							).map(([value, label]) => (
-								<option key={value} value={value}>
-									{label}
-								</option>
-							))}
-						</select>
+							onChange={(value) => setExperienceFilter(value as "all" | ExperienceLevel)}
+							options={[
+								{ value: "all", label: "All Experience" },
+								...(Object.entries(experienceLabels) as [ExperienceLevel, string][]).map(
+									([value, label]) => ({ value, label })
+								),
+							]}
+							className="flex-1 sm:flex-none sm:min-w-[160px]"
+						/>
 					</div>
 				</div>
 
@@ -274,40 +268,94 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				</div>
 			</div>
 
-			{/* Tag Filters - horizontal scroll on mobile */}
+			{/* Tag Filters - Collapsible on mobile */}
 			{allTags.length > 0 && (
-				<div className="relative">
-					<div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible scrollbar-hide">
-						{allTags.map((tag) => (
-							<button
+				<div className="space-y-3">
+					{/* Toggle button and selected tags */}
+					<div className="flex flex-wrap items-center gap-2">
+						<button
+							onClick={() => setTagsExpanded(!tagsExpanded)}
+							className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-full border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+						>
+							<span>Filter by skills</span>
+							<svg
+								className={`w-4 h-4 transition-transform ${tagsExpanded ? 'rotate-180' : ''}`}
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+							</svg>
+						</button>
+						{/* Selected tags as pills */}
+						{selectedTags.map((tag) => (
+							<span
 								key={tag}
-								onClick={() => toggleTag(tag)}
-								className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-full transition-all ${
+								className={`inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-full ${
 									tag === "hot"
-										? selectedTags.includes(tag)
-											? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_15px_rgba(251,146,60,0.6)]"
-											: "bg-gradient-to-r from-orange-400 to-amber-400 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.4)] hover:shadow-[0_0_15px_rgba(251,146,60,0.6)]"
+										? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold"
 										: tag === "top"
-											? selectedTags.includes(tag)
-												? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold shadow-[0_0_15px_rgba(139,92,246,0.6)]"
-												: "bg-gradient-to-r from-violet-400 to-purple-400 text-white font-semibold shadow-[0_0_10px_rgba(139,92,246,0.4)] hover:shadow-[0_0_15px_rgba(139,92,246,0.6)]"
-											: selectedTags.includes(tag)
-												? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-												: "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+											? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold"
+											: "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
 								}`}
 							>
 								{tagLabels[tag] ?? tag}
-							</button>
+								<button
+									onClick={() => toggleTag(tag)}
+									className="ml-1 hover:opacity-70"
+									aria-label={`Remove ${tagLabels[tag] ?? tag} filter`}
+								>
+									<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								</button>
+							</span>
 						))}
 						{selectedTags.length > 0 && (
 							<button
 								onClick={() => setSelectedTags([])}
-								className="flex-shrink-0 px-3 py-1.5 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+								className="px-3 py-1.5 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
 							>
-								Clear
+								Clear all
 							</button>
 						)}
 					</div>
+
+					{/* Expanded tag list */}
+					{tagsExpanded && (
+						<div className="flex flex-wrap gap-2 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+							{allTags.map((tag) => (
+								<button
+									key={tag}
+									onClick={() => toggleTag(tag)}
+									className={`px-5 py-3 text-xl sm:text-sm font-medium rounded-xl sm:rounded-full transition-all ${
+										tag === "hot"
+											? selectedTags.includes(tag)
+												? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_15px_rgba(251,146,60,0.6)]"
+												: "bg-gradient-to-r from-orange-400 to-amber-400 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.4)] hover:shadow-[0_0_15px_rgba(251,146,60,0.6)]"
+											: tag === "top"
+												? selectedTags.includes(tag)
+													? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold shadow-[0_0_15px_rgba(139,92,246,0.6)]"
+													: "bg-gradient-to-r from-violet-400 to-purple-400 text-white font-semibold shadow-[0_0_10px_rgba(139,92,246,0.4)] hover:shadow-[0_0_15px_rgba(139,92,246,0.6)]"
+												: selectedTags.includes(tag)
+													? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+													: "bg-white text-neutral-700 hover:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
+									}`}
+								>
+									{tagLabels[tag] ?? tag}
+								</button>
+							))}
+							<button
+								onClick={() => setTagsExpanded(false)}
+								className="ml-auto px-5 py-3 text-xl sm:text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 flex items-center gap-1"
+							>
+								<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+								</svg>
+								Close
+							</button>
+						</div>
+					)}
 				</div>
 			)}
 

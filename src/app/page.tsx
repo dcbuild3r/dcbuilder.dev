@@ -23,18 +23,18 @@ export default function Home() {
 					</div>
 
 					{/* Content */}
-					<div className="w-full lg:w-[35%] space-y-8 sm:space-y-10">
+					<div className="w-full lg:w-[35%] space-y-8 sm:space-y-10 text-center sm:text-left">
 						{/* Research */}
 						<section>
 							<h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
 								Research
 							</h2>
 							<ul className="space-y-1.5 sm:space-y-2 text-base sm:text-lg">
-								<li>• Ethereum</li>
-								<li>• Programmable Cryptography (ZK, FHE, MPC, TEE)</li>
-								<li>• Digital Identity</li>
-								<li>• Distributed Systems</li>
-								<li>• Decentralized AI</li>
+								<li>Ethereum</li>
+								<li>Programmable Cryptography<span className="hidden sm:inline"> (ZK, FHE, MPC, TEE)</span></li>
+								<li>Digital Identity</li>
+								<li>Distributed Systems</li>
+								<li>Decentralized AI</li>
 							</ul>
 						</section>
 
@@ -44,8 +44,8 @@ export default function Home() {
 								Engineering
 							</h2>
 							<ul className="space-y-1.5 sm:space-y-2 text-base sm:text-lg">
-								<li>• Rust</li>
-								<li>• Solidity</li>
+								<li>Rust</li>
+								<li>Solidity</li>
 							</ul>
 						</section>
 

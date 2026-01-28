@@ -30,3 +30,12 @@ code, pre, .font-mono {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Video/iframe size in blog posts - match image width */
+.prose-custom iframe,
+.prose-custom video {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+

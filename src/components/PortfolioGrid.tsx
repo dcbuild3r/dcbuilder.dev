@@ -163,13 +163,13 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 									: "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
 						}`}
 					>
-						<div className="w-24 h-24 mb-4 flex items-center justify-center">
+						<div className="w-32 h-32 sm:w-24 sm:h-24 mb-4 flex items-center justify-center">
 							<Image
 								src={investment.logo}
 								alt={investment.title}
-								width={80}
-								height={80}
-								className="object-contain bg-white rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150"
+								width={120}
+								height={120}
+								className="w-28 h-28 sm:w-20 sm:h-20 object-contain bg-white rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150"
 								onError={(e) => {
 									console.warn(
 										`[PortfolioGrid] Failed to load logo for ${investment.title}`
