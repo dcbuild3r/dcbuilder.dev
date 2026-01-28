@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
 import { JobsGrid } from "@/components/JobsGrid";
 import { jobs } from "@/data/jobs";
@@ -6,6 +7,19 @@ export const metadata = {
 	title: "Jobs",
 	description: "Job opportunities at companies in my network",
 };
+
+function JobsGridFallback() {
+	return (
+		<div className="space-y-4">
+			{[...Array(5)].map((_, i) => (
+				<div
+					key={i}
+					className="h-24 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse"
+				/>
+			))}
+		</div>
+	);
+}
 
 export default function Jobs() {
 	return (
@@ -24,7 +38,9 @@ export default function Jobs() {
 					</section>
 
 					{/* Jobs Grid */}
-					<JobsGrid jobs={jobs} />
+					<Suspense fallback={<JobsGridFallback />}>
+						<JobsGrid jobs={jobs} />
+					</Suspense>
 				</div>
 			</main>
 		</>

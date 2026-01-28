@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
 import { CustomSelect } from "./CustomSelect";
@@ -17,11 +18,24 @@ const jobTypeLabels: Record<string, string> = {
 function ExpandedJobView({
 	job,
 	onClose,
+	jobUrl,
 }: {
 	job: Job;
 	onClose: () => void;
+	jobUrl: string;
 }) {
 	const isHot = job.tags?.includes("hot");
+	const [copiedLink, setCopiedLink] = useState<"job" | "apply" | null>(null);
+
+	const copyToClipboard = async (text: string, type: "job" | "apply") => {
+		try {
+			await navigator.clipboard.writeText(text);
+			setCopiedLink(type);
+			setTimeout(() => setCopiedLink(null), 2000);
+		} catch (err) {
+			console.error("Failed to copy:", err);
+		}
+	};
 
 	return (
 		<div
@@ -225,6 +239,55 @@ function ExpandedJobView({
 							Apply Now →
 						</a>
 
+						{/* Copy Buttons */}
+						<div className="flex items-center gap-2">
+							<button
+								onClick={() => copyToClipboard(jobUrl, "job")}
+								className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+								title="Copy job link"
+							>
+								{copiedLink === "job" ? (
+									<>
+										<svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+											<polyline points="20 6 9 17 4 12" />
+										</svg>
+										<span className="text-green-600 dark:text-green-400">Copied!</span>
+									</>
+								) : (
+									<>
+										<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+											<rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+											<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+										</svg>
+										<span className="hidden sm:inline">Copy link</span>
+									</>
+								)}
+							</button>
+							<button
+								onClick={() => copyToClipboard(job.link, "apply")}
+								className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+								title="Copy application link"
+							>
+								{copiedLink === "apply" ? (
+									<>
+										<svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+											<polyline points="20 6 9 17 4 12" />
+										</svg>
+										<span className="text-green-600 dark:text-green-400">Copied!</span>
+									</>
+								) : (
+									<>
+										<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+											<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+											<polyline points="15 3 21 3 21 9" />
+											<line x1="10" y1="14" x2="21" y2="3" />
+										</svg>
+										<span className="hidden sm:inline">Copy apply link</span>
+									</>
+								)}
+							</button>
+						</div>
+
 						{/* Company Links */}
 						<div className="flex items-center gap-3">
 							<a
@@ -352,6 +415,8 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function JobsGrid({ jobs }: JobsGridProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [filterCategory, setFilterCategory] = useState<FilterCategory>("all");
   const [selectedCompany, setSelectedCompany] = useState<string>("all");
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
@@ -364,6 +429,39 @@ export function JobsGrid({ jobs }: JobsGridProps) {
   const [isHydrated, setIsHydrated] = useState(false);
   const [expandedJob, setExpandedJob] = useState<Job | null>(null);
 
+  // Create job lookup map
+  const jobsById = useMemo(() => {
+    const map = new Map<string, Job>();
+    jobs.forEach((job) => map.set(job.id, job));
+    return map;
+  }, [jobs]);
+
+  // Sync URL with modal state
+  const openJob = useCallback((job: Job) => {
+    setExpandedJob(job);
+    const url = new URL(window.location.href);
+    url.searchParams.set("job", job.id);
+    router.replace(url.pathname + url.search, { scroll: false });
+  }, [router]);
+
+  const closeJob = useCallback(() => {
+    setExpandedJob(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("job");
+    router.replace(url.pathname + url.search, { scroll: false });
+  }, [router]);
+
+  // Open job from URL on initial load
+  useEffect(() => {
+    const jobId = searchParams.get("job");
+    if (jobId && !expandedJob) {
+      const job = jobsById.get(jobId);
+      if (job) {
+        setExpandedJob(job);
+      }
+    }
+  }, [searchParams, jobsById, expandedJob]);
+
   // Mark as hydrated after mount
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration flag set post-mount.
@@ -375,7 +473,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     if (!expandedJob) return;
 
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setExpandedJob(null);
+      if (e.key === "Escape") closeJob();
     };
     const previousOverflow = document.body.style.overflow;
     document.addEventListener("keydown", handleEscape);
@@ -385,7 +483,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = previousOverflow;
     };
-  }, [expandedJob]);
+  }, [expandedJob, closeJob]);
 
   // Get all unique tags from jobs
   const allTags = useMemo(() => {
@@ -818,7 +916,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
               onClick={(e) => {
                 // Don't open modal if clicking on nested links
                 if ((e.target as HTMLElement).closest("a")) return;
-                setExpandedJob(job);
+                openJob(job);
               }}
               role="button"
               tabIndex={0}
@@ -826,7 +924,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  setExpandedJob(job);
+                  openJob(job);
                 }
               }}
               className={`group block p-4 rounded-xl border transition-all cursor-pointer ${
@@ -995,7 +1093,8 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       {expandedJob && (
         <ExpandedJobView
           job={expandedJob}
-          onClose={() => setExpandedJob(null)}
+          onClose={closeJob}
+          jobUrl={typeof window !== "undefined" ? `${window.location.origin}/jobs?job=${expandedJob.id}` : `/jobs?job=${expandedJob.id}`}
         />
       )}
     </div>
