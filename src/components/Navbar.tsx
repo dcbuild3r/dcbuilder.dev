@@ -17,20 +17,24 @@ const navLinks = [
 
 export function Navbar() {
 	const pathname = usePathname();
-	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [menuState, setMenuState] = useState(() => ({ open: false, path: pathname }));
 	const menuButtonRef = useRef<HTMLButtonElement>(null);
 	const firstFocusableRef = useRef<HTMLAnchorElement>(null);
 	const lastFocusableRef = useRef<HTMLAnchorElement>(null);
 
-	// Close mobile menu on route change
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: sync menu state with navigation
-		setMobileMenuOpen(false);
+	const isMenuOpen = menuState.open && menuState.path === pathname;
+
+	const openMenu = useCallback(() => {
+		setMenuState({ open: true, path: pathname });
 	}, [pathname]);
+
+	const closeMenu = useCallback(() => {
+		setMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
+	}, []);
 
 	// Prevent body scroll when menu is open and manage focus
 	useEffect(() => {
-		if (mobileMenuOpen) {
+		if (isMenuOpen) {
 			document.body.style.overflow = "hidden";
 			// Focus first link when menu opens
 			setTimeout(() => firstFocusableRef.current?.focus(), 100);
@@ -40,12 +44,12 @@ export function Navbar() {
 		return () => {
 			document.body.style.overflow = "";
 		};
-	}, [mobileMenuOpen]);
+	}, [isMenuOpen]);
 
 	// Handle keyboard navigation for focus trap
 	const handleMenuKeyDown = useCallback((e: React.KeyboardEvent) => {
 		if (e.key === "Escape") {
-			setMobileMenuOpen(false);
+			closeMenu();
 			menuButtonRef.current?.focus();
 		}
 		// Trap focus within menu
@@ -58,7 +62,7 @@ export function Navbar() {
 				firstFocusableRef.current?.focus();
 			}
 		}
-	}, []);
+	}, [closeMenu]);
 
 	return (
 		<nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
@@ -120,13 +124,19 @@ export function Navbar() {
 					<ThemeToggle />
 					<button
 						ref={menuButtonRef}
-						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+						onClick={() => {
+							if (isMenuOpen) {
+								closeMenu();
+							} else {
+								openMenu();
+							}
+						}}
 						className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-						aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-						aria-expanded={mobileMenuOpen}
+						aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+						aria-expanded={isMenuOpen}
 						aria-controls="mobile-menu"
 					>
-						{mobileMenuOpen ? (
+						{isMenuOpen ? (
 							<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 								<line x1="18" y1="6" x2="6" y2="18" />
 								<line x1="6" y1="6" x2="18" y2="18" />
@@ -143,7 +153,7 @@ export function Navbar() {
 			</div>
 
 			{/* Mobile Menu Overlay */}
-			{mobileMenuOpen && (
+			{isMenuOpen && (
 				<div
 					id="mobile-menu"
 					role="dialog"
@@ -160,6 +170,7 @@ export function Navbar() {
 									key={link.href}
 									ref={index === 0 ? firstFocusableRef : undefined}
 									href={link.href}
+									onClick={closeMenu}
 									className={`text-xl py-2 ${
 										pathname === link.href
 											? "font-semibold"
