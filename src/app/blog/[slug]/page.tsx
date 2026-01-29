@@ -2,16 +2,14 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { Navbar } from "@/components/Navbar";
-import { formatBlogDate, getPostBySlug, getAllSlugs } from "@/lib/blog";
+import { formatBlogDate, getPostBySlug } from "@/lib/blog";
 import { mdxComponents } from "@/components/MDXComponents";
+
+// Force dynamic rendering since we need database access
+export const dynamic = "force-dynamic";
 
 interface Props {
 	params: Promise<{ slug: string }>;
-}
-
-export async function generateStaticParams() {
-	const slugs = await getAllSlugs();
-	return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props) {

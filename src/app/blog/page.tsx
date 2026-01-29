@@ -7,6 +7,9 @@ export const metadata = {
 	description: "Thoughts on Ethereum, cryptography, and distributed systems.",
 };
 
+// Force dynamic rendering since we need database access
+export const dynamic = "force-dynamic";
+
 export default async function BlogPage() {
 	const posts = await getAllPosts();
 
