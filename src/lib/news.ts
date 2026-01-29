@@ -1,5 +1,8 @@
 import { getAllPosts } from "./blog";
-import { curatedLinks, announcements, NewsCategory } from "@/data/news";
+import { db } from "@/db";
+import { curatedLinks as curatedLinksTable, announcements as announcementsTable } from "@/db/schema";
+import { desc } from "drizzle-orm";
+import { NewsCategory } from "@/data/news";
 
 export interface AggregatedNewsItem {
   id: string;
@@ -16,10 +19,11 @@ export interface AggregatedNewsItem {
   companyLogo?: string; // For announcements
   platform?: string; // For announcements
   readingTime?: string; // For blog posts
+  image?: string; // For blog posts
 }
 
-export function getAllNews(): AggregatedNewsItem[] {
-  // Get blog posts
+export async function getAllNews(): Promise<AggregatedNewsItem[]> {
+  // Get blog posts (still from static files)
   const blogPosts = getAllPosts();
   const blogItems: AggregatedNewsItem[] = blogPosts.map((post) => ({
     id: `blog-${post.slug}`,
@@ -30,33 +34,36 @@ export function getAllNews(): AggregatedNewsItem[] {
     description: post.description,
     category: "general" as NewsCategory,
     readingTime: `${post.readingTime} min read`,
+    image: post.image,
   }));
 
-  // Get curated links
-  const curatedItems: AggregatedNewsItem[] = curatedLinks.map((link) => ({
+  // Get curated links from database
+  const dbCuratedLinks = await db.select().from(curatedLinksTable).orderBy(desc(curatedLinksTable.date));
+  const curatedItems: AggregatedNewsItem[] = dbCuratedLinks.map((link) => ({
     id: link.id,
     type: "curated" as const,
     title: link.title,
     url: link.url,
-    date: link.date,
-    description: link.description,
-    category: link.category,
-    featured: link.featured,
+    date: link.date.toISOString().split("T")[0],
+    description: link.description || undefined,
+    category: link.category as NewsCategory,
+    featured: link.featured || false,
     source: link.source,
   }));
 
-  // Get announcements
-  const announcementItems: AggregatedNewsItem[] = announcements.map((ann) => ({
+  // Get announcements from database
+  const dbAnnouncements = await db.select().from(announcementsTable).orderBy(desc(announcementsTable.date));
+  const announcementItems: AggregatedNewsItem[] = dbAnnouncements.map((ann) => ({
     id: ann.id,
     type: "announcement" as const,
     title: ann.title,
     url: ann.url,
-    date: ann.date,
-    description: ann.description,
-    category: ann.category,
-    featured: ann.featured,
+    date: ann.date.toISOString().split("T")[0],
+    description: ann.description || undefined,
+    category: ann.category as NewsCategory,
+    featured: ann.featured || false,
     company: ann.company,
-    companyLogo: ann.companyLogo,
+    companyLogo: ann.companyLogo || undefined,
     platform: ann.platform,
   }));
 

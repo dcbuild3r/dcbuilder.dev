@@ -27,6 +27,9 @@ export const jobs = pgTable(
     category: text("category").notNull(), // "portfolio" | "network"
     featured: boolean("featured").default(false),
     description: text("description"),
+    responsibilities: text("responsibilities").array(),
+    qualifications: text("qualifications").array(),
+    benefits: text("benefits").array(),
     companyWebsite: text("company_website"),
     companyX: text("company_x"),
     companyGithub: text("company_github"),
@@ -122,6 +125,51 @@ export const announcements = pgTable(
   ]
 );
 
+// Investments table
+export const investments = pgTable(
+  "investments",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    title: text("title").notNull(),
+    description: text("description"),
+    imageUrl: text("image_url"), // website URL
+    logo: text("logo"),
+    tier: text("tier"), // 1, 2, 3, 4
+    featured: boolean("featured").default(false),
+    status: text("status").default("active"), // active, inactive, acquired
+    x: text("x"),
+    github: text("github"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("investments_tier_idx").on(table.tier),
+    index("investments_featured_idx").on(table.featured),
+  ]
+);
+
+// Affiliations table
+export const affiliations = pgTable(
+  "affiliations",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    title: text("title").notNull(),
+    role: text("role").notNull(),
+    dateBegin: text("date_begin"),
+    dateEnd: text("date_end"),
+    description: text("description"),
+    imageUrl: text("image_url"),
+    logo: text("logo"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [index("affiliations_title_idx").on(table.title)]
+);
+
 // API keys for authentication
 export const apiKeys = pgTable(
   "api_keys",
@@ -153,3 +201,9 @@ export type NewAnnouncement = typeof announcements.$inferInsert;
 
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type NewApiKey = typeof apiKeys.$inferInsert;
+
+export type Investment = typeof investments.$inferSelect;
+export type NewInvestment = typeof investments.$inferInsert;
+
+export type Affiliation = typeof affiliations.$inferSelect;
+export type NewAffiliation = typeof affiliations.$inferInsert;

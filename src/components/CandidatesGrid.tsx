@@ -26,6 +26,16 @@ interface CandidatesGridProps {
 	candidates: Candidate[];
 }
 
+// Check if item was created within the last 2 weeks
+const isNew = (dateAdded: string | Date | undefined, createdAt?: string | Date): boolean => {
+	const dateStr = dateAdded || createdAt;
+	if (!dateStr) return false;
+	const date = new Date(dateStr);
+	const twoWeeksAgo = new Date();
+	twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+	return date > twoWeeksAgo;
+};
+
 // Fisher-Yates shuffle (pure function)
 function shuffleArray<T>(array: T[]): T[] {
 	const result = [...array];
@@ -245,62 +255,108 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		[availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]
 	);
 
-	// Sort: hot first, then featured, then by tier (deterministic - no shuffle)
+	// Helper to check skill tags
+	const hasSkillTag = useCallback((candidate: Candidate, tag: string) => {
+		return candidate.skills?.includes(tag as SkillTag) ?? false;
+	}, []);
+
+	// Sort: hot+top, hot, top, featured, verified, then unverified (deterministic - no shuffle)
 	const sortedCandidates = useMemo(() => {
-		const hot = filteredCandidates.filter((c) => isHotCandidate(c));
-		const featured = filteredCandidates.filter((c) => c.featured && !isHotCandidate(c));
-		const nonFeatured = filteredCandidates.filter((c) => !c.featured && !isHotCandidate(c));
+		// Priority groups
+		const hotAndTop = filteredCandidates.filter(
+			(c) => hasSkillTag(c, "hot") && hasSkillTag(c, "top")
+		);
+		const hotOnly = filteredCandidates.filter(
+			(c) => hasSkillTag(c, "hot") && !hasSkillTag(c, "top")
+		);
+		const topOnly = filteredCandidates.filter(
+			(c) => hasSkillTag(c, "top") && !hasSkillTag(c, "hot")
+		);
 
-		// Group non-featured by tier
-		const tierGroups: Record<number, Candidate[]> = {};
-		nonFeatured.forEach((candidate) => {
-			const tier = candidate.tier;
-			if (!tierGroups[tier]) tierGroups[tier] = [];
-			tierGroups[tier].push(candidate);
-		});
+		// Remaining candidates (no hot/top tags)
+		const remaining = filteredCandidates.filter(
+			(c) => !hasSkillTag(c, "hot") && !hasSkillTag(c, "top")
+		);
 
-		// Combine tiers in order (deterministic)
-		const sortedNonFeatured = Object.keys(tierGroups)
-			.map(Number)
-			.sort((a, b) => a - b)
-			.flatMap((tier) => tierGroups[tier]);
+		// Split remaining by featured, verified, and unverified
+		const featured = remaining.filter((c) => c.featured);
+		const verified = remaining.filter((c) => !c.featured && c.vouched === true);
+		const unverified = remaining.filter((c) => !c.featured && c.vouched !== true);
 
-		return [...hot, ...featured, ...sortedNonFeatured];
-	}, [filteredCandidates, isHotCandidate]);
+		// Sort each group by tier
+		const sortByTier = (candidates: Candidate[]) => {
+			const tierGroups: Record<number, Candidate[]> = {};
+			candidates.forEach((candidate) => {
+				const tier = candidate.tier;
+				if (!tierGroups[tier]) tierGroups[tier] = [];
+				tierGroups[tier].push(candidate);
+			});
+			return Object.keys(tierGroups)
+				.map(Number)
+				.sort((a, b) => a - b)
+				.flatMap((tier) => tierGroups[tier]);
+		};
+
+		return [
+			...sortByTier(hotAndTop),
+			...sortByTier(hotOnly),
+			...sortByTier(topOnly),
+			...sortByTier(featured),
+			...sortByTier(verified),
+			...sortByTier(unverified),
+		];
+	}, [filteredCandidates, hasSkillTag]);
 
 	// Shuffle in useEffect after hydration (React-safe)
 	useEffect(() => {
 		if (!isHydrated) return;
 
-		const hot = filteredCandidates.filter((c) => isHotCandidate(c));
-		const featured = filteredCandidates.filter((c) => c.featured && !isHotCandidate(c));
-		const nonFeatured = filteredCandidates.filter((c) => !c.featured && !isHotCandidate(c));
+		// Priority groups
+		const hotAndTop = filteredCandidates.filter(
+			(c) => hasSkillTag(c, "hot") && hasSkillTag(c, "top")
+		);
+		const hotOnly = filteredCandidates.filter(
+			(c) => hasSkillTag(c, "hot") && !hasSkillTag(c, "top")
+		);
+		const topOnly = filteredCandidates.filter(
+			(c) => hasSkillTag(c, "top") && !hasSkillTag(c, "hot")
+		);
 
-		// Shuffle each group
-		const shuffledHot = shuffleArray(hot);
-		const shuffledFeatured = shuffleArray(featured);
+		// Remaining candidates (no hot/top tags)
+		const remaining = filteredCandidates.filter(
+			(c) => !hasSkillTag(c, "hot") && !hasSkillTag(c, "top")
+		);
 
-		// Group and shuffle non-featured by tier
-		const tierGroups: Record<number, Candidate[]> = {};
-		nonFeatured.forEach((candidate) => {
-			const tier = candidate.tier;
-			if (!tierGroups[tier]) tierGroups[tier] = [];
-			tierGroups[tier].push(candidate);
-		});
+		// Split remaining by featured, verified, and unverified
+		const featured = remaining.filter((c) => c.featured);
+		const verified = remaining.filter((c) => !c.featured && c.vouched === true);
+		const unverified = remaining.filter((c) => !c.featured && c.vouched !== true);
 
-		const sortedNonFeatured = Object.keys(tierGroups)
-			.map(Number)
-			.sort((a, b) => a - b)
-			.flatMap((tier) => shuffleArray(tierGroups[tier]));
+		// Shuffle and sort by tier
+		const shuffleAndSortByTier = (candidates: Candidate[]) => {
+			const tierGroups: Record<number, Candidate[]> = {};
+			candidates.forEach((candidate) => {
+				const tier = candidate.tier;
+				if (!tierGroups[tier]) tierGroups[tier] = [];
+				tierGroups[tier].push(candidate);
+			});
+			return Object.keys(tierGroups)
+				.map(Number)
+				.sort((a, b) => a - b)
+				.flatMap((tier) => shuffleArray(tierGroups[tier]));
+		};
 
 		// eslint-disable-next-line react-hooks/set-state-in-effect -- Shuffle is derived after hydration.
 		setShuffledCandidates([
-			...shuffledHot,
-			...shuffledFeatured,
-			...sortedNonFeatured,
+			...shuffleAndSortByTier(hotAndTop),
+			...shuffleAndSortByTier(hotOnly),
+			...shuffleAndSortByTier(topOnly),
+			...shuffleAndSortByTier(featured),
+			...shuffleAndSortByTier(verified),
+			...shuffleAndSortByTier(unverified),
 		]);
 		setShuffledCandidatesKey(filterKey);
-	}, [filteredCandidates, isHydrated, filterKey, isHotCandidate]);
+	}, [filteredCandidates, isHydrated, filterKey, hasSkillTag]);
 
 	// Use shuffled after hydration, otherwise use deterministic sort
 	const candidatesToDisplay =
@@ -531,6 +587,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 							key={candidate.id}
 							candidate={candidate}
 							isHot={isHotCandidate(candidate)}
+							isTop={hasSkillTag(candidate, "top") && !hasSkillTag(candidate, "hot")}
 							onExpand={() => openCandidate(candidate)}
 						/>
 					))
@@ -542,6 +599,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				<ExpandedCandidateView
 					candidate={expandedCandidate}
 					isHot={isHotCandidate(expandedCandidate)}
+					isTop={hasSkillTag(expandedCandidate, "top") && !hasSkillTag(expandedCandidate, "hot")}
 					onClose={closeCandidate}
 					onCVClick={() => trackCandidateCVClick(getCandidateEventProps(expandedCandidate))}
 					onSocialClick={(platform, url) => trackCandidateSocialClick({
@@ -574,10 +632,12 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 function CandidateCard({
 	candidate,
 	isHot,
+	isTop,
 	onExpand,
 }: {
 	candidate: Candidate;
 	isHot: boolean;
+	isTop: boolean;
 	onExpand: () => void;
 }) {
 	const isAnonymous = candidate.visibility === "anonymous";
@@ -595,13 +655,20 @@ function CandidateCard({
 			"bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
 	};
 
+	// Determine card styling based on status
+	const getCardClassName = () => {
+		if (isHot) {
+			return "border-orange-500 dark:border-orange-400 bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40 shadow-[0_0_8px_rgba(251,146,60,0.5)] dark:shadow-[0_0_10px_rgba(251,146,60,0.4)]";
+		}
+		if (isTop) {
+			return "border-violet-500 dark:border-violet-400 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40 shadow-[0_0_8px_rgba(139,92,246,0.5)] dark:shadow-[0_0_10px_rgba(139,92,246,0.4)]";
+		}
+		return "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600";
+	};
+
 	return (
 		<div
-			className={`p-4 rounded-xl border transition-all overflow-hidden ${
-				isHot
-					? "border-orange-400 dark:border-orange-500 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 shadow-[0_0_15px_rgba(251,146,60,0.3)] dark:shadow-[0_0_20px_rgba(251,146,60,0.2)]"
-					: "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
-			}`}
+			className={`p-4 rounded-xl border transition-all overflow-hidden ${getCardClassName()}`}
 		>
 			{/* Header */}
 			<div className="flex items-start gap-3">
@@ -622,37 +689,51 @@ function CandidateCard({
 				</div>
 
 				<div className="flex-1 min-w-0">
-					<h3 className="font-semibold truncate">
-						{displayName}
-						{candidate.featured && (
-							<span className="ml-1 text-xs text-amber-600 dark:text-amber-400">
-								★
-							</span>
-						)}
-						{candidate.vouched !== false ? (
-							<span
-								className="ml-1 text-xs text-green-600 dark:text-green-400"
-								title="Personally vouched"
-							>
-								✓
-							</span>
-						) : (
-							<span
-								className="ml-1 text-xs text-amber-600 dark:text-amber-400"
-								title="Referred (not personally known)"
-							>
-								◇
-							</span>
-						)}
+					<h3 className="font-semibold flex items-center gap-1">
+						<span className="truncate">{displayName}</span>
+						<span className="flex-shrink-0 flex items-center gap-0.5">
+							{candidate.featured && (
+								<span className="text-xs text-amber-600 dark:text-amber-400">
+									★
+								</span>
+							)}
+							{candidate.vouched !== false ? (
+								<span
+									className="text-xs text-green-600 dark:text-green-400"
+									title="Personally vouched"
+								>
+									✓
+								</span>
+							) : (
+								<span
+									className="text-xs text-amber-600 dark:text-amber-400"
+									title="Referred (not personally known)"
+								>
+									◇
+								</span>
+							)}
+						</span>
 					</h3>
 					<p className="text-sm text-neutral-600 dark:text-neutral-400 truncate">
 						{candidate.title}
 					</p>
-					<span
-						className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full ${availabilityColor[candidate.availability]}`}
-					>
-						{availabilityLabels[candidate.availability]}
-					</span>
+					<div className="flex items-center gap-1.5 mt-1 flex-nowrap">
+						<span
+							className={`inline-block px-2 py-0.5 text-xs rounded-full whitespace-nowrap ${availabilityColor[candidate.availability]}`}
+						>
+							{availabilityLabels[candidate.availability]}
+						</span>
+						{isTop && (
+							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white whitespace-nowrap">
+								⭐️ TOP
+							</span>
+						)}
+						{isNew(candidate.dateAdded) && (
+							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap">
+								🆕 NEW
+							</span>
+						)}
+					</div>
 				</div>
 			</div>
 
@@ -671,29 +752,26 @@ function CandidateCard({
 			</div>
 
 			{/* Skills */}
-			{candidate.skills && candidate.skills.length > 0 && (
-				<div className="mt-3 flex flex-wrap gap-1">
-					{candidate.skills.slice(0, 4).map((tag) => (
-						<span
-							key={tag}
-							className={`px-2 py-0.5 text-xs rounded-full ${
-								tag === "hot"
-									? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.5)]"
-									: tag === "top"
-										? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold shadow-[0_0_10px_rgba(139,92,246,0.5)]"
-										: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
-							}`}
-						>
-							{tagLabels[tag] ?? tag}
-						</span>
-					))}
-					{candidate.skills.length > 4 && (
-						<span className="px-2 py-0.5 text-xs text-neutral-500">
-							+{candidate.skills.length - 4} more
-						</span>
-					)}
-				</div>
-			)}
+			{candidate.skills && candidate.skills.length > 0 && (() => {
+				const displaySkills = candidate.skills.filter((tag) => tag !== "hot" && tag !== "top");
+				return displaySkills.length > 0 && (
+					<div className="mt-3 flex flex-wrap gap-1">
+						{displaySkills.slice(0, 4).map((tag) => (
+							<span
+								key={tag}
+								className="px-2 py-0.5 text-xs rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+							>
+								{tagLabels[tag] ?? tag}
+							</span>
+						))}
+						{displaySkills.length > 4 && (
+							<span className="px-2 py-0.5 text-xs text-neutral-500">
+								+{displaySkills.length - 4} more
+							</span>
+						)}
+					</div>
+				);
+			})()}
 
 			{/* Contact Section */}
 			<div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700">
@@ -910,6 +988,7 @@ function CandidateCard({
 function ExpandedCandidateView({
 	candidate,
 	isHot,
+	isTop,
 	onClose,
 	onCVClick,
 	onSocialClick,
@@ -917,6 +996,7 @@ function ExpandedCandidateView({
 }: {
 	candidate: Candidate;
 	isHot: boolean;
+	isTop: boolean;
 	onClose: () => void;
 	onCVClick?: () => void;
 	onSocialClick?: (platform: string, url: string) => void;
@@ -993,8 +1073,10 @@ function ExpandedCandidateView({
 				onKeyDown={handleDialogKeyDown}
 				className={`relative w-full sm:max-w-4xl h-[90vh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
 					isHot
-						? "ring-2 ring-orange-400 dark:ring-orange-500"
-						: "ring-1 ring-neutral-200 dark:ring-neutral-700"
+						? "ring-2 ring-orange-500 dark:ring-orange-400"
+						: isTop
+							? "ring-2 ring-violet-500 dark:ring-violet-400"
+							: "ring-1 ring-neutral-200 dark:ring-neutral-700"
 				}`}
 				onClick={(e) => e.stopPropagation()}
 			>
@@ -1070,8 +1152,10 @@ function ExpandedCandidateView({
 				<div
 					className={`p-6 sm:p-8 ${
 						isHot
-							? "bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20"
-							: "bg-neutral-50 dark:bg-neutral-800/50"
+							? "bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40"
+							: isTop
+								? "bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40"
+								: "bg-neutral-50 dark:bg-neutral-800/50"
 					}`}
 				>
 					<div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
@@ -1120,6 +1204,16 @@ function ExpandedCandidateView({
 										🔥 HOT
 									</span>
 								)}
+								{isTop && (
+									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.5)]">
+										⭐️ TOP
+									</span>
+								)}
+								{isNew(candidate.dateAdded) && (
+									<span className="px-3 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
+										🆕 NEW
+									</span>
+								)}
 							</div>
 							<p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 mb-3">
 								{candidate.title}
@@ -1160,27 +1254,24 @@ function ExpandedCandidateView({
 					</div>
 
 					{/* Skills */}
-					{candidate.skills && candidate.skills.length > 0 && (
-						<div>
-							<h3 className="text-lg font-semibold mb-3">Skills</h3>
-							<div className="flex flex-wrap gap-2">
-								{candidate.skills.map((tag) => (
-									<span
-										key={tag}
-										className={`px-3 py-1.5 text-sm rounded-full ${
-											tag === "hot"
-												? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold"
-												: tag === "top"
-													? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold"
-													: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
-										}`}
-									>
-										{tagLabels[tag] ?? tag}
-									</span>
-								))}
+					{candidate.skills && candidate.skills.length > 0 && (() => {
+						const displaySkills = candidate.skills.filter((tag) => tag !== "hot" && tag !== "top");
+						return displaySkills.length > 0 && (
+							<div>
+								<h3 className="text-lg font-semibold mb-3">Skills</h3>
+								<div className="flex flex-wrap gap-2">
+									{displaySkills.map((tag) => (
+										<span
+											key={tag}
+											className="px-3 py-1.5 text-sm rounded-full bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+										>
+											{tagLabels[tag] ?? tag}
+										</span>
+									))}
+								</div>
 							</div>
-						</div>
-					)}
+						);
+					})()}
 
 					{/* Preferred Roles */}
 					{candidate.preferredRoles && candidate.preferredRoles.length > 0 && (

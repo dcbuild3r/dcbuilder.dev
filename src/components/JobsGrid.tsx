@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import Markdown from "react-markdown";
 import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
 import { CustomSelect } from "./CustomSelect";
 import {
@@ -19,11 +20,17 @@ const jobTypeLabels: Record<string, string> = {
 	internship: "Internship",
 };
 
+// Check if item was created within the last 2 weeks
+const isNewItem = (createdAt: string | Date | undefined): boolean => {
+	if (!createdAt) return false;
+	const created = new Date(createdAt);
+	const twoWeeksAgo = new Date();
+	twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+	return created > twoWeeksAgo;
+};
+
 type JobDescriptionContent = {
 	description?: string;
-	responsibilities?: string[];
-	qualifications?: string[];
-	benefits?: string[];
 };
 
 const jobDescriptionCache = new Map<string, JobDescriptionContent>();
@@ -49,11 +56,8 @@ function ExpandedJobView({
 	const [enrichedContent, setEnrichedContent] =
 		useState<JobDescriptionContent | null>(null);
 	const [isEnriching, setIsEnriching] = useState(false);
-	const missingSections =
-		!job.description ||
-		!job.responsibilities?.length ||
-		!job.qualifications?.length ||
-		!job.benefits?.length;
+	// Only enrich if we have no description at all
+	const missingSections = !job.description;
 
 	useEffect(() => {
 		setEnrichedContent(null);
@@ -98,24 +102,6 @@ function ExpandedJobView({
 		job.description?.trim() ||
 		enrichedContent?.description?.trim() ||
 		(isEnriching ? loadingLabel : defaultBullet);
-	const responsibilities =
-		job.responsibilities && job.responsibilities.length > 0
-			? job.responsibilities
-			: enrichedContent?.responsibilities?.length
-				? enrichedContent.responsibilities
-				: [isEnriching ? loadingLabel : defaultBullet];
-	const qualifications =
-		job.qualifications && job.qualifications.length > 0
-			? job.qualifications
-			: enrichedContent?.qualifications?.length
-				? enrichedContent.qualifications
-				: [isEnriching ? loadingLabel : defaultBullet];
-	const benefits =
-		job.benefits && job.benefits.length > 0
-			? job.benefits
-			: enrichedContent?.benefits?.length
-				? enrichedContent.benefits
-				: [isEnriching ? loadingLabel : defaultBullet];
 
 	const copyToClipboard = async (text: string, type: "job" | "apply") => {
 		try {
@@ -201,6 +187,11 @@ function ExpandedJobView({
 										🔥 HOT
 									</span>
 								)}
+								{isNewItem(job.createdAt) && (
+									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
+										🆕 NEW
+									</span>
+								)}
 							</div>
 							<p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 mb-3">
 								{job.company.name}
@@ -271,40 +262,11 @@ function ExpandedJobView({
 					{/* Description */}
 					<div>
 						<h3 className="text-lg font-semibold mb-3">About the Role</h3>
-						<p className="text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-line">
-							{description}
-						</p>
+						<div className="text-neutral-600 dark:text-neutral-400 leading-relaxed prose prose-neutral dark:prose-invert prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-li:my-0.5 prose-strong:text-neutral-700 dark:prose-strong:text-neutral-300">
+							<Markdown>{description}</Markdown>
+						</div>
 					</div>
 
-					{/* Responsibilities */}
-					<div>
-						<h3 className="text-lg font-semibold mb-3">Responsibilities</h3>
-						<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
-							{responsibilities.map((item, index) => (
-								<li key={index}>{item}</li>
-							))}
-						</ul>
-					</div>
-
-					{/* Qualifications */}
-					<div>
-						<h3 className="text-lg font-semibold mb-3">Qualifications</h3>
-						<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
-							{qualifications.map((item, index) => (
-								<li key={index}>{item}</li>
-							))}
-						</ul>
-					</div>
-
-					{/* Benefits */}
-					<div>
-						<h3 className="text-lg font-semibold mb-3">Benefits</h3>
-						<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
-							{benefits.map((item, index) => (
-								<li key={index}>{item}</li>
-							))}
-						</ul>
-					</div>
 
 				</div>
 
@@ -1254,13 +1216,13 @@ export function JobsGrid({ jobs }: JobsGridProps) {
               <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                 {/* Company Logo */}
                 <div className="w-full sm:w-auto flex justify-center sm:justify-start">
-                  <div className="w-20 h-20 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center">
+                  <div className="w-20 h-20 sm:w-16 sm:h-16 flex-shrink-0 flex items-center justify-center">
                     <Image
                       src={job.company.logo}
                       alt={job.company.name}
                       width={80}
                       height={80}
-                      className="w-full h-full object-contain bg-white rounded-lg p-2 sm:p-1 group-hover:scale-[1.08] transition-transform duration-150"
+                      className="w-full h-full object-contain bg-white rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
@@ -1282,6 +1244,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                         {isHotJob(job) && (
                           <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-orange-400 dark:bg-orange-700 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(194,65,12,0.5)] animate-pulse">
                             🔥 HOT
+                          </span>
+                        )}
+                        {isNewItem(job.createdAt) && (
+                          <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
+                            🆕 NEW
                           </span>
                         )}
                       </h3>

@@ -1,13 +1,18 @@
 import { Navbar } from "@/components/Navbar";
 import { CandidatesGrid } from "@/components/CandidatesGrid";
-import { candidates } from "@/data/candidates";
+import { getCandidatesFromDB } from "@/lib/data";
 
 export const metadata = {
 	title: "Candidates",
 	description: "Talented builders looking for new opportunities",
 };
 
-export default function Candidates() {
+// Revalidate every 60 seconds
+export const revalidate = 60;
+
+export default async function Candidates() {
+	const candidates = await getCandidatesFromDB();
+
 	return (
 		<>
 			<Navbar />

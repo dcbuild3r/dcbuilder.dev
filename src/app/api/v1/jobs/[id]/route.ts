@@ -9,7 +9,31 @@ type Params = { params: Promise<{ id: string }> };
 export async function GET(_request: NextRequest, { params }: Params) {
   const { id } = await params;
 
-  const [job] = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
+  const [job] = await db
+    .select({
+      id: jobs.id,
+      title: jobs.title,
+      company: jobs.company,
+      companyLogo: jobs.companyLogo,
+      link: jobs.link,
+      location: jobs.location,
+      remote: jobs.remote,
+      type: jobs.type,
+      salary: jobs.salary,
+      department: jobs.department,
+      tags: jobs.tags,
+      category: jobs.category,
+      featured: jobs.featured,
+      description: jobs.description,
+      companyWebsite: jobs.companyWebsite,
+      companyX: jobs.companyX,
+      companyGithub: jobs.companyGithub,
+      createdAt: jobs.createdAt,
+      updatedAt: jobs.updatedAt,
+    })
+    .from(jobs)
+    .where(eq(jobs.id, id))
+    .limit(1);
 
   if (!job) {
     return Response.json({ error: "Job not found" }, { status: 404 });

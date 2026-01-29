@@ -28,7 +28,27 @@ export async function GET(request: NextRequest) {
 
   const [data, countResult] = await Promise.all([
     db
-      .select()
+      .select({
+        id: jobs.id,
+        title: jobs.title,
+        company: jobs.company,
+        companyLogo: jobs.companyLogo,
+        link: jobs.link,
+        location: jobs.location,
+        remote: jobs.remote,
+        type: jobs.type,
+        salary: jobs.salary,
+        department: jobs.department,
+        tags: jobs.tags,
+        category: jobs.category,
+        featured: jobs.featured,
+        description: jobs.description,
+        companyWebsite: jobs.companyWebsite,
+        companyX: jobs.companyX,
+        companyGithub: jobs.companyGithub,
+        createdAt: jobs.createdAt,
+        updatedAt: jobs.updatedAt,
+      })
       .from(jobs)
       .where(whereClause)
       .orderBy(desc(jobs.featured), desc(jobs.createdAt))

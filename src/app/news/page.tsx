@@ -9,8 +9,11 @@ export const metadata = {
     "Curated links, blog posts, and announcements from dcbuilder's portfolio companies.",
 };
 
-export default function NewsPage() {
-  const news = getAllNews();
+// Revalidate every 60 seconds
+export const revalidate = 60;
+
+export default async function NewsPage() {
+  const news = await getAllNews();
 
   return (
     <>

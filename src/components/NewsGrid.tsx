@@ -16,6 +16,21 @@ const typeLabels: Record<NewsType, string> = {
 	announcement: "Announcements",
 };
 
+// Check if item is fresh based on platform
+// X posts: 5 days, everything else: 2 weeks
+const isFreshItem = (dateString: string | Date | undefined, platform?: string): boolean => {
+	if (!dateString) return false;
+	const date = new Date(dateString);
+	const now = new Date();
+	const cutoff = new Date();
+
+	// X posts are fresh for 5 days, others for 2 weeks
+	const daysThreshold = platform === "x" ? 5 : 14;
+	cutoff.setDate(now.getDate() - daysThreshold);
+
+	return date > cutoff;
+};
+
 interface NewsGridProps {
 	news: AggregatedNewsItem[];
 }
@@ -97,7 +112,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 			const handle = getXHandle(item.url);
 			if (handle) {
 				return (
-					<div className="relative">
+					<div className="relative group-hover:scale-[1.08] transition-transform duration-150">
 						<Image
 							src={`https://unavatar.io/twitter/${handle}`}
 							alt={handle}
@@ -114,9 +129,21 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 		switch (item.type) {
 			case "blog":
-				return <span className="text-2xl">📝</span>;
+				if (item.image) {
+					return (
+						<Image
+							src={item.image}
+							alt={item.title}
+							width={48}
+							height={48}
+							className="rounded object-cover w-12 h-12 group-hover:scale-[1.08] transition-transform duration-150"
+							unoptimized
+						/>
+					);
+				}
+				return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">📝</span>;
 			case "curated":
-				return <span className="text-2xl">🔗</span>;
+				return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">🔗</span>;
 			case "announcement":
 				if (item.companyLogo) {
 					return (
@@ -125,11 +152,11 @@ export function NewsGrid({ news }: NewsGridProps) {
 							alt={item.company || "Company"}
 							width={48}
 							height={48}
-							className="rounded"
+							className="rounded group-hover:scale-[1.08] transition-transform duration-150"
 						/>
 					);
 				}
-				return <span className="text-2xl">📢</span>;
+				return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">📢</span>;
 			default:
 				return null;
 		}
@@ -269,6 +296,11 @@ export function NewsGrid({ news }: NewsGridProps) {
 									{/* Title */}
 									<h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors flex items-center gap-2">
 										<span className="truncate">{item.title}</span>
+										{isFreshItem(item.date, item.platform) && (
+											<span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
+												✨ FRESH
+											</span>
+										)}
 										{isExternalLink(item) && (
 											<svg
 												className="w-4 h-4 flex-shrink-0 text-neutral-400"
