@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Stats {
   jobs: number;
@@ -39,6 +40,8 @@ interface Job {
   company: string;
   companyLogo?: string | null;
 }
+
+const passthroughLoader = ({ src }: { src: string }) => src;
 
 // Skeleton for analytics list items
 function AnalyticsListSkeleton({ rows = 5 }: { rows?: number }) {
@@ -316,9 +319,14 @@ export default function AdminDashboard() {
                     >
                       <div className="flex items-center gap-3">
                         {candidate?.image ? (
-                          <img
+                          <Image
                             src={candidate.image}
                             alt={candidate.name}
+                            width={32}
+                            height={32}
+                            sizes="32px"
+                            loader={passthroughLoader}
+                            unoptimized
                             className="w-8 h-8 rounded-full object-cover"
                           />
                         ) : (
@@ -367,9 +375,14 @@ export default function AdminDashboard() {
                     >
                       <div className="flex items-center gap-3">
                         {job?.companyLogo ? (
-                          <img
+                          <Image
                             src={job.companyLogo}
                             alt={job.company}
+                            width={32}
+                            height={32}
+                            sizes="32px"
+                            loader={passthroughLoader}
+                            unoptimized
                             className="w-8 h-8 rounded object-contain bg-white p-0.5"
                           />
                         ) : (

@@ -399,7 +399,6 @@ export default function AdminInvestments() {
             "Title",
             "Tier",
             "Status",
-            "Categories",
             { label: "Actions", align: "right" },
           ]}
           rows={10}
@@ -453,7 +452,6 @@ export default function AdminInvestments() {
                   onSelectionChange={setStatusFilter}
                   formatOption={(s) => s.charAt(0).toUpperCase() + s.slice(1)}
                 />
-                <th className="px-4 py-3 text-center text-sm font-medium">Star</th>
                 <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
               </tr>
             </thead>
@@ -490,15 +488,13 @@ export default function AdminInvestments() {
                       {investment.status || "active"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    <StarToggle
-                      featured={investment.featured || false}
-                      onToggle={() => handleToggleFeatured(investment)}
-                      label="investment"
-                    />
-                  </td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-end gap-2">
+                      <StarToggle
+                        featured={investment.featured || false}
+                        onToggle={() => handleToggleFeatured(investment)}
+                        label="investment"
+                      />
                       <EditButton onClick={() => handleEdit(investment)} variant={theme.buttonVariant} />
                       <DeleteButton onClick={() => handleDelete(investment.id)} />
                     </div>

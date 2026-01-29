@@ -166,7 +166,6 @@ export function MultiCombobox({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [currentInput, setCurrentInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -197,7 +196,6 @@ export function MultiCombobox({
   );
 
   useEffect(() => {
-    setCurrentInput(currentTyping);
     const debounceTimeout = setTimeout(() => {
       fetchSuggestions(currentTyping);
     }, 150);

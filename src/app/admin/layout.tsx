@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fredoka } from "next/font/google";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const fredoka = Fredoka({
   subsets: ["latin"],
@@ -44,10 +45,37 @@ export default function AdminLayout({
 
   useEffect(() => {
     const storedKey = localStorage.getItem("admin_api_key");
+    let isActive = true;
+    const finishLoading = () => {
+      if (isActive) setIsLoading(false);
+    };
     if (storedKey) {
-      validateKey(storedKey);
+      const validateStoredKey = async () => {
+        try {
+          const res = await fetch("/api/v1/admin/auth", {
+            headers: { "x-api-key": storedKey },
+          });
+          if (!isActive) return;
+          if (res.ok) {
+            setIsAuthenticated(true);
+            localStorage.setItem("admin_api_key", storedKey);
+          } else {
+            localStorage.removeItem("admin_api_key");
+            setIsAuthenticated(false);
+          }
+        } catch {
+          if (isActive) {
+            setIsAuthenticated(false);
+          }
+        }
+        finishLoading();
+      };
+      validateStoredKey();
+      return () => {
+        isActive = false;
+      };
     } else {
-      setIsLoading(false);
+      finishLoading();
     }
   }, []);
 
@@ -146,6 +174,7 @@ export default function AdminLayout({
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <Link
                 href="/"
                 className="px-3 py-1.5 rounded-full text-sm font-medium bg-cyan-100 text-cyan-600 hover:bg-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-400 dark:hover:bg-cyan-800/40 transition-colors"

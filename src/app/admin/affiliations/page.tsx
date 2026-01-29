@@ -249,8 +249,7 @@ export default function AdminAffiliations() {
         <TableSkeleton
           headers={[
             { label: "", width: "48px" },
-            "Title",
-            "Role",
+            "Title / Role",
             { label: "Actions", align: "right" },
           ]}
           rows={8}
@@ -261,18 +260,9 @@ export default function AdminAffiliations() {
           <table className="w-full">
             <thead className="bg-pink-100 dark:bg-pink-900/30">
               <tr>
-                <th className="px-2 py-3 text-left text-sm font-medium w-12">
-
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Title
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Role
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-medium">
-                  Actions
-                </th>
+                <th className="px-2 py-3 text-left text-sm font-medium w-12"></th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Title / Role</th>
+                <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
@@ -284,8 +274,10 @@ export default function AdminAffiliations() {
                   <td className="px-2 py-3">
                     <TableImage src={affiliation.logo} alt={affiliation.title} />
                   </td>
-                  <td className="px-4 py-3 text-sm">{affiliation.title}</td>
-                  <td className="px-4 py-3 text-sm">{affiliation.role}</td>
+                  <td className="px-4 py-3 text-sm">
+                    <span className="font-medium">{affiliation.title}</span>
+                    {affiliation.role && <span className="text-neutral-500 ml-2">· {affiliation.role}</span>}
+                  </td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-end gap-2">
                       <EditButton onClick={() => handleEdit(affiliation)} variant={theme.buttonVariant} />

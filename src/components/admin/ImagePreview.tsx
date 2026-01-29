@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 
@@ -10,10 +11,8 @@ interface ImageModalProps {
 
 function ImageModal({ url, onClose }: ImageModalProps) {
   const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "";
@@ -28,23 +27,7 @@ function ImageModal({ url, onClose }: ImageModalProps) {
     return () => document.removeEventListener("keydown", handleEscape);
   }, [onClose]);
 
-  // Pre-load image to check if it works
-  useEffect(() => {
-    setStatus("loading");
-    const img = new window.Image();
-    const handleLoad = () => setStatus("loaded");
-    const handleError = () => setStatus("error");
-    img.addEventListener("load", handleLoad);
-    img.addEventListener("error", handleError);
-    img.src = url;
-
-    // Cleanup to prevent memory leaks
-    return () => {
-      img.removeEventListener("load", handleLoad);
-      img.removeEventListener("error", handleError);
-      img.src = ""; // Cancel any pending load
-    };
-  }, [url]);
+  if (typeof document === "undefined") return null;
 
   const modalContent = (
     <div
@@ -94,12 +77,20 @@ function ImageModal({ url, onClose }: ImageModalProps) {
             </div>
           )}
 
-          {status === "loaded" && (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
+          {status !== "error" && (
+            <Image
               src={url}
               alt="Preview"
-              className="max-w-full max-h-[75vh] object-contain rounded-lg"
+              width={1280}
+              height={720}
+              sizes="(min-width: 1024px) 1024px, 90vw"
+              unoptimized
+              loader={({ src }) => src}
+              onLoad={() => setStatus("loaded")}
+              onError={() => setStatus("error")}
+              className={`max-w-full max-h-[75vh] object-contain rounded-lg ${
+                status === "loaded" ? "opacity-100" : "opacity-0"
+              }`}
             />
           )}
         </div>
@@ -120,7 +111,6 @@ function ImageModal({ url, onClose }: ImageModalProps) {
     </div>
   );
 
-  if (!mounted) return null;
   return createPortal(modalContent, document.body);
 }
 
@@ -273,7 +263,7 @@ export function ImageInput({
       </div>
 
       {showModal && hasUrl && (
-        <ImageModal url={value} onClose={() => setShowModal(false)} />
+        <ImageModal key={value} url={value} onClose={() => setShowModal(false)} />
       )}
     </div>
   );
@@ -293,7 +283,7 @@ export function ImagePreview({ url }: { url: string }) {
       >
         Preview
       </button>
-      {showModal && <ImageModal url={url} onClose={() => setShowModal(false)} />}
+      {showModal && <ImageModal key={url} url={url} onClose={() => setShowModal(false)} />}
     </>
   );
 }

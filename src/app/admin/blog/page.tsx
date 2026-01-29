@@ -430,10 +430,10 @@ export default function AdminBlog() {
         <TableSkeleton
           headers={[
             "Title",
-            "Date",
-            { label: "Views", className: "hidden md:table-cell" },
-            { label: "Words", className: "hidden lg:table-cell" },
             { label: "Source", className: "hidden lg:table-cell" },
+            "Date",
+            { label: "Words", className: "hidden lg:table-cell" },
+            { label: "Views", className: "hidden md:table-cell" },
             { label: "Actions", align: "right" },
           ]}
           rows={8}
@@ -479,47 +479,6 @@ export default function AdminBlog() {
                     </div>
                   )}
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  <button
-                    onClick={() => {
-                      if (sortBy === "date") {
-                        setSortOrder(sortOrder === "desc" ? "asc" : "desc");
-                      } else {
-                        setSortBy("date");
-                        setSortOrder("desc");
-                      }
-                    }}
-                    className={`flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white ${sortBy === "date" ? "text-blue-600 dark:text-blue-400" : ""}`}
-                  >
-                    <span>Date</span>
-                    {sortBy === "date" && (
-                      <svg className={`w-4 h-4 transition-transform ${sortOrder === "asc" ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    )}
-                  </button>
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium hidden md:table-cell">
-                  <button
-                    onClick={() => {
-                      if (sortBy === "views") {
-                        setSortOrder(sortOrder === "desc" ? "asc" : "desc");
-                      } else {
-                        setSortBy("views");
-                        setSortOrder("desc");
-                      }
-                    }}
-                    className={`flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white ${sortBy === "views" ? "text-blue-600 dark:text-blue-400" : ""}`}
-                  >
-                    <span>Views</span>
-                    {sortBy === "views" && (
-                      <svg className={`w-4 h-4 transition-transform ${sortOrder === "asc" ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    )}
-                  </button>
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium hidden lg:table-cell">Words</th>
                 <th className="px-4 py-3 text-left text-sm font-medium hidden lg:table-cell relative">
                   {columnSearch === "source" ? (
                     <div className="absolute top-full left-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 z-10 min-w-32 max-h-64 overflow-y-auto">
@@ -579,6 +538,47 @@ export default function AdminBlog() {
                     </button>
                   </div>
                 </th>
+                <th className="px-4 py-3 text-left text-sm font-medium">
+                  <button
+                    onClick={() => {
+                      if (sortBy === "date") {
+                        setSortOrder(sortOrder === "desc" ? "asc" : "desc");
+                      } else {
+                        setSortBy("date");
+                        setSortOrder("desc");
+                      }
+                    }}
+                    className={`flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white ${sortBy === "date" ? "text-blue-600 dark:text-blue-400" : ""}`}
+                  >
+                    <span>Date</span>
+                    {sortBy === "date" && (
+                      <svg className={`w-4 h-4 transition-transform ${sortOrder === "asc" ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    )}
+                  </button>
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium hidden lg:table-cell">Words</th>
+                <th className="px-4 py-3 text-left text-sm font-medium hidden md:table-cell">
+                  <button
+                    onClick={() => {
+                      if (sortBy === "views") {
+                        setSortOrder(sortOrder === "desc" ? "asc" : "desc");
+                      } else {
+                        setSortBy("views");
+                        setSortOrder("desc");
+                      }
+                    }}
+                    className={`flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white ${sortBy === "views" ? "text-blue-600 dark:text-blue-400" : ""}`}
+                  >
+                    <span>Views</span>
+                    {sortBy === "views" && (
+                      <svg className={`w-4 h-4 transition-transform ${sortOrder === "asc" ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    )}
+                  </button>
+                </th>
                 <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
               </tr>
             </thead>
@@ -594,13 +594,6 @@ export default function AdminBlog() {
                       <p className="text-xs text-neutral-500 font-mono">{post.slug}</p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-neutral-500">{post.date}</td>
-                  <td className="px-4 py-3 text-sm text-neutral-500 hidden md:table-cell">
-                    {blogViews[post.slug] || 0}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-neutral-500 hidden lg:table-cell">
-                    {post.wordCount?.toLocaleString()}
-                  </td>
                   <td className="px-4 py-3 text-sm hidden lg:table-cell">
                     {post.source ? (
                       <span className={`px-2 py-1 rounded-full text-xs ${getSourceColor(post.source)}`}>
@@ -609,6 +602,13 @@ export default function AdminBlog() {
                     ) : (
                       <span className="text-neutral-400">-</span>
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-neutral-500">{post.date}</td>
+                  <td className="px-4 py-3 text-sm text-neutral-500 hidden lg:table-cell">
+                    {post.wordCount?.toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-neutral-500 hidden md:table-cell">
+                    {blogViews[post.slug] || 0}
                   </td>
                   <td className="px-4 py-3 text-sm text-right">
                     <div className="flex items-center justify-end gap-2">

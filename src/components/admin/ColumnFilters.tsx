@@ -45,6 +45,7 @@ interface SearchableHeaderProps {
   sortActive?: boolean;
   sortDirection?: "asc" | "desc";
   onSort?: () => void;
+  align?: "left" | "center" | "right";
   className?: string;
 }
 
@@ -59,12 +60,17 @@ export function SearchableHeader({
   sortActive,
   sortDirection = "desc",
   onSort,
+  align = "left",
   className = "",
 }: SearchableHeaderProps) {
+  const alignClass =
+    align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left";
+  const justifyClass =
+    align === "center" ? "justify-center" : align === "right" ? "justify-end" : "";
   if (isActive) {
     return (
-      <th className={`px-4 py-3 text-left text-sm font-medium ${className}`}>
-        <div className="flex items-center gap-2">
+      <th className={`px-4 py-3 ${alignClass} text-sm font-medium whitespace-nowrap ${className}`}>
+        <div className={`flex items-center gap-2 ${justifyClass}`}>
           <input
             type="text"
             value={searchValue}
@@ -85,8 +91,8 @@ export function SearchableHeader({
   }
 
   return (
-    <th className={`px-4 py-3 text-left text-sm font-medium ${className}`}>
-      <div className="flex items-center gap-1">
+    <th className={`px-4 py-3 ${alignClass} text-sm font-medium whitespace-nowrap ${className}`}>
+      <div className={`flex items-center gap-1 ${justifyClass}`}>
         {sortable && onSort ? (
           <button
             className="flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white"
@@ -154,7 +160,7 @@ export function MultiSelectHeader({
   };
 
   return (
-    <th className={`px-4 py-3 text-left text-sm font-medium relative ${className}`}>
+    <th className={`px-4 py-3 text-left text-sm font-medium whitespace-nowrap relative ${className}`}>
       {isOpen && (
         <div className="absolute top-full left-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 z-10 min-w-32 max-h-64 overflow-y-auto">
           <div className="flex items-center justify-between mb-2">
@@ -274,7 +280,7 @@ export function SearchableMultiSelectHeader({
   };
 
   return (
-    <th className={`px-4 py-3 text-left text-sm font-medium relative ${className}`}>
+    <th className={`px-4 py-3 text-left text-sm font-medium whitespace-nowrap relative ${className}`}>
       {isOpen && (
         <div className="absolute top-full left-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 z-10 min-w-48 max-h-80 flex flex-col">
           <div className="flex items-center justify-between mb-2">

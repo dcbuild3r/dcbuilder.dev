@@ -2,12 +2,33 @@
 
 import { ReactNode } from "react";
 
+// Icons matching the real column filter icons
+const SearchIcon = () => (
+  <svg className="w-3.5 h-3.5 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+  </svg>
+);
+
+const FilterIcon = () => (
+  <svg className="w-3.5 h-3.5 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+  </svg>
+);
+
+const SortIcon = () => (
+  <span className="text-neutral-400">↕</span>
+);
+
 // Header definition can be a simple string or object with more control
 interface HeaderDef {
   label: string;
   className?: string;
   align?: "left" | "center" | "right";
   width?: string;
+  // Show placeholder icons to prevent layout shift
+  sortable?: boolean;
+  searchable?: boolean;
+  filterable?: boolean;
 }
 
 interface TableSkeletonProps {
@@ -29,7 +50,7 @@ function renderHeader(header: string | HeaderDef | ReactNode, index: number): Re
   if (typeof header === "string") {
     return (
       <th key={index} className="px-4 py-3 text-left text-sm font-medium">
-        {header}
+        <span>{header}</span>
       </th>
     );
   }
@@ -38,13 +59,27 @@ function renderHeader(header: string | HeaderDef | ReactNode, index: number): Re
   if (header && typeof header === "object" && "label" in header) {
     const def = header as HeaderDef;
     const alignClass = def.align === "right" ? "text-right" : def.align === "center" ? "text-center" : "text-left";
+    const justifyClass = def.align === "right" ? "justify-end" : def.align === "center" ? "justify-center" : "";
+
+    // Render with icons if any are specified
+    const hasIcons = def.sortable || def.searchable || def.filterable;
+
     return (
       <th
         key={index}
         className={`px-4 py-3 text-sm font-medium ${alignClass} ${def.className || ""}`}
         style={def.width ? { width: def.width } : undefined}
       >
-        {def.label}
+        {hasIcons ? (
+          <div className={`flex items-center gap-1 ${justifyClass}`}>
+            <span>{def.label}</span>
+            {def.sortable && <SortIcon />}
+            {def.searchable && <span className="p-1"><SearchIcon /></span>}
+            {def.filterable && <span className="p-1"><FilterIcon /></span>}
+          </div>
+        ) : (
+          def.label
+        )}
       </th>
     );
   }
@@ -99,6 +134,34 @@ export function SkeletonRow({ columns }: { columns: number }) {
         </td>
       ))}
     </tr>
+  );
+}
+
+// Skeleton rows to use inside an existing table - prevents header DOM changes
+interface SkeletonRowsProps {
+  columns: number;
+  rows?: number;
+  rowHeight?: string;
+}
+
+const defaultWidths = [75, 60, 85, 70, 55, 80, 65, 90, 50, 72];
+
+export function SkeletonRows({ columns, rows = 8, rowHeight = "h-[60px]" }: SkeletonRowsProps) {
+  return (
+    <>
+      {Array.from({ length: rows }).map((_, rowIndex) => (
+        <tr key={rowIndex} className={rowHeight}>
+          {Array.from({ length: columns }).map((_, colIndex) => (
+            <td key={colIndex} className="px-4 py-3">
+              <div
+                className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"
+                style={{ width: `${defaultWidths[(rowIndex + colIndex) % defaultWidths.length]}%` }}
+              />
+            </td>
+          ))}
+        </tr>
+      ))}
+    </>
   );
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { ButtonVariant, BUTTON_VARIANTS } from "@/lib/admin-themes";
 
 // Base action button component
@@ -178,7 +179,18 @@ export function TableImage({ src, alt, rounded = "default" }: TableImageProps) {
   const roundedClass = rounded === "full" ? "rounded-full" : "rounded";
 
   if (src) {
-    return <img src={src} alt={alt} className={`w-8 h-8 ${roundedClass} object-cover`} />;
+    return (
+      <Image
+        src={src}
+        alt={alt}
+        width={32}
+        height={32}
+        sizes="32px"
+        loader={({ src: imageSrc }) => imageSrc}
+        unoptimized
+        className={`w-8 h-8 ${roundedClass} object-cover`}
+      />
+    );
   }
   return <div className={`w-8 h-8 ${roundedClass} bg-neutral-200 dark:bg-neutral-700`} aria-hidden="true" />;
 }
