@@ -139,6 +139,7 @@ export const investments = pgTable(
     tier: text("tier"), // 1, 2, 3, 4
     featured: boolean("featured").default(false),
     status: text("status").default("active"), // active, inactive, acquired
+    website: text("website"),
     x: text("x"),
     github: text("github"),
     createdAt: timestamp("created_at").defaultNow().notNull(),

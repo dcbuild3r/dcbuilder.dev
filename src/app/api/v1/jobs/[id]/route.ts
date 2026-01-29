@@ -52,9 +52,12 @@ export async function PUT(request: NextRequest, { params }: Params) {
   try {
     const body = (await request.json()) as Partial<NewJob>;
 
+    // Remove fields that shouldn't be updated directly
+    const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...updateData } = body as Record<string, unknown>;
+
     const [updated] = await db
       .update(jobs)
-      .set({ ...body, updatedAt: new Date() })
+      .set({ ...updateData, updatedAt: new Date() } as Partial<NewJob>)
       .where(eq(jobs.id, id))
       .returning();
 

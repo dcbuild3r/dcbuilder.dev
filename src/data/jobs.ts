@@ -6,9 +6,11 @@ export type JobTag =
 	| "hot"
 	| "top"
 	| "ai"
+	| "ml"
 	| "mev"
 	| "health"
 	| "cryptography"
+	| "zkp"
 	| "protocol"
 	| "defi"
 	| "infra"
@@ -42,15 +44,20 @@ export type JobTag =
 	| "frontend"
 	| "backend"
 	| "fullstack"
-	| "rust";
+	| "rust"
+	| "mobile"
+	| "android"
+	| "ios";
 
 export const tagLabels: Record<JobTag, string> = {
 	hot: "🔥 HOT",
 	top: "⭐ TOP",
 	ai: "AI",
+	ml: "ML",
 	mev: "MEV",
 	health: "Health",
 	cryptography: "Cryptography",
+	zkp: "ZKP",
 	protocol: "Protocol",
 	defi: "DeFi",
 	infra: "Infrastructure",
@@ -85,6 +92,9 @@ export const tagLabels: Record<JobTag, string> = {
 	backend: "Backend",
 	fullstack: "Full Stack",
 	rust: "Rust",
+	mobile: "Mobile",
+	android: "Android",
+	ios: "iOS",
 };
 
 // Job tiers match portfolio tiers: 1-4 for portfolio companies, 5 for network, 6 for ecosystem

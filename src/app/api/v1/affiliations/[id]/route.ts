@@ -35,10 +35,13 @@ export async function PUT(
   try {
     const body = await request.json();
 
+    // Filter out fields that shouldn't be updated directly
+    const { id: _id, createdAt, updatedAt, ...updateData } = body;
+
     const [updated] = await db
       .update(affiliations)
       .set({
-        ...body,
+        ...updateData,
         updatedAt: new Date(),
       })
       .where(eq(affiliations.id, id))

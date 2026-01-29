@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 
 interface ImageModalProps {
@@ -121,6 +121,7 @@ interface ImageInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   required?: boolean;
+  folder?: string; // Subfolder in R2 bucket (e.g., "companies", "candidates")
 }
 
 export function ImageInput({
@@ -129,9 +130,58 @@ export function ImageInput({
   onChange,
   placeholder = "https://example.com/image.png",
   required = false,
+  folder = "uploads",
 }: ImageInputProps) {
   const [showModal, setShowModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const hasUrl = value && value.trim() !== "";
+
+  const getApiKey = useCallback(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("admin_api_key") || "";
+    }
+    return "";
+  }, []);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", folder);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "x-api-key": getApiKey(),
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      onChange(data.url);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   return (
     <div>
@@ -139,30 +189,78 @@ export function ImageInput({
         {label}
         {required && " *"}
       </label>
-      <div className="flex items-center gap-2">
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-        />
-        <button
-          type="button"
-          onClick={() => {
-            if (hasUrl) {
-              setShowModal(true);
-            }
-          }}
-          disabled={!hasUrl}
-          className={`px-3 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
-            hasUrl
-              ? "bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400"
-              : "bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600 cursor-not-allowed"
-          }`}
-        >
-          Preview
-        </button>
+      <div className="flex flex-col gap-2">
+        {/* URL input row */}
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="flex-1 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              if (hasUrl) {
+                setShowModal(true);
+              }
+            }}
+            disabled={!hasUrl}
+            className={`px-3 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
+              hasUrl
+                ? "bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400"
+                : "bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600 cursor-not-allowed"
+            }`}
+          >
+            Preview
+          </button>
+        </div>
+
+        {/* Upload button row */}
+        <div className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+            onChange={handleFileSelect}
+            className="hidden"
+            id={`upload-${label.replace(/\s+/g, "-").toLowerCase()}`}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className={`px-3 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${
+              uploading
+                ? "bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600 cursor-not-allowed"
+                : "bg-green-100 hover:bg-green-200 text-green-700 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400"
+            }`}
+          >
+            {uploading ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Uploading...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Upload Image
+              </>
+            )}
+          </button>
+          <span className="text-xs text-neutral-500">Max 5MB · JPG, PNG, GIF, WebP, SVG</span>
+        </div>
+
+        {/* Error message */}
+        {uploadError && (
+          <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>
+        )}
       </div>
 
       {showModal && hasUrl && (

@@ -13,6 +13,7 @@ interface Investment {
 	tier: 1 | 2 | 3 | 4;
 	featured: boolean;
 	status?: string | null;
+	website?: string | null;
 	x?: string | null;
 	github?: string | null;
 }
@@ -87,19 +88,26 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 			];
 		}
 
-		// Relevance: group by tier (deterministic order), defunct last
+		// Relevance: featured first (by tier), then non-featured (by tier), defunct last
+		const featured = active.filter((i) => i.featured);
+		const nonFeatured = active.filter((i) => !i.featured);
+
+		// Sort featured by tier
+		const sortedFeatured = featured.sort((a, b) => a.tier - b.tier);
+
+		// Group non-featured by tier
 		const tierGroups: Record<number, Investment[]> = {};
-		active.forEach((inv) => {
+		nonFeatured.forEach((inv) => {
 			if (!tierGroups[inv.tier]) tierGroups[inv.tier] = [];
 			tierGroups[inv.tier].push(inv);
 		});
 
-		const sortedActive = Object.keys(tierGroups)
+		const sortedNonFeatured = Object.keys(tierGroups)
 			.map(Number)
 			.sort((a, b) => a - b)
 			.flatMap((tier) => tierGroups[tier]);
 
-		return [...sortedActive, ...defunct];
+		return [...sortedFeatured, ...sortedNonFeatured, ...defunct];
 	}, [filteredInvestments, sortBy]);
 
 	// Shuffle in useEffect after hydration (React-safe)
@@ -114,19 +122,35 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 		const active = filteredInvestments.filter((i) => i.status !== "defunct");
 		const defunct = filteredInvestments.filter((i) => i.status === "defunct");
 
-		// Group active by tier and shuffle each group
+		// Featured first (shuffled within tier groups), then non-featured (shuffled within tier groups)
+		const featured = active.filter((i) => i.featured);
+		const nonFeatured = active.filter((i) => !i.featured);
+
+		// Group featured by tier and shuffle each group
+		const featuredTierGroups: Record<number, Investment[]> = {};
+		featured.forEach((inv) => {
+			if (!featuredTierGroups[inv.tier]) featuredTierGroups[inv.tier] = [];
+			featuredTierGroups[inv.tier].push(inv);
+		});
+
+		const shuffledFeatured = Object.keys(featuredTierGroups)
+			.map(Number)
+			.sort((a, b) => a - b)
+			.flatMap((tier) => shuffleArray(featuredTierGroups[tier]));
+
+		// Group non-featured by tier and shuffle each group
 		const tierGroups: Record<number, Investment[]> = {};
-		active.forEach((inv) => {
+		nonFeatured.forEach((inv) => {
 			if (!tierGroups[inv.tier]) tierGroups[inv.tier] = [];
 			tierGroups[inv.tier].push(inv);
 		});
 
-		const shuffledActive = Object.keys(tierGroups)
+		const shuffledNonFeatured = Object.keys(tierGroups)
 			.map(Number)
 			.sort((a, b) => a - b)
 			.flatMap((tier) => shuffleArray(tierGroups[tier]));
 
-		setShuffledInvestments([...shuffledActive, ...shuffleArray(defunct)]);
+		setShuffledInvestments([...shuffledFeatured, ...shuffledNonFeatured, ...shuffleArray(defunct)]);
 	}, [filteredInvestments, sortBy, isHydrated]);
 
 	// Use shuffled for relevance after hydration, otherwise use deterministic sort
@@ -206,7 +230,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 						onClick={(e) => {
 							// Don't navigate if clicking on nested links
 							if ((e.target as HTMLElement).closest('a')) return;
-							if (investment.imageUrl) window.open(investment.imageUrl, '_blank', 'noopener,noreferrer');
+							if (investment.website) window.open(investment.website, '_blank', 'noopener,noreferrer');
 						}}
 						role="link"
 						tabIndex={0}
@@ -214,7 +238,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 						onKeyDown={(e) => {
 							if (e.key === 'Enter' || e.key === ' ') {
 								e.preventDefault();
-								if (investment.imageUrl) window.open(investment.imageUrl, '_blank', 'noopener,noreferrer');
+								if (investment.website) window.open(investment.website, '_blank', 'noopener,noreferrer');
 							}
 						}}
 						className={`group p-6 rounded-xl border transition-colors flex flex-col items-center text-center cursor-pointer ${
@@ -246,7 +270,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 						</div>
 						<h3 className="font-semibold mb-2">
 							{investment.title}
-							{investment.tier === 1 && (
+							{investment.featured && (
 								<span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
 									★
 								</span>
@@ -263,9 +287,9 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 						{/* Social Links */}
 						<div className="flex items-center gap-1">
 							{/* Website */}
-							{investment.imageUrl && (
+							{investment.website && (
 								<a
-									href={investment.imageUrl}
+									href={investment.website}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
@@ -341,7 +365,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 							key={investment.title}
 							onClick={(e) => {
 								if ((e.target as HTMLElement).closest('a')) return;
-								if (investment.imageUrl) window.open(investment.imageUrl, '_blank', 'noopener,noreferrer');
+								if (investment.website) window.open(investment.website, '_blank', 'noopener,noreferrer');
 							}}
 							role="link"
 							tabIndex={0}
@@ -349,7 +373,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 							onKeyDown={(e) => {
 								if (e.key === 'Enter' || e.key === ' ') {
 									e.preventDefault();
-									if (investment.imageUrl) window.open(investment.imageUrl, '_blank', 'noopener,noreferrer');
+									if (investment.website) window.open(investment.website, '_blank', 'noopener,noreferrer');
 								}
 							}}
 							className="group p-6 rounded-xl border transition-colors flex flex-col items-center text-center cursor-pointer border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
@@ -377,9 +401,9 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 								{investment.description}
 							</p>
 							<div className="flex items-center gap-1">
-								{investment.imageUrl && (
+								{investment.website && (
 									<a
-										href={investment.imageUrl}
+										href={investment.website}
 										target="_blank"
 										rel="noopener noreferrer"
 										className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"

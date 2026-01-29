@@ -12,6 +12,7 @@ interface Investment {
   tier: string | null;
   featured: boolean | null;
   status: string | null;
+  website: string | null;
   x: string | null;
   github: string | null;
   createdAt: string;
@@ -24,6 +25,7 @@ const emptyInvestment: Partial<Investment> = {
   tier: "2",
   featured: false,
   status: "active",
+  website: "",
   x: "",
   github: "",
 };
@@ -36,6 +38,7 @@ export default function AdminInvestments() {
     useState<Partial<Investment> | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const getApiKey = () => localStorage.getItem("admin_api_key") || "";
 
@@ -220,6 +223,22 @@ export default function AdminInvestments() {
             </div>
 
             <div>
+              <label className="block text-sm font-medium mb-1">Website</label>
+              <input
+                type="text"
+                value={editingInvestment.website || ""}
+                onChange={(e) =>
+                  setEditingInvestment({
+                    ...editingInvestment,
+                    website: e.target.value,
+                  })
+                }
+                className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div>
               <label className="block text-sm font-medium mb-1">X (Twitter)</label>
               <input
                 type="text"
@@ -307,6 +326,11 @@ export default function AdminInvestments() {
     );
   }
 
+  const filteredInvestments = investments.filter(
+    (investment) =>
+      investment.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -321,6 +345,14 @@ export default function AdminInvestments() {
           Add Investment
         </button>
       </div>
+
+      <input
+        type="text"
+        placeholder="Search investments..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full max-w-md px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+      />
 
       {loading ? (
         <div className="text-center py-8 text-neutral-500">Loading...</div>
@@ -350,7 +382,7 @@ export default function AdminInvestments() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-              {investments.map((investment) => (
+              {filteredInvestments.map((investment) => (
                 <tr
                   key={investment.id}
                   className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
