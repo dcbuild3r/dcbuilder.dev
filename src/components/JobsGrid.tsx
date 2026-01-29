@@ -814,6 +814,9 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     showFeaturedOnly,
   ]);
 
+  // Include today's date so shuffle changes daily (stable after hydration)
+  const [shuffleSeed] = useState(() => new Date().toISOString().split("T")[0]);
+
   const filterKey = useMemo(
     () =>
       [
@@ -823,8 +826,9 @@ export function JobsGrid({ jobs }: JobsGridProps) {
         searchQuery,
         selectedTags.join(","),
         showFeaturedOnly,
+        shuffleSeed,
       ].join("|"),
-    [filterCategory, selectedCompany, selectedLocation, searchQuery, selectedTags, showFeaturedOnly],
+    [filterCategory, selectedCompany, selectedLocation, searchQuery, selectedTags, showFeaturedOnly, shuffleSeed],
   );
 
   // Helper to check if job is hot (manual tag OR data-driven)

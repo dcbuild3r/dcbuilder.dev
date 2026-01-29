@@ -268,6 +268,9 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		});
 	}, [candidates, availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]);
 
+	// Include today's date so shuffle changes daily (stable after hydration)
+	const [shuffleSeed] = useState(() => new Date().toISOString().split("T")[0]);
+
 	const filterKey = useMemo(
 		() =>
 			[
@@ -276,8 +279,9 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				roleFilter,
 				searchQuery,
 				selectedTags.join(","),
+				shuffleSeed,
 			].join("|"),
-		[availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]
+		[availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags, shuffleSeed]
 	);
 
 	// Helper to check skill tags
