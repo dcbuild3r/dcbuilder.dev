@@ -4,20 +4,19 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Mount flag prevents SSR hydration mismatch.
     setMounted(true);
   }, []);
 
+  // Prevent hydration mismatch by rendering placeholder until mounted
   if (!mounted) {
     return <div className="w-9 h-9" />;
   }
 
-  const currentTheme = resolvedTheme ?? theme;
-  const isDark = currentTheme === "dark";
+  const isDark = resolvedTheme === "dark";
 
   return (
     <button
