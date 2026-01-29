@@ -54,6 +54,10 @@ export default function AdminInvestments() {
   }, []);
 
   useEffect(() => {
+    document.title = "Admin | dcbuilder.eth";
+  }, []);
+
+  useEffect(() => {
     fetchInvestments();
   }, [fetchInvestments]);
 

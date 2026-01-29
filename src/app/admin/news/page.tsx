@@ -86,6 +86,10 @@ export default function AdminNews() {
   }, []);
 
   useEffect(() => {
+    document.title = "Admin | dcbuilder.eth";
+  }, []);
+
+  useEffect(() => {
     fetchData();
   }, [fetchData]);
 

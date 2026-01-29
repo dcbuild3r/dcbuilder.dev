@@ -112,6 +112,10 @@ export default function AdminJobs() {
   }, []);
 
   useEffect(() => {
+    document.title = "Admin | dcbuilder.eth";
+  }, []);
+
+  useEffect(() => {
     fetchJobs();
     fetchAnalytics();
   }, [fetchJobs, fetchAnalytics]);

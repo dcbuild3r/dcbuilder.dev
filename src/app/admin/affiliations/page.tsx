@@ -47,6 +47,10 @@ export default function AdminAffiliations() {
   }, []);
 
   useEffect(() => {
+    document.title = "Admin | dcbuilder.eth";
+  }, []);
+
+  useEffect(() => {
     fetchAffiliations();
   }, [fetchAffiliations]);
 

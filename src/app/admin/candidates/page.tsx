@@ -141,6 +141,10 @@ export default function AdminCandidates() {
   }, []);
 
   useEffect(() => {
+    document.title = "Admin | dcbuilder.eth";
+  }, []);
+
+  useEffect(() => {
     fetchCandidates();
     fetchAnalytics();
   }, [fetchCandidates, fetchAnalytics]);
@@ -584,18 +588,12 @@ export default function AdminCandidates() {
                 <th className="px-2 py-3 text-left text-sm font-medium w-12">
 
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Title
-                </th>
+                <SortHeader field="name">Name</SortHeader>
+                <SortHeader field="title">Title</SortHeader>
                 <th className="px-4 py-3 text-left text-sm font-medium">
                   Experience
                 </th>
-                <th className="px-4 py-3 text-center text-sm font-medium">
-                  Views (7d)
-                </th>
+                <SortHeader field="views" center>Views (7d)</SortHeader>
                 <th className="px-4 py-3 text-center text-sm font-medium">
                   Star
                 </th>
@@ -605,6 +603,7 @@ export default function AdminCandidates() {
                 <th className="px-4 py-3 text-left text-sm font-medium">
                   Available
                 </th>
+                <SortHeader field="createdAt">Created</SortHeader>
                 <th className="px-4 py-3 text-right text-sm font-medium">
                   Actions
                 </th>
@@ -675,6 +674,9 @@ export default function AdminCandidates() {
                     >
                       {candidate.available !== false ? "Yes" : "No"}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-neutral-500">
+                    {new Date(candidate.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3 text-sm text-right">
                     <button

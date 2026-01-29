@@ -12,9 +12,44 @@ interface Stats {
   affiliations: number;
 }
 
+interface SiteStats {
+  pageviews7d: number;
+  pageviews30d: number;
+  uniqueVisitors7d: number;
+  uniqueVisitors30d: number;
+}
+
+interface AnalyticsData {
+  jobClicks: Record<string, number>;
+  candidateViews: Record<string, number>;
+  siteStats?: SiteStats;
+}
+
+interface Candidate {
+  id: string;
+  name: string;
+  title: string | null;
+  image: string | null;
+}
+
+interface Job {
+  id: string;
+  title: string;
+  company: { name: string; logo: string };
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
+
+  const getApiKey = () => localStorage.getItem("admin_api_key") || "";
+
+  useEffect(() => {
+    document.title = "Admin | dcbuilder.eth";
+  }, []);
 
   useEffect(() => {
     async function fetchStats() {
@@ -47,13 +82,31 @@ export default function AdminDashboard() {
           investments: investmentsData.data?.length || 0,
           affiliations: affiliationsData.data?.length || 0,
         });
+
+        setCandidates(candidatesData.data || []);
+        setJobs(jobsData.data || []);
       } catch (error) {
         console.error("Failed to fetch stats:", error);
       }
       setLoading(false);
     }
 
+    async function fetchAnalytics() {
+      try {
+        const res = await fetch("/api/v1/admin/analytics", {
+          headers: { "x-api-key": getApiKey() },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAnalytics(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch analytics:", error);
+      }
+    }
+
     fetchStats();
+    fetchAnalytics();
   }, []);
 
   const statCards = [
@@ -103,6 +156,28 @@ export default function AdminDashboard() {
           Manage your site content
         </p>
       </div>
+
+      {/* Site Traffic Stats */}
+      {analytics?.siteStats && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white">
+            <p className="text-sm opacity-80">Pageviews (7d)</p>
+            <p className="text-3xl font-bold">{analytics.siteStats.pageviews7d.toLocaleString()}</p>
+          </div>
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-4 text-white">
+            <p className="text-sm opacity-80">Unique Visitors (7d)</p>
+            <p className="text-3xl font-bold">{analytics.siteStats.uniqueVisitors7d.toLocaleString()}</p>
+          </div>
+          <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl p-4 text-white">
+            <p className="text-sm opacity-80">Pageviews (30d)</p>
+            <p className="text-3xl font-bold">{analytics.siteStats.pageviews30d.toLocaleString()}</p>
+          </div>
+          <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-4 text-white">
+            <p className="text-sm opacity-80">Unique Visitors (30d)</p>
+            <p className="text-3xl font-bold">{analytics.siteStats.uniqueVisitors30d.toLocaleString()}</p>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -168,6 +243,105 @@ export default function AdminDashboard() {
           </Link>
         </div>
       </div>
+
+      {/* Analytics Section */}
+      {analytics && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Top Viewed Candidates */}
+          <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <span className="text-green-500">👁</span> Top Viewed Candidates (7d)
+            </h2>
+            <div className="space-y-3">
+              {Object.entries(analytics.candidateViews || {})
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 10)
+                .map(([candidateId, views]) => {
+                  const candidate = candidates.find((c) => c.id === candidateId);
+                  return (
+                    <div
+                      key={candidateId}
+                      className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800"
+                    >
+                      <div className="flex items-center gap-3">
+                        {candidate?.image ? (
+                          <img
+                            src={candidate.image}
+                            alt={candidate.name}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+                        )}
+                        <div>
+                          <p className="font-medium text-sm">
+                            {candidate?.name || candidateId}
+                          </p>
+                          {candidate?.title && (
+                            <p className="text-xs text-neutral-500">{candidate.title}</p>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-green-600 dark:text-green-400 font-semibold">
+                        {views} views
+                      </span>
+                    </div>
+                  );
+                })}
+              {Object.keys(analytics.candidateViews || {}).length === 0 && (
+                <p className="text-neutral-500 text-sm">No views data available</p>
+              )}
+            </div>
+          </div>
+
+          {/* Top Clicked Jobs */}
+          <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <span className="text-blue-500">🔥</span> Top Applied Jobs (7d)
+            </h2>
+            <div className="space-y-3">
+              {Object.entries(analytics.jobClicks || {})
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 10)
+                .map(([jobId, clicks]) => {
+                  const job = jobs.find((j) => j.id === jobId);
+                  return (
+                    <div
+                      key={jobId}
+                      className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800"
+                    >
+                      <div className="flex items-center gap-3">
+                        {job?.company?.logo ? (
+                          <img
+                            src={job.company.logo}
+                            alt={job.company.name}
+                            className="w-8 h-8 rounded object-contain bg-white p-0.5"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded bg-neutral-200 dark:bg-neutral-700" />
+                        )}
+                        <div>
+                          <p className="font-medium text-sm">
+                            {job?.title || jobId}
+                          </p>
+                          {job?.company?.name && (
+                            <p className="text-xs text-neutral-500">{job.company.name}</p>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                        {clicks} clicks
+                      </span>
+                    </div>
+                  );
+                })}
+              {Object.keys(analytics.jobClicks || {}).length === 0 && (
+                <p className="text-neutral-500 text-sm">No clicks data available</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
