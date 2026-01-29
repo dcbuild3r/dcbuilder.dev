@@ -4,6 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Combobox, MultiCombobox } from "@/components/admin/Combobox";
 import { ImageInput } from "@/components/admin/ImagePreview";
+import { MultiSelectHeader, SearchableMultiSelectHeader, useColumnFilters } from "@/components/admin/ColumnFilters";
+import { getSkillColor } from "@/lib/skill-colors";
+import { TableSkeleton, withMinDelay } from "@/components/admin/TableSkeleton";
 
 interface Job {
   id: string;
@@ -60,6 +63,18 @@ export default function AdminJobs() {
   const [jobClicks, setJobClicks] = useState<Record<string, number>>({});
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [columnSearch, setColumnSearch] = useState<string | null>(null);
+  const [columnSearchValue, setColumnSearchValue] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const [tagsFilter, setTagsFilter] = useState<string[]>([]);
+  const [featuredFilter, setFeaturedFilter] = useState<string[]>([]);
+
+  const columnFilters = useColumnFilters();
+
+  const categoryOptions = ["portfolio", "network"];
+  const featuredOptions = ["yes", "no"];
+  // Get unique tags from all jobs
+  const tagOptions = [...new Set(jobs.flatMap(j => j.tags || []).filter(Boolean))];
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -84,12 +99,59 @@ export default function AdminJobs() {
     </th>
   );
 
+  const SearchableSortHeader = ({ field, searchKey, children }: { field: SortField; searchKey: string; children: React.ReactNode }) => (
+    <th className="px-4 py-3 text-left text-sm font-medium">
+      {columnSearch === searchKey ? (
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={columnSearchValue}
+            onChange={(e) => setColumnSearchValue(e.target.value)}
+            placeholder={`Search ${searchKey}...`}
+            className="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700"
+            autoFocus
+          />
+          <button
+            onClick={() => { setColumnSearch(null); setColumnSearchValue(""); }}
+            className="text-neutral-400 hover:text-neutral-600"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-1">
+          <button
+            className="flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white"
+            onClick={() => handleSort(field)}
+          >
+            {children}
+            <span className="text-neutral-400">
+              {sortField === field ? (sortDirection === "desc" ? "↓" : "↑") : "↕"}
+            </span>
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setColumnSearch(searchKey); setColumnSearchValue(""); }}
+            className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+            title={`Search by ${searchKey}`}
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+            </svg>
+          </button>
+        </div>
+      )}
+    </th>
+  );
+
   const getApiKey = () => localStorage.getItem("admin_api_key") || "";
 
   const fetchJobs = useCallback(async () => {
     try {
-      const res = await fetch("/api/v1/jobs?limit=500");
-      const data = await res.json();
+      const data = await withMinDelay(
+        fetch("/api/v1/jobs?limit=500").then(res => res.json())
+      );
       setJobs(data.data || []);
     } catch (error) {
       console.error("Failed to fetch jobs:", error);
@@ -236,11 +298,41 @@ export default function AdminJobs() {
   };
 
   const filteredJobs = jobs
-    .filter(
-      (job) =>
-        job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.company.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    .filter((job) => {
+      // Global search
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        if (!job.title.toLowerCase().includes(query) && !job.company.toLowerCase().includes(query)) {
+          return false;
+        }
+      }
+      // Column-specific search
+      if (columnSearch && columnSearchValue) {
+        const value = columnSearchValue.toLowerCase();
+        if (columnSearch === "title" && !job.title.toLowerCase().includes(value)) return false;
+        if (columnSearch === "company" && !job.company.toLowerCase().includes(value)) return false;
+      }
+      // Category multi-select filter
+      if (categoryFilter.length > 0 && !categoryFilter.includes(job.category)) {
+        return false;
+      }
+      // Tags multi-select filter
+      if (tagsFilter.length > 0) {
+        const jobTags = job.tags || [];
+        if (!tagsFilter.some(tag => jobTags.includes(tag))) {
+          return false;
+        }
+      }
+      // Featured filter
+      if (featuredFilter.length > 0) {
+        const isFeatured = job.featured === true;
+        const wantFeatured = featuredFilter.includes("yes");
+        const wantNotFeatured = featuredFilter.includes("no");
+        if (wantFeatured && !wantNotFeatured && !isFeatured) return false;
+        if (wantNotFeatured && !wantFeatured && isFeatured) return false;
+      }
+      return true;
+    })
     .sort((a, b) => {
       if (!sortField) return 0;
       const dir = sortDirection === "asc" ? 1 : -1;
@@ -535,16 +627,103 @@ export default function AdminJobs() {
 
       {/* Jobs Table */}
       {loading ? (
-        <div className="text-center py-8 text-neutral-500">Loading...</div>
+        <TableSkeleton columns={7} rows={10} headerColor="bg-blue-100 dark:bg-blue-900/30" headerHeight="h-[64px]" />
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-neutral-50 dark:bg-neutral-800">
+            <thead className="bg-blue-100 dark:bg-blue-900/30">
               <tr>
-                <SortHeader field="title">Title</SortHeader>
+                <SearchableSortHeader field="title" searchKey="title">Title</SearchableSortHeader>
                 <th className="px-2 py-3 text-left text-sm font-medium w-12"></th>
-                <SortHeader field="company">Company</SortHeader>
-                <SortHeader field="category">Category</SortHeader>
+                <SearchableSortHeader field="company" searchKey="company">Company</SearchableSortHeader>
+                <th className="px-4 py-3 text-left text-sm font-medium relative">
+                  {columnSearch === "category" ? (
+                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 z-10 min-w-32">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-neutral-500">Filter by category</span>
+                        <button
+                          onClick={() => setColumnSearch(null)}
+                          className="text-neutral-400 hover:text-neutral-600"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        </button>
+                      </div>
+                      {categoryOptions.map((cat) => (
+                        <label key={cat} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 px-1 rounded">
+                          <input
+                            type="checkbox"
+                            checked={categoryFilter.includes(cat)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setCategoryFilter([...categoryFilter, cat]);
+                              } else {
+                                setCategoryFilter(categoryFilter.filter((c) => c !== cat));
+                              }
+                            }}
+                            className="rounded"
+                          />
+                          <span className="text-sm capitalize">{cat}</span>
+                        </label>
+                      ))}
+                      {categoryFilter.length > 0 && (
+                        <button
+                          onClick={() => setCategoryFilter([])}
+                          className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+                        >
+                          Clear all
+                        </button>
+                      )}
+                    </div>
+                  ) : null}
+                  <div className="flex items-center gap-1">
+                    <button
+                      className="flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white"
+                      onClick={() => handleSort("category")}
+                    >
+                      <span>Category</span>
+                      <span className="text-neutral-400">
+                        {sortField === "category" ? (sortDirection === "desc" ? "↓" : "↑") : "↕"}
+                      </span>
+                    </button>
+                    {categoryFilter.length > 0 && (
+                      <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 rounded-full">
+                        {categoryFilter.length}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => setColumnSearch(columnSearch === "category" ? null : "category")}
+                      className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                      title="Filter by category"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                      </svg>
+                    </button>
+                  </div>
+                </th>
+                <SearchableMultiSelectHeader
+                  label="Tags"
+                  filterKey="tags"
+                  options={tagOptions}
+                  selectedValues={tagsFilter}
+                  isOpen={columnFilters.isActive("tags")}
+                  onToggle={() => columnFilters.toggleFilter("tags")}
+                  onClose={columnFilters.closeSearch}
+                  onSelectionChange={setTagsFilter}
+                />
+                <MultiSelectHeader
+                  label="Featured"
+                  filterKey="featured"
+                  options={featuredOptions}
+                  selectedValues={featuredFilter}
+                  isOpen={columnFilters.isActive("featured")}
+                  onToggle={() => columnFilters.toggleFilter("featured")}
+                  onClose={columnFilters.closeSearch}
+                  onSelectionChange={setFeaturedFilter}
+                  formatOption={(o) => o.charAt(0).toUpperCase() + o.slice(1)}
+                />
                 <th
                   className="px-4 py-3 text-center text-sm font-medium cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 select-none"
                   onClick={() => handleSort("clicks")}
@@ -585,11 +764,30 @@ export default function AdminJobs() {
                       className={`px-2 py-1 rounded-full text-xs ${
                         job.category === "portfolio"
                           ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          : "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400"
+                          : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                       }`}
                     >
                       {job.category}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex flex-wrap gap-1">
+                      {(job.tags || []).slice(0, 3).map((tag) => (
+                        <span key={tag} className={`px-1.5 py-0.5 rounded text-xs ${getSkillColor(tag)}`}>
+                          {tag}
+                        </span>
+                      ))}
+                      {(job.tags || []).length > 3 && (
+                        <span className="text-xs text-neutral-400">+{(job.tags || []).length - 3}</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-center">
+                    {job.featured ? (
+                      <span className="text-yellow-500">★</span>
+                    ) : (
+                      <span className="text-neutral-300">☆</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
                     <span className={`font-medium ${jobClicks[job.id] > 0 ? "text-green-600 dark:text-green-400" : "text-neutral-400"}`}>
@@ -603,8 +801,8 @@ export default function AdminJobs() {
                         title={job.featured ? "Remove star" : "Star this job"}
                         className={`p-1.5 rounded-lg transition-colors ${
                           job.featured
-                            ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400"
-                            : "bg-neutral-100 text-neutral-400 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                            ? "bg-amber-50 text-amber-500 hover:bg-amber-100 dark:bg-amber-500/20 dark:text-amber-400"
+                            : "bg-white text-neutral-400 border border-neutral-200 hover:border-yellow-300 hover:text-yellow-500 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-yellow-500"
                         }`}
                       >
                         <svg className="w-4 h-4" fill={job.featured ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
@@ -616,27 +814,29 @@ export default function AdminJobs() {
                         title={job.tags?.includes("hot") ? "Remove HOT" : "Mark as HOT"}
                         className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${
                           job.tags?.includes("hot")
-                            ? "bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400"
-                            : "bg-neutral-100 text-neutral-400 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                            ? "bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 animate-pulse-hot"
+                            : "bg-white text-neutral-400 border border-neutral-200 hover:border-red-300 hover:text-red-500 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-red-500"
                         }`}
                       >
                         🔥
                       </button>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <button
-                      onClick={() => handleEdit(job)}
-                      className="text-blue-600 hover:text-blue-700 mr-3"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(job.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEdit(job)}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/40 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(job.id)}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

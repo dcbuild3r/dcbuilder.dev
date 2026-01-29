@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/api-auth";
 import {
   getJobApplyClicksLast7Days,
   getCandidateViewsLast7Days,
+  getBlogViewsLast7Days,
   getSiteStats,
 } from "@/lib/posthog-api";
 
@@ -40,10 +41,20 @@ export async function GET(request: NextRequest) {
       return Response.json({ data: siteStats });
     }
 
+    if (type === "blog") {
+      const views = await getBlogViewsLast7Days();
+      const blogViews: Record<string, number> = {};
+      views.forEach(({ id, count }) => {
+        blogViews[id] = count;
+      });
+      return Response.json({ data: blogViews });
+    }
+
     // Return all analytics
-    const [jobClicks, candidateViews, siteStats] = await Promise.all([
+    const [jobClicks, candidateViews, blogViews, siteStats] = await Promise.all([
       getJobApplyClicksLast7Days(),
       getCandidateViewsLast7Days(),
+      getBlogViewsLast7Days(),
       getSiteStats(),
     ]);
 
@@ -57,10 +68,16 @@ export async function GET(request: NextRequest) {
       candidateViewsMap[id] = count;
     });
 
+    const blogViewsMap: Record<string, number> = {};
+    blogViews.forEach(({ id, count }) => {
+      blogViewsMap[id] = count;
+    });
+
     return Response.json({
       data: {
         jobClicks: jobClicksMap,
         candidateViews: candidateViewsMap,
+        blogViews: blogViewsMap,
         siteStats,
       },
     });

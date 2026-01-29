@@ -146,7 +146,6 @@ export interface Candidate {
 	featured: boolean;
 	hot?: boolean;
 	vouched?: boolean; // true = personally known/vouched, false/undefined = not personally known
-	dateAdded?: string;
 	createdAt?: string | Date;
 }
 
@@ -190,7 +189,6 @@ export const candidates: Candidate[] = [
 		featured: true,
 		hot: true,
 		vouched: true,
-		dateAdded: "2025-01-27",
 	},
 	{
 		id: "viraz",
@@ -229,7 +227,6 @@ export const candidates: Candidate[] = [
 		tier: 3,
 		featured: false,
 		vouched: true,
-		dateAdded: "2025-01-28",
 	},
 	{
 		id: "temitayo",
@@ -262,7 +259,6 @@ export const candidates: Candidate[] = [
 		},
 		tier: 4,
 		featured: false,
-		dateAdded: "2025-01-28",
 	},
 	{
 		id: "kevin-castro",
@@ -297,7 +293,6 @@ export const candidates: Candidate[] = [
 		tier: 3,
 		featured: false,
 		vouched: true,
-		dateAdded: "2025-01-28",
 	},
 	{
 		id: "atris",
@@ -336,7 +331,6 @@ export const candidates: Candidate[] = [
 		tier: 3,
 		featured: true,
 		hot: true,
-		dateAdded: "2025-01-28",
 	},
 	{
 		id: "will-schwab",
@@ -374,7 +368,6 @@ export const candidates: Candidate[] = [
 		tier: 2,
 		featured: true,
 		hot: true,
-		dateAdded: "2025-01-28",
 	},
 	{
 		id: "emmanuel-christopher",
@@ -412,7 +405,6 @@ export const candidates: Candidate[] = [
 		},
 		tier: 4,
 		featured: false,
-		dateAdded: "2025-01-28",
 	},
 	{
 		id: "prathmesh",
@@ -446,7 +438,6 @@ export const candidates: Candidate[] = [
 		},
 		tier: 3,
 		featured: false,
-		dateAdded: "2025-01-28",
 	},
 	{
 		id: "kiasaki",
@@ -475,7 +466,6 @@ export const candidates: Candidate[] = [
 		},
 		tier: 2,
 		featured: true,
-		dateAdded: "2025-01-28",
 	},
 	{
 		id: "burden0x",
@@ -507,6 +497,5 @@ export const candidates: Candidate[] = [
 		},
 		tier: 3,
 		featured: false,
-		dateAdded: "2025-01-28",
 	},
 ];

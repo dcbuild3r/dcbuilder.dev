@@ -118,6 +118,64 @@ export async function getNewsClicksLast7Days(): Promise<ClickCount[]> {
   return fetchPostHogTrend("news_click", "news_id");
 }
 
+// Blog analytics - track by slug from $pageview on /blog/* paths
+export async function getBlogViewsLast7Days(): Promise<ClickCount[]> {
+  if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
+    console.warn("PostHog API credentials not configured");
+    return [];
+  }
+
+  try {
+    const response = await fetch(
+      `${POSTHOG_HOST}/api/projects/${POSTHOG_PROJECT_ID}/insights/trend/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${POSTHOG_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          events: [{ id: "$pageview", type: "events" }],
+          date_from: "-7d",
+          breakdown: "$pathname",
+          breakdown_type: "event",
+          properties: [
+            {
+              key: "$pathname",
+              value: "^/blog/[^/]+$",
+              operator: "regex",
+              type: "event",
+            },
+          ],
+        }),
+        next: { revalidate: 3600 },
+      }
+    );
+
+    if (!response.ok) {
+      console.error("PostHog API error:", await response.text());
+      return [];
+    }
+
+    const data = await response.json();
+
+    // Extract slug from pathname (e.g., "/blog/my-post" -> "my-post")
+    return (
+      data.result
+        ?.map((r: TrendResult) => {
+          const match = r.breakdown_value.match(/^\/blog\/(.+)$/);
+          return match
+            ? { id: match[1], count: r.count }
+            : null;
+        })
+        .filter((r: ClickCount | null): r is ClickCount => r !== null) ?? []
+    );
+  } catch (error) {
+    console.error("Failed to fetch blog views:", error);
+    return [];
+  }
+}
+
 export function determineHotNews(
   clicks: ClickCount[],
   topN: number = 5

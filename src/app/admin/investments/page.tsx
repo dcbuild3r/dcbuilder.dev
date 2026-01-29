@@ -3,6 +3,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { ImageInput } from "@/components/admin/ImagePreview";
+import {
+  SearchableHeader,
+  MultiSelectHeader,
+  useColumnFilters,
+} from "@/components/admin/ColumnFilters";
+import { TableSkeleton, withMinDelay } from "@/components/admin/TableSkeleton";
 
 interface Investment {
   id: string;
@@ -39,13 +45,23 @@ export default function AdminInvestments() {
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"tier" | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [tierFilter, setTierFilter] = useState<string[]>([]);
+
+  const columnFilters = useColumnFilters();
 
   const getApiKey = () => localStorage.getItem("admin_api_key") || "";
 
+  const statusOptions = ["active", "exited", "defunct"];
+  const tierOptions = ["1", "2", "3", "4"];
+
   const fetchInvestments = useCallback(async () => {
     try {
-      const res = await fetch("/api/v1/investments?limit=100");
-      const data = await res.json();
+      const data = await withMinDelay(
+        fetch("/api/v1/investments?limit=100").then(res => res.json())
+      );
       setInvestments(data.data || []);
     } catch (error) {
       console.error("Failed to fetch investments:", error);
@@ -330,10 +346,34 @@ export default function AdminInvestments() {
     );
   }
 
-  const filteredInvestments = investments.filter(
-    (investment) =>
-      investment.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredInvestments = investments
+    .filter((investment) => {
+      // Global search
+      if (searchQuery && !investment.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      // Column-specific search
+      if (columnFilters.activeColumn === "title" && columnFilters.searchValue) {
+        if (!investment.title.toLowerCase().includes(columnFilters.searchValue.toLowerCase())) return false;
+      }
+      // Tier multi-select filter
+      if (tierFilter.length > 0 && !tierFilter.includes(investment.tier || "2")) {
+        return false;
+      }
+      // Status multi-select filter
+      if (statusFilter.length > 0 && !statusFilter.includes(investment.status || "active")) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "tier") {
+        const tierA = parseInt(a.tier || "2");
+        const tierB = parseInt(b.tier || "2");
+        return sortOrder === "asc" ? tierA - tierB : tierB - tierA;
+      }
+      return 0;
+    });
 
   return (
     <div className="space-y-6">
@@ -344,7 +384,7 @@ export default function AdminInvestments() {
             setEditingInvestment(emptyInvestment);
             setIsNew(true);
           }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium"
         >
           Add Investment
         </button>
@@ -359,30 +399,57 @@ export default function AdminInvestments() {
       />
 
       {loading ? (
-        <div className="text-center py-8 text-neutral-500">Loading...</div>
+        <TableSkeleton columns={6} rows={10} headerColor="bg-amber-100 dark:bg-amber-900/30" />
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-neutral-50 dark:bg-neutral-800">
+            <thead className="bg-amber-100 dark:bg-amber-900/30">
               <tr>
-                <th className="px-2 py-3 text-left text-sm font-medium w-12">
-
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Title
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Tier
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-medium">
-                  Star
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-medium">
-                  Actions
-                </th>
+                <th className="px-2 py-3 text-left text-sm font-medium w-12"></th>
+                <SearchableHeader
+                  label="Title"
+                  searchKey="title"
+                  isActive={columnFilters.isActive("title")}
+                  searchValue={columnFilters.searchValue}
+                  onSearchOpen={() => columnFilters.openSearch("title")}
+                  onSearchClose={columnFilters.closeSearch}
+                  onSearchChange={columnFilters.setSearchValue}
+                />
+                <MultiSelectHeader
+                  label="Tier"
+                  filterKey="tier"
+                  options={tierOptions}
+                  selectedValues={tierFilter}
+                  isOpen={columnFilters.isActive("tier")}
+                  onToggle={() => columnFilters.toggleFilter("tier")}
+                  onClose={columnFilters.closeSearch}
+                  onSelectionChange={setTierFilter}
+                  sortable
+                  sortActive={sortBy === "tier"}
+                  sortDirection={sortOrder}
+                  onSort={() => {
+                    if (sortBy === "tier") {
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                    } else {
+                      setSortBy("tier");
+                      setSortOrder("asc");
+                    }
+                  }}
+                  formatOption={(t) => `Tier ${t}`}
+                />
+                <MultiSelectHeader
+                  label="Status"
+                  filterKey="status"
+                  options={statusOptions}
+                  selectedValues={statusFilter}
+                  isOpen={columnFilters.isActive("status")}
+                  onToggle={() => columnFilters.toggleFilter("status")}
+                  onClose={columnFilters.closeSearch}
+                  onSelectionChange={setStatusFilter}
+                  formatOption={(s) => s.charAt(0).toUpperCase() + s.slice(1)}
+                />
+                <th className="px-4 py-3 text-center text-sm font-medium">Star</th>
+                <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
@@ -404,7 +471,12 @@ export default function AdminInvestments() {
                   </td>
                   <td className="px-4 py-3 text-sm">{investment.title}</td>
                   <td className="px-4 py-3 text-sm">
-                    <span className="px-2 py-1 rounded-full text-xs bg-neutral-100 dark:bg-neutral-800">
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      investment.tier === "1" ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400" :
+                      investment.tier === "2" ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400" :
+                      investment.tier === "3" ? "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400" :
+                      "bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400"
+                    }`}>
                       Tier {investment.tier || "2"}
                     </span>
                   </td>
@@ -427,8 +499,8 @@ export default function AdminInvestments() {
                       title={investment.featured ? "Remove star" : "Star this investment"}
                       className={`p-1.5 rounded-lg transition-colors ${
                         investment.featured
-                          ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400"
-                          : "bg-neutral-100 text-neutral-400 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                          ? "bg-amber-50 text-amber-500 hover:bg-amber-100 dark:bg-amber-500/20 dark:text-amber-400"
+                          : "bg-white text-neutral-400 border border-neutral-200 hover:border-amber-300 hover:text-amber-500 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-amber-500"
                       }`}
                     >
                       <svg className="w-4 h-4" fill={investment.featured ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
@@ -436,19 +508,21 @@ export default function AdminInvestments() {
                       </svg>
                     </button>
                   </td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <button
-                      onClick={() => handleEdit(investment)}
-                      className="text-blue-600 hover:text-blue-700 mr-3"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(investment.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEdit(investment)}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-600 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-800/40 transition-colors whitespace-nowrap"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(investment.id)}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors whitespace-nowrap"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

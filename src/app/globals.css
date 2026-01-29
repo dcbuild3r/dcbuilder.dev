@@ -248,3 +248,45 @@ code, pre, .font-mono {
   background-color: #374151;
 }
 
+/* Pulsating animation for NEW tag */
+@keyframes pulse-new {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(14, 165, 233, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(14, 165, 233, 0.7);
+  }
+}
+
+.animate-pulse-new {
+  animation: pulse-new 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Pulsating animation for HOT tag (red) */
+@keyframes pulse-hot {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+  }
+}
+
+.animate-pulse-hot {
+  animation: pulse-hot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Pulsating animation for TOP tag (purple) */
+@keyframes pulse-top {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(139, 92, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.7);
+  }
+}
+
+.animate-pulse-top {
+  animation: pulse-top 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+

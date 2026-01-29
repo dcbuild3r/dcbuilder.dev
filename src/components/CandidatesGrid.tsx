@@ -27,10 +27,9 @@ interface CandidatesGridProps {
 }
 
 // Check if item was created within the last 2 weeks
-const isNew = (dateAdded: string | Date | undefined, createdAt?: string | Date): boolean => {
-	const dateStr = dateAdded || createdAt;
-	if (!dateStr) return false;
-	const date = new Date(dateStr);
+const isNew = (createdAt: string | Date | undefined): boolean => {
+	if (!createdAt) return false;
+	const date = new Date(createdAt);
 	const twoWeeksAgo = new Date();
 	twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 	return date > twoWeeksAgo;
@@ -723,9 +722,9 @@ function CandidateCard({
 						>
 							{availabilityLabels[candidate.availability]}
 						</span>
-						{isNew(candidate.dateAdded, candidate.createdAt) && !isTop && (
-							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap">
-								🆕 NEW
+						{isNew(candidate.createdAt) && !isTop && (
+							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap animate-pulse-new">
+								NEW
 							</span>
 						)}
 						{isTop && (
@@ -733,9 +732,9 @@ function CandidateCard({
 								⭐️ TOP
 							</span>
 						)}
-						{isNew(candidate.dateAdded, candidate.createdAt) && isTop && (
-							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap">
-								🆕 NEW
+						{isNew(candidate.createdAt) && isTop && (
+							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap animate-pulse-new">
+								NEW
 							</span>
 						)}
 					</div>
@@ -1214,9 +1213,9 @@ function ExpandedCandidateView({
 										⭐️ TOP
 									</span>
 								)}
-								{isNew(candidate.dateAdded, candidate.createdAt) && (
-									<span className="px-3 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
-										🆕 NEW
+								{isNew(candidate.createdAt) && (
+									<span className="px-3 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+										NEW
 									</span>
 								)}
 							</div>

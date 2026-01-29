@@ -41,6 +41,7 @@ export async function getJobsFromDB(): Promise<Job[]> {
       tags: (job.tags || []) as JobTag[],
       tier: 3 as JobTier, // Default tier
       description: job.description || undefined,
+      createdAt: job.createdAt,
     };
   });
 }
@@ -74,6 +75,7 @@ export async function getCandidatesFromDB(): Promise<Candidate[]> {
     },
     tier: 2 as CandidateTier,
     featured: candidate.featured || false,
+    createdAt: candidate.createdAt,
   }));
 }
 

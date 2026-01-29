@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Fredoka } from "next/font/google";
+
+const fredoka = Fredoka({
+  subsets: ["latin"],
+  weight: ["600"],
+});
 
 export default function AdminLayout({
   children,
@@ -61,17 +67,18 @@ export default function AdminLayout({
   };
 
   const navItems = [
-    { href: "/admin", label: "Dashboard" },
-    { href: "/admin/jobs", label: "Jobs" },
-    { href: "/admin/candidates", label: "Candidates" },
-    { href: "/admin/news", label: "News" },
-    { href: "/admin/investments", label: "Investments" },
-    { href: "/admin/affiliations", label: "Affiliations" },
+    { href: "/admin", label: "Dashboard", color: "neutral", bg: "bg-neutral-100 dark:bg-neutral-800", bgHover: "hover:bg-neutral-200 dark:hover:bg-neutral-700", bgActive: "bg-neutral-700 dark:bg-neutral-600", text: "text-neutral-600 dark:text-neutral-400" },
+    { href: "/admin/jobs", label: "Jobs", color: "blue", bg: "bg-blue-100 dark:bg-blue-900/30", bgHover: "hover:bg-blue-200 dark:hover:bg-blue-800/40", bgActive: "bg-blue-500 dark:bg-blue-600", text: "text-blue-600 dark:text-blue-400" },
+    { href: "/admin/candidates", label: "Candidates", color: "green", bg: "bg-green-100 dark:bg-green-900/30", bgHover: "hover:bg-green-200 dark:hover:bg-green-800/40", bgActive: "bg-green-500 dark:bg-green-600", text: "text-green-600 dark:text-green-400" },
+    { href: "/admin/investments", label: "Investments", color: "amber", bg: "bg-amber-100 dark:bg-amber-900/30", bgHover: "hover:bg-amber-200 dark:hover:bg-amber-800/40", bgActive: "bg-amber-500 dark:bg-amber-600", text: "text-amber-600 dark:text-amber-400" },
+    { href: "/admin/news", label: "News", color: "purple", bg: "bg-purple-100 dark:bg-purple-900/30", bgHover: "hover:bg-purple-200 dark:hover:bg-purple-800/40", bgActive: "bg-purple-500 dark:bg-purple-600", text: "text-purple-600 dark:text-purple-400" },
+    { href: "/admin/affiliations", label: "Affiliations", color: "pink", bg: "bg-pink-100 dark:bg-pink-900/30", bgHover: "hover:bg-pink-200 dark:hover:bg-pink-800/40", bgActive: "bg-pink-500 dark:bg-pink-600", text: "text-pink-600 dark:text-pink-400" },
+    { href: "/admin/blog", label: "Blog", color: "indigo", bg: "bg-indigo-100 dark:bg-indigo-900/30", bgHover: "hover:bg-indigo-200 dark:hover:bg-indigo-800/40", bgActive: "bg-indigo-500 dark:bg-indigo-600", text: "text-indigo-600 dark:text-indigo-400" },
   ];
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
         <div className="text-neutral-500">Loading...</div>
       </div>
     );
@@ -79,7 +86,7 @@ export default function AdminLayout({
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950 px-4">
         <div className="w-full max-w-md">
           <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-8">
             <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
@@ -115,24 +122,26 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-screen bg-white dark:bg-neutral-950">
       {/* Top Navigation */}
       <nav className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
-              <Link href="/admin" className="font-bold text-xl">
-                Admin
+              <Link href="/admin" className={`text-3xl ${fredoka.className}`}>
+                <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                  Admin
+                </span>
               </Link>
               <div className="flex items-center gap-1">
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       pathname === item.href
-                        ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                        ? `${item.bgActive} text-white`
+                        : `${item.bg} ${item.text} ${item.bgHover}`
                     }`}
                   >
                     {item.label}
@@ -140,16 +149,16 @@ export default function AdminLayout({
                 ))}
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <Link
                 href="/"
-                className="text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                className="px-3 py-1.5 rounded-full text-sm font-medium bg-cyan-100 text-cyan-600 hover:bg-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-400 dark:hover:bg-cyan-800/40 transition-colors"
               >
                 View Site
               </Link>
               <button
                 onClick={handleLogout}
-                className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                className="px-3 py-1.5 rounded-full text-sm font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors"
               >
                 Logout
               </button>

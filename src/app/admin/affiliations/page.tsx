@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { ImageInput } from "@/components/admin/ImagePreview";
+import { TableSkeleton, withMinDelay } from "@/components/admin/TableSkeleton";
 
 interface Affiliation {
   id: string;
@@ -37,8 +38,9 @@ export default function AdminAffiliations() {
 
   const fetchAffiliations = useCallback(async () => {
     try {
-      const res = await fetch("/api/v1/affiliations?limit=100");
-      const data = await res.json();
+      const data = await withMinDelay(
+        fetch("/api/v1/affiliations?limit=100").then(res => res.json())
+      );
       setAffiliations(data.data || []);
     } catch (error) {
       console.error("Failed to fetch affiliations:", error);
@@ -241,18 +243,18 @@ export default function AdminAffiliations() {
             setEditingAffiliation(emptyAffiliation);
             setIsNew(true);
           }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 font-medium"
         >
           Add Affiliation
         </button>
       </div>
 
       {loading ? (
-        <div className="text-center py-8 text-neutral-500">Loading...</div>
+        <TableSkeleton columns={4} rows={8} headerColor="bg-pink-100 dark:bg-pink-900/30" headerHeight="h-[44px]" />
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-neutral-50 dark:bg-neutral-800">
+            <thead className="bg-pink-100 dark:bg-pink-900/30">
               <tr>
                 <th className="px-2 py-3 text-left text-sm font-medium w-12">
 
@@ -287,19 +289,21 @@ export default function AdminAffiliations() {
                   </td>
                   <td className="px-4 py-3 text-sm">{affiliation.title}</td>
                   <td className="px-4 py-3 text-sm">{affiliation.role}</td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <button
-                      onClick={() => handleEdit(affiliation)}
-                      className="text-blue-600 hover:text-blue-700 mr-3"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(affiliation.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEdit(affiliation)}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-600 hover:bg-pink-200 dark:bg-pink-900/30 dark:text-pink-400 dark:hover:bg-pink-800/40 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(affiliation.id)}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

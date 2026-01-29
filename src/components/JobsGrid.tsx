@@ -188,8 +188,8 @@ function ExpandedJobView({
 									</span>
 								)}
 								{isNewItem(job.createdAt) && (
-									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
-										🆕 NEW
+									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+										NEW
 									</span>
 								)}
 							</div>
@@ -1247,8 +1247,8 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                           </span>
                         )}
                         {isNewItem(job.createdAt) && (
-                          <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
-                            🆕 NEW
+                          <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+                            NEW
                           </span>
                         )}
                       </h3>

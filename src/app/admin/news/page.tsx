@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Combobox } from "@/components/admin/Combobox";
 import { ImageInput } from "@/components/admin/ImagePreview";
+import { getSkillColor } from "@/lib/skill-colors";
+import { TableSkeleton, withMinDelay } from "@/components/admin/TableSkeleton";
 
 interface CuratedLink {
   id: string;
@@ -64,19 +66,29 @@ export default function AdminNews() {
   >(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [columnSearch, setColumnSearch] = useState<string | null>(null);
+  const [columnSearchValue, setColumnSearchValue] = useState("");
+  const [platformFilter, setPlatformFilter] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<"date" | null>("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  const platformOptions = ["x", "blog", "discord", "github", "other"];
+
+  // Get unique categories from curated links
+  const categoryOptions = [...new Set(curatedLinks.map(l => l.category).filter(Boolean))];
 
   const getApiKey = () => localStorage.getItem("admin_api_key") || "";
 
   const fetchData = useCallback(async () => {
     try {
-      const [curatedRes, announcementsRes] = await Promise.all([
-        fetch("/api/v1/news/curated?limit=100"),
-        fetch("/api/v1/news/announcements?limit=100"),
-      ]);
-      const [curatedData, announcementsData] = await Promise.all([
-        curatedRes.json(),
-        announcementsRes.json(),
-      ]);
+      const [curatedData, announcementsData] = await withMinDelay(
+        Promise.all([
+          fetch("/api/v1/news/curated?limit=100").then(res => res.json()),
+          fetch("/api/v1/news/announcements?limit=100").then(res => res.json()),
+        ])
+      );
       setCuratedLinks(curatedData.data || []);
       setAnnouncements(announcementsData.data || []);
     } catch (error) {
@@ -177,6 +189,63 @@ export default function AdminNews() {
   };
 
   const platforms = ["x", "blog", "discord", "github", "other"];
+
+  // Filter and sort curated links
+  const filteredCuratedLinks = curatedLinks
+    .filter((link) => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        if (!link.title.toLowerCase().includes(query) && !link.source.toLowerCase().includes(query)) {
+          return false;
+        }
+      }
+      if (columnSearch && columnSearchValue) {
+        const value = columnSearchValue.toLowerCase();
+        if (columnSearch === "title" && !link.title.toLowerCase().includes(value)) return false;
+        if (columnSearch === "source" && !link.source.toLowerCase().includes(value)) return false;
+      }
+      // Category multi-select filter
+      if (categoryFilter.length > 0 && !categoryFilter.includes(link.category)) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "date") {
+        return sortOrder === "desc"
+          ? new Date(b.date).getTime() - new Date(a.date).getTime()
+          : new Date(a.date).getTime() - new Date(b.date).getTime();
+      }
+      return 0;
+    });
+
+  // Filter and sort announcements
+  const filteredAnnouncements = announcements
+    .filter((ann) => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        if (!ann.title.toLowerCase().includes(query) && !ann.company.toLowerCase().includes(query)) {
+          return false;
+        }
+      }
+      if (columnSearch && columnSearchValue) {
+        const value = columnSearchValue.toLowerCase();
+        if (columnSearch === "title" && !ann.title.toLowerCase().includes(value)) return false;
+        if (columnSearch === "company" && !ann.company.toLowerCase().includes(value)) return false;
+      }
+      if (platformFilter.length > 0 && !platformFilter.includes(ann.platform)) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "date") {
+        return sortOrder === "desc"
+          ? new Date(b.date).getTime() - new Date(a.date).getTime()
+          : new Date(a.date).getTime() - new Date(b.date).getTime();
+      }
+      return 0;
+    });
 
   if (editingItem) {
     const isCurated = activeTab === "curated";
@@ -384,6 +453,27 @@ export default function AdminNews() {
         </div>
       </div>
 
+      {/* Search */}
+      <div className="relative max-w-md">
+        <input
+          type="text"
+          placeholder="Search news..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        )}
+      </div>
+
       {/* Tabs */}
       <div className="flex gap-2 border-b border-neutral-200 dark:border-neutral-800">
         <button
@@ -410,31 +500,171 @@ export default function AdminNews() {
 
       {/* Content */}
       {loading ? (
-        <div className="text-center py-8 text-neutral-500">Loading...</div>
+        <TableSkeleton
+          columns={5}
+          rows={8}
+          headerColor={activeTab === "curated" ? "bg-purple-100 dark:bg-purple-900/30" : "bg-orange-100 dark:bg-orange-900/30"}
+          headerHeight="h-[44px]"
+        />
       ) : activeTab === "curated" ? (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-neutral-50 dark:bg-neutral-800">
+            <thead className="bg-purple-100 dark:bg-purple-900/30">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-medium">
-                  Title
+                  {columnSearch === "title" ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={columnSearchValue}
+                        onChange={(e) => setColumnSearchValue(e.target.value)}
+                        placeholder="Search title..."
+                        className="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => { setColumnSearch(null); setColumnSearchValue(""); }}
+                        className="text-neutral-400 hover:text-neutral-600"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <span>Title</span>
+                      <button
+                        onClick={() => { setColumnSearch("title"); setColumnSearchValue(""); }}
+                        className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                        title="Search by title"
+                      >
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium">
-                  Source
+                  {columnSearch === "source" ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={columnSearchValue}
+                        onChange={(e) => setColumnSearchValue(e.target.value)}
+                        placeholder="Search source..."
+                        className="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => { setColumnSearch(null); setColumnSearchValue(""); }}
+                        className="text-neutral-400 hover:text-neutral-600"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <span>Source</span>
+                      <button
+                        onClick={() => { setColumnSearch("source"); setColumnSearchValue(""); }}
+                        className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                        title="Search by source"
+                      >
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium relative">
+                  {columnSearch === "category" ? (
+                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 z-10 min-w-32 max-h-64 overflow-y-auto">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-neutral-500">Filter by category</span>
+                        <button
+                          onClick={() => setColumnSearch(null)}
+                          className="text-neutral-400 hover:text-neutral-600"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        </button>
+                      </div>
+                      {categoryOptions.map((category) => (
+                        <label key={category} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 px-1 rounded">
+                          <input
+                            type="checkbox"
+                            checked={categoryFilter.includes(category)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setCategoryFilter([...categoryFilter, category]);
+                              } else {
+                                setCategoryFilter(categoryFilter.filter((c) => c !== category));
+                              }
+                            }}
+                            className="rounded"
+                          />
+                          <span className="text-sm">{category}</span>
+                        </label>
+                      ))}
+                      {categoryFilter.length > 0 && (
+                        <button
+                          onClick={() => setCategoryFilter([])}
+                          className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+                        >
+                          Clear all
+                        </button>
+                      )}
+                    </div>
+                  ) : null}
+                  <div className="flex items-center gap-1">
+                    <span>Category</span>
+                    {categoryFilter.length > 0 && (
+                      <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 rounded-full">
+                        {categoryFilter.length}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => setColumnSearch(columnSearch === "category" ? null : "category")}
+                      className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                      title="Filter by category"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                      </svg>
+                    </button>
+                  </div>
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium">
-                  Category
+                  <button
+                    onClick={() => {
+                      if (sortBy === "date") {
+                        setSortOrder(sortOrder === "desc" ? "asc" : "desc");
+                      } else {
+                        setSortBy("date");
+                        setSortOrder("desc");
+                      }
+                    }}
+                    className={`flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white ${sortBy === "date" ? "text-blue-600 dark:text-blue-400" : ""}`}
+                  >
+                    <span>Date</span>
+                    {sortBy === "date" && (
+                      <svg className={`w-4 h-4 transition-transform ${sortOrder === "asc" ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    )}
+                  </button>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-medium">
-                  Actions
-                </th>
+                <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-              {curatedLinks.map((link) => (
+              {filteredCuratedLinks.map((link) => (
                 <tr
                   key={link.id}
                   className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
@@ -442,28 +672,34 @@ export default function AdminNews() {
                   <td className="px-4 py-3 text-sm max-w-xs truncate">
                     {link.title}
                   </td>
-                  <td className="px-4 py-3 text-sm">{link.source}</td>
                   <td className="px-4 py-3 text-sm">
-                    <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                    <span className={`px-2 py-1 rounded-full text-xs ${getSkillColor(link.source)}`}>
+                      {link.source}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <span className={`px-2 py-1 rounded-full text-xs ${getSkillColor(link.category)}`}>
                       {link.category}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm">
                     {new Date(link.date).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <button
-                      onClick={() => handleEdit(link, "curated")}
-                      className="text-blue-600 hover:text-blue-700 mr-3"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(link.id, "curated")}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEdit(link, "curated")}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-600 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:hover:bg-purple-800/40 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(link.id, "curated")}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -473,27 +709,162 @@ export default function AdminNews() {
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-neutral-50 dark:bg-neutral-800">
+            <thead className="bg-purple-100 dark:bg-purple-900/30">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-medium">
-                  Title
+                  {columnSearch === "title" ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={columnSearchValue}
+                        onChange={(e) => setColumnSearchValue(e.target.value)}
+                        placeholder="Search title..."
+                        className="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => { setColumnSearch(null); setColumnSearchValue(""); }}
+                        className="text-neutral-400 hover:text-neutral-600"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <span>Title</span>
+                      <button
+                        onClick={() => { setColumnSearch("title"); setColumnSearchValue(""); }}
+                        className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                        title="Search by title"
+                      >
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium">
-                  Company
+                  {columnSearch === "company" ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={columnSearchValue}
+                        onChange={(e) => setColumnSearchValue(e.target.value)}
+                        placeholder="Search company..."
+                        className="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => { setColumnSearch(null); setColumnSearchValue(""); }}
+                        className="text-neutral-400 hover:text-neutral-600"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <span>Company</span>
+                      <button
+                        onClick={() => { setColumnSearch("company"); setColumnSearchValue(""); }}
+                        className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                        title="Search by company"
+                      >
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium relative">
+                  {columnSearch === "platform" ? (
+                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 z-10 min-w-32">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-neutral-500">Filter by platform</span>
+                        <button
+                          onClick={() => setColumnSearch(null)}
+                          className="text-neutral-400 hover:text-neutral-600"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        </button>
+                      </div>
+                      {platformOptions.map((platform) => (
+                        <label key={platform} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 px-1 rounded">
+                          <input
+                            type="checkbox"
+                            checked={platformFilter.includes(platform)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setPlatformFilter([...platformFilter, platform]);
+                              } else {
+                                setPlatformFilter(platformFilter.filter((p) => p !== platform));
+                              }
+                            }}
+                            className="rounded"
+                          />
+                          <span className="text-sm capitalize">{platform}</span>
+                        </label>
+                      ))}
+                      {platformFilter.length > 0 && (
+                        <button
+                          onClick={() => setPlatformFilter([])}
+                          className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+                        >
+                          Clear all
+                        </button>
+                      )}
+                    </div>
+                  ) : null}
+                  <div className="flex items-center gap-1">
+                    <span>Platform</span>
+                    {platformFilter.length > 0 && (
+                      <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 rounded-full">
+                        {platformFilter.length}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => setColumnSearch(columnSearch === "platform" ? null : "platform")}
+                      className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                      title="Filter by platform"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                      </svg>
+                    </button>
+                  </div>
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium">
-                  Platform
+                  <button
+                    onClick={() => {
+                      if (sortBy === "date") {
+                        setSortOrder(sortOrder === "desc" ? "asc" : "desc");
+                      } else {
+                        setSortBy("date");
+                        setSortOrder("desc");
+                      }
+                    }}
+                    className={`flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white ${sortBy === "date" ? "text-blue-600 dark:text-blue-400" : ""}`}
+                  >
+                    <span>Date</span>
+                    {sortBy === "date" && (
+                      <svg className={`w-4 h-4 transition-transform ${sortOrder === "asc" ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    )}
+                  </button>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-medium">
-                  Actions
-                </th>
+                <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-              {announcements.map((announcement) => (
+              {filteredAnnouncements.map((announcement) => (
                 <tr
                   key={announcement.id}
                   className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
@@ -503,28 +874,30 @@ export default function AdminNews() {
                   </td>
                   <td className="px-4 py-3 text-sm">{announcement.company}</td>
                   <td className="px-4 py-3 text-sm">
-                    <span className="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                    <span className={`px-2 py-1 rounded-full text-xs ${getSkillColor(announcement.platform)}`}>
                       {announcement.platform}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm">
                     {new Date(announcement.date).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <button
-                      onClick={() => handleEdit(announcement, "announcements")}
-                      className="text-blue-600 hover:text-blue-700 mr-3"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleDelete(announcement.id, "announcements")
-                      }
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEdit(announcement, "announcements")}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-600 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:hover:bg-orange-800/40 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDelete(announcement.id, "announcements")
+                        }
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -4,6 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Combobox, MultiCombobox } from "@/components/admin/Combobox";
 import { ImageInput } from "@/components/admin/ImagePreview";
+import { SearchableMultiSelectHeader, useColumnFilters } from "@/components/admin/ColumnFilters";
+import { getSkillColor } from "@/lib/skill-colors";
+import { TableSkeleton, withMinDelay } from "@/components/admin/TableSkeleton";
 
 interface Candidate {
   id: string;
@@ -65,6 +68,17 @@ export default function AdminCandidates() {
   const [candidateViews, setCandidateViews] = useState<Record<string, number>>({});
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [columnSearch, setColumnSearch] = useState<string | null>(null);
+  const [columnSearchValue, setColumnSearchValue] = useState("");
+  const [experienceFilter, setExperienceFilter] = useState<string[]>([]);
+  const [availableFilter, setAvailableFilter] = useState<string[]>([]);
+  const [skillsFilter, setSkillsFilter] = useState<string[]>([]);
+
+  const columnFilters = useColumnFilters();
+
+  const experienceOptions = ["0-1", "1-3", "3-5", "5-10", "10+"];
+  // Get unique skills from all candidates (excluding 'top' since that's a special marker)
+  const skillOptions = [...new Set(candidates.flatMap(c => c.skills || []).filter(s => s && s !== "top"))];
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -89,15 +103,94 @@ export default function AdminCandidates() {
     </th>
   );
 
+  const SearchableSortHeader = ({ field, searchKey, children, center }: { field: SortField; searchKey: string; children: React.ReactNode; center?: boolean }) => (
+    <th className={`px-4 py-3 text-sm font-medium ${center ? "text-center" : "text-left"}`}>
+      {columnSearch === searchKey ? (
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={columnSearchValue}
+            onChange={(e) => setColumnSearchValue(e.target.value)}
+            placeholder={`Search ${searchKey}...`}
+            className="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700"
+            autoFocus
+          />
+          <button
+            onClick={() => { setColumnSearch(null); setColumnSearchValue(""); }}
+            className="text-neutral-400 hover:text-neutral-600"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      ) : (
+        <div className={`flex items-center gap-1 ${center ? "justify-center" : ""}`}>
+          <button
+            className="flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white"
+            onClick={() => handleSort(field)}
+          >
+            {children}
+            <span className="text-neutral-400">
+              {sortField === field ? (sortDirection === "desc" ? "↓" : "↑") : "↕"}
+            </span>
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setColumnSearch(searchKey); setColumnSearchValue(""); }}
+            className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+            title={`Search by ${searchKey}`}
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+            </svg>
+          </button>
+        </div>
+      )}
+    </th>
+  );
+
   const getApiKey = () => localStorage.getItem("admin_api_key") || "";
 
   const filteredCandidates = candidates
-    .filter(
-      (candidate) =>
-        candidate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (candidate.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-        (candidate.skills?.join(" ").toLowerCase() || "").includes(searchQuery.toLowerCase())
-    )
+    .filter((candidate) => {
+      // Global search
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        if (
+          !candidate.name.toLowerCase().includes(query) &&
+          !(candidate.title?.toLowerCase() || "").includes(query) &&
+          !(candidate.skills?.join(" ").toLowerCase() || "").includes(query)
+        ) {
+          return false;
+        }
+      }
+      // Column-specific search
+      if (columnSearch && columnSearchValue) {
+        const value = columnSearchValue.toLowerCase();
+        if (columnSearch === "name" && !candidate.name.toLowerCase().includes(value)) return false;
+        if (columnSearch === "title" && !(candidate.title || "").toLowerCase().includes(value)) return false;
+      }
+      // Experience multi-select filter
+      if (experienceFilter.length > 0 && !experienceFilter.includes(candidate.experience || "")) {
+        return false;
+      }
+      // Skills multi-select filter
+      if (skillsFilter.length > 0) {
+        const candidateSkills = candidate.skills || [];
+        if (!skillsFilter.some(skill => candidateSkills.includes(skill))) {
+          return false;
+        }
+      }
+      // Available filter
+      if (availableFilter.length > 0) {
+        const isAvailable = candidate.available !== false;
+        const wantAvailable = availableFilter.includes("yes");
+        const wantUnavailable = availableFilter.includes("no");
+        if (wantAvailable && !wantUnavailable && !isAvailable) return false;
+        if (wantUnavailable && !wantAvailable && isAvailable) return false;
+      }
+      return true;
+    })
     .sort((a, b) => {
       if (!sortField) return 0;
       const dir = sortDirection === "asc" ? 1 : -1;
@@ -117,8 +210,9 @@ export default function AdminCandidates() {
 
   const fetchCandidates = useCallback(async () => {
     try {
-      const res = await fetch("/api/v1/candidates?limit=100");
-      const data = await res.json();
+      const data = await withMinDelay(
+        fetch("/api/v1/candidates?limit=100").then(res => res.json())
+      );
       setCandidates(data.data || []);
     } catch (error) {
       console.error("Failed to fetch candidates:", error);
@@ -552,7 +646,7 @@ export default function AdminCandidates() {
             setIsNew(true);
             setSkillsInput("");
           }}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium"
         >
           Add Candidate
         </button>
@@ -579,19 +673,83 @@ export default function AdminCandidates() {
 
       {/* Candidates Table */}
       {loading ? (
-        <div className="text-center py-8 text-neutral-500">Loading...</div>
+        <TableSkeleton columns={7} rows={10} headerColor="bg-green-100 dark:bg-green-900/30" headerHeight="h-[64px]" />
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-neutral-50 dark:bg-neutral-800">
+            <thead className="bg-green-100 dark:bg-green-900/30">
               <tr>
-                <th className="px-2 py-3 text-left text-sm font-medium w-12">
-
-                </th>
-                <SortHeader field="name">Name</SortHeader>
-                <SortHeader field="title">Title</SortHeader>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Experience
+                <th className="px-2 py-3 text-left text-sm font-medium w-12"></th>
+                <SearchableSortHeader field="name" searchKey="name">Name</SearchableSortHeader>
+                <SearchableSortHeader field="title" searchKey="title">Title</SearchableSortHeader>
+                <SearchableMultiSelectHeader
+                  label="Skills"
+                  filterKey="skills"
+                  options={skillOptions}
+                  selectedValues={skillsFilter}
+                  isOpen={columnFilters.isActive("skills")}
+                  onToggle={() => columnFilters.toggleFilter("skills")}
+                  onClose={columnFilters.closeSearch}
+                  onSelectionChange={setSkillsFilter}
+                />
+                <th className="px-4 py-3 text-left text-sm font-medium relative">
+                  {columnSearch === "experience" ? (
+                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 z-10 min-w-32">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-neutral-500">Filter by experience</span>
+                        <button
+                          onClick={() => setColumnSearch(null)}
+                          className="text-neutral-400 hover:text-neutral-600"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        </button>
+                      </div>
+                      {experienceOptions.map((exp) => (
+                        <label key={exp} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 px-1 rounded">
+                          <input
+                            type="checkbox"
+                            checked={experienceFilter.includes(exp)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setExperienceFilter([...experienceFilter, exp]);
+                              } else {
+                                setExperienceFilter(experienceFilter.filter((ex) => ex !== exp));
+                              }
+                            }}
+                            className="rounded"
+                          />
+                          <span className="text-sm">{exp} years</span>
+                        </label>
+                      ))}
+                      {experienceFilter.length > 0 && (
+                        <button
+                          onClick={() => setExperienceFilter([])}
+                          className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+                        >
+                          Clear all
+                        </button>
+                      )}
+                    </div>
+                  ) : null}
+                  <div className="flex items-center gap-1">
+                    <span>Experience</span>
+                    {experienceFilter.length > 0 && (
+                      <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 rounded-full">
+                        {experienceFilter.length}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => setColumnSearch(columnSearch === "experience" ? null : "experience")}
+                      className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                      title="Filter by experience"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                      </svg>
+                    </button>
+                  </div>
                 </th>
                 <SortHeader field="views" center>Views (7d)</SortHeader>
                 <th className="px-4 py-3 text-center text-sm font-medium">
@@ -600,8 +758,64 @@ export default function AdminCandidates() {
                 <th className="px-4 py-3 text-center text-sm font-medium">
                   Top
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Available
+                <th className="px-4 py-3 text-left text-sm font-medium relative">
+                  {columnSearch === "available" ? (
+                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 z-10 min-w-32">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-neutral-500">Filter by available</span>
+                        <button
+                          onClick={() => setColumnSearch(null)}
+                          className="text-neutral-400 hover:text-neutral-600"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        </button>
+                      </div>
+                      {["yes", "no"].map((avail) => (
+                        <label key={avail} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 px-1 rounded">
+                          <input
+                            type="checkbox"
+                            checked={availableFilter.includes(avail)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setAvailableFilter([...availableFilter, avail]);
+                              } else {
+                                setAvailableFilter(availableFilter.filter((a) => a !== avail));
+                              }
+                            }}
+                            className="rounded"
+                          />
+                          <span className="text-sm capitalize">{avail}</span>
+                        </label>
+                      ))}
+                      {availableFilter.length > 0 && (
+                        <button
+                          onClick={() => setAvailableFilter([])}
+                          className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+                        >
+                          Clear all
+                        </button>
+                      )}
+                    </div>
+                  ) : null}
+                  <div className="flex items-center gap-1">
+                    <span>Available</span>
+                    {availableFilter.length > 0 && (
+                      <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 rounded-full">
+                        {availableFilter.length}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => setColumnSearch(columnSearch === "available" ? null : "available")}
+                      className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                      title="Filter by available"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                      </svg>
+                    </button>
+                  </div>
                 </th>
                 <SortHeader field="createdAt">Created</SortHeader>
                 <th className="px-4 py-3 text-right text-sm font-medium">
@@ -629,7 +843,25 @@ export default function AdminCandidates() {
                   <td className="px-4 py-3 text-sm">{candidate.name}</td>
                   <td className="px-4 py-3 text-sm">{candidate.title || "-"}</td>
                   <td className="px-4 py-3 text-sm">
-                    {candidate.experience || "-"}
+                    <div className="flex flex-wrap gap-1">
+                      {(candidate.skills || []).filter(s => s !== "top").slice(0, 3).map((skill) => (
+                        <span key={skill} className={`px-1.5 py-0.5 rounded text-xs ${getSkillColor(skill)}`}>
+                          {skill}
+                        </span>
+                      ))}
+                      {(candidate.skills || []).filter(s => s !== "top").length > 3 && (
+                        <span className="text-xs text-neutral-400">+{(candidate.skills || []).filter(s => s !== "top").length - 3}</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    {candidate.experience ? (
+                      <span className={`px-2 py-1 rounded-full text-xs ${getSkillColor(candidate.experience)}`}>
+                        {candidate.experience} yrs
+                      </span>
+                    ) : (
+                      <span className="text-neutral-400">-</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
                     <span className={`font-medium ${candidateViews[candidate.id] > 0 ? "text-green-600 dark:text-green-400" : "text-neutral-400"}`}>
@@ -642,8 +874,8 @@ export default function AdminCandidates() {
                       title={candidate.featured ? "Remove star" : "Star this candidate"}
                       className={`p-1.5 rounded-lg transition-colors ${
                         candidate.featured
-                          ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400"
-                          : "bg-neutral-100 text-neutral-400 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                          ? "bg-amber-50 text-amber-500 hover:bg-amber-100 dark:bg-amber-500/20 dark:text-amber-400"
+                          : "bg-white text-neutral-400 border border-neutral-200 hover:border-yellow-300 hover:text-yellow-500 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-yellow-500"
                       }`}
                     >
                       <svg className="w-4 h-4" fill={candidate.featured ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
@@ -657,8 +889,8 @@ export default function AdminCandidates() {
                       title={candidate.skills?.includes("top") ? "Remove TOP" : "Mark as TOP"}
                       className={`px-2 py-1 rounded-lg text-xs font-semibold transition-colors ${
                         candidate.skills?.includes("top")
-                          ? "bg-gradient-to-r from-violet-500 to-purple-500 text-white"
-                          : "bg-neutral-100 text-neutral-400 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                          ? "bg-gradient-to-r from-violet-500 to-purple-500 text-white animate-pulse-top"
+                          : "bg-white text-neutral-400 border border-neutral-200 hover:border-violet-300 hover:text-violet-500 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-violet-500"
                       }`}
                     >
                       ⭐️ TOP
@@ -678,19 +910,21 @@ export default function AdminCandidates() {
                   <td className="px-4 py-3 text-sm text-neutral-500">
                     {new Date(candidate.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <button
-                      onClick={() => handleEdit(candidate)}
-                      className="text-blue-600 hover:text-blue-700 mr-3"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(candidate.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEdit(candidate)}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-800/40 transition-colors whitespace-nowrap"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(candidate.id)}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors whitespace-nowrap"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -16,7 +16,17 @@ interface Investment {
 	website?: string | null;
 	x?: string | null;
 	github?: string | null;
+	createdAt?: string | Date | null;
 }
+
+// Check if item was created within the last 2 weeks
+const isNew = (createdAt: string | Date | null | undefined): boolean => {
+	if (!createdAt) return false;
+	const date = new Date(createdAt);
+	const twoWeeksAgo = new Date();
+	twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+	return date > twoWeeksAgo;
+};
 
 type SortOption = "relevance" | "alphabetical" | "alphabetical-desc";
 
@@ -273,6 +283,11 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 							{investment.featured && (
 								<span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
 									★
+								</span>
+							)}
+							{isNew(investment.createdAt) && (
+								<span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+									NEW
 								</span>
 							)}
 						</h3>
