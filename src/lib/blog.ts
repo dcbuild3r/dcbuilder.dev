@@ -15,6 +15,7 @@ export interface BlogPost {
 	source?: string;
 	sourceUrl?: string;
 	readingTime: number;
+	image?: string;
 }
 
 export interface BlogPostMeta {
@@ -25,12 +26,27 @@ export interface BlogPostMeta {
 	source?: string;
 	sourceUrl?: string;
 	readingTime: number;
+	image?: string;
 }
 
 function calculateReadingTime(content: string): number {
 	const wordsPerMinute = 200;
 	const words = content.trim().split(/\s+/).length;
 	return Math.ceil(words / wordsPerMinute);
+}
+
+function extractFirstImage(content: string): string | undefined {
+	// Match markdown image syntax: ![alt](url)
+	const markdownImageMatch = content.match(/!\[.*?\]\((https?:\/\/[^)]+)\)/);
+	if (markdownImageMatch) {
+		return markdownImageMatch[1];
+	}
+	// Match HTML img tags
+	const htmlImageMatch = content.match(/<img[^>]+src=["'](https?:\/\/[^"']+)["']/);
+	if (htmlImageMatch) {
+		return htmlImageMatch[1];
+	}
+	return undefined;
 }
 
 function normalizeDate(dateString: string): string {
@@ -101,6 +117,7 @@ export function getAllPosts(): BlogPostMeta[] {
 					source: data.source,
 					sourceUrl: data.sourceUrl,
 					readingTime: calculateReadingTime(content),
+					image: data.image || extractFirstImage(content),
 				};
 				return post;
 			} catch (error) {
@@ -143,6 +160,7 @@ export function getPostBySlug(slug: string): BlogPost | null {
 			source: data.source,
 			sourceUrl: data.sourceUrl,
 			readingTime: calculateReadingTime(content),
+			image: data.image || extractFirstImage(content),
 		};
 	} catch (error) {
 		console.error(`[blog.ts] Failed to read post "${slug}":`, {
