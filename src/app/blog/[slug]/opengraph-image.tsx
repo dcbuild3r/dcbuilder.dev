@@ -16,7 +16,7 @@ interface Props {
 
 export default async function Image({ params }: Props) {
 	const { slug } = await params;
-	const post = getPostBySlug(slug);
+	const post = await getPostBySlug(slug);
 
 	const title = post?.title || "Blog Post";
 	const date = post?.date ? formatBlogDate(post.date) : "";

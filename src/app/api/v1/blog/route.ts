@@ -1,46 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
-import { requireAuth } from "@/lib/api-auth";
+import { db, blogPosts } from "@/db";
+import { desc, eq } from "drizzle-orm";
+import { requireAuth, validateApiKey } from "@/lib/api-auth";
 
-const BLOG_DIR = path.join(process.cwd(), "content/blog");
+function isValidDate(dateStr: string): boolean {
+  const parsed = new Date(dateStr);
+  return !isNaN(parsed.getTime());
+}
 
-// GET - List all blog posts
-export async function GET() {
+// GET - List all blog posts (published only for public, all for authenticated)
+export async function GET(request: NextRequest) {
   try {
-    if (!fs.existsSync(BLOG_DIR)) {
-      return NextResponse.json({ data: [] });
-    }
+    // Check if authenticated - if so, show all posts including unpublished
+    const auth = await validateApiKey(request, "admin:read");
 
-    const files = fs.readdirSync(BLOG_DIR);
-    const posts = files
-      .filter((file) => file.endsWith(".mdx") || file.endsWith(".md"))
-      .map((file) => {
-        const slug = file.replace(/\.mdx?$/, "");
-        const filePath = path.join(BLOG_DIR, file);
-        const fileContent = fs.readFileSync(filePath, "utf-8");
-        const { data, content } = matter(fileContent);
+    const query = auth.valid
+      ? db.select().from(blogPosts).orderBy(desc(blogPosts.date))
+      : db.select().from(blogPosts).where(eq(blogPosts.published, true)).orderBy(desc(blogPosts.date));
 
-        return {
-          slug,
-          title: data.title || slug,
-          date: data.date || "",
-          description: data.description || "",
-          source: data.source || null,
-          sourceUrl: data.sourceUrl || null,
-          image: data.image || null,
-          contentLength: content.length,
-          wordCount: content.trim().split(/\s+/).length,
-        };
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const posts = await query;
 
-    return NextResponse.json({ data: posts });
+    const data = posts.map((post) => ({
+      slug: post.slug,
+      title: post.title,
+      date: post.date?.toISOString().split("T")[0] || "",
+      description: post.description || "",
+      source: post.source,
+      sourceUrl: post.sourceUrl,
+      image: post.image,
+      published: post.published,
+      wordCount: post.content.trim().split(/\s+/).length,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+    }));
+
+    return NextResponse.json({ data });
   } catch (error) {
-    console.error("Failed to list blog posts:", error);
+    console.error("[api/blog] Failed to list blog posts:", error);
     return NextResponse.json(
-      { error: "Failed to list blog posts" },
+      { error: "Failed to list blog posts", code: "DB_QUERY_ERROR" },
       { status: 500 }
     );
   }
@@ -51,54 +49,83 @@ export async function POST(request: NextRequest) {
   const auth = await requireAuth(request, "admin:write");
   if (auth instanceof Response) return auth;
 
+  // Parse JSON body separately for better error handling
+  let body: Record<string, unknown>;
   try {
-    const body = await request.json();
-    const { slug, title, date, description, source, sourceUrl, content } = body;
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON in request body", code: "INVALID_JSON" },
+      { status: 400 }
+    );
+  }
 
-    if (!slug || !title || !content) {
-      return NextResponse.json(
-        { error: "slug, title, and content are required" },
-        { status: 400 }
-      );
-    }
+  const { slug, title, date, description, source, sourceUrl, image, content, published } = body as {
+    slug?: string;
+    title?: string;
+    date?: string;
+    description?: string;
+    source?: string;
+    sourceUrl?: string;
+    image?: string;
+    content?: string;
+    published?: boolean;
+  };
 
-    // Validate slug format (alphanumeric, hyphens only)
-    if (!/^[a-z0-9-]+$/.test(slug)) {
-      return NextResponse.json(
-        { error: "Slug must contain only lowercase letters, numbers, and hyphens" },
-        { status: 400 }
-      );
-    }
+  // Validate required fields
+  if (!slug || !title || !content) {
+    console.warn("[api/blog] POST validation failed:", { hasSlug: !!slug, hasTitle: !!title, hasContent: !!content });
+    return NextResponse.json(
+      { error: "slug, title, and content are required", code: "VALIDATION_ERROR" },
+      { status: 400 }
+    );
+  }
 
-    // Check if file already exists
-    const mdxPath = path.join(BLOG_DIR, `${slug}.mdx`);
-    const mdPath = path.join(BLOG_DIR, `${slug}.md`);
-    if (fs.existsSync(mdxPath) || fs.existsSync(mdPath)) {
+  // Validate slug format (alphanumeric, hyphens only)
+  if (!/^[a-z0-9-]+$/.test(slug)) {
+    console.warn("[api/blog] Invalid slug format:", { slug });
+    return NextResponse.json(
+      { error: "Slug must contain only lowercase letters, numbers, and hyphens", code: "INVALID_SLUG" },
+      { status: 400 }
+    );
+  }
+
+  // Validate date format if provided
+  if (date && !isValidDate(date)) {
+    console.warn("[api/blog] Invalid date format:", { date });
+    return NextResponse.json(
+      { error: "Invalid date format", code: "INVALID_DATE" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    // Check if slug already exists
+    const existing = await db
+      .select({ slug: blogPosts.slug })
+      .from(blogPosts)
+      .where(eq(blogPosts.slug, slug))
+      .limit(1);
+
+    if (existing.length > 0) {
       return NextResponse.json(
-        { error: "A post with this slug already exists" },
+        { error: "A post with this slug already exists", code: "SLUG_EXISTS" },
         { status: 409 }
       );
     }
 
-    // Build frontmatter
-    const frontmatter: Record<string, string> = {
+    // Insert into database
+    await db.insert(blogPosts).values({
+      slug,
       title,
-      date: date || new Date().toISOString().split("T")[0],
-      description: description || "",
-    };
-    if (source) frontmatter.source = source;
-    if (sourceUrl) frontmatter.sourceUrl = sourceUrl;
-
-    // Create file content
-    const fileContent = matter.stringify(content, frontmatter);
-
-    // Ensure directory exists
-    if (!fs.existsSync(BLOG_DIR)) {
-      fs.mkdirSync(BLOG_DIR, { recursive: true });
-    }
-
-    // Write file
-    fs.writeFileSync(mdxPath, fileContent, "utf-8");
+      description: description || null,
+      content,
+      date: date ? new Date(date) : new Date(),
+      source: source || null,
+      sourceUrl: sourceUrl || null,
+      image: image || null,
+      published: published ?? true,
+    });
 
     return NextResponse.json({
       success: true,
@@ -106,9 +133,9 @@ export async function POST(request: NextRequest) {
       message: "Blog post created successfully",
     });
   } catch (error) {
-    console.error("Failed to create blog post:", error);
+    console.error("[api/blog] Failed to create blog post:", error);
     return NextResponse.json(
-      { error: "Failed to create blog post" },
+      { error: "Failed to create blog post", code: "DB_INSERT_ERROR" },
       { status: 500 }
     );
   }

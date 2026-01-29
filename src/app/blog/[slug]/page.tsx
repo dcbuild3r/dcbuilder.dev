@@ -10,13 +10,13 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-	const slugs = getAllSlugs();
+	const slugs = await getAllSlugs();
 	return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props) {
 	const { slug } = await params;
-	const post = getPostBySlug(slug);
+	const post = await getPostBySlug(slug);
 
 	if (!post) {
 		return { title: "Post Not Found" };
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function BlogPostPage({ params }: Props) {
 	const { slug } = await params;
-	const post = getPostBySlug(slug);
+	const post = await getPostBySlug(slug);
 
 	if (!post) {
 		notFound();

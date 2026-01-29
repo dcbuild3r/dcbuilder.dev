@@ -7,8 +7,8 @@ export const metadata = {
 	description: "Thoughts on Ethereum, cryptography, and distributed systems.",
 };
 
-export default function BlogPage() {
-	const posts = getAllPosts();
+export default async function BlogPage() {
+	const posts = await getAllPosts();
 
 	return (
 		<>

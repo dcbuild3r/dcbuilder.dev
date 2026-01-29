@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
-import { requireAuth } from "@/lib/api-auth";
+import { db, blogPosts } from "@/db";
+import { eq } from "drizzle-orm";
+import { requireAuth, validateApiKey } from "@/lib/api-auth";
 
-const BLOG_DIR = path.join(process.cwd(), "content/blog");
-
-// Find the file path for a slug (could be .md or .mdx)
-function findPostFile(slug: string): string | null {
-  const mdxPath = path.join(BLOG_DIR, `${slug}.mdx`);
-  const mdPath = path.join(BLOG_DIR, `${slug}.md`);
-
-  if (fs.existsSync(mdxPath)) return mdxPath;
-  if (fs.existsSync(mdPath)) return mdPath;
-  return null;
+function isValidDate(dateStr: string): boolean {
+  const parsed = new Date(dateStr);
+  return !isNaN(parsed.getTime());
 }
 
 // GET - Get single blog post with full content
@@ -23,31 +15,44 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const filePath = findPostFile(slug);
 
-    if (!filePath) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    // Check if authenticated - if so, can view unpublished
+    const auth = await validateApiKey(request, "admin:read");
+
+    const [post] = await db
+      .select()
+      .from(blogPosts)
+      .where(eq(blogPosts.slug, slug))
+      .limit(1);
+
+    if (!post) {
+      return NextResponse.json({ error: "Post not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
-    const fileContent = fs.readFileSync(filePath, "utf-8");
-    const { data, content } = matter(fileContent);
+    // If not authenticated and post is unpublished, return 404
+    if (!auth.valid && !post.published) {
+      return NextResponse.json({ error: "Post not found", code: "NOT_FOUND" }, { status: 404 });
+    }
 
     return NextResponse.json({
       data: {
-        slug,
-        title: data.title || slug,
-        date: data.date || "",
-        description: data.description || "",
-        source: data.source || null,
-        sourceUrl: data.sourceUrl || null,
-        image: data.image || null,
-        content,
+        slug: post.slug,
+        title: post.title,
+        date: post.date?.toISOString().split("T")[0] || "",
+        description: post.description || "",
+        source: post.source,
+        sourceUrl: post.sourceUrl,
+        image: post.image,
+        content: post.content,
+        published: post.published,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
       },
     });
   } catch (error) {
-    console.error("Failed to get blog post:", error);
+    console.error("[api/blog] Failed to get blog post:", error);
     return NextResponse.json(
-      { error: "Failed to get blog post" },
+      { error: "Failed to get blog post", code: "DB_QUERY_ERROR" },
       { status: 500 }
     );
   }
@@ -61,59 +66,110 @@ export async function PUT(
   const auth = await requireAuth(request, "admin:write");
   if (auth instanceof Response) return auth;
 
+  const { slug } = await params;
+
+  // Check if post exists first (before parsing body)
+  let existingPost;
   try {
-    const { slug } = await params;
-    const filePath = findPostFile(slug);
+    const [existing] = await db
+      .select()
+      .from(blogPosts)
+      .where(eq(blogPosts.slug, slug))
+      .limit(1);
 
-    if (!filePath) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    if (!existing) {
+      return NextResponse.json({ error: "Post not found", code: "NOT_FOUND" }, { status: 404 });
     }
+    existingPost = existing;
+  } catch (error) {
+    console.error("[api/blog] Failed to check existing post:", error);
+    return NextResponse.json(
+      { error: "Failed to update blog post", code: "DB_QUERY_ERROR" },
+      { status: 500 }
+    );
+  }
 
-    const body = await request.json();
-    const { title, date, description, source, sourceUrl, content, newSlug } = body;
+  // Parse JSON body separately for better error handling
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON in request body", code: "INVALID_JSON" },
+      { status: 400 }
+    );
+  }
 
-    if (!title || !content) {
-      return NextResponse.json(
-        { error: "title and content are required" },
-        { status: 400 }
-      );
-    }
+  const { title, date, description, source, sourceUrl, image, content, newSlug, published } = body as {
+    title?: string;
+    date?: string;
+    description?: string;
+    source?: string;
+    sourceUrl?: string;
+    image?: string;
+    content?: string;
+    newSlug?: string;
+    published?: boolean;
+  };
 
-    // Build frontmatter
-    const frontmatter: Record<string, string> = {
-      title,
-      date: date || new Date().toISOString().split("T")[0],
-      description: description || "",
-    };
-    if (source) frontmatter.source = source;
-    if (sourceUrl) frontmatter.sourceUrl = sourceUrl;
+  if (!title || !content) {
+    console.warn("[api/blog] PUT validation failed:", { hasTitle: !!title, hasContent: !!content });
+    return NextResponse.json(
+      { error: "title and content are required", code: "VALIDATION_ERROR" },
+      { status: 400 }
+    );
+  }
 
-    // Create file content
-    const fileContent = matter.stringify(content, frontmatter);
+  // Validate date format if provided
+  if (date && !isValidDate(date)) {
+    console.warn("[api/blog] Invalid date format:", { date });
+    return NextResponse.json(
+      { error: "Invalid date format", code: "INVALID_DATE" },
+      { status: 400 }
+    );
+  }
 
+  try {
     // Handle slug rename
     if (newSlug && newSlug !== slug) {
       // Validate new slug format
       if (!/^[a-z0-9-]+$/.test(newSlug)) {
         return NextResponse.json(
-          { error: "Slug must contain only lowercase letters, numbers, and hyphens" },
+          { error: "Slug must contain only lowercase letters, numbers, and hyphens", code: "INVALID_SLUG" },
           { status: 400 }
         );
       }
 
       // Check if new slug already exists
-      const newMdxPath = path.join(BLOG_DIR, `${newSlug}.mdx`);
-      const newMdPath = path.join(BLOG_DIR, `${newSlug}.md`);
-      if (fs.existsSync(newMdxPath) || fs.existsSync(newMdPath)) {
+      const [existingNew] = await db
+        .select({ slug: blogPosts.slug })
+        .from(blogPosts)
+        .where(eq(blogPosts.slug, newSlug))
+        .limit(1);
+
+      if (existingNew) {
         return NextResponse.json(
-          { error: "A post with the new slug already exists" },
+          { error: "A post with the new slug already exists", code: "SLUG_EXISTS" },
           { status: 409 }
         );
       }
 
-      // Write to new file and delete old
-      fs.writeFileSync(newMdxPath, fileContent, "utf-8");
-      fs.unlinkSync(filePath);
+      // Use transaction for atomic delete + insert (prevents data loss)
+      await db.transaction(async (tx) => {
+        await tx.delete(blogPosts).where(eq(blogPosts.slug, slug));
+        await tx.insert(blogPosts).values({
+          slug: newSlug,
+          title,
+          description: description || null,
+          content,
+          date: date ? new Date(date) : existingPost.date,
+          source: source || null,
+          sourceUrl: sourceUrl || null,
+          image: image || null,
+          published: published ?? true,
+          createdAt: existingPost.createdAt,
+        });
+      });
 
       return NextResponse.json({
         success: true,
@@ -122,8 +178,21 @@ export async function PUT(
       });
     }
 
-    // Write to existing file
-    fs.writeFileSync(filePath, fileContent, "utf-8");
+    // Update existing post
+    await db
+      .update(blogPosts)
+      .set({
+        title,
+        description: description || null,
+        content,
+        date: date ? new Date(date) : undefined,
+        source: source || null,
+        sourceUrl: sourceUrl || null,
+        image: image || null,
+        published: published ?? true,
+        updatedAt: new Date(),
+      })
+      .where(eq(blogPosts.slug, slug));
 
     return NextResponse.json({
       success: true,
@@ -131,9 +200,9 @@ export async function PUT(
       message: "Blog post updated successfully",
     });
   } catch (error) {
-    console.error("Failed to update blog post:", error);
+    console.error("[api/blog] Failed to update blog post:", error);
     return NextResponse.json(
-      { error: "Failed to update blog post" },
+      { error: "Failed to update blog post", code: "DB_UPDATE_ERROR" },
       { status: 500 }
     );
   }
@@ -149,22 +218,28 @@ export async function DELETE(
 
   try {
     const { slug } = await params;
-    const filePath = findPostFile(slug);
 
-    if (!filePath) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    // Check if post exists
+    const [existing] = await db
+      .select({ slug: blogPosts.slug })
+      .from(blogPosts)
+      .where(eq(blogPosts.slug, slug))
+      .limit(1);
+
+    if (!existing) {
+      return NextResponse.json({ error: "Post not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
-    fs.unlinkSync(filePath);
+    await db.delete(blogPosts).where(eq(blogPosts.slug, slug));
 
     return NextResponse.json({
       success: true,
       message: "Blog post deleted successfully",
     });
   } catch (error) {
-    console.error("Failed to delete blog post:", error);
+    console.error("[api/blog] Failed to delete blog post:", error);
     return NextResponse.json(
-      { error: "Failed to delete blog post" },
+      { error: "Failed to delete blog post", code: "DB_DELETE_ERROR" },
       { status: 500 }
     );
   }

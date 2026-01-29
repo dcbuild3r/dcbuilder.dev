@@ -172,6 +172,28 @@ export const affiliations = pgTable(
   (table) => [index("affiliations_title_idx").on(table.title)]
 );
 
+// Blog posts table
+export const blogPosts = pgTable(
+  "blog_posts",
+  {
+    slug: text("slug").primaryKey(), // URL slug, e.g., "my-blog-post"
+    title: text("title").notNull(),
+    description: text("description"),
+    content: text("content").notNull(), // MDX content
+    date: timestamp("date").notNull(),
+    source: text("source"), // e.g., "mirror", "devpill"
+    sourceUrl: text("source_url"), // Original URL if republished
+    image: text("image"), // Featured image URL
+    published: boolean("published").default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("blog_posts_date_idx").on(table.date),
+    index("blog_posts_published_idx").on(table.published),
+  ]
+);
+
 // API keys for authentication
 export const apiKeys = pgTable(
   "api_keys",
@@ -209,3 +231,6 @@ export type NewInvestment = typeof investments.$inferInsert;
 
 export type Affiliation = typeof affiliations.$inferSelect;
 export type NewAffiliation = typeof affiliations.$inferInsert;
+
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type NewBlogPost = typeof blogPosts.$inferInsert;
