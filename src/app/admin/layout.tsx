@@ -16,6 +16,10 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   useEffect(() => {
+    document.title = "Admin | dcbuilder.eth";
+  }, []);
+
+  useEffect(() => {
     const storedKey = localStorage.getItem("admin_api_key");
     if (storedKey) {
       setApiKey(storedKey);
