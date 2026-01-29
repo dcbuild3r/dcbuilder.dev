@@ -4,19 +4,21 @@ import { getJobApplyClicksLast7Days, determineHotJobs } from "@/lib/posthog-api"
 export const revalidate = 3600; // Cache for 1 hour
 
 export async function GET() {
-  try {
-    const clicks = await getJobApplyClicksLast7Days();
-    const hotJobIds = determineHotJobs(clicks, 5); // Top 5% by clicks
+  const result = await getJobApplyClicksLast7Days();
 
-    return NextResponse.json({
-      hotJobIds,
-      updatedAt: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error("Failed to fetch hot jobs:", error);
+  if (!result.success) {
+    // Return 503 Service Unavailable when analytics is down
+    // Don't include hotJobIds to force clients to handle the error
     return NextResponse.json(
-      { hotJobIds: [], error: "Failed to fetch" },
-      { status: 500 }
+      { error: result.error, configured: result.configured },
+      { status: 503 }
     );
   }
+
+  const hotJobIds = determineHotJobs(result.data, 5); // Top 5% by clicks
+
+  return NextResponse.json({
+    hotJobIds,
+    updatedAt: new Date().toISOString(),
+  });
 }

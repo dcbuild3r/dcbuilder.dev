@@ -4,19 +4,21 @@ import { getNewsClicksLast7Days, determineHotNews } from "@/lib/posthog-api";
 export const revalidate = 3600; // Cache for 1 hour
 
 export async function GET() {
-  try {
-    const clicks = await getNewsClicksLast7Days();
-    const hotNewsIds = determineHotNews(clicks, 5); // Top 5 by clicks
+  const result = await getNewsClicksLast7Days();
 
-    return NextResponse.json({
-      hotNewsIds,
-      updatedAt: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error("Failed to fetch hot news:", error);
+  if (!result.success) {
+    // Return 503 Service Unavailable when analytics is down
+    // Don't include hotNewsIds to force clients to handle the error
     return NextResponse.json(
-      { hotNewsIds: [], error: "Failed to fetch" },
-      { status: 500 }
+      { error: result.error, configured: result.configured },
+      { status: 503 }
     );
   }
+
+  const hotNewsIds = determineHotNews(result.data, 5); // Top 5 by clicks
+
+  return NextResponse.json({
+    hotNewsIds,
+    updatedAt: new Date().toISOString(),
+  });
 }

@@ -15,19 +15,29 @@ interface TrendResult {
 }
 
 export interface SiteStats {
-  pageviews7d: number;
-  pageviews30d: number;
-  uniqueVisitors7d: number;
-  uniqueVisitors30d: number;
+  pageviews7d: number | null;
+  pageviews30d: number | null;
+  uniqueVisitors7d: number | null;
+  uniqueVisitors30d: number | null;
+}
+
+// Result type that distinguishes errors from empty data
+export type PostHogResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string; configured: boolean };
+
+// Check if PostHog is configured
+export function isPostHogConfigured(): boolean {
+  return Boolean(POSTHOG_API_KEY && POSTHOG_PROJECT_ID);
 }
 
 async function fetchPostHogTrend(
   eventName: string,
   breakdownProperty: string
-): Promise<ClickCount[]> {
+): Promise<PostHogResult<ClickCount[]>> {
   if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
-    console.warn("PostHog API credentials not configured");
-    return [];
+    console.warn("[posthog] API credentials not configured");
+    return { success: false, error: "PostHog not configured", configured: false };
   }
 
   try {
@@ -50,26 +60,28 @@ async function fetchPostHogTrend(
     );
 
     if (!response.ok) {
-      console.error("PostHog API error:", await response.text());
-      return [];
+      const errorText = await response.text();
+      console.error("[posthog] API error:", { status: response.status, body: errorText });
+      return { success: false, error: `PostHog API error: ${response.status}`, configured: true };
     }
 
     const data = await response.json();
 
-    return (
+    const result: ClickCount[] =
       data.result?.map((r: TrendResult) => ({
         id: r.breakdown_value,
         count: r.count,
-      })) ?? []
-    );
+      })) ?? [];
+
+    return { success: true, data: result };
   } catch (error) {
-    console.error("Failed to fetch PostHog data:", error);
-    return [];
+    console.error("[posthog] Failed to fetch data:", error);
+    return { success: false, error: "Failed to connect to PostHog", configured: true };
   }
 }
 
 // Job analytics
-export async function getJobApplyClicksLast7Days(): Promise<ClickCount[]> {
+export async function getJobApplyClicksLast7Days(): Promise<PostHogResult<ClickCount[]>> {
   return fetchPostHogTrend("job_apply_click", "job_id");
 }
 
@@ -93,7 +105,7 @@ export function determineHotJobs(
 }
 
 // Candidate analytics
-export async function getCandidateViewsLast7Days(): Promise<ClickCount[]> {
+export async function getCandidateViewsLast7Days(): Promise<PostHogResult<ClickCount[]>> {
   return fetchPostHogTrend("candidate_view", "candidate_id");
 }
 
@@ -114,15 +126,15 @@ export function determineHotCandidates(
 }
 
 // News analytics
-export async function getNewsClicksLast7Days(): Promise<ClickCount[]> {
+export async function getNewsClicksLast7Days(): Promise<PostHogResult<ClickCount[]>> {
   return fetchPostHogTrend("news_click", "news_id");
 }
 
 // Blog analytics - track by slug from $pageview on /blog/* paths
-export async function getBlogViewsLast7Days(): Promise<ClickCount[]> {
+export async function getBlogViewsLast7Days(): Promise<PostHogResult<ClickCount[]>> {
   if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
-    console.warn("PostHog API credentials not configured");
-    return [];
+    console.warn("[posthog] API credentials not configured");
+    return { success: false, error: "PostHog not configured", configured: false };
   }
 
   try {
@@ -153,14 +165,15 @@ export async function getBlogViewsLast7Days(): Promise<ClickCount[]> {
     );
 
     if (!response.ok) {
-      console.error("PostHog API error:", await response.text());
-      return [];
+      const errorText = await response.text();
+      console.error("[posthog] Blog views API error:", { status: response.status, body: errorText });
+      return { success: false, error: `PostHog API error: ${response.status}`, configured: true };
     }
 
     const data = await response.json();
 
     // Extract slug from pathname (e.g., "/blog/my-post" -> "my-post")
-    return (
+    const result: ClickCount[] =
       data.result
         ?.map((r: TrendResult) => {
           const match = r.breakdown_value.match(/^\/blog\/(.+)$/);
@@ -168,11 +181,12 @@ export async function getBlogViewsLast7Days(): Promise<ClickCount[]> {
             ? { id: match[1], count: r.count }
             : null;
         })
-        .filter((r: ClickCount | null): r is ClickCount => r !== null) ?? []
-    );
+        .filter((r: ClickCount | null): r is ClickCount => r !== null) ?? [];
+
+    return { success: true, data: result };
   } catch (error) {
-    console.error("Failed to fetch blog views:", error);
-    return [];
+    console.error("[posthog] Failed to fetch blog views:", error);
+    return { success: false, error: "Failed to connect to PostHog", configured: true };
   }
 }
 
@@ -195,8 +209,8 @@ export function determineHotNews(
 // Site-wide analytics
 export async function getSiteStats(): Promise<SiteStats> {
   if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
-    console.warn("PostHog API credentials not configured");
-    return { pageviews7d: 0, pageviews30d: 0, uniqueVisitors7d: 0, uniqueVisitors30d: 0 };
+    console.warn("[posthog] API credentials not configured");
+    return { pageviews7d: null, pageviews30d: null, uniqueVisitors7d: null, uniqueVisitors30d: null };
   }
 
   try {
@@ -235,8 +249,11 @@ export async function getSiteStats(): Promise<SiteStats> {
     ]);
 
     if (!res7d.ok || !res30d.ok) {
-      console.error("PostHog API error fetching site stats");
-      return { pageviews7d: 0, pageviews30d: 0, uniqueVisitors7d: 0, uniqueVisitors30d: 0 };
+      console.error("[posthog] API error fetching site stats:", {
+        res7dStatus: res7d.status,
+        res30dStatus: res30d.status,
+      });
+      return { pageviews7d: null, pageviews30d: null, uniqueVisitors7d: null, uniqueVisitors30d: null };
     }
 
     const [data7d, data30d] = await Promise.all([res7d.json(), res30d.json()]);
@@ -249,7 +266,7 @@ export async function getSiteStats(): Promise<SiteStats> {
 
     return { pageviews7d, pageviews30d, uniqueVisitors7d, uniqueVisitors30d };
   } catch (error) {
-    console.error("Failed to fetch site stats:", error);
-    return { pageviews7d: 0, pageviews30d: 0, uniqueVisitors7d: 0, uniqueVisitors30d: 0 };
+    console.error("[posthog] Failed to fetch site stats:", error);
+    return { pageviews7d: null, pageviews30d: null, uniqueVisitors7d: null, uniqueVisitors30d: null };
   }
 }

@@ -9,37 +9,45 @@ type Params = { params: Promise<{ id: string }> };
 export async function GET(_request: NextRequest, { params }: Params) {
   const { id } = await params;
 
-  const [job] = await db
-    .select({
-      id: jobs.id,
-      title: jobs.title,
-      company: jobs.company,
-      companyLogo: jobs.companyLogo,
-      link: jobs.link,
-      location: jobs.location,
-      remote: jobs.remote,
-      type: jobs.type,
-      salary: jobs.salary,
-      department: jobs.department,
-      tags: jobs.tags,
-      category: jobs.category,
-      featured: jobs.featured,
-      description: jobs.description,
-      companyWebsite: jobs.companyWebsite,
-      companyX: jobs.companyX,
-      companyGithub: jobs.companyGithub,
-      createdAt: jobs.createdAt,
-      updatedAt: jobs.updatedAt,
-    })
-    .from(jobs)
-    .where(eq(jobs.id, id))
-    .limit(1);
+  try {
+    const [job] = await db
+      .select({
+        id: jobs.id,
+        title: jobs.title,
+        company: jobs.company,
+        companyLogo: jobs.companyLogo,
+        link: jobs.link,
+        location: jobs.location,
+        remote: jobs.remote,
+        type: jobs.type,
+        salary: jobs.salary,
+        department: jobs.department,
+        tags: jobs.tags,
+        category: jobs.category,
+        featured: jobs.featured,
+        description: jobs.description,
+        companyWebsite: jobs.companyWebsite,
+        companyX: jobs.companyX,
+        companyGithub: jobs.companyGithub,
+        createdAt: jobs.createdAt,
+        updatedAt: jobs.updatedAt,
+      })
+      .from(jobs)
+      .where(eq(jobs.id, id))
+      .limit(1);
 
-  if (!job) {
-    return Response.json({ error: "Job not found" }, { status: 404 });
+    if (!job) {
+      return Response.json({ error: "Job not found", code: "NOT_FOUND" }, { status: 404 });
+    }
+
+    return Response.json({ data: job });
+  } catch (error) {
+    console.error("[api/jobs] GET by ID failed:", { id, error });
+    return Response.json(
+      { error: "Failed to fetch job", code: "DB_QUERY_ERROR" },
+      { status: 500 }
+    );
   }
-
-  return Response.json({ data: job });
 }
 
 // PUT /api/v1/jobs/:id - Update a job
@@ -65,13 +73,24 @@ export async function PUT(request: NextRequest, { params }: Params) {
       .returning();
 
     if (!updated) {
-      return Response.json({ error: "Job not found" }, { status: 404 });
+      return Response.json({ error: "Job not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return Response.json({ data: updated });
   } catch (error) {
-    console.error("Failed to update job:", error);
-    return Response.json({ error: "Failed to update job" }, { status: 500 });
+    console.error("[api/jobs] PUT failed:", { id, error });
+
+    if (error instanceof Error && error.message.includes("duplicate key")) {
+      return Response.json(
+        { error: "Update would create a duplicate", code: "DUPLICATE_KEY" },
+        { status: 409 }
+      );
+    }
+
+    return Response.json(
+      { error: "Failed to update job", code: "DB_UPDATE_ERROR" },
+      { status: 500 }
+    );
   }
 }
 
@@ -82,14 +101,30 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 
   const { id } = await params;
 
-  const [deleted] = await db
-    .delete(jobs)
-    .where(eq(jobs.id, id))
-    .returning({ id: jobs.id });
+  try {
+    const [deleted] = await db
+      .delete(jobs)
+      .where(eq(jobs.id, id))
+      .returning({ id: jobs.id });
 
-  if (!deleted) {
-    return Response.json({ error: "Job not found" }, { status: 404 });
+    if (!deleted) {
+      return Response.json({ error: "Job not found", code: "NOT_FOUND" }, { status: 404 });
+    }
+
+    return Response.json({ data: { deleted: true, id: deleted.id } });
+  } catch (error) {
+    console.error("[api/jobs] DELETE failed:", { id, error });
+
+    if (error instanceof Error && error.message.includes("foreign key")) {
+      return Response.json(
+        { error: "Cannot delete job with existing references", code: "FK_CONSTRAINT" },
+        { status: 409 }
+      );
+    }
+
+    return Response.json(
+      { error: "Failed to delete job", code: "DB_DELETE_ERROR" },
+      { status: 500 }
+    );
   }
-
-  return Response.json({ data: { deleted: true, id: deleted.id } });
 }

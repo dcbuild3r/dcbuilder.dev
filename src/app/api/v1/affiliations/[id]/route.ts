@@ -5,21 +5,30 @@ import { requireAuth } from "@/lib/api-auth";
 
 // GET /api/v1/affiliations/[id]
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const [affiliation] = await db
-    .select()
-    .from(affiliations)
-    .where(eq(affiliations.id, id))
-    .limit(1);
 
-  if (!affiliation) {
-    return Response.json({ error: "Affiliation not found" }, { status: 404 });
+  try {
+    const [affiliation] = await db
+      .select()
+      .from(affiliations)
+      .where(eq(affiliations.id, id))
+      .limit(1);
+
+    if (!affiliation) {
+      return Response.json({ error: "Affiliation not found", code: "NOT_FOUND" }, { status: 404 });
+    }
+
+    return Response.json({ data: affiliation });
+  } catch (error) {
+    console.error("[api/affiliations] GET by ID failed:", { id, error });
+    return Response.json(
+      { error: "Failed to fetch affiliation", code: "DB_QUERY_ERROR" },
+      { status: 500 }
+    );
   }
-
-  return Response.json({ data: affiliation });
 }
 
 // PUT /api/v1/affiliations/[id]
@@ -51,14 +60,22 @@ export async function PUT(
       .returning();
 
     if (!updated) {
-      return Response.json({ error: "Affiliation not found" }, { status: 404 });
+      return Response.json({ error: "Affiliation not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return Response.json({ data: updated });
   } catch (error) {
-    console.error("Failed to update affiliation:", error);
+    console.error("[api/affiliations] PUT failed:", { id, error });
+
+    if (error instanceof Error && error.message.includes("duplicate key")) {
+      return Response.json(
+        { error: "Update would create a duplicate", code: "DUPLICATE_KEY" },
+        { status: 409 }
+      );
+    }
+
     return Response.json(
-      { error: "Failed to update affiliation" },
+      { error: "Failed to update affiliation", code: "DB_UPDATE_ERROR" },
       { status: 500 }
     );
   }
@@ -81,14 +98,22 @@ export async function DELETE(
       .returning();
 
     if (!deleted) {
-      return Response.json({ error: "Affiliation not found" }, { status: 404 });
+      return Response.json({ error: "Affiliation not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return Response.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete affiliation:", error);
+    console.error("[api/affiliations] DELETE failed:", { id, error });
+
+    if (error instanceof Error && error.message.includes("foreign key")) {
+      return Response.json(
+        { error: "Cannot delete affiliation with existing references", code: "FK_CONSTRAINT" },
+        { status: 409 }
+      );
+    }
+
     return Response.json(
-      { error: "Failed to delete affiliation" },
+      { error: "Failed to delete affiliation", code: "DB_DELETE_ERROR" },
       { status: 500 }
     );
   }

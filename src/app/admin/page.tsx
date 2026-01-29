@@ -15,10 +15,10 @@ interface Stats {
 }
 
 interface SiteStats {
-  pageviews7d: number;
-  pageviews30d: number;
-  uniqueVisitors7d: number;
-  uniqueVisitors30d: number;
+  pageviews7d: number | null;
+  pageviews30d: number | null;
+  uniqueVisitors7d: number | null;
+  uniqueVisitors30d: number | null;
 }
 
 interface AnalyticsData {
@@ -201,25 +201,25 @@ export default function AdminDashboard() {
         <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white">
           <p className="text-sm opacity-80">Pageviews (7d)</p>
           <p className="text-3xl font-bold">
-            {analytics?.siteStats ? analytics.siteStats.pageviews7d.toLocaleString() : "0"}
+            {analyticsLoading ? "..." : analytics?.siteStats?.pageviews7d != null ? analytics.siteStats.pageviews7d.toLocaleString() : "-"}
           </p>
         </div>
         <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-4 text-white">
           <p className="text-sm opacity-80">Unique Visitors (7d)</p>
           <p className="text-3xl font-bold">
-            {analytics?.siteStats ? analytics.siteStats.uniqueVisitors7d.toLocaleString() : "0"}
+            {analyticsLoading ? "..." : analytics?.siteStats?.uniqueVisitors7d != null ? analytics.siteStats.uniqueVisitors7d.toLocaleString() : "-"}
           </p>
         </div>
         <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl p-4 text-white">
           <p className="text-sm opacity-80">Pageviews (30d)</p>
           <p className="text-3xl font-bold">
-            {analytics?.siteStats ? analytics.siteStats.pageviews30d.toLocaleString() : "0"}
+            {analyticsLoading ? "..." : analytics?.siteStats?.pageviews30d != null ? analytics.siteStats.pageviews30d.toLocaleString() : "-"}
           </p>
         </div>
         <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-4 text-white">
           <p className="text-sm opacity-80">Unique Visitors (30d)</p>
           <p className="text-3xl font-bold">
-            {analytics?.siteStats ? analytics.siteStats.uniqueVisitors30d.toLocaleString() : "0"}
+            {analyticsLoading ? "..." : analytics?.siteStats?.uniqueVisitors30d != null ? analytics.siteStats.uniqueVisitors30d.toLocaleString() : "-"}
           </p>
         </div>
       </div>

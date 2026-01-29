@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db, jobs, NewJob } from "@/db";
 import { eq, desc, and, SQL } from "drizzle-orm";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth, parsePaginationParams } from "@/lib/api-auth";
 
 // GET /api/v1/jobs - List jobs with optional filters
 export async function GET(request: NextRequest) {
@@ -9,65 +9,72 @@ export async function GET(request: NextRequest) {
   const company = searchParams.get("company");
   const category = searchParams.get("category");
   const featured = searchParams.get("featured");
-  const limit = parseInt(searchParams.get("limit") || "100");
-  const offset = parseInt(searchParams.get("offset") || "0");
+  const { limit, offset } = parsePaginationParams(searchParams);
 
-  const conditions: SQL[] = [];
+  try {
+    const conditions: SQL[] = [];
 
-  if (company) {
-    conditions.push(eq(jobs.company, company));
+    if (company) {
+      conditions.push(eq(jobs.company, company));
+    }
+    if (category) {
+      conditions.push(eq(jobs.category, category));
+    }
+    if (featured === "true") {
+      conditions.push(eq(jobs.featured, true));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [data, countResult] = await Promise.all([
+      db
+        .select({
+          id: jobs.id,
+          title: jobs.title,
+          company: jobs.company,
+          companyLogo: jobs.companyLogo,
+          link: jobs.link,
+          location: jobs.location,
+          remote: jobs.remote,
+          type: jobs.type,
+          salary: jobs.salary,
+          department: jobs.department,
+          tags: jobs.tags,
+          category: jobs.category,
+          featured: jobs.featured,
+          description: jobs.description,
+          companyWebsite: jobs.companyWebsite,
+          companyX: jobs.companyX,
+          companyGithub: jobs.companyGithub,
+          createdAt: jobs.createdAt,
+          updatedAt: jobs.updatedAt,
+        })
+        .from(jobs)
+        .where(whereClause)
+        .orderBy(desc(jobs.featured), desc(jobs.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ count: jobs.id })
+        .from(jobs)
+        .where(whereClause),
+    ]);
+
+    return Response.json({
+      data,
+      meta: {
+        total: countResult.length,
+        limit,
+        offset,
+      },
+    });
+  } catch (error) {
+    console.error("[api/jobs] GET failed:", error);
+    return Response.json(
+      { error: "Failed to fetch jobs", code: "DB_QUERY_ERROR" },
+      { status: 500 }
+    );
   }
-  if (category) {
-    conditions.push(eq(jobs.category, category));
-  }
-  if (featured === "true") {
-    conditions.push(eq(jobs.featured, true));
-  }
-
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-  const [data, countResult] = await Promise.all([
-    db
-      .select({
-        id: jobs.id,
-        title: jobs.title,
-        company: jobs.company,
-        companyLogo: jobs.companyLogo,
-        link: jobs.link,
-        location: jobs.location,
-        remote: jobs.remote,
-        type: jobs.type,
-        salary: jobs.salary,
-        department: jobs.department,
-        tags: jobs.tags,
-        category: jobs.category,
-        featured: jobs.featured,
-        description: jobs.description,
-        companyWebsite: jobs.companyWebsite,
-        companyX: jobs.companyX,
-        companyGithub: jobs.companyGithub,
-        createdAt: jobs.createdAt,
-        updatedAt: jobs.updatedAt,
-      })
-      .from(jobs)
-      .where(whereClause)
-      .orderBy(desc(jobs.featured), desc(jobs.createdAt))
-      .limit(limit)
-      .offset(offset),
-    db
-      .select({ count: jobs.id })
-      .from(jobs)
-      .where(whereClause),
-  ]);
-
-  return Response.json({
-    data,
-    meta: {
-      total: countResult.length,
-      limit,
-      offset,
-    },
-  });
 }
 
 // POST /api/v1/jobs - Create a new job
@@ -81,7 +88,7 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!body.title || !body.company || !body.link || !body.category) {
       return Response.json(
-        { error: "Missing required fields: title, company, link, category" },
+        { error: "Missing required fields: title, company, link, category", code: "VALIDATION_ERROR" },
         { status: 400 }
       );
     }
@@ -90,7 +97,18 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ data: newJob }, { status: 201 });
   } catch (error) {
-    console.error("Failed to create job:", error);
-    return Response.json({ error: "Failed to create job" }, { status: 500 });
+    console.error("[api/jobs] POST failed:", error);
+
+    if (error instanceof Error && error.message.includes("duplicate key")) {
+      return Response.json(
+        { error: "A job with this identifier already exists", code: "DUPLICATE_KEY" },
+        { status: 409 }
+      );
+    }
+
+    return Response.json(
+      { error: "Failed to create job", code: "DB_INSERT_ERROR" },
+      { status: 500 }
+    );
   }
 }

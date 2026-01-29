@@ -5,21 +5,30 @@ import { requireAuth } from "@/lib/api-auth";
 
 // GET /api/v1/news/curated/[id] - Get a curated link by ID
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const [link] = await db
-    .select()
-    .from(curatedLinks)
-    .where(eq(curatedLinks.id, id))
-    .limit(1);
 
-  if (!link) {
-    return Response.json({ error: "Curated link not found" }, { status: 404 });
+  try {
+    const [link] = await db
+      .select()
+      .from(curatedLinks)
+      .where(eq(curatedLinks.id, id))
+      .limit(1);
+
+    if (!link) {
+      return Response.json({ error: "Curated link not found", code: "NOT_FOUND" }, { status: 404 });
+    }
+
+    return Response.json({ data: link });
+  } catch (error) {
+    console.error("[api/news/curated] GET by ID failed:", { id, error });
+    return Response.json(
+      { error: "Failed to fetch curated link", code: "DB_QUERY_ERROR" },
+      { status: 500 }
+    );
   }
-
-  return Response.json({ data: link });
 }
 
 // PUT /api/v1/news/curated/[id] - Update a curated link
@@ -46,14 +55,22 @@ export async function PUT(
       .returning();
 
     if (!updated) {
-      return Response.json({ error: "Curated link not found" }, { status: 404 });
+      return Response.json({ error: "Curated link not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return Response.json({ data: updated });
   } catch (error) {
-    console.error("Failed to update curated link:", error);
+    console.error("[api/news/curated] PUT failed:", { id, error });
+
+    if (error instanceof Error && error.message.includes("duplicate key")) {
+      return Response.json(
+        { error: "Update would create a duplicate", code: "DUPLICATE_KEY" },
+        { status: 409 }
+      );
+    }
+
     return Response.json(
-      { error: "Failed to update curated link" },
+      { error: "Failed to update curated link", code: "DB_UPDATE_ERROR" },
       { status: 500 }
     );
   }
@@ -76,14 +93,14 @@ export async function DELETE(
       .returning();
 
     if (!deleted) {
-      return Response.json({ error: "Curated link not found" }, { status: 404 });
+      return Response.json({ error: "Curated link not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return Response.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete curated link:", error);
+    console.error("[api/news/curated] DELETE failed:", { id, error });
     return Response.json(
-      { error: "Failed to delete curated link" },
+      { error: "Failed to delete curated link", code: "DB_DELETE_ERROR" },
       { status: 500 }
     );
   }

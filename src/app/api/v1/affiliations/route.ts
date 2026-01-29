@@ -1,25 +1,32 @@
 import { NextRequest } from "next/server";
 import { db, affiliations, NewAffiliation } from "@/db";
 import { desc } from "drizzle-orm";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth, parsePaginationParams } from "@/lib/api-auth";
 
 // GET /api/v1/affiliations - List affiliations
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const limit = parseInt(searchParams.get("limit") || "100");
-  const offset = parseInt(searchParams.get("offset") || "0");
+  const { limit, offset } = parsePaginationParams(searchParams);
 
-  const data = await db
-    .select()
-    .from(affiliations)
-    .orderBy(desc(affiliations.createdAt))
-    .limit(limit)
-    .offset(offset);
+  try {
+    const data = await db
+      .select()
+      .from(affiliations)
+      .orderBy(desc(affiliations.createdAt))
+      .limit(limit)
+      .offset(offset);
 
-  return Response.json({
-    data,
-    meta: { limit, offset },
-  });
+    return Response.json({
+      data,
+      meta: { limit, offset },
+    });
+  } catch (error) {
+    console.error("[api/affiliations] GET failed:", error);
+    return Response.json(
+      { error: "Failed to fetch affiliations", code: "DB_QUERY_ERROR" },
+      { status: 500 }
+    );
+  }
 }
 
 // POST /api/v1/affiliations - Create an affiliation
@@ -32,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     if (!body.title || !body.role) {
       return Response.json(
-        { error: "Missing required fields: title, role" },
+        { error: "Missing required fields: title, role", code: "VALIDATION_ERROR" },
         { status: 400 }
       );
     }
@@ -44,9 +51,17 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ data: newAffiliation }, { status: 201 });
   } catch (error) {
-    console.error("Failed to create affiliation:", error);
+    console.error("[api/affiliations] POST failed:", error);
+
+    if (error instanceof Error && error.message.includes("duplicate key")) {
+      return Response.json(
+        { error: "An affiliation with this identifier already exists", code: "DUPLICATE_KEY" },
+        { status: 409 }
+      );
+    }
+
     return Response.json(
-      { error: "Failed to create affiliation" },
+      { error: "Failed to create affiliation", code: "DB_INSERT_ERROR" },
       { status: 500 }
     );
   }
