@@ -75,8 +75,31 @@ export function NewsGrid({ news }: NewsGridProps) {
 		});
 	};
 
-	// Get icon/emoji based on news type
+	// Extract X/Twitter handle from URL
+	const getXHandle = (url: string): string | null => {
+		const match = url.match(/x\.com\/([^/]+)/);
+		return match ? match[1] : null;
+	};
+
+	// Get icon/image based on news type
 	const getTypeIcon = (item: AggregatedNewsItem) => {
+		// Check if it's an X post (url contains x.com)
+		if (item.url.includes("x.com/")) {
+			const handle = getXHandle(item.url);
+			if (handle) {
+				return (
+					<Image
+						src={`https://unavatar.io/twitter/${handle}`}
+						alt={handle}
+						width={32}
+						height={32}
+						className="rounded-full"
+						unoptimized
+					/>
+				);
+			}
+		}
+
 		switch (item.type) {
 			case "blog":
 				return <span className="text-lg">📝</span>;
