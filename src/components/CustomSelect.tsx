@@ -43,51 +43,48 @@ export function CustomSelect({
 
 	const selectedIndex = filteredOptions.findIndex((opt) => opt.value === value);
 
+	const focusDropdown = useCallback(() => {
+		window.setTimeout(() => {
+			if (searchable) {
+				searchInputRef.current?.focus();
+			} else {
+				listboxRef.current?.focus();
+			}
+		}, 0);
+	}, [searchable]);
+
+	const openDropdown = useCallback(() => {
+		setIsOpen(true);
+		setFocusedIndex(selectedIndex >= 0 ? selectedIndex : 0);
+		focusDropdown();
+	}, [focusDropdown, selectedIndex]);
+
+	const closeDropdown = useCallback(() => {
+		setIsOpen(false);
+		setSearchQuery("");
+		setFocusedIndex(-1);
+	}, []);
+
 	// Close on click outside
 	useEffect(() => {
 		if (!isOpen) return;
 
 		const handleClickOutside = (e: MouseEvent) => {
 			if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-				setIsOpen(false);
-				setSearchQuery("");
+				closeDropdown();
 			}
 		};
 
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, [isOpen]);
-
-	// Reset focused index when opening or search changes
-	useEffect(() => {
-		if (isOpen) {
-			// eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: sync focus with dropdown open state
-			setFocusedIndex(selectedIndex >= 0 ? selectedIndex : 0);
-			const focusTimeout = window.setTimeout(() => {
-				if (searchable) {
-					searchInputRef.current?.focus();
-				} else {
-					listboxRef.current?.focus();
-				}
-			}, 0);
-			return () => window.clearTimeout(focusTimeout);
-		}
-		return undefined;
-	}, [isOpen, selectedIndex, searchable]);
-
-	// Reset focused index when search query changes
-	useEffect(() => {
-		if (searchQuery) {
-			setFocusedIndex(0);
-		}
-	}, [searchQuery]);
+	}, [isOpen, closeDropdown]);
 
 	// Handle keyboard navigation
 	const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
 		if (!isOpen) {
 			if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown" || e.key === "ArrowUp") {
 				e.preventDefault();
-				setIsOpen(true);
+				openDropdown();
 			}
 			return;
 		}
@@ -95,13 +92,11 @@ export function CustomSelect({
 		switch (e.key) {
 			case "Escape":
 				e.preventDefault();
-				setIsOpen(false);
-				setSearchQuery("");
+				closeDropdown();
 				triggerRef.current?.focus();
 				break;
 			case "Tab":
-				setIsOpen(false);
-				setSearchQuery("");
+				closeDropdown();
 				break;
 			case "ArrowDown":
 				e.preventDefault();
@@ -115,8 +110,7 @@ export function CustomSelect({
 				e.preventDefault();
 				if (focusedIndex >= 0 && focusedIndex < filteredOptions.length) {
 					onChange(filteredOptions[focusedIndex].value);
-					setIsOpen(false);
-					setSearchQuery("");
+					closeDropdown();
 					triggerRef.current?.focus();
 				}
 				break;
@@ -129,7 +123,7 @@ export function CustomSelect({
 				setFocusedIndex(filteredOptions.length - 1);
 				break;
 		}
-	}, [isOpen, focusedIndex, filteredOptions, onChange]);
+	}, [isOpen, focusedIndex, filteredOptions, onChange, closeDropdown, openDropdown]);
 
 	// Scroll focused option into view
 	useEffect(() => {
@@ -148,7 +142,13 @@ export function CustomSelect({
 					id={id}
 					type="button"
 					ref={triggerRef}
-					onClick={() => setIsOpen(!isOpen)}
+					onClick={() => {
+						if (isOpen) {
+							closeDropdown();
+						} else {
+							openDropdown();
+						}
+					}}
 					aria-haspopup="listbox"
 					aria-expanded={isOpen}
 					aria-controls={id ? `${id}-listbox` : undefined}
@@ -169,13 +169,10 @@ export function CustomSelect({
 			{isOpen && (
 				<>
 					{/* Backdrop for mobile */}
-					<div
-						className="sm:hidden fixed inset-0 z-[var(--z-sticky)]"
-						onClick={() => {
-							setIsOpen(false);
-							setSearchQuery("");
-						}}
-					/>
+						<div
+							className="sm:hidden fixed inset-0 z-[var(--z-sticky)]"
+							onClick={closeDropdown}
+						/>
 
 					{/* Dropdown menu */}
 					<div
@@ -194,7 +191,10 @@ export function CustomSelect({
 									ref={searchInputRef}
 									type="text"
 									value={searchQuery}
-									onChange={(e) => setSearchQuery(e.target.value)}
+									onChange={(e) => {
+										setSearchQuery(e.target.value);
+										setFocusedIndex(0);
+									}}
 									placeholder="Search..."
 									className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
 									onClick={(e) => e.stopPropagation()}
@@ -215,8 +215,7 @@ export function CustomSelect({
 									aria-selected={option.value === value}
 									onClick={() => {
 										onChange(option.value);
-										setIsOpen(false);
-										setSearchQuery("");
+										closeDropdown();
 									}}
 									onMouseEnter={() => setFocusedIndex(index)}
 									className={`w-full px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm text-left transition-colors ${!searchable ? "first:rounded-t-xl" : ""} last:rounded-b-xl ${

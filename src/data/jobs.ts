@@ -102,7 +102,7 @@ export type JobTier = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface Company {
 	name: string;
-	logo: string;
+	logo?: string;
 	website: string;
 	category: RelationshipCategory;
 	x?: string;
@@ -128,7 +128,7 @@ export interface Job {
 }
 
 // Reusable company definitions
-const companies = {
+export const companies = {
 	monad: {
 		name: "Monad",
 		logo: "/images/investments/monad.jpg",

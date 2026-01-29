@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 
 // Investment interface matching what comes from the database
@@ -34,11 +34,28 @@ interface PortfolioGridProps {
 	investments: Investment[];
 }
 
-// Fisher-Yates shuffle (pure function)
-function shuffleArray<T>(array: T[]): T[] {
+function hashString(value: string): number {
+	let hash = 0;
+	for (let i = 0; i < value.length; i++) {
+		hash = (hash << 5) - hash + value.charCodeAt(i);
+		hash |= 0;
+	}
+	return Math.abs(hash);
+}
+
+function seededRandom(seed: number): () => number {
+	let current = seed;
+	return () => {
+		current = (current * 9301 + 49297) % 233280;
+		return current / 233280;
+	};
+}
+
+// Fisher-Yates shuffle with deterministic RNG
+function shuffleArray<T>(array: T[], random: () => number): T[] {
 	const result = [...array];
 	for (let i = result.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
+		const j = Math.floor(random() * (i + 1));
 		[result[i], result[j]] = [result[j], result[i]];
 	}
 	return result;
@@ -49,16 +66,6 @@ type FilterOption = "main" | "featured" | "all";
 export function PortfolioGrid({ investments }: PortfolioGridProps) {
 	const [sortBy, setSortBy] = useState<SortOption>("relevance");
 	const [filter, setFilter] = useState<FilterOption>("all");
-	const [shuffledInvestments, setShuffledInvestments] = useState<Investment[]>(
-		[]
-	);
-	const [isHydrated, setIsHydrated] = useState(false);
-
-	// Mark as hydrated after mount
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration flag set post-mount.
-		setIsHydrated(true);
-	}, []);
 
 	// Count investments by category
 	const mainCount = useMemo(
@@ -80,8 +87,9 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 	}, [investments, filter]);
 
 	// Deterministic sort (no shuffle - that happens in useEffect)
+	// Deterministic display order (stable between server/client)
 	// Defunct companies always go last
-	const sortedInvestments = useMemo(() => {
+	const displayInvestments = useMemo(() => {
 		const active = filteredInvestments.filter((i) => i.status !== "defunct");
 		const defunct = filteredInvestments.filter((i) => i.status === "defunct");
 
@@ -98,43 +106,11 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 			];
 		}
 
-		// Relevance: featured first (by tier), then non-featured (by tier), defunct last
+		// Relevance: featured first (shuffled within tier groups), then non-featured, defunct last
 		const featured = active.filter((i) => i.featured);
 		const nonFeatured = active.filter((i) => !i.featured);
 
-		// Sort featured by tier
-		const sortedFeatured = featured.sort((a, b) => a.tier - b.tier);
-
-		// Group non-featured by tier
-		const tierGroups: Record<number, Investment[]> = {};
-		nonFeatured.forEach((inv) => {
-			if (!tierGroups[inv.tier]) tierGroups[inv.tier] = [];
-			tierGroups[inv.tier].push(inv);
-		});
-
-		const sortedNonFeatured = Object.keys(tierGroups)
-			.map(Number)
-			.sort((a, b) => a - b)
-			.flatMap((tier) => tierGroups[tier]);
-
-		return [...sortedFeatured, ...sortedNonFeatured, ...defunct];
-	}, [filteredInvestments, sortBy]);
-
-	// Shuffle in useEffect after hydration (React-safe)
-	// Defunct companies always go last
-	useEffect(() => {
-		if (!isHydrated || sortBy !== "relevance") {
-			// eslint-disable-next-line react-hooks/set-state-in-effect -- Reset shuffle when not using relevance.
-			setShuffledInvestments([]);
-			return;
-		}
-
-		const active = filteredInvestments.filter((i) => i.status !== "defunct");
-		const defunct = filteredInvestments.filter((i) => i.status === "defunct");
-
-		// Featured first (shuffled within tier groups), then non-featured (shuffled within tier groups)
-		const featured = active.filter((i) => i.featured);
-		const nonFeatured = active.filter((i) => !i.featured);
+		const seedBase = `${filter}|${sortBy}`;
 
 		// Group featured by tier and shuffle each group
 		const featuredTierGroups: Record<number, Investment[]> = {};
@@ -146,7 +122,12 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 		const shuffledFeatured = Object.keys(featuredTierGroups)
 			.map(Number)
 			.sort((a, b) => a - b)
-			.flatMap((tier) => shuffleArray(featuredTierGroups[tier]));
+			.flatMap((tier) =>
+				shuffleArray(
+					featuredTierGroups[tier],
+					seededRandom(hashString(`${seedBase}|featured|tier-${tier}`))
+				)
+			);
 
 		// Group non-featured by tier and shuffle each group
 		const tierGroups: Record<number, Investment[]> = {};
@@ -158,16 +139,20 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 		const shuffledNonFeatured = Object.keys(tierGroups)
 			.map(Number)
 			.sort((a, b) => a - b)
-			.flatMap((tier) => shuffleArray(tierGroups[tier]));
+			.flatMap((tier) =>
+				shuffleArray(
+					tierGroups[tier],
+					seededRandom(hashString(`${seedBase}|tier-${tier}`))
+				)
+			);
 
-		setShuffledInvestments([...shuffledFeatured, ...shuffledNonFeatured, ...shuffleArray(defunct)]);
-	}, [filteredInvestments, sortBy, isHydrated]);
+		const shuffledDefunct = shuffleArray(
+			defunct,
+			seededRandom(hashString(`${seedBase}|defunct`))
+		);
 
-	// Use shuffled for relevance after hydration, otherwise use deterministic sort
-	const displayInvestments =
-		isHydrated && sortBy === "relevance" && shuffledInvestments.length > 0
-			? shuffledInvestments
-			: sortedInvestments;
+		return [...shuffledFeatured, ...shuffledNonFeatured, ...shuffledDefunct];
+	}, [filteredInvestments, sortBy, filter]);
 
 	// Split into active and defunct for rendering with separator
 	const activeInvestments = displayInvestments.filter((i) => i.status !== "defunct");
@@ -364,9 +349,14 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 			{/* Separator GIF between active and defunct */}
 			{defunctInvestments.length > 0 && (
 				<div className="flex justify-center py-4">
-					<img
+					<Image
 						src="https://i.pinimg.com/originals/bc/c7/ab/bcc7abc844aa8be1abc46a9f5d3c22c5.gif"
 						alt="Separator"
+						width={512}
+						height={512}
+						sizes="(min-width: 640px) 512px, 320px"
+						unoptimized
+						loader={({ src }) => src}
 						className="w-[512px] h-[512px] object-contain"
 					/>
 				</div>

@@ -23,8 +23,8 @@ export interface AggregatedNewsItem {
 }
 
 export async function getAllNews(): Promise<AggregatedNewsItem[]> {
-  // Get blog posts (still from static files)
-  const blogPosts = getAllPosts();
+  // Get blog posts from database
+  const blogPosts = await getAllPosts();
   const blogItems: AggregatedNewsItem[] = blogPosts.map((post) => ({
     id: `blog-${post.slug}`,
     type: "blog" as const,

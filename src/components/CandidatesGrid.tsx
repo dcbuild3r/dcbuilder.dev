@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import {
 	Candidate,
 	AvailabilityStatus,
@@ -35,17 +36,35 @@ const isNew = (createdAt: string | Date | undefined): boolean => {
 	return date > twoWeeksAgo;
 };
 
-// Fisher-Yates shuffle (pure function)
-function shuffleArray<T>(array: T[]): T[] {
+function hashString(value: string): number {
+	let hash = 0;
+	for (let i = 0; i < value.length; i++) {
+		hash = (hash << 5) - hash + value.charCodeAt(i);
+		hash |= 0;
+	}
+	return Math.abs(hash);
+}
+
+function seededRandom(seed: number): () => number {
+	let current = seed;
+	return () => {
+		current = (current * 9301 + 49297) % 233280;
+		return current / 233280;
+	};
+}
+
+// Fisher-Yates shuffle with deterministic RNG
+function shuffleArray<T>(array: T[], random: () => number): T[] {
 	const result = [...array];
 	for (let i = result.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
+		const j = Math.floor(random() * (i + 1));
 		[result[i], result[j]] = [result[j], result[i]];
 	}
 	return result;
 }
 
 export function CandidatesGrid({ candidates }: CandidatesGridProps) {
+	const searchParams = useSearchParams();
 	const [availabilityFilter, setAvailabilityFilter] = useState<
 		"all" | AvailabilityStatus
 	>("all");
@@ -56,13 +75,12 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const [selectedTags, setSelectedTags] = useState<SkillTag[]>([]);
 	const [tagsExpanded, setTagsExpanded] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [shuffledCandidates, setShuffledCandidates] = useState<Candidate[]>([]);
-	const [shuffledCandidatesKey, setShuffledCandidatesKey] = useState("");
-	const [isHydrated, setIsHydrated] = useState(false);
 	const [showAll, setShowAll] = useState(false);
-	const [expandedCandidate, setExpandedCandidate] = useState<Candidate | null>(
-		null
-	);
+	const [expandedCandidate, setExpandedCandidate] = useState<Candidate | null>(() => {
+		const candidateId = searchParams.get("candidate");
+		if (!candidateId) return null;
+		return candidates.find((c) => c.id === candidateId) ?? null;
+	});
 	const lastActiveRef = useRef<HTMLElement | null>(null);
 	const [dataHotCandidateIds, setDataHotCandidateIds] = useState<Set<string>>(new Set());
 
@@ -119,22 +137,6 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		setExpandedCandidate(null);
 		updateUrlParams({ candidate: null });
 	}, [updateUrlParams]);
-
-	// Mark as hydrated after mount and check for candidate URL param
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration flag set post-mount.
-		setIsHydrated(true);
-
-		// Check if there's a candidate param in URL
-		const urlParams = new URLSearchParams(window.location.search);
-		const candidateId = urlParams.get("candidate");
-		if (candidateId) {
-			const candidate = candidates.find((c) => c.id === candidateId);
-			if (candidate) {
-				setExpandedCandidate(candidate);
-			}
-		}
-	}, [candidates]);
 
 	// Close expanded view on escape key
 	useEffect(() => {
@@ -259,7 +261,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		return candidate.skills?.includes(tag as SkillTag) ?? false;
 	}, []);
 
-	// Sort: hot+top, hot, top, featured, verified, then unverified (deterministic - no shuffle)
+	// Deterministic shuffle: hot+top, hot, top, featured, verified, then unverified
 	const sortedCandidates = useMemo(() => {
 		// Priority groups
 		const hotAndTop = filteredCandidates.filter(
@@ -282,8 +284,8 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		const verified = remaining.filter((c) => !c.featured && c.vouched === true);
 		const unverified = remaining.filter((c) => !c.featured && c.vouched !== true);
 
-		// Sort each group by tier
-		const sortByTier = (candidates: Candidate[]) => {
+		// Shuffle and sort each group by tier (deterministic)
+		const shuffleAndSortByTier = (candidates: Candidate[], seedPrefix: string) => {
 			const tierGroups: Record<number, Candidate[]> = {};
 			candidates.forEach((candidate) => {
 				const tier = candidate.tier;
@@ -293,77 +295,25 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			return Object.keys(tierGroups)
 				.map(Number)
 				.sort((a, b) => a - b)
-				.flatMap((tier) => tierGroups[tier]);
+				.flatMap((tier) =>
+					shuffleArray(
+						tierGroups[tier],
+						seededRandom(hashString(`${filterKey}|${seedPrefix}|tier-${tier}`))
+					)
+				);
 		};
 
 		return [
-			...sortByTier(hotAndTop),
-			...sortByTier(hotOnly),
-			...sortByTier(topOnly),
-			...sortByTier(featured),
-			...sortByTier(verified),
-			...sortByTier(unverified),
+			...shuffleAndSortByTier(hotAndTop, "hot-top"),
+			...shuffleAndSortByTier(hotOnly, "hot-only"),
+			...shuffleAndSortByTier(topOnly, "top-only"),
+			...shuffleAndSortByTier(featured, "featured"),
+			...shuffleAndSortByTier(verified, "verified"),
+			...shuffleAndSortByTier(unverified, "unverified"),
 		];
-	}, [filteredCandidates, hasSkillTag]);
+	}, [filteredCandidates, hasSkillTag, filterKey]);
 
-	// Shuffle in useEffect after hydration (React-safe)
-	useEffect(() => {
-		if (!isHydrated) return;
-
-		// Priority groups
-		const hotAndTop = filteredCandidates.filter(
-			(c) => hasSkillTag(c, "hot") && hasSkillTag(c, "top")
-		);
-		const hotOnly = filteredCandidates.filter(
-			(c) => hasSkillTag(c, "hot") && !hasSkillTag(c, "top")
-		);
-		const topOnly = filteredCandidates.filter(
-			(c) => hasSkillTag(c, "top") && !hasSkillTag(c, "hot")
-		);
-
-		// Remaining candidates (no hot/top tags)
-		const remaining = filteredCandidates.filter(
-			(c) => !hasSkillTag(c, "hot") && !hasSkillTag(c, "top")
-		);
-
-		// Split remaining by featured, verified, and unverified
-		const featured = remaining.filter((c) => c.featured);
-		const verified = remaining.filter((c) => !c.featured && c.vouched === true);
-		const unverified = remaining.filter((c) => !c.featured && c.vouched !== true);
-
-		// Shuffle and sort by tier
-		const shuffleAndSortByTier = (candidates: Candidate[]) => {
-			const tierGroups: Record<number, Candidate[]> = {};
-			candidates.forEach((candidate) => {
-				const tier = candidate.tier;
-				if (!tierGroups[tier]) tierGroups[tier] = [];
-				tierGroups[tier].push(candidate);
-			});
-			return Object.keys(tierGroups)
-				.map(Number)
-				.sort((a, b) => a - b)
-				.flatMap((tier) => shuffleArray(tierGroups[tier]));
-		};
-
-		// eslint-disable-next-line react-hooks/set-state-in-effect -- Shuffle is derived after hydration.
-		setShuffledCandidates([
-			...shuffleAndSortByTier(hotAndTop),
-			...shuffleAndSortByTier(hotOnly),
-			...shuffleAndSortByTier(topOnly),
-			...shuffleAndSortByTier(featured),
-			...shuffleAndSortByTier(verified),
-			...shuffleAndSortByTier(unverified),
-		]);
-		setShuffledCandidatesKey(filterKey);
-	}, [filteredCandidates, isHydrated, filterKey, hasSkillTag]);
-
-	// Use shuffled after hydration, otherwise use deterministic sort
-	const candidatesToDisplay =
-		isHydrated &&
-		shuffledCandidates.length > 0 &&
-		shuffledCandidatesKey === filterKey
-			? shuffledCandidates
-			: sortedCandidates;
+	const candidatesToDisplay = sortedCandidates;
 
 	// Limit display unless showAll is true
 	const displayedCandidates = showAll
@@ -375,7 +325,6 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		<div
 			className="space-y-6"
 			data-testid="candidates-grid"
-			data-hydrated={isHydrated ? "true" : "false"}
 		>
 			{/* Filters */}
 			<div className="space-y-4">
@@ -644,8 +593,8 @@ function CandidateCard({
 		? candidate.anonymousAlias || "Anonymous"
 		: candidate.name;
 	const profileImage = isAnonymous
-		? "/images/candidates/anonymous-placeholder.svg"
-		: candidate.profileImage || "/images/candidates/anonymous-placeholder.svg";
+		? "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg"
+		: candidate.profileImage || "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
 	const availabilityColor = {
 		looking:
 			"bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -682,7 +631,7 @@ function CandidateCard({
 						onError={(e) => {
 							e.currentTarget.onerror = null; // Prevent infinite loop
 							console.warn(`[CandidatesGrid] Failed to load image for ${displayName}`);
-							e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
+							e.currentTarget.src = "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
 						}}
 					/>
 				</div>
@@ -1011,8 +960,8 @@ function ExpandedCandidateView({
 		? candidate.anonymousAlias || "Anonymous"
 		: candidate.name;
 	const profileImage = isAnonymous
-		? "/images/candidates/anonymous-placeholder.svg"
-		: candidate.profileImage || "/images/candidates/anonymous-placeholder.svg";
+		? "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg"
+		: candidate.profileImage || "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
 	const dialogRef = useRef<HTMLDivElement>(null);
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const titleId = `candidate-${candidate.id}-title`;
@@ -1173,7 +1122,7 @@ function ExpandedCandidateView({
 								className="object-cover w-full h-full"
 								onError={(e) => {
 									console.warn(`[CandidatesGrid] Failed to load image for ${displayName}`);
-									e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
+									e.currentTarget.src = "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
 								}}
 							/>
 						</div>
@@ -1309,7 +1258,7 @@ function ExpandedCandidateView({
 									>
 										{company.logo && (
 											<Image
-												src={company.logo || "/images/candidates/anonymous-placeholder.svg"}
+												src={company.logo || "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg"}
 												alt={company.name}
 												width={24}
 												height={24}

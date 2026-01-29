@@ -20,7 +20,7 @@ export async function getJobsFromDB(): Promise<Job[]> {
   return dbJobs.map((job) => {
     const company: Company = {
       name: job.company,
-      logo: job.companyLogo || "",
+      logo: job.companyLogo || undefined,
       website: job.companyWebsite || "",
       category: job.category as RelationshipCategory,
       x: job.companyX || undefined,

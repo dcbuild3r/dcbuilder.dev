@@ -7,8 +7,8 @@ export const metadata = {
 	description: "Talented builders looking for new opportunities",
 };
 
-// Revalidate every 60 seconds
-export const revalidate = 60;
+// Force dynamic rendering (uses useSearchParams in CandidatesGrid)
+export const dynamic = "force-dynamic";
 
 export default async function Candidates() {
 	const candidates = await getCandidatesFromDB();
