@@ -723,12 +723,17 @@ function CandidateCard({
 						>
 							{availabilityLabels[candidate.availability]}
 						</span>
+						{isNew(candidate.dateAdded) && !isTop && (
+							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap">
+								🆕 NEW
+							</span>
+						)}
 						{isTop && (
 							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white whitespace-nowrap">
 								⭐️ TOP
 							</span>
 						)}
-						{isNew(candidate.dateAdded) && (
+						{isNew(candidate.dateAdded) && isTop && (
 							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap">
 								🆕 NEW
 							</span>
