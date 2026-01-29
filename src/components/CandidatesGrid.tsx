@@ -75,13 +75,14 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const [selectedTags, setSelectedTags] = useState<SkillTag[]>([]);
 	const [tagsExpanded, setTagsExpanded] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [showAll, setShowAll] = useState(false);
+	const [displayCount, setDisplayCount] = useState(12);
 	const [expandedCandidate, setExpandedCandidate] = useState<Candidate | null>(() => {
 		const candidateId = searchParams.get("candidate");
 		if (!candidateId) return null;
 		return candidates.find((c) => c.id === candidateId) ?? null;
 	});
 	const lastActiveRef = useRef<HTMLElement | null>(null);
+	const loadMoreRef = useRef<HTMLDivElement>(null);
 	const [dataHotCandidateIds, setDataHotCandidateIds] = useState<Set<string>>(new Set());
 
 	// Fetch data-driven hot candidates from analytics
@@ -160,6 +161,29 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			lastActiveRef.current.focus();
 		}
 	}, [expandedCandidate]);
+
+	// Infinite scroll: load more candidates when sentinel is visible
+	useEffect(() => {
+		const sentinel = loadMoreRef.current;
+		if (!sentinel) return;
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting) {
+					setDisplayCount((prev) => prev + 12);
+				}
+			},
+			{ rootMargin: "200px" } // Load before reaching the bottom
+		);
+
+		observer.observe(sentinel);
+		return () => observer.disconnect();
+	}, []);
+
+	// Reset display count when filters change
+	useEffect(() => {
+		setDisplayCount(12);
+	}, [availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]);
 
 	// Get all unique tags from candidates
 	const allTags = useMemo(() => {
@@ -315,11 +339,9 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 
 	const candidatesToDisplay = sortedCandidates;
 
-	// Limit display unless showAll is true
-	const displayedCandidates = showAll
-		? candidatesToDisplay
-		: candidatesToDisplay.slice(0, 12);
-	const hasMore = candidatesToDisplay.length > 12 && !showAll;
+	// Limit display based on infinite scroll count
+	const displayedCandidates = candidatesToDisplay.slice(0, displayCount);
+	const hasMore = candidatesToDisplay.length > displayCount;
 
 	return (
 		<div
@@ -562,15 +584,25 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				/>
 			)}
 
-			{/* Show More Button */}
+			{/* Infinite scroll sentinel */}
 			{hasMore && (
-				<div className="text-center">
-					<button
-						onClick={() => setShowAll(true)}
-						className="px-6 py-2 text-sm font-medium rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-					>
-						Show all {sortedCandidates.length} candidates
-					</button>
+				<div
+					ref={loadMoreRef}
+					className="flex justify-center py-8"
+				>
+					<div className="flex items-center gap-2 text-neutral-500">
+						<svg
+							className="w-5 h-5 animate-spin"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+						>
+							<circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+							<path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
+						</svg>
+						<span className="text-sm">Loading more candidates...</span>
+					</div>
 				</div>
 			)}
 		</div>
