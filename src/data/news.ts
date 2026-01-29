@@ -68,7 +68,7 @@ export const curatedLinks: CuratedLink[] = [
   {
     id: "lighter-xyz-post",
     type: "curated",
-    title: "Lighter update",
+    title: "Lighter requires staked LIT for LLP access - 56M already staked",
     url: "https://x.com/Lighter_xyz/status/2016633073916354820",
     source: "Lighter",
     date: "2026-01-28",
@@ -77,7 +77,7 @@ export const curatedLinks: CuratedLink[] = [
   {
     id: "dcbuilder-post",
     type: "curated",
-    title: "dcbuilder thoughts",
+    title: "On the Sherlock Security Podcast",
     url: "https://x.com/dcbuilder/status/2016556940084580665",
     source: "dcbuilder",
     date: "2026-01-28",
@@ -86,7 +86,7 @@ export const curatedLinks: CuratedLink[] = [
   {
     id: "megaeth-post",
     type: "curated",
-    title: "MegaETH update",
+    title: "MegaETH Public Mainnet: Feb 9, 2026",
     url: "https://x.com/megaeth/status/2016511667644064164",
     source: "MegaETH",
     date: "2026-01-28",
@@ -95,7 +95,7 @@ export const curatedLinks: CuratedLink[] = [
   {
     id: "avi-schiffmann-post",
     type: "curated",
-    title: "Avi Schiffmann on AI",
+    title: "Friend user interview: AI touchpoints in rural America",
     url: "https://x.com/AviSchiffmann/status/2016263441640489341",
     source: "Avi Schiffmann",
     date: "2026-01-27",
@@ -104,7 +104,7 @@ export const curatedLinks: CuratedLink[] = [
   {
     id: "prime-intellect-post",
     type: "curated",
-    title: "Prime Intellect announcement",
+    title: "Introducing Trinity Large: 400B MoE model",
     url: "https://x.com/PrimeIntellect/status/2016280792037785624",
     source: "Prime Intellect",
     date: "2026-01-27",
@@ -113,7 +113,7 @@ export const curatedLinks: CuratedLink[] = [
   {
     id: "eito-miyamura-post",
     type: "curated",
-    title: "Eito Miyamura insights",
+    title: "How Clawdbot injected malware via GitHub issues",
     url: "https://x.com/Eito_Miyamura/status/2016251788765385073",
     source: "Eito Miyamura",
     date: "2026-01-27",
@@ -122,7 +122,7 @@ export const curatedLinks: CuratedLink[] = [
   {
     id: "tiagosada-post",
     type: "curated",
-    title: "Tiago Sada thoughts",
+    title: "Tools For Humanity Engineering Fellowship for under-24s",
     url: "https://x.com/tiagosada/status/2015861748230980033",
     source: "Tiago Sada",
     date: "2026-01-26",
@@ -131,7 +131,7 @@ export const curatedLinks: CuratedLink[] = [
   {
     id: "justin-thaler-post",
     type: "curated",
-    title: "Justin Thaler on ZK",
+    title: "Quantum computing vs blockchains: the real threats",
     url: "https://x.com/SuccinctJT/status/1997030431498121250",
     source: "Justin Thaler",
     date: "2025-12-15",

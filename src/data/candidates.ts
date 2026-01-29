@@ -333,7 +333,7 @@ export const candidates: Candidate[] = [
 			cv: "https://docs.google.com/document/d/18l4skXiywdVEOvRzFMZe5J7inykgmMaq8EvGD-xYHec/edit?tab=t.0",
 		},
 		tier: 3,
-		featured: false,
+		featured: true,
 		hot: true,
 		dateAdded: "2025-01-28",
 	},
