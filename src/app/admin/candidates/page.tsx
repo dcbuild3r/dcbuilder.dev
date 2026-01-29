@@ -712,7 +712,19 @@ export default function AdminCandidates() {
 
       {/* Candidates Table */}
       {loading ? (
-        <TableSkeleton columns={7} rows={10} headerColor="bg-green-100 dark:bg-green-900/30" headerHeight="h-[64px]" />
+        <TableSkeleton
+          headers={[
+            { label: "", width: "48px" },
+            "Name",
+            "Title",
+            "Skills",
+            { label: "Available", align: "center" },
+            { label: "Featured", align: "center" },
+            { label: "Actions", align: "right" },
+          ]}
+          rows={10}
+          headerColor="bg-green-100 dark:bg-green-900/30"
+        />
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">

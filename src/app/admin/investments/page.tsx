@@ -393,7 +393,18 @@ export default function AdminInvestments() {
       />
 
       {loading ? (
-        <TableSkeleton columns={6} rows={10} headerColor="bg-amber-100 dark:bg-amber-900/30" />
+        <TableSkeleton
+          headers={[
+            { label: "", width: "48px" },
+            "Title",
+            "Tier",
+            "Status",
+            "Categories",
+            { label: "Actions", align: "right" },
+          ]}
+          rows={10}
+          headerColor="bg-amber-100 dark:bg-amber-900/30"
+        />
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">

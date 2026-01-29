@@ -502,10 +502,13 @@ export default function AdminNews() {
       {/* Content */}
       {loading ? (
         <TableSkeleton
-          columns={5}
+          headers={
+            activeTab === "curated"
+              ? ["Title", "Source", "Category", "Date", { label: "Actions", align: "right" }]
+              : ["Title", "Company", "Platform", "Date", { label: "Actions", align: "right" }]
+          }
           rows={8}
           headerColor={activeTab === "curated" ? "bg-purple-100 dark:bg-purple-900/30" : "bg-orange-100 dark:bg-orange-900/30"}
-          headerHeight="h-[44px]"
         />
       ) : activeTab === "curated" ? (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">

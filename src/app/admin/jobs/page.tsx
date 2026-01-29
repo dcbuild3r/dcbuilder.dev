@@ -632,7 +632,19 @@ export default function AdminJobs() {
 
       {/* Jobs Table */}
       {loading ? (
-        <TableSkeleton columns={7} rows={10} headerColor="bg-blue-100 dark:bg-blue-900/30" headerHeight="h-[64px]" />
+        <TableSkeleton
+          headers={[
+            "Title",
+            { label: "", width: "48px" },
+            "Company",
+            "Category",
+            "Tags",
+            { label: "Featured", align: "center" },
+            { label: "Actions", align: "right" },
+          ]}
+          rows={10}
+          headerColor="bg-blue-100 dark:bg-blue-900/30"
+        />
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">

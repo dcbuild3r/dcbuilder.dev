@@ -246,7 +246,16 @@ export default function AdminAffiliations() {
       {error && <ErrorAlert message={error} onRetry={() => { setError(null); fetchAffiliations(); }} />}
 
       {loading ? (
-        <TableSkeleton columns={4} rows={8} headerColor="bg-pink-100 dark:bg-pink-900/30" headerHeight="h-[44px]" />
+        <TableSkeleton
+          headers={[
+            { label: "", width: "48px" },
+            "Title",
+            "Role",
+            { label: "Actions", align: "right" },
+          ]}
+          rows={8}
+          headerColor="bg-pink-100 dark:bg-pink-900/30"
+        />
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">

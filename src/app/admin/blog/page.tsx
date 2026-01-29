@@ -427,7 +427,18 @@ export default function AdminBlog() {
       </div>
 
       {loading ? (
-        <TableSkeleton columns={6} rows={8} headerColor="bg-sky-100 dark:bg-sky-900/30" headerHeight="h-[46px]" />
+        <TableSkeleton
+          headers={[
+            "Title",
+            "Date",
+            { label: "Views", className: "hidden md:table-cell" },
+            { label: "Words", className: "hidden lg:table-cell" },
+            { label: "Source", className: "hidden lg:table-cell" },
+            { label: "Actions", align: "right" },
+          ]}
+          rows={8}
+          headerColor="bg-sky-100 dark:bg-sky-900/30"
+        />
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">
