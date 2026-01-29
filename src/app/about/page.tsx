@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { db, affiliations as affiliationsTable } from "@/db";
+import { R2_PUBLIC_URL } from "@/lib/r2";
 
 export const metadata = {
 	title: "About",
@@ -84,7 +85,7 @@ export default async function About() {
 					<section className="flex flex-col md:flex-row items-center gap-8 md:gap-12 text-center md:text-left">
 						<Link href="/" className="shrink-0">
 							<Image
-								src="/images/dcbuilder.png"
+								src={`${R2_PUBLIC_URL}/dcbuilder.png`}
 								alt="dcbuilder.eth"
 								width={280}
 								height={280}
@@ -116,7 +117,7 @@ export default async function About() {
 							{affiliations.map((affiliation) => (
 								<a
 									key={affiliation.title}
-									href={affiliation.imageUrl || "#"}
+									href={affiliation.website || "#"}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="group block p-4 sm:p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"

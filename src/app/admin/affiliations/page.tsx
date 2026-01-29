@@ -11,6 +11,7 @@ interface Affiliation {
   description: string | null;
   imageUrl: string | null;
   logo: string | null;
+  website: string | null;
   createdAt: string;
 }
 
@@ -20,6 +21,7 @@ const emptyAffiliation: Partial<Affiliation> = {
   description: "",
   imageUrl: "",
   logo: "",
+  website: "",
 };
 
 export default function AdminAffiliations() {
@@ -175,12 +177,15 @@ export default function AdminAffiliations() {
             </div>
 
             <div>
-              <ImageInput
-                label="Image URL"
-                value={editingAffiliation.imageUrl || ""}
-                onChange={(value) =>
-                  setEditingAffiliation({ ...editingAffiliation, imageUrl: value })
+              <label className="block text-sm font-medium mb-1">Website</label>
+              <input
+                type="url"
+                value={editingAffiliation.website || ""}
+                onChange={(e) =>
+                  setEditingAffiliation({ ...editingAffiliation, website: e.target.value })
                 }
+                className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+                placeholder="https://example.com"
               />
             </div>
           </div>
