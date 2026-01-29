@@ -70,11 +70,11 @@ src/
 │   ├── admin/           # Admin-specific components
 │   └── ...              # Shared components
 ├── db/                  # Database schema and client
-├── lib/                 # Utilities and helpers
-└── data/                # Static data (legacy, being migrated)
+└── lib/                 # Utilities and helpers
 
-content/
-└── blog/                # MDX blog posts
+docs/
+├── API.md               # API documentation
+└── openapi.yaml         # OpenAPI specification
 ```
 
 ## API Reference
@@ -124,23 +124,23 @@ bun run test
 
 ## Environment Variables
 
+See [.env.example](./.env.example) for all configuration options.
+
 ```bash
-# Database
+# Required
 DATABASE_URL="postgresql://..."
 
-# Cloudflare R2
-R2_ACCOUNT_ID="..."
+# Cloudflare R2 (image storage)
+R2_ENDPOINT="https://ACCOUNT_ID.r2.cloudflarestorage.com"
 R2_ACCESS_KEY_ID="..."
 R2_SECRET_ACCESS_KEY="..."
 R2_BUCKET_NAME="..."
-R2_PUBLIC_URL="..."
+R2_PUBLIC_URL="https://pub-xxx.r2.dev"
 
 # PostHog Analytics
-POSTHOG_PERSONAL_API_KEY="..."
+NEXT_PUBLIC_POSTHOG_KEY="phc_..."
+POSTHOG_PERSONAL_API_KEY="phx_..."
 POSTHOG_PROJECT_ID="..."
-
-# Admin Authentication
-ADMIN_API_KEY="..."  # Generate with: openssl rand -hex 32
 ```
 
 ## Content Management
@@ -160,20 +160,36 @@ curl -X POST https://dcbuilder.dev/api/v1/jobs \
 ```
 
 ### Blog Posts
-Add MDX files to `content/blog/` with frontmatter:
-```yaml
----
-title: "Post Title"
-date: "2024-01-15"
-description: "Brief description"
-source: "Mirror"  # optional
-sourceUrl: "https://..."  # optional
----
+Create blog posts via the admin dashboard or API. Posts use MDX format and support:
+- Markdown with syntax highlighting
+- Custom components
+- Source attribution for republished content
+
+```bash
+# Create via API
+curl -X POST https://yoursite.com/api/v1/blog \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "slug": "my-post",
+    "title": "Post Title",
+    "content": "# Heading\n\nContent...",
+    "date": "2024-01-15"
+  }'
 ```
 
 ## Deployment
 
 The site deploys as a standard Next.js app. Ensure all environment variables are configured in your deployment platform.
+
+## Cloning This Project
+
+Want to create your own version? See [CLONE.md](./CLONE.md) for a complete setup guide covering:
+- Database setup (local or hosted PostgreSQL)
+- Cloudflare R2 configuration for image storage
+- PostHog analytics integration
+- Admin authentication setup
+- Customization options
 
 ## Contact
 
