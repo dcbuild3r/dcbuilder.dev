@@ -81,6 +81,15 @@ export function NewsGrid({ news }: NewsGridProps) {
 		return match ? match[1] : null;
 	};
 
+	// X logo SVG for overlay
+	const XLogo = () => (
+		<div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full flex items-center justify-center border-2 border-white dark:border-neutral-900">
+			<svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+				<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+			</svg>
+		</div>
+	);
+
 	// Get icon/image based on news type
 	const getTypeIcon = (item: AggregatedNewsItem) => {
 		// Check if it's an X post (url contains x.com)
@@ -88,36 +97,39 @@ export function NewsGrid({ news }: NewsGridProps) {
 			const handle = getXHandle(item.url);
 			if (handle) {
 				return (
-					<Image
-						src={`https://unavatar.io/twitter/${handle}`}
-						alt={handle}
-						width={32}
-						height={32}
-						className="rounded-full"
-						unoptimized
-					/>
+					<div className="relative">
+						<Image
+							src={`https://unavatar.io/twitter/${handle}`}
+							alt={handle}
+							width={48}
+							height={48}
+							className="rounded-full"
+							unoptimized
+						/>
+						<XLogo />
+					</div>
 				);
 			}
 		}
 
 		switch (item.type) {
 			case "blog":
-				return <span className="text-lg">📝</span>;
+				return <span className="text-2xl">📝</span>;
 			case "curated":
-				return <span className="text-lg">🔗</span>;
+				return <span className="text-2xl">🔗</span>;
 			case "announcement":
 				if (item.companyLogo) {
 					return (
 						<Image
 							src={item.companyLogo}
 							alt={item.company || "Company"}
-							width={24}
-							height={24}
+							width={48}
+							height={48}
 							className="rounded"
 						/>
 					);
 				}
-				return <span className="text-lg">📢</span>;
+				return <span className="text-2xl">📢</span>;
 			default:
 				return null;
 		}
@@ -246,9 +258,9 @@ export function NewsGrid({ news }: NewsGridProps) {
 							onClick={() => handleNewsClick(item)}
 							className="group block p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all"
 						>
-							<div className="flex items-start gap-3">
+							<div className="flex items-center gap-4">
 								{/* Icon */}
-								<div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
+								<div className="flex-shrink-0 w-12 h-12 flex items-center justify-center">
 									{getTypeIcon(item)}
 								</div>
 
