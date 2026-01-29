@@ -8,7 +8,8 @@ export type NewsCategory =
   | "research"
   | "product"
   | "funding"
-  | "general";
+  | "general"
+  | "x_post";
 
 export interface CuratedLink {
   id: string;
@@ -36,16 +37,19 @@ export interface Announcement {
   featured?: boolean;
 }
 
-export type NewsItem = CuratedLink | Announcement | {
-  id: string;
-  type: "blog";
-  title: string;
-  url: string;
-  date: string;
-  description?: string;
-  category: NewsCategory;
-  readingTime?: string;
-};
+export type NewsItem =
+  | CuratedLink
+  | Announcement
+  | {
+      id: string;
+      type: "blog";
+      title: string;
+      url: string;
+      date: string;
+      description?: string;
+      category: NewsCategory;
+      readingTime?: string;
+    };
 
 export const categoryLabels: Record<NewsCategory, string> = {
   crypto: "Crypto",
@@ -56,81 +60,84 @@ export const categoryLabels: Record<NewsCategory, string> = {
   product: "Product",
   funding: "Funding",
   general: "General",
+  x_post: "X Post",
 };
 
-// Curated links - external articles worth reading
+// Curated links - external articles and X posts worth reading
 export const curatedLinks: CuratedLink[] = [
   {
-    id: "vitalik-d-acc",
+    id: "lighter-xyz-post",
     type: "curated",
-    title: "My techno-optimism",
-    url: "https://vitalik.eth.limo/general/2023/11/27/techno_optimism.html",
-    source: "Vitalik Buterin",
-    date: "2023-11-27",
-    description: "Vitalik's thoughts on technology, d/acc, and the future.",
-    category: "crypto",
-    featured: true,
+    title: "Lighter update",
+    url: "https://x.com/Lighter_xyz/status/2016633073916354820",
+    source: "Lighter",
+    date: "2026-01-28",
+    category: "x_post",
   },
   {
-    id: "paradigm-frontiers",
+    id: "dcbuilder-post",
     type: "curated",
-    title: "Frontiers in Mechanism Design",
-    url: "https://www.paradigm.xyz/2024/01/frontiers",
-    source: "Paradigm",
-    date: "2024-01-15",
-    description: "Research on mechanism design in crypto protocols.",
-    category: "research",
+    title: "dcbuilder thoughts",
+    url: "https://x.com/dcbuilder/status/2016556940084580665",
+    source: "dcbuilder",
+    date: "2026-01-28",
+    category: "x_post",
   },
   {
-    id: "a16z-crypto-2024",
+    id: "megaeth-post",
     type: "curated",
-    title: "State of Crypto 2024",
-    url: "https://a16zcrypto.com/posts/article/state-of-crypto-report-2024/",
-    source: "a16z crypto",
-    date: "2024-10-16",
-    description: "Annual report on the state of the crypto industry.",
-    category: "crypto",
+    title: "MegaETH update",
+    url: "https://x.com/megaeth/status/2016511667644064164",
+    source: "MegaETH",
+    date: "2026-01-28",
+    category: "x_post",
+  },
+  {
+    id: "avi-schiffmann-post",
+    type: "curated",
+    title: "Avi Schiffmann on AI",
+    url: "https://x.com/AviSchiffmann/status/2016263441640489341",
+    source: "Avi Schiffmann",
+    date: "2026-01-27",
+    category: "x_post",
+  },
+  {
+    id: "prime-intellect-post",
+    type: "curated",
+    title: "Prime Intellect announcement",
+    url: "https://x.com/PrimeIntellect/status/2016280792037785624",
+    source: "Prime Intellect",
+    date: "2026-01-27",
+    category: "x_post",
+  },
+  {
+    id: "eito-miyamura-post",
+    type: "curated",
+    title: "Eito Miyamura insights",
+    url: "https://x.com/Eito_Miyamura/status/2016251788765385073",
+    source: "Eito Miyamura",
+    date: "2026-01-27",
+    category: "x_post",
+  },
+  {
+    id: "tiagosada-post",
+    type: "curated",
+    title: "Tiago Sada thoughts",
+    url: "https://x.com/tiagosada/status/2015861748230980033",
+    source: "Tiago Sada",
+    date: "2026-01-26",
+    category: "x_post",
+  },
+  {
+    id: "succinct-post",
+    type: "curated",
+    title: "Succinct Labs announcement",
+    url: "https://x.com/SuccinctJT/status/1997030431498121250",
+    source: "Succinct Labs",
+    date: "2025-12-15",
+    category: "x_post",
   },
 ];
 
 // Portfolio company announcements
-export const announcements: Announcement[] = [
-  {
-    id: "monad-devnet",
-    type: "announcement",
-    title: "Monad Devnet Launch",
-    url: "https://x.com/monad_xyz",
-    company: "Monad",
-    companyLogo: "/images/investments/monad.jpg",
-    platform: "x",
-    date: "2024-06-01",
-    description:
-      "Monad launches developer network with unprecedented performance.",
-    category: "product",
-    featured: true,
-  },
-  {
-    id: "berachain-mainnet",
-    type: "announcement",
-    title: "Berachain Mainnet Announcement",
-    url: "https://x.com/beaboringbera",
-    company: "Berachain",
-    companyLogo: "/images/investments/berachain.png",
-    platform: "x",
-    date: "2024-12-01",
-    description: "Berachain announces mainnet launch timeline.",
-    category: "product",
-  },
-  {
-    id: "aligned-series-a",
-    type: "announcement",
-    title: "Aligned Layer Raises $20M Series A",
-    url: "https://x.com/alignedlayer",
-    company: "Aligned",
-    companyLogo: "/images/investments/aligned.png",
-    platform: "x",
-    date: "2024-07-15",
-    description: "Aligned Layer raises Series A to build ZK verification layer.",
-    category: "funding",
-  },
-];
+export const announcements: Announcement[] = [];
