@@ -9,11 +9,6 @@ type ClickCount = {
   count: number;
 };
 
-interface TrendResult {
-  breakdown_value: string;
-  count: number;
-}
-
 export interface SiteStats {
   pageviews7d: number | null;
   pageviews30d: number | null;
@@ -31,18 +26,16 @@ export function isPostHogConfigured(): boolean {
   return Boolean(POSTHOG_API_KEY && POSTHOG_PROJECT_ID);
 }
 
-async function fetchPostHogTrend(
-  eventName: string,
-  breakdownProperty: string
-): Promise<PostHogResult<ClickCount[]>> {
+// Use the new Query API (HogQL)
+async function runHogQLQuery(query: string): Promise<{ results: unknown[][] } | null> {
   if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
     console.warn("[posthog] API credentials not configured");
-    return { success: false, error: "PostHog not configured", configured: false };
+    return null;
   }
 
   try {
     const response = await fetch(
-      `${POSTHOG_HOST}/api/projects/${POSTHOG_PROJECT_ID}/insights/trend/`,
+      `${POSTHOG_HOST}/api/projects/${POSTHOG_PROJECT_ID}/query/`,
       {
         method: "POST",
         headers: {
@@ -50,10 +43,10 @@ async function fetchPostHogTrend(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          events: [{ id: eventName, type: "events" }],
-          date_from: "-7d",
-          breakdown: breakdownProperty,
-          breakdown_type: "event",
+          query: {
+            kind: "HogQLQuery",
+            query,
+          },
         }),
         next: { revalidate: 3600 }, // Cache for 1 hour
       }
@@ -62,27 +55,45 @@ async function fetchPostHogTrend(
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[posthog] API error:", { status: response.status, body: errorText });
-      return { success: false, error: `PostHog API error: ${response.status}`, configured: true };
+      return null;
     }
 
-    const data = await response.json();
-
-    const result: ClickCount[] =
-      data.result?.map((r: TrendResult) => ({
-        id: r.breakdown_value,
-        count: r.count,
-      })) ?? [];
-
-    return { success: true, data: result };
+    return await response.json();
   } catch (error) {
-    console.error("[posthog] Failed to fetch data:", error);
-    return { success: false, error: "Failed to connect to PostHog", configured: true };
+    console.error("[posthog] Failed to run query:", error);
+    return null;
   }
 }
 
-// Job analytics
+// Job analytics - count job_apply_click events by job_id
 export async function getJobApplyClicksLast7Days(): Promise<PostHogResult<ClickCount[]>> {
-  return fetchPostHogTrend("job_apply_click", "job_id");
+  if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
+    return { success: false, error: "PostHog not configured", configured: false };
+  }
+
+  const query = `
+    SELECT
+      properties.job_id as id,
+      count() as count
+    FROM events
+    WHERE event = 'job_apply_click'
+      AND timestamp > now() - INTERVAL 7 DAY
+      AND properties.job_id IS NOT NULL
+    GROUP BY properties.job_id
+    ORDER BY count DESC
+  `;
+
+  const data = await runHogQLQuery(query);
+  if (!data) {
+    return { success: false, error: "Failed to query PostHog", configured: true };
+  }
+
+  const result: ClickCount[] = data.results.map((row) => ({
+    id: String(row[0]),
+    count: Number(row[1]),
+  }));
+
+  return { success: true, data: result };
 }
 
 export function determineHotJobs(
@@ -91,22 +102,44 @@ export function determineHotJobs(
 ): string[] {
   if (clicks.length === 0) return [];
 
-  // Sort by count descending
   const sorted = [...clicks].sort((a, b) => b.count - a.count);
-
-  // Take top X% (minimum 1)
   const topCount = Math.max(1, Math.ceil(sorted.length * (topPercentage / 100)));
 
-  // Only include jobs with at least 1 click
   return sorted
     .slice(0, topCount)
     .filter((c) => c.count > 0)
     .map((c) => c.id);
 }
 
-// Candidate analytics
+// Candidate analytics - count candidate_view events by candidate_id
 export async function getCandidateViewsLast7Days(): Promise<PostHogResult<ClickCount[]>> {
-  return fetchPostHogTrend("candidate_view", "candidate_id");
+  if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
+    return { success: false, error: "PostHog not configured", configured: false };
+  }
+
+  const query = `
+    SELECT
+      properties.candidate_id as id,
+      count() as count
+    FROM events
+    WHERE event = 'candidate_view'
+      AND timestamp > now() - INTERVAL 7 DAY
+      AND properties.candidate_id IS NOT NULL
+    GROUP BY properties.candidate_id
+    ORDER BY count DESC
+  `;
+
+  const data = await runHogQLQuery(query);
+  if (!data) {
+    return { success: false, error: "Failed to query PostHog", configured: true };
+  }
+
+  const result: ClickCount[] = data.results.map((row) => ({
+    id: String(row[0]),
+    count: Number(row[1]),
+  }));
+
+  return { success: true, data: result };
 }
 
 export function determineHotCandidates(
@@ -115,79 +148,75 @@ export function determineHotCandidates(
 ): string[] {
   if (views.length === 0) return [];
 
-  // Sort by count descending
   const sorted = [...views].sort((a, b) => b.count - a.count);
 
-  // Take top N with at least 1 view
   return sorted
     .slice(0, topN)
     .filter((c) => c.count > 0)
     .map((c) => c.id);
 }
 
-// News analytics
+// News analytics - count news_click events by news_id
 export async function getNewsClicksLast7Days(): Promise<PostHogResult<ClickCount[]>> {
-  return fetchPostHogTrend("news_click", "news_id");
-}
-
-// Blog analytics - track by slug from $pageview on /blog/* paths
-export async function getBlogViewsLast7Days(): Promise<PostHogResult<ClickCount[]>> {
   if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
-    console.warn("[posthog] API credentials not configured");
     return { success: false, error: "PostHog not configured", configured: false };
   }
 
-  try {
-    const response = await fetch(
-      `${POSTHOG_HOST}/api/projects/${POSTHOG_PROJECT_ID}/insights/trend/`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${POSTHOG_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          events: [{ id: "$pageview", type: "events" }],
-          date_from: "-7d",
-          breakdown: "$pathname",
-          breakdown_type: "event",
-          properties: [
-            {
-              key: "$pathname",
-              value: "^/blog/[^/]+$",
-              operator: "regex",
-              type: "event",
-            },
-          ],
-        }),
-        next: { revalidate: 3600 },
-      }
-    );
+  const query = `
+    SELECT
+      properties.news_id as id,
+      count() as count
+    FROM events
+    WHERE event = 'news_click'
+      AND timestamp > now() - INTERVAL 7 DAY
+      AND properties.news_id IS NOT NULL
+    GROUP BY properties.news_id
+    ORDER BY count DESC
+  `;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[posthog] Blog views API error:", { status: response.status, body: errorText });
-      return { success: false, error: `PostHog API error: ${response.status}`, configured: true };
-    }
-
-    const data = await response.json();
-
-    // Extract slug from pathname (e.g., "/blog/my-post" -> "my-post")
-    const result: ClickCount[] =
-      data.result
-        ?.map((r: TrendResult) => {
-          const match = r.breakdown_value.match(/^\/blog\/(.+)$/);
-          return match
-            ? { id: match[1], count: r.count }
-            : null;
-        })
-        .filter((r: ClickCount | null): r is ClickCount => r !== null) ?? [];
-
-    return { success: true, data: result };
-  } catch (error) {
-    console.error("[posthog] Failed to fetch blog views:", error);
-    return { success: false, error: "Failed to connect to PostHog", configured: true };
+  const data = await runHogQLQuery(query);
+  if (!data) {
+    return { success: false, error: "Failed to query PostHog", configured: true };
   }
+
+  const result: ClickCount[] = data.results.map((row) => ({
+    id: String(row[0]),
+    count: Number(row[1]),
+  }));
+
+  return { success: true, data: result };
+}
+
+// Blog analytics - count pageviews on /blog/* paths
+export async function getBlogViewsLast7Days(): Promise<PostHogResult<ClickCount[]>> {
+  if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
+    return { success: false, error: "PostHog not configured", configured: false };
+  }
+
+  const query = `
+    SELECT
+      replaceRegexpOne(properties.$pathname, '^/blog/([^/]+)$', '\\\\1') as slug,
+      count() as count
+    FROM events
+    WHERE event = '$pageview'
+      AND timestamp > now() - INTERVAL 7 DAY
+      AND properties.$pathname LIKE '/blog/%'
+      AND properties.$pathname NOT LIKE '/blog/%/%'
+    GROUP BY slug
+    ORDER BY count DESC
+  `;
+
+  const data = await runHogQLQuery(query);
+  if (!data) {
+    return { success: false, error: "Failed to query PostHog", configured: true };
+  }
+
+  const result: ClickCount[] = data.results.map((row) => ({
+    id: String(row[0]),
+    count: Number(row[1]),
+  }));
+
+  return { success: true, data: result };
 }
 
 export function determineHotNews(
@@ -196,10 +225,8 @@ export function determineHotNews(
 ): string[] {
   if (clicks.length === 0) return [];
 
-  // Sort by count descending
   const sorted = [...clicks].sort((a, b) => b.count - a.count);
 
-  // Take top N with at least 1 click
   return sorted
     .slice(0, topN)
     .filter((c) => c.count > 0)
@@ -214,57 +241,42 @@ export async function getSiteStats(): Promise<SiteStats> {
   }
 
   try {
-    // Fetch pageviews and unique users for 7d and 30d
-    const [res7d, res30d] = await Promise.all([
-      fetch(`${POSTHOG_HOST}/api/projects/${POSTHOG_PROJECT_ID}/insights/trend/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${POSTHOG_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          events: [
-            { id: "$pageview", type: "events", math: "total" },
-            { id: "$pageview", type: "events", math: "dau" },
-          ],
-          date_from: "-7d",
-        }),
-        next: { revalidate: 3600 },
-      }),
-      fetch(`${POSTHOG_HOST}/api/projects/${POSTHOG_PROJECT_ID}/insights/trend/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${POSTHOG_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          events: [
-            { id: "$pageview", type: "events", math: "total" },
-            { id: "$pageview", type: "events", math: "dau" },
-          ],
-          date_from: "-30d",
-        }),
-        next: { revalidate: 3600 },
-      }),
+    // Query for 7d stats
+    const query7d = `
+      SELECT
+        count() as pageviews,
+        count(DISTINCT properties.distinct_id) as unique_visitors
+      FROM events
+      WHERE event = '$pageview'
+        AND timestamp > now() - INTERVAL 7 DAY
+    `;
+
+    // Query for 30d stats
+    const query30d = `
+      SELECT
+        count() as pageviews,
+        count(DISTINCT properties.distinct_id) as unique_visitors
+      FROM events
+      WHERE event = '$pageview'
+        AND timestamp > now() - INTERVAL 30 DAY
+    `;
+
+    const [data7d, data30d] = await Promise.all([
+      runHogQLQuery(query7d),
+      runHogQLQuery(query30d),
     ]);
 
-    if (!res7d.ok || !res30d.ok) {
-      console.error("[posthog] API error fetching site stats:", {
-        res7dStatus: res7d.status,
-        res30dStatus: res30d.status,
-      });
-      return { pageviews7d: null, pageviews30d: null, uniqueVisitors7d: null, uniqueVisitors30d: null };
-    }
+    const pageviews7d = data7d?.results?.[0]?.[0] as number | null;
+    const uniqueVisitors7d = data7d?.results?.[0]?.[1] as number | null;
+    const pageviews30d = data30d?.results?.[0]?.[0] as number | null;
+    const uniqueVisitors30d = data30d?.results?.[0]?.[1] as number | null;
 
-    const [data7d, data30d] = await Promise.all([res7d.json(), res30d.json()]);
-
-    // Sum up the counts from each day
-    const pageviews7d = data7d.result?.[0]?.count ?? 0;
-    const uniqueVisitors7d = data7d.result?.[1]?.count ?? 0;
-    const pageviews30d = data30d.result?.[0]?.count ?? 0;
-    const uniqueVisitors30d = data30d.result?.[1]?.count ?? 0;
-
-    return { pageviews7d, pageviews30d, uniqueVisitors7d, uniqueVisitors30d };
+    return {
+      pageviews7d: pageviews7d ?? null,
+      pageviews30d: pageviews30d ?? null,
+      uniqueVisitors7d: uniqueVisitors7d ?? null,
+      uniqueVisitors30d: uniqueVisitors30d ?? null,
+    };
   } catch (error) {
     console.error("[posthog] Failed to fetch site stats:", error);
     return { pageviews7d: null, pageviews30d: null, uniqueVisitors7d: null, uniqueVisitors30d: null };
