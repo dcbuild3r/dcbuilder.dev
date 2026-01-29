@@ -53,7 +53,10 @@ export async function PUT(request: NextRequest, { params }: Params) {
     const body = (await request.json()) as Partial<NewJob>;
 
     // Remove fields that shouldn't be updated directly
-    const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...updateData } = body as Record<string, unknown>;
+    const updateData = { ...(body as Record<string, unknown>) };
+    delete updateData.id;
+    delete updateData.createdAt;
+    delete updateData.updatedAt;
 
     const [updated] = await db
       .update(jobs)

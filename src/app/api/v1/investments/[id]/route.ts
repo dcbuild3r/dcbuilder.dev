@@ -36,7 +36,10 @@ export async function PUT(
     const body = await request.json();
 
     // Filter out fields that shouldn't be updated directly
-    const { id: _id, createdAt, updatedAt, ...updateData } = body;
+    const updateData = { ...(body as Record<string, unknown>) };
+    delete updateData.id;
+    delete updateData.createdAt;
+    delete updateData.updatedAt;
 
     const [updated] = await db
       .update(investments)
