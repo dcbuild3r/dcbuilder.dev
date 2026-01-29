@@ -147,6 +147,7 @@ export interface Candidate {
 	hot?: boolean;
 	vouched?: boolean; // true = personally known/vouched, false/undefined = not personally known
 	dateAdded?: string;
+	createdAt?: string | Date;
 }
 
 export const DCBUILDER_TELEGRAM = "https://t.me/dcbuilder";

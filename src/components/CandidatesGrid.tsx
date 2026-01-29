@@ -723,7 +723,7 @@ function CandidateCard({
 						>
 							{availabilityLabels[candidate.availability]}
 						</span>
-						{isNew(candidate.dateAdded) && !isTop && (
+						{isNew(candidate.dateAdded, candidate.createdAt) && !isTop && (
 							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap">
 								🆕 NEW
 							</span>
@@ -733,7 +733,7 @@ function CandidateCard({
 								⭐️ TOP
 							</span>
 						)}
-						{isNew(candidate.dateAdded) && isTop && (
+						{isNew(candidate.dateAdded, candidate.createdAt) && isTop && (
 							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap">
 								🆕 NEW
 							</span>
@@ -1214,7 +1214,7 @@ function ExpandedCandidateView({
 										⭐️ TOP
 									</span>
 								)}
-								{isNew(candidate.dateAdded) && (
+								{isNew(candidate.dateAdded, candidate.createdAt) && (
 									<span className="px-3 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
 										🆕 NEW
 									</span>
