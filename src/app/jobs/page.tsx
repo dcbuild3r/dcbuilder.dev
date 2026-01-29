@@ -8,8 +8,8 @@ export const metadata = {
 	description: "Job opportunities at companies in my network",
 };
 
-// Revalidate every 60 seconds
-export const revalidate = 60;
+// Force dynamic rendering since we need database access
+export const dynamic = "force-dynamic";
 
 function JobsGridFallback() {
 	return (

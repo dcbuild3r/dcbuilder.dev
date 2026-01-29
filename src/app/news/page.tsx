@@ -9,8 +9,8 @@ export const metadata = {
     "Curated links, blog posts, and announcements from dcbuilder's portfolio companies.",
 };
 
-// Revalidate every 60 seconds
-export const revalidate = 60;
+// Force dynamic rendering since we need database access
+export const dynamic = "force-dynamic";
 
 export default async function NewsPage() {
   const news = await getAllNews();
