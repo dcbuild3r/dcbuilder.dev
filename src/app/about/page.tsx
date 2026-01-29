@@ -1,13 +1,81 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
-import { affiliations } from "@/data/affiliations";
+import { db, affiliations as affiliationsTable } from "@/db";
+import { R2_PUBLIC_URL } from "@/lib/r2";
 
 export const metadata = {
 	title: "About",
 };
 
-export default function About() {
+// Force dynamic rendering since we need database access
+export const dynamic = "force-dynamic";
+
+// Check if role is advisory (secondary to full jobs)
+const isAdvisoryRole = (role: string): boolean => {
+	const advisoryKeywords = ["advisor", "co-organizer", "coorganizer", "mentor", "fellow"];
+	return advisoryKeywords.some((keyword) => role.toLowerCase().includes(keyword));
+};
+
+// Check if affiliation is currently active
+const isActive = (dateEnd: string | null): boolean => {
+	return dateEnd?.toLowerCase() === "present" || dateEnd === null;
+};
+
+// Parse date string like "Mar 2022", "July 2022", "Dec 2024" to comparable value
+const parseEndDate = (dateEnd: string | null): number => {
+	if (!dateEnd || dateEnd.toLowerCase() === "present") return Infinity;
+	const months: Record<string, number> = {
+		jan: 1, january: 1, feb: 2, february: 2, mar: 3, march: 3,
+		apr: 4, april: 4, may: 5, jun: 6, june: 6,
+		jul: 7, july: 7, aug: 8, august: 8, sep: 9, september: 9,
+		oct: 10, october: 10, nov: 11, november: 11, dec: 12, december: 12,
+	};
+	const parts = dateEnd.toLowerCase().split(" ");
+	const month = months[parts[0]] || 1;
+	const year = parseInt(parts[1]) || 2000;
+	return year * 100 + month;
+};
+
+// Custom sorting for affiliations
+const sortAffiliations = <T extends { title: string; role: string; dateEnd: string | null }>(
+	affiliations: T[]
+): T[] => {
+	return [...affiliations].sort((a, b) => {
+		// 1. World Foundation always first
+		if (a.title === "World Foundation") return -1;
+		if (b.title === "World Foundation") return 1;
+
+		// 2. Tools For Humanity always second
+		if (a.title === "Tools For Humanity") return -1;
+		if (b.title === "Tools For Humanity") return 1;
+
+		// 3. Active vs inactive
+		const aActive = isActive(a.dateEnd);
+		const bActive = isActive(b.dateEnd);
+		if (aActive && !bActive) return -1;
+		if (!aActive && bActive) return 1;
+
+		// 4. For ACTIVE roles only: full jobs before advisory roles
+		if (aActive && bActive) {
+			const aAdvisory = isAdvisoryRole(a.role);
+			const bAdvisory = isAdvisoryRole(b.role);
+			if (!aAdvisory && bAdvisory) return -1;
+			if (aAdvisory && !bAdvisory) return 1;
+		}
+
+		// 5. Sort by end date (most recent first)
+		return parseEndDate(b.dateEnd) - parseEndDate(a.dateEnd);
+	});
+};
+
+async function getAffiliations() {
+	const affiliations = await db.select().from(affiliationsTable);
+	return sortAffiliations(affiliations);
+}
+
+export default async function About() {
+	const affiliations = await getAffiliations();
 	return (
 		<>
 			<Navbar />
@@ -17,7 +85,7 @@ export default function About() {
 					<section className="flex flex-col md:flex-row items-center gap-8 md:gap-12 text-center md:text-left">
 						<Link href="/" className="shrink-0">
 							<Image
-								src="/images/dcbuilder.png"
+								src={`${R2_PUBLIC_URL}/dcbuilder.png`}
 								alt="dcbuilder.eth"
 								width={280}
 								height={280}
@@ -49,20 +117,22 @@ export default function About() {
 							{affiliations.map((affiliation) => (
 								<a
 									key={affiliation.title}
-									href={affiliation.imageUrl}
+									href={affiliation.website || "#"}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="group block p-4 sm:p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
 								>
 									<div className="flex flex-col sm:flex-row gap-4 sm:gap-6 text-center sm:text-left">
 										<div className="shrink-0 flex items-center justify-center sm:w-32">
-											<Image
-												src={affiliation.logo}
-												alt={affiliation.title}
-												width={160}
-												height={160}
-												className="w-32 h-32 sm:w-24 sm:h-24 object-contain bg-white rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150"
-											/>
+											{affiliation.logo && (
+												<Image
+													src={affiliation.logo}
+													alt={affiliation.title}
+													width={160}
+													height={160}
+													className="w-32 h-32 sm:w-24 sm:h-24 object-contain bg-white rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150"
+												/>
+											)}
 										</div>
 										<div className="flex-1">
 											<div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">

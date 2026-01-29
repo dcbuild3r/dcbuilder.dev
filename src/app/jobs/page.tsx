@@ -1,12 +1,15 @@
 import { Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
 import { JobsGrid } from "@/components/JobsGrid";
-import { jobs } from "@/data/jobs";
+import { getJobsFromDB } from "@/lib/data";
 
 export const metadata = {
 	title: "Jobs",
 	description: "Job opportunities at companies in my network",
 };
+
+// Revalidate every 60 seconds
+export const revalidate = 60;
 
 function JobsGridFallback() {
 	return (
@@ -21,7 +24,9 @@ function JobsGridFallback() {
 	);
 }
 
-export default function Jobs() {
+export default async function Jobs() {
+	const jobs = await getJobsFromDB();
+
 	return (
 		<>
 			<Navbar />

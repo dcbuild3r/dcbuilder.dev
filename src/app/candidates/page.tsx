@@ -1,13 +1,18 @@
 import { Navbar } from "@/components/Navbar";
 import { CandidatesGrid } from "@/components/CandidatesGrid";
-import { candidates } from "@/data/candidates";
+import { getCandidatesFromDB } from "@/lib/data";
 
 export const metadata = {
 	title: "Candidates",
 	description: "Talented builders looking for new opportunities",
 };
 
-export default function Candidates() {
+// Force dynamic rendering (uses useSearchParams in CandidatesGrid)
+export const dynamic = "force-dynamic";
+
+export default async function Candidates() {
+	const candidates = await getCandidatesFromDB();
+
 	return (
 		<>
 			<Navbar />

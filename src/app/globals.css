@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -42,11 +43,250 @@ code, pre, .font-mono {
   scrollbar-width: none;  /* Firefox */
 }
 
+/* Blog prose styling - Lora serif for immersive reading */
+.prose-custom {
+  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  font-size: 1.2rem;
+  line-height: 1.75;
+  color: #374151;
+}
+
+.dark .prose-custom {
+  color: #d1d5db;
+}
+
+.prose-custom p {
+  margin-bottom: 1.5em;
+}
+
+.prose-custom h1,
+.prose-custom h2,
+.prose-custom h3,
+.prose-custom h4,
+.prose-custom h5,
+.prose-custom h6 {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+}
+
+.prose-custom h1 { font-size: 2rem; }
+.prose-custom h2 { font-size: 1.6rem; }
+.prose-custom h3 { font-size: 1.35rem; }
+.prose-custom h4 { font-size: 1.15rem; }
+
+.prose-custom a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dark .prose-custom a {
+  color: #60a5fa;
+}
+
+.prose-custom a:hover {
+  opacity: 0.8;
+}
+
+.prose-custom strong {
+  font-weight: 600;
+}
+
+.prose-custom blockquote {
+  border-left: 3px solid #d1d5db;
+  padding-left: 1.25em;
+  margin: 1.5em 0;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.dark .prose-custom blockquote {
+  border-left-color: #4b5563;
+  color: #9ca3af;
+}
+
+.prose-custom ul {
+  margin: 1.25em 0;
+  padding-left: 1.5em;
+  list-style-type: disc;
+}
+
+.prose-custom ol {
+  margin: 1.25em 0;
+  padding-left: 1.5em;
+  list-style-type: decimal;
+}
+
+.prose-custom li {
+  margin: 0.5em 0;
+  display: list-item;
+}
+
+.prose-custom code {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.9em;
+  background-color: #f3f4f6;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+}
+
+.dark .prose-custom code {
+  background-color: #374151;
+}
+
+.prose-custom pre {
+  background-color: #1f2937;
+  color: #f9fafb;
+  padding: 1em 1.25em;
+  border-radius: 0.5em;
+  overflow-x: auto;
+  margin: 1.5em 0;
+}
+
+.prose-custom pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 0.875em;
+}
+
+.prose-custom img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5em;
+  margin: 1.5em 0;
+}
+
 /* Video/iframe size in blog posts - match image width */
 .prose-custom iframe,
 .prose-custom video {
   width: 100%;
   height: auto;
   aspect-ratio: 16 / 9;
+  margin: 1.5em 0;
+}
+
+/* Job description prose styling - Inter sans-serif for scannability */
+.prose-jd {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #374151;
+}
+
+.dark .prose-jd {
+  color: #d1d5db;
+}
+
+.prose-jd p {
+  margin-bottom: 1.25em;
+}
+
+.prose-jd h1,
+.prose-jd h2,
+.prose-jd h3,
+.prose-jd h4,
+.prose-jd h5,
+.prose-jd h6 {
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1.75em;
+  margin-bottom: 0.5em;
+}
+
+.prose-jd h1 { font-size: 1.5rem; }
+.prose-jd h2 { font-size: 1.25rem; }
+.prose-jd h3 { font-size: 1.1rem; }
+
+.prose-jd strong {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.dark .prose-jd strong {
+  color: #f3f4f6;
+}
+
+.prose-jd ul {
+  margin: 1em 0;
+  padding-left: 1.5em;
+  list-style-type: disc;
+}
+
+.prose-jd ol {
+  margin: 1em 0;
+  padding-left: 1.5em;
+  list-style-type: decimal;
+}
+
+.prose-jd li {
+  margin: 0.4em 0;
+  display: list-item;
+}
+
+.prose-jd a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dark .prose-jd a {
+  color: #60a5fa;
+}
+
+.prose-jd code {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.9em;
+  background-color: #f3f4f6;
+  padding: 0.15em 0.35em;
+  border-radius: 0.25em;
+}
+
+.dark .prose-jd code {
+  background-color: #374151;
+}
+
+/* Pulsating animation for NEW tag */
+@keyframes pulse-new {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(14, 165, 233, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(14, 165, 233, 0.7);
+  }
+}
+
+.animate-pulse-new {
+  animation: pulse-new 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Pulsating animation for HOT tag (red) */
+@keyframes pulse-hot {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+  }
+}
+
+.animate-pulse-hot {
+  animation: pulse-hot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Pulsating animation for TOP tag (purple) */
+@keyframes pulse-top {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(139, 92, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.7);
+  }
+}
+
+.animate-pulse-top {
+  animation: pulse-top 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import {
 	Candidate,
 	AvailabilityStatus,
@@ -15,22 +16,55 @@ import {
 	DCBUILDER_TELEGRAM,
 } from "@/data/candidates";
 import { CustomSelect } from "./CustomSelect";
+import {
+	trackCandidateView,
+	trackCandidateCVClick,
+	trackCandidateSocialClick,
+	trackCandidateContactClick,
+} from "@/lib/posthog";
 
 interface CandidatesGridProps {
 	candidates: Candidate[];
 }
 
-// Fisher-Yates shuffle (pure function)
-function shuffleArray<T>(array: T[]): T[] {
+// Check if item was created within the last 2 weeks
+const isNew = (createdAt: string | Date | undefined): boolean => {
+	if (!createdAt) return false;
+	const date = new Date(createdAt);
+	const twoWeeksAgo = new Date();
+	twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+	return date > twoWeeksAgo;
+};
+
+function hashString(value: string): number {
+	let hash = 0;
+	for (let i = 0; i < value.length; i++) {
+		hash = (hash << 5) - hash + value.charCodeAt(i);
+		hash |= 0;
+	}
+	return Math.abs(hash);
+}
+
+function seededRandom(seed: number): () => number {
+	let current = seed;
+	return () => {
+		current = (current * 9301 + 49297) % 233280;
+		return current / 233280;
+	};
+}
+
+// Fisher-Yates shuffle with deterministic RNG
+function shuffleArray<T>(array: T[], random: () => number): T[] {
 	const result = [...array];
 	for (let i = result.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
+		const j = Math.floor(random() * (i + 1));
 		[result[i], result[j]] = [result[j], result[i]];
 	}
 	return result;
 }
 
 export function CandidatesGrid({ candidates }: CandidatesGridProps) {
+	const searchParams = useSearchParams();
 	const [availabilityFilter, setAvailabilityFilter] = useState<
 		"all" | AvailabilityStatus
 	>("all");
@@ -41,14 +75,33 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const [selectedTags, setSelectedTags] = useState<SkillTag[]>([]);
 	const [tagsExpanded, setTagsExpanded] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [shuffledCandidates, setShuffledCandidates] = useState<Candidate[]>([]);
-	const [shuffledCandidatesKey, setShuffledCandidatesKey] = useState("");
-	const [isHydrated, setIsHydrated] = useState(false);
-	const [showAll, setShowAll] = useState(false);
-	const [expandedCandidate, setExpandedCandidate] = useState<Candidate | null>(
-		null
-	);
+	const [displayCount, setDisplayCount] = useState(12);
+	const [expandedCandidate, setExpandedCandidate] = useState<Candidate | null>(() => {
+		const candidateId = searchParams.get("candidate");
+		if (!candidateId) return null;
+		return candidates.find((c) => c.id === candidateId) ?? null;
+	});
 	const lastActiveRef = useRef<HTMLElement | null>(null);
+	const loadMoreRef = useRef<HTMLDivElement>(null);
+	const [dataHotCandidateIds, setDataHotCandidateIds] = useState<Set<string>>(new Set());
+
+	// Fetch data-driven hot candidates from analytics
+	useEffect(() => {
+		fetch("/api/hot-candidates")
+			.then((res) => res.json())
+			.then((data) => {
+				if (data.hotCandidateIds) {
+					setDataHotCandidateIds(new Set(data.hotCandidateIds));
+				}
+			})
+			.catch((error) => console.warn("Failed to fetch hot candidates:", error));
+	}, []);
+
+	// Helper to check if candidate is hot (manual flag OR data-driven)
+	const isHotCandidate = useCallback(
+		(candidate: Candidate) => candidate.hot || dataHotCandidateIds.has(candidate.id),
+		[dataHotCandidateIds]
+	);
 
 	// Helper to update URL params without React re-render
 	const updateUrlParams = useCallback((updates: Record<string, string | null>) => {
@@ -63,33 +116,28 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		window.history.replaceState(null, "", url.pathname + url.search);
 	}, []);
 
+	// Helper to build candidate event properties for analytics
+	const getCandidateEventProps = useCallback((candidate: Candidate) => ({
+		candidate_id: candidate.id,
+		candidate_name: candidate.visibility === "anonymous"
+			? candidate.anonymousAlias || "Anonymous"
+			: candidate.name,
+		candidate_title: candidate.title,
+		is_featured: candidate.featured ?? false,
+	}), []);
+
 	// Sync URL with modal state
 	const openCandidate = useCallback((candidate: Candidate) => {
 		lastActiveRef.current = document.activeElement as HTMLElement | null;
 		setExpandedCandidate(candidate);
 		updateUrlParams({ candidate: candidate.id });
-	}, [updateUrlParams]);
+		trackCandidateView(getCandidateEventProps(candidate));
+	}, [updateUrlParams, getCandidateEventProps]);
 
 	const closeCandidate = useCallback(() => {
 		setExpandedCandidate(null);
 		updateUrlParams({ candidate: null });
 	}, [updateUrlParams]);
-
-	// Mark as hydrated after mount and check for candidate URL param
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration flag set post-mount.
-		setIsHydrated(true);
-
-		// Check if there's a candidate param in URL
-		const urlParams = new URLSearchParams(window.location.search);
-		const candidateId = urlParams.get("candidate");
-		if (candidateId) {
-			const candidate = candidates.find((c) => c.id === candidateId);
-			if (candidate) {
-				setExpandedCandidate(candidate);
-			}
-		}
-	}, [candidates]);
 
 	// Close expanded view on escape key
 	useEffect(() => {
@@ -113,6 +161,29 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			lastActiveRef.current.focus();
 		}
 	}, [expandedCandidate]);
+
+	// Infinite scroll: load more candidates when sentinel is visible
+	useEffect(() => {
+		const sentinel = loadMoreRef.current;
+		if (!sentinel) return;
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting) {
+					setDisplayCount((prev) => prev + 12);
+				}
+			},
+			{ rootMargin: "200px" } // Load before reaching the bottom
+		);
+
+		observer.observe(sentinel);
+		return () => observer.disconnect();
+	}, []);
+
+	// Reset display count when filters change
+	useEffect(() => {
+		setDisplayCount(12);
+	}, [availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]);
 
 	// Get all unique tags from candidates
 	const allTags = useMemo(() => {
@@ -197,6 +268,9 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		});
 	}, [candidates, availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]);
 
+	// Include today's date so shuffle changes daily (stable after hydration)
+	const [shuffleSeed] = useState(() => new Date().toISOString().split("T")[0]);
+
 	const filterKey = useMemo(
 		() =>
 			[
@@ -205,86 +279,78 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				roleFilter,
 				searchQuery,
 				selectedTags.join(","),
+				shuffleSeed,
 			].join("|"),
-		[availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]
+		[availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags, shuffleSeed]
 	);
 
-	// Sort: hot first, then featured, then by tier (deterministic - no shuffle)
+	// Helper to check skill tags
+	const hasSkillTag = useCallback((candidate: Candidate, tag: string) => {
+		return candidate.skills?.includes(tag as SkillTag) ?? false;
+	}, []);
+
+	// Deterministic shuffle: hot+top, hot, top, featured, verified, then unverified
 	const sortedCandidates = useMemo(() => {
-		const hot = filteredCandidates.filter((c) => c.hot);
-		const featured = filteredCandidates.filter((c) => c.featured && !c.hot);
-		const nonFeatured = filteredCandidates.filter((c) => !c.featured && !c.hot);
+		// Priority groups
+		const hotAndTop = filteredCandidates.filter(
+			(c) => hasSkillTag(c, "hot") && hasSkillTag(c, "top")
+		);
+		const hotOnly = filteredCandidates.filter(
+			(c) => hasSkillTag(c, "hot") && !hasSkillTag(c, "top")
+		);
+		const topOnly = filteredCandidates.filter(
+			(c) => hasSkillTag(c, "top") && !hasSkillTag(c, "hot")
+		);
 
-		// Group non-featured by tier
-		const tierGroups: Record<number, Candidate[]> = {};
-		nonFeatured.forEach((candidate) => {
-			const tier = candidate.tier;
-			if (!tierGroups[tier]) tierGroups[tier] = [];
-			tierGroups[tier].push(candidate);
-		});
+		// Remaining candidates (no hot/top tags)
+		const remaining = filteredCandidates.filter(
+			(c) => !hasSkillTag(c, "hot") && !hasSkillTag(c, "top")
+		);
 
-		// Combine tiers in order (deterministic)
-		const sortedNonFeatured = Object.keys(tierGroups)
-			.map(Number)
-			.sort((a, b) => a - b)
-			.flatMap((tier) => tierGroups[tier]);
+		// Split remaining by featured, verified, and unverified
+		const featured = remaining.filter((c) => c.featured);
+		const verified = remaining.filter((c) => !c.featured && c.vouched === true);
+		const unverified = remaining.filter((c) => !c.featured && c.vouched !== true);
 
-		return [...hot, ...featured, ...sortedNonFeatured];
-	}, [filteredCandidates]);
+		// Shuffle and sort each group by tier (deterministic)
+		const shuffleAndSortByTier = (candidates: Candidate[], seedPrefix: string) => {
+			const tierGroups: Record<number, Candidate[]> = {};
+			candidates.forEach((candidate) => {
+				const tier = candidate.tier;
+				if (!tierGroups[tier]) tierGroups[tier] = [];
+				tierGroups[tier].push(candidate);
+			});
+			return Object.keys(tierGroups)
+				.map(Number)
+				.sort((a, b) => a - b)
+				.flatMap((tier) =>
+					shuffleArray(
+						tierGroups[tier],
+						seededRandom(hashString(`${filterKey}|${seedPrefix}|tier-${tier}`))
+					)
+				);
+		};
 
-	// Shuffle in useEffect after hydration (React-safe)
-	useEffect(() => {
-		if (!isHydrated) return;
+		return [
+			...shuffleAndSortByTier(hotAndTop, "hot-top"),
+			...shuffleAndSortByTier(hotOnly, "hot-only"),
+			...shuffleAndSortByTier(topOnly, "top-only"),
+			...shuffleAndSortByTier(featured, "featured"),
+			...shuffleAndSortByTier(verified, "verified"),
+			...shuffleAndSortByTier(unverified, "unverified"),
+		];
+	}, [filteredCandidates, hasSkillTag, filterKey]);
 
-		const hot = filteredCandidates.filter((c) => c.hot);
-		const featured = filteredCandidates.filter((c) => c.featured && !c.hot);
-		const nonFeatured = filteredCandidates.filter((c) => !c.featured && !c.hot);
+	const candidatesToDisplay = sortedCandidates;
 
-		// Shuffle each group
-		const shuffledHot = shuffleArray(hot);
-		const shuffledFeatured = shuffleArray(featured);
-
-		// Group and shuffle non-featured by tier
-		const tierGroups: Record<number, Candidate[]> = {};
-		nonFeatured.forEach((candidate) => {
-			const tier = candidate.tier;
-			if (!tierGroups[tier]) tierGroups[tier] = [];
-			tierGroups[tier].push(candidate);
-		});
-
-		const sortedNonFeatured = Object.keys(tierGroups)
-			.map(Number)
-			.sort((a, b) => a - b)
-			.flatMap((tier) => shuffleArray(tierGroups[tier]));
-
-		// eslint-disable-next-line react-hooks/set-state-in-effect -- Shuffle is derived after hydration.
-		setShuffledCandidates([
-			...shuffledHot,
-			...shuffledFeatured,
-			...sortedNonFeatured,
-		]);
-		setShuffledCandidatesKey(filterKey);
-	}, [filteredCandidates, isHydrated, filterKey]);
-
-	// Use shuffled after hydration, otherwise use deterministic sort
-	const candidatesToDisplay =
-		isHydrated &&
-		shuffledCandidates.length > 0 &&
-		shuffledCandidatesKey === filterKey
-			? shuffledCandidates
-			: sortedCandidates;
-
-	// Limit display unless showAll is true
-	const displayedCandidates = showAll
-		? candidatesToDisplay
-		: candidatesToDisplay.slice(0, 12);
-	const hasMore = candidatesToDisplay.length > 12 && !showAll;
+	// Limit display based on infinite scroll count
+	const displayedCandidates = candidatesToDisplay.slice(0, displayCount);
+	const hasMore = candidatesToDisplay.length > displayCount;
 
 	return (
 		<div
 			className="space-y-6"
 			data-testid="candidates-grid"
-			data-hydrated={isHydrated ? "true" : "false"}
 		>
 			{/* Filters */}
 			<div className="space-y-4">
@@ -494,6 +560,8 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 						<CandidateCard
 							key={candidate.id}
 							candidate={candidate}
+							isHot={isHotCandidate(candidate)}
+							isTop={hasSkillTag(candidate, "top") && !hasSkillTag(candidate, "hot")}
 							onExpand={() => openCandidate(candidate)}
 						/>
 					))
@@ -504,19 +572,41 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			{expandedCandidate && (
 				<ExpandedCandidateView
 					candidate={expandedCandidate}
+					isHot={isHotCandidate(expandedCandidate)}
+					isTop={hasSkillTag(expandedCandidate, "top") && !hasSkillTag(expandedCandidate, "hot")}
 					onClose={closeCandidate}
+					onCVClick={() => trackCandidateCVClick(getCandidateEventProps(expandedCandidate))}
+					onSocialClick={(platform, url) => trackCandidateSocialClick({
+						...getCandidateEventProps(expandedCandidate),
+						platform,
+						url,
+					})}
+					onContactClick={(contactType) => trackCandidateContactClick({
+						...getCandidateEventProps(expandedCandidate),
+						contact_type: contactType,
+					})}
 				/>
 			)}
 
-			{/* Show More Button */}
+			{/* Infinite scroll sentinel */}
 			{hasMore && (
-				<div className="text-center">
-					<button
-						onClick={() => setShowAll(true)}
-						className="px-6 py-2 text-sm font-medium rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-					>
-						Show all {sortedCandidates.length} candidates
-					</button>
+				<div
+					ref={loadMoreRef}
+					className="flex justify-center py-8"
+				>
+					<div className="flex items-center gap-2 text-neutral-500">
+						<svg
+							className="w-5 h-5 animate-spin"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+						>
+							<circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+							<path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
+						</svg>
+						<span className="text-sm">Loading more candidates...</span>
+					</div>
 				</div>
 			)}
 		</div>
@@ -525,9 +615,13 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 
 function CandidateCard({
 	candidate,
+	isHot,
+	isTop,
 	onExpand,
 }: {
 	candidate: Candidate;
+	isHot: boolean;
+	isTop: boolean;
 	onExpand: () => void;
 }) {
 	const isAnonymous = candidate.visibility === "anonymous";
@@ -535,8 +629,8 @@ function CandidateCard({
 		? candidate.anonymousAlias || "Anonymous"
 		: candidate.name;
 	const profileImage = isAnonymous
-		? "/images/candidates/anonymous-placeholder.svg"
-		: candidate.profileImage || "/images/candidates/anonymous-placeholder.svg";
+		? "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg"
+		: candidate.profileImage || "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
 	const availabilityColor = {
 		looking:
 			"bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -545,13 +639,20 @@ function CandidateCard({
 			"bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
 	};
 
+	// Determine card styling based on status
+	const getCardClassName = () => {
+		if (isHot) {
+			return "border-orange-500 dark:border-orange-400 bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40 shadow-[0_0_8px_rgba(251,146,60,0.5)] dark:shadow-[0_0_10px_rgba(251,146,60,0.4)]";
+		}
+		if (isTop) {
+			return "border-violet-500 dark:border-violet-400 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40 shadow-[0_0_8px_rgba(139,92,246,0.5)] dark:shadow-[0_0_10px_rgba(139,92,246,0.4)]";
+		}
+		return "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600";
+	};
+
 	return (
 		<div
-			className={`p-4 rounded-xl border transition-all overflow-hidden ${
-				candidate.hot
-					? "border-orange-400 dark:border-orange-500 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 shadow-[0_0_15px_rgba(251,146,60,0.3)] dark:shadow-[0_0_20px_rgba(251,146,60,0.2)]"
-					: "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
-			}`}
+			className={`p-4 rounded-xl border transition-all overflow-hidden ${getCardClassName()}`}
 		>
 			{/* Header */}
 			<div className="flex items-start gap-3">
@@ -566,43 +667,62 @@ function CandidateCard({
 						onError={(e) => {
 							e.currentTarget.onerror = null; // Prevent infinite loop
 							console.warn(`[CandidatesGrid] Failed to load image for ${displayName}`);
-							e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
+							e.currentTarget.src = "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
 						}}
 					/>
 				</div>
 
 				<div className="flex-1 min-w-0">
-					<h3 className="font-semibold truncate">
-						{displayName}
-						{candidate.featured && (
-							<span className="ml-1 text-xs text-amber-600 dark:text-amber-400">
-								★
-							</span>
-						)}
-						{candidate.vouched !== false ? (
-							<span
-								className="ml-1 text-xs text-green-600 dark:text-green-400"
-								title="Personally vouched"
-							>
-								✓
-							</span>
-						) : (
-							<span
-								className="ml-1 text-xs text-amber-600 dark:text-amber-400"
-								title="Referred (not personally known)"
-							>
-								◇
-							</span>
-						)}
+					<h3 className="font-semibold flex items-center gap-1">
+						<span className="truncate">{displayName}</span>
+						<span className="flex-shrink-0 flex items-center gap-0.5">
+							{candidate.featured && (
+								<span className="text-xs text-amber-600 dark:text-amber-400">
+									★
+								</span>
+							)}
+							{candidate.vouched !== false ? (
+								<span
+									className="text-xs text-green-600 dark:text-green-400"
+									title="Personally vouched"
+								>
+									✓
+								</span>
+							) : (
+								<span
+									className="text-xs text-amber-600 dark:text-amber-400"
+									title="Referred (not personally known)"
+								>
+									◇
+								</span>
+							)}
+						</span>
 					</h3>
 					<p className="text-sm text-neutral-600 dark:text-neutral-400 truncate">
 						{candidate.title}
 					</p>
-					<span
-						className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full ${availabilityColor[candidate.availability]}`}
-					>
-						{availabilityLabels[candidate.availability]}
-					</span>
+					<div className="flex items-center gap-1.5 mt-1 flex-nowrap">
+						<span
+							className={`inline-block px-2 py-0.5 text-xs rounded-full whitespace-nowrap ${availabilityColor[candidate.availability]}`}
+						>
+							{availabilityLabels[candidate.availability]}
+						</span>
+						{isNew(candidate.createdAt) && !isTop && (
+							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap animate-pulse-new">
+								NEW
+							</span>
+						)}
+						{isTop && (
+							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white whitespace-nowrap">
+								⭐️ TOP
+							</span>
+						)}
+						{isNew(candidate.createdAt) && isTop && (
+							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap animate-pulse-new">
+								NEW
+							</span>
+						)}
+					</div>
 				</div>
 			</div>
 
@@ -621,29 +741,26 @@ function CandidateCard({
 			</div>
 
 			{/* Skills */}
-			{candidate.skills && candidate.skills.length > 0 && (
-				<div className="mt-3 flex flex-wrap gap-1">
-					{candidate.skills.slice(0, 4).map((tag) => (
-						<span
-							key={tag}
-							className={`px-2 py-0.5 text-xs rounded-full ${
-								tag === "hot"
-									? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_10px_rgba(251,146,60,0.5)]"
-									: tag === "top"
-										? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold shadow-[0_0_10px_rgba(139,92,246,0.5)]"
-										: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
-							}`}
-						>
-							{tagLabels[tag] ?? tag}
-						</span>
-					))}
-					{candidate.skills.length > 4 && (
-						<span className="px-2 py-0.5 text-xs text-neutral-500">
-							+{candidate.skills.length - 4} more
-						</span>
-					)}
-				</div>
-			)}
+			{candidate.skills && candidate.skills.length > 0 && (() => {
+				const displaySkills = candidate.skills.filter((tag) => tag !== "hot" && tag !== "top");
+				return displaySkills.length > 0 && (
+					<div className="mt-3 flex flex-wrap gap-1">
+						{displaySkills.slice(0, 4).map((tag) => (
+							<span
+								key={tag}
+								className="px-2 py-0.5 text-xs rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+							>
+								{tagLabels[tag] ?? tag}
+							</span>
+						))}
+						{displaySkills.length > 4 && (
+							<span className="px-2 py-0.5 text-xs text-neutral-500">
+								+{displaySkills.length - 4} more
+							</span>
+						)}
+					</div>
+				);
+			})()}
 
 			{/* Contact Section */}
 			<div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700">
@@ -859,18 +976,28 @@ function CandidateCard({
 
 function ExpandedCandidateView({
 	candidate,
+	isHot,
+	isTop,
 	onClose,
+	onCVClick,
+	onSocialClick,
+	onContactClick,
 }: {
 	candidate: Candidate;
+	isHot: boolean;
+	isTop: boolean;
 	onClose: () => void;
+	onCVClick?: () => void;
+	onSocialClick?: (platform: string, url: string) => void;
+	onContactClick?: (contactType: "email" | "telegram" | "calendly") => void;
 }) {
 	const isAnonymous = candidate.visibility === "anonymous";
 	const displayName = isAnonymous
 		? candidate.anonymousAlias || "Anonymous"
 		: candidate.name;
 	const profileImage = isAnonymous
-		? "/images/candidates/anonymous-placeholder.svg"
-		: candidate.profileImage || "/images/candidates/anonymous-placeholder.svg";
+		? "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg"
+		: candidate.profileImage || "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
 	const dialogRef = useRef<HTMLDivElement>(null);
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const titleId = `candidate-${candidate.id}-title`;
@@ -934,9 +1061,11 @@ function ExpandedCandidateView({
 				tabIndex={-1}
 				onKeyDown={handleDialogKeyDown}
 				className={`relative w-full sm:max-w-4xl h-[90vh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
-					candidate.hot
-						? "ring-2 ring-orange-400 dark:ring-orange-500"
-						: "ring-1 ring-neutral-200 dark:ring-neutral-700"
+					isHot
+						? "ring-2 ring-orange-500 dark:ring-orange-400"
+						: isTop
+							? "ring-2 ring-violet-500 dark:ring-violet-400"
+							: "ring-1 ring-neutral-200 dark:ring-neutral-700"
 				}`}
 				onClick={(e) => e.stopPropagation()}
 			>
@@ -1011,9 +1140,11 @@ function ExpandedCandidateView({
 				{/* Header Section */}
 				<div
 					className={`p-6 sm:p-8 ${
-						candidate.hot
-							? "bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20"
-							: "bg-neutral-50 dark:bg-neutral-800/50"
+						isHot
+							? "bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40"
+							: isTop
+								? "bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40"
+								: "bg-neutral-50 dark:bg-neutral-800/50"
 					}`}
 				>
 					<div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
@@ -1027,7 +1158,7 @@ function ExpandedCandidateView({
 								className="object-cover w-full h-full"
 								onError={(e) => {
 									console.warn(`[CandidatesGrid] Failed to load image for ${displayName}`);
-									e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
+									e.currentTarget.src = "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
 								}}
 							/>
 						</div>
@@ -1057,9 +1188,19 @@ function ExpandedCandidateView({
 										◇
 									</span>
 								)}
-								{candidate.hot && (
+								{isHot && (
 									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_0_10px_rgba(251,146,60,0.5)]">
 										🔥 HOT
+									</span>
+								)}
+								{isTop && (
+									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.5)]">
+										⭐️ TOP
+									</span>
+								)}
+								{isNew(candidate.createdAt) && (
+									<span className="px-3 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+										NEW
 									</span>
 								)}
 							</div>
@@ -1102,27 +1243,24 @@ function ExpandedCandidateView({
 					</div>
 
 					{/* Skills */}
-					{candidate.skills && candidate.skills.length > 0 && (
-						<div>
-							<h3 className="text-lg font-semibold mb-3">Skills</h3>
-							<div className="flex flex-wrap gap-2">
-								{candidate.skills.map((tag) => (
-									<span
-										key={tag}
-										className={`px-3 py-1.5 text-sm rounded-full ${
-											tag === "hot"
-												? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold"
-												: tag === "top"
-													? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold"
-													: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
-										}`}
-									>
-										{tagLabels[tag] ?? tag}
-									</span>
-								))}
+					{candidate.skills && candidate.skills.length > 0 && (() => {
+						const displaySkills = candidate.skills.filter((tag) => tag !== "hot" && tag !== "top");
+						return displaySkills.length > 0 && (
+							<div>
+								<h3 className="text-lg font-semibold mb-3">Skills</h3>
+								<div className="flex flex-wrap gap-2">
+									{displaySkills.map((tag) => (
+										<span
+											key={tag}
+											className="px-3 py-1.5 text-sm rounded-full bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+										>
+											{tagLabels[tag] ?? tag}
+										</span>
+									))}
+								</div>
 							</div>
-						</div>
-					)}
+						);
+					})()}
 
 					{/* Preferred Roles */}
 					{candidate.preferredRoles && candidate.preferredRoles.length > 0 && (
@@ -1156,7 +1294,7 @@ function ExpandedCandidateView({
 									>
 										{company.logo && (
 											<Image
-												src={company.logo || "/images/candidates/anonymous-placeholder.svg"}
+												src={company.logo || "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg"}
 												alt={company.name}
 												width={24}
 												height={24}
@@ -1216,6 +1354,7 @@ function ExpandedCandidateView({
 								href={DCBUILDER_TELEGRAM}
 								target="_blank"
 								rel="noopener noreferrer"
+								onClick={() => onContactClick?.("telegram")}
 								className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 transition-opacity"
 							>
 								<svg
@@ -1234,6 +1373,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.x}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={() => onSocialClick?.("x", candidate.socials!.x!)}
 										className="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 										title="X"
 									>
@@ -1251,6 +1391,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.github}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={() => onSocialClick?.("github", candidate.socials!.github!)}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 									>
 										<svg
@@ -1268,6 +1409,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.linkedin}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={() => onSocialClick?.("linkedin", candidate.socials!.linkedin!)}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 									>
 										<svg
@@ -1283,6 +1425,7 @@ function ExpandedCandidateView({
 								{candidate.socials?.email && (
 									<a
 										href={`mailto:${candidate.socials.email}`}
+										onClick={() => onContactClick?.("email")}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 									>
 										<svg
@@ -1305,6 +1448,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.website}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={() => onSocialClick?.("website", candidate.socials!.website!)}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 									>
 										<svg
@@ -1328,6 +1472,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.telegram}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={() => onSocialClick?.("telegram", candidate.socials!.telegram!)}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 									>
 										<svg
@@ -1345,6 +1490,7 @@ function ExpandedCandidateView({
 										href={candidate.socials.cv}
 										target="_blank"
 										rel="noopener noreferrer"
+										onClick={onCVClick}
 										className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
 									>
 										<svg

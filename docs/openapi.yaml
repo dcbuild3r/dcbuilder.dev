@@ -1,0 +1,898 @@
+openapi: 3.1.0
+info:
+  title: dcbuilder.dev API
+  description: REST API for managing jobs, candidates, investments, blog, and news content
+  version: 1.0.0
+  contact:
+    name: dcbuilder
+    url: https://dcbuilder.dev
+
+servers:
+  - url: /api/v1
+    description: API v1
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: API key for authentication
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+        code:
+          type: string
+          description: Machine-readable error code
+          enum:
+            - VALIDATION_ERROR
+            - INVALID_JSON
+            - UNAUTHORIZED
+            - FORBIDDEN
+            - NOT_FOUND
+            - DUPLICATE_KEY
+            - SLUG_EXISTS
+            - FK_CONSTRAINT
+            - DB_QUERY_ERROR
+            - DB_INSERT_ERROR
+            - DB_UPDATE_ERROR
+            - DB_DELETE_ERROR
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    Job:
+      type: object
+      required:
+        - title
+        - company
+        - link
+        - category
+      properties:
+        id:
+          type: string
+          readOnly: true
+        title:
+          type: string
+        company:
+          type: string
+        companyLogo:
+          type: string
+          format: uri
+        link:
+          type: string
+          format: uri
+        location:
+          type: string
+        remote:
+          type: string
+          enum: [Remote, Hybrid, On-site]
+        type:
+          type: string
+          enum: [Full-time, Part-time, Contract]
+        salary:
+          type: string
+        department:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+          enum: [portfolio, network]
+        featured:
+          type: boolean
+          default: false
+        description:
+          type: string
+        companyWebsite:
+          type: string
+          format: uri
+        companyX:
+          type: string
+          format: uri
+        companyGithub:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    Candidate:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+        title:
+          type: string
+        location:
+          type: string
+        summary:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        experience:
+          type: string
+        education:
+          type: string
+        image:
+          type: string
+          format: uri
+        cv:
+          type: string
+          format: uri
+        featured:
+          type: boolean
+          default: false
+        available:
+          type: boolean
+          default: true
+        email:
+          type: string
+          format: email
+        telegram:
+          type: string
+        calendly:
+          type: string
+          format: uri
+        x:
+          type: string
+          format: uri
+        github:
+          type: string
+          format: uri
+        linkedin:
+          type: string
+          format: uri
+        website:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    Investment:
+      type: object
+      required:
+        - title
+      properties:
+        id:
+          type: string
+          readOnly: true
+        title:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+          format: uri
+        imageUrl:
+          type: string
+          format: uri
+        tier:
+          type: string
+          enum: ["1", "2", "3", "4"]
+        featured:
+          type: boolean
+          default: false
+        status:
+          type: string
+          enum: [active, inactive, acquired]
+          default: active
+        website:
+          type: string
+          format: uri
+        x:
+          type: string
+          format: uri
+        github:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    Affiliation:
+      type: object
+      required:
+        - title
+        - role
+      properties:
+        id:
+          type: string
+          readOnly: true
+        title:
+          type: string
+        role:
+          type: string
+        dateBegin:
+          type: string
+        dateEnd:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+          format: uri
+        imageUrl:
+          type: string
+          format: uri
+        website:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    BlogPost:
+      type: object
+      required:
+        - slug
+        - title
+        - content
+      properties:
+        slug:
+          type: string
+          pattern: ^[a-z0-9-]+$
+        title:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+          description: MDX content
+        date:
+          type: string
+          format: date
+        source:
+          type: string
+        sourceUrl:
+          type: string
+          format: uri
+        image:
+          type: string
+          format: uri
+        published:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    CuratedLink:
+      type: object
+      required:
+        - title
+        - url
+        - source
+        - date
+        - category
+      properties:
+        id:
+          type: string
+          readOnly: true
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        source:
+          type: string
+        date:
+          type: string
+          format: date-time
+        description:
+          type: string
+        category:
+          type: string
+        featured:
+          type: boolean
+          default: false
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    Announcement:
+      type: object
+      required:
+        - title
+        - url
+        - company
+        - platform
+        - date
+        - category
+      properties:
+        id:
+          type: string
+          readOnly: true
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        company:
+          type: string
+        companyLogo:
+          type: string
+          format: uri
+        platform:
+          type: string
+          enum: [x, blog, discord, github, other]
+        date:
+          type: string
+          format: date-time
+        description:
+          type: string
+        category:
+          type: string
+        featured:
+          type: boolean
+          default: false
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+  parameters:
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 100
+        maximum: 500
+    OffsetParam:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        default: 0
+    FeaturedParam:
+      name: featured
+      in: query
+      schema:
+        type: string
+        enum: ["true"]
+
+paths:
+  /jobs:
+    get:
+      tags: [Jobs]
+      summary: List jobs
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: '#/components/parameters/FeaturedParam'
+        - name: company
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [portfolio, network]
+      responses:
+        '200':
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Job'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+    post:
+      tags: [Jobs]
+      summary: Create job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+      responses:
+        '201':
+          description: Job created
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+
+  /jobs/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Jobs]
+      summary: Get job by ID
+      security: []
+      responses:
+        '200':
+          description: Job details
+        '404':
+          description: Job not found
+    put:
+      tags: [Jobs]
+      summary: Update job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+      responses:
+        '200':
+          description: Job updated
+        '404':
+          description: Job not found
+    delete:
+      tags: [Jobs]
+      summary: Delete job
+      responses:
+        '200':
+          description: Job deleted
+        '404':
+          description: Job not found
+
+  /candidates:
+    get:
+      tags: [Candidates]
+      summary: List candidates
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: '#/components/parameters/FeaturedParam'
+        - name: available
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false"]
+      responses:
+        '200':
+          description: List of candidates
+    post:
+      tags: [Candidates]
+      summary: Create candidate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Candidate'
+      responses:
+        '201':
+          description: Candidate created
+
+  /candidates/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Candidates]
+      summary: Get candidate by ID
+      security: []
+      responses:
+        '200':
+          description: Candidate details
+    put:
+      tags: [Candidates]
+      summary: Update candidate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Candidate'
+      responses:
+        '200':
+          description: Candidate updated
+    delete:
+      tags: [Candidates]
+      summary: Delete candidate
+      responses:
+        '200':
+          description: Candidate deleted
+
+  /investments:
+    get:
+      tags: [Investments]
+      summary: List investments
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: '#/components/parameters/FeaturedParam'
+        - name: tier
+          in: query
+          schema:
+            type: string
+            enum: ["1", "2", "3", "4"]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, acquired]
+      responses:
+        '200':
+          description: List of investments
+    post:
+      tags: [Investments]
+      summary: Create investment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Investment'
+      responses:
+        '201':
+          description: Investment created
+
+  /investments/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Investments]
+      summary: Get investment by ID
+      security: []
+      responses:
+        '200':
+          description: Investment details
+    put:
+      tags: [Investments]
+      summary: Update investment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Investment'
+      responses:
+        '200':
+          description: Investment updated
+    delete:
+      tags: [Investments]
+      summary: Delete investment
+      responses:
+        '200':
+          description: Investment deleted
+
+  /affiliations:
+    get:
+      tags: [Affiliations]
+      summary: List affiliations
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/LimitParam'
+        - $ref: '#/components/parameters/OffsetParam'
+      responses:
+        '200':
+          description: List of affiliations
+    post:
+      tags: [Affiliations]
+      summary: Create affiliation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Affiliation'
+      responses:
+        '201':
+          description: Affiliation created
+
+  /affiliations/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Affiliations]
+      summary: Get affiliation by ID
+      security: []
+      responses:
+        '200':
+          description: Affiliation details
+    put:
+      tags: [Affiliations]
+      summary: Update affiliation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Affiliation'
+      responses:
+        '200':
+          description: Affiliation updated
+    delete:
+      tags: [Affiliations]
+      summary: Delete affiliation
+      responses:
+        '200':
+          description: Affiliation deleted
+
+  /blog:
+    get:
+      tags: [Blog]
+      summary: List blog posts
+      description: Returns published posts for public access, all posts for authenticated users
+      security:
+        - {}
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: List of blog posts
+    post:
+      tags: [Blog]
+      summary: Create blog post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogPost'
+      responses:
+        '201':
+          description: Blog post created
+
+  /blog/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Blog]
+      summary: Get blog post by slug
+      security: []
+      responses:
+        '200':
+          description: Blog post details
+    put:
+      tags: [Blog]
+      summary: Update blog post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogPost'
+      responses:
+        '200':
+          description: Blog post updated
+    delete:
+      tags: [Blog]
+      summary: Delete blog post
+      responses:
+        '200':
+          description: Blog post deleted
+
+  /news/curated:
+    get:
+      tags: [News]
+      summary: List curated links
+      security: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: '#/components/parameters/FeaturedParam'
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of curated links
+    post:
+      tags: [News]
+      summary: Create curated link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CuratedLink'
+      responses:
+        '201':
+          description: Curated link created
+
+  /news/curated/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [News]
+      summary: Get curated link by ID
+      security: []
+      responses:
+        '200':
+          description: Curated link details
+    put:
+      tags: [News]
+      summary: Update curated link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CuratedLink'
+      responses:
+        '200':
+          description: Curated link updated
+    delete:
+      tags: [News]
+      summary: Delete curated link
+      responses:
+        '200':
+          description: Curated link deleted
+
+  /news/announcements:
+    get:
+      tags: [News]
+      summary: List announcements
+      security: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: '#/components/parameters/FeaturedParam'
+        - name: company
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of announcements
+    post:
+      tags: [News]
+      summary: Create announcement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Announcement'
+      responses:
+        '201':
+          description: Announcement created
+
+  /news/announcements/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [News]
+      summary: Get announcement by ID
+      security: []
+      responses:
+        '200':
+          description: Announcement details
+    put:
+      tags: [News]
+      summary: Update announcement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Announcement'
+      responses:
+        '200':
+          description: Announcement updated
+    delete:
+      tags: [News]
+      summary: Delete announcement
+      responses:
+        '200':
+          description: Announcement deleted
+
+  /admin/analytics:
+    get:
+      tags: [Admin]
+      summary: Get analytics data
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [jobs, candidates, blog, site]
+      responses:
+        '200':
+          description: Analytics data from PostHog

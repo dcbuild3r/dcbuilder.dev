@@ -1,12 +1,32 @@
 import { Navbar } from "@/components/Navbar";
 import { PortfolioGrid } from "@/components/PortfolioGrid";
-import { investments } from "@/data/investments";
+import { db, investments as investmentsTable } from "@/db";
+import { desc, asc } from "drizzle-orm";
 
 export const metadata = {
   title: "Portfolio",
 };
 
-export default function Portfolio() {
+// Force dynamic rendering since we need database access
+export const dynamic = "force-dynamic";
+
+async function getInvestments() {
+  const data = await db
+    .select()
+    .from(investmentsTable)
+    .orderBy(asc(investmentsTable.tier), desc(investmentsTable.featured));
+
+  // Map to expected format with tier as number
+  return data.map(inv => ({
+    ...inv,
+    tier: (parseInt(inv.tier || "2") || 2) as 1 | 2 | 3 | 4,
+    featured: inv.featured ?? false,
+  }));
+}
+
+export default async function Portfolio() {
+  const investments = await getInvestments();
+
   return (
     <>
       <Navbar />

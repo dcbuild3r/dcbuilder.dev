@@ -1,95 +1,196 @@
 # dcbuilder.dev
 
-Personal site built with Next.js (App Router) for dcbuilder.eth. It includes a homepage, about page, blog (MDX), portfolio, jobs board, and candidates directory.
+Personal site built with Next.js (App Router) for dcbuilder.eth. Features a homepage, about page, blog (MDX), portfolio, jobs board, candidates directory, and news aggregator with a full admin dashboard.
 
-## Overview
+## Tech Stack
 
-- Home: brief focus areas and hero image.
-- About: bio plus affiliations.
-- Blog: MDX posts from `content/blog`, rendered server-side.
-- Portfolio: investment cards from `src/data/investments.ts`.
-- Jobs: filterable job board from `src/data/jobs.ts`.
-- Candidates: filterable candidate directory with modal profiles from `src/data/candidates.ts`.
+- **Framework**: Next.js 16 (App Router, Turbopack)
+- **Runtime**: Bun
+- **Database**: PostgreSQL (Drizzle ORM)
+- **Storage**: Cloudflare R2 (images)
+- **Analytics**: PostHog
+- **Styling**: TailwindCSS
+- **Language**: TypeScript
 
-## How the site works
+## Features
 
-- Data sources: all structured data lives in `src/data/*.ts`. Update those files to change jobs, candidates, affiliations, and portfolio items.
-- Blog: posts live in `content/blog/*.mdx`. Frontmatter is parsed by `gray-matter` in `src/lib/blog.ts`.
-- MDX rendering: `next-mdx-remote` plus custom renderers in `src/components/MDXComponents.tsx`.
-- Theming: `next-themes` toggles a `dark` class on `html`, with styles in `src/app/globals.css`.
-- Open Graph images: generated with `next/og` in `src/app/**/opengraph-image.tsx`.
-- Interactive UI: filters, tags, shuffles, and modals are client components in `src/components/*`.
+### Public Pages
+- **Home**: Hero with focus areas and featured content
+- **About**: Bio, affiliations, and social links
+- **Blog**: MDX posts with syntax highlighting and OG images
+- **Portfolio**: Investment cards with tiers and status
+- **Jobs**: Filterable job board with "hot" and "new" tags
+- **Candidates**: Candidate directory with modal profiles
+- **News**: Curated links and portfolio announcements
 
-## Packages
+### Admin Dashboard (`/admin`)
+- **Dashboard**: Site-wide analytics and quick actions
+- **Blog Management**: Markdown editor with live preview
+- **Jobs Management**: Full CRUD with analytics
+- **Candidates Management**: Profile editor with skills
+- **Investments Management**: Tier and status tracking
+- **News Management**: Curated links and announcements
+- **Affiliations Management**: About page affiliations
 
-### Dependencies
-- `next`: App Router framework.
-- `react`, `react-dom`: UI runtime.
-- `next-themes`: theme toggle with system support.
-- `next-mdx-remote`: MDX rendering for blog posts.
-- `gray-matter`: frontmatter parsing.
+#### Admin Features
+- **Colorful UI**: Section-specific color themes (blue for jobs, green for candidates, etc.)
+- **Skeleton Loading**: Smooth table loading with animated placeholders
+- **Column Filters**: Text search and multi-select for enumerable fields
+- **Sortable Columns**: Click-to-sort with visual indicators
+- **Pill-style Actions**: Colorful Edit/Delete buttons matching section colors
+- **Quick Actions**: Color-coded shortcuts on dashboard
+- **Image Upload**: R2 integration with live preview
+- **Analytics**: Real-time PostHog data with skeleton loading
+- **Pulsing Tags**: Animated HOT/TOP badges for featured items
 
-### Dev dependencies
-- `typescript`: type checking.
-- `eslint`, `eslint-config-next`: linting.
-- `tailwindcss`, `@tailwindcss/postcss`: styling pipeline.
-- `@types/node`, `@types/react`, `@types/react-dom`: TypeScript types.
-- `@playwright/test`: end-to-end smoke tests.
+## Architecture
+
+### Data Flow
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Client    │────▶│  API Routes │────▶│  PostgreSQL │
+│  (React)    │◀────│  (Next.js)  │◀────│  (Drizzle)  │
+└─────────────┘     └─────────────┘     └─────────────┘
+                           │
+                           ▼
+                    ┌─────────────┐
+                    │  PostHog    │
+                    │ (Analytics) │
+                    └─────────────┘
+```
+
+### Directory Structure
+```
+src/
+├── app/                  # Next.js App Router pages
+│   ├── admin/           # Admin dashboard pages
+│   ├── api/v1/          # REST API routes
+│   └── ...              # Public pages
+├── components/          # React components
+│   ├── admin/           # Admin-specific components
+│   └── ...              # Shared components
+├── db/                  # Database schema and client
+└── lib/                 # Utilities and helpers
+
+docs/
+├── API.md               # API documentation
+└── openapi.yaml         # OpenAPI specification
+```
+
+## API Reference
+
+See [API Documentation](./docs/API.md) for full endpoint documentation.
+
+### Quick Reference
+| Resource | Endpoint | Auth |
+|----------|----------|------|
+| Jobs | `/api/v1/jobs` | Read: Public, Write: API Key |
+| Candidates | `/api/v1/candidates` | Read: Public, Write: API Key |
+| Investments | `/api/v1/investments` | Read: Public, Write: API Key |
+| Blog | `/api/v1/blog` | Read: Public, Write: API Key |
+| News (Curated) | `/api/v1/news/curated` | Read: Public, Write: API Key |
+| News (Announcements) | `/api/v1/news/announcements` | Read: Public, Write: API Key |
+| Affiliations | `/api/v1/affiliations` | Read: Public, Write: API Key |
+| Analytics | `/api/v1/admin/analytics` | API Key |
 
 ## Commands (Bun)
 
-Install dependencies:
-
 ```bash
+# Install dependencies
 bun install
-```
 
-Run the dev server:
-
-```bash
+# Run development server
 bun dev
-```
 
-Build and run production:
-
-```bash
+# Build for production
 bun run build
+
+# Start production server
 bun run start
-```
 
-Lint:
-
-```bash
+# Lint
 bun run lint
-```
 
-Run Playwright tests (first-time setup required):
+# Run database migrations
+bunx drizzle-kit push
 
-```bash
-bunx playwright install
+# Open Drizzle Studio (DB GUI)
+bunx drizzle-kit studio
+
+# Run Playwright tests
+bunx playwright install  # first time only
 bun run test
 ```
 
-Playwright uses port 3001 by default; override with:
+## Environment Variables
+
+See [.env.example](./.env.example) for all configuration options.
 
 ```bash
-PORT=3000 bun run test
+# Required
+DATABASE_URL="postgresql://..."
+
+# Cloudflare R2 (image storage)
+R2_ENDPOINT="https://ACCOUNT_ID.r2.cloudflarestorage.com"
+R2_ACCESS_KEY_ID="..."
+R2_SECRET_ACCESS_KEY="..."
+R2_BUCKET_NAME="..."
+R2_PUBLIC_URL="https://pub-xxx.r2.dev"
+
+# PostHog Analytics
+NEXT_PUBLIC_POSTHOG_KEY="phc_..."
+POSTHOG_PERSONAL_API_KEY="phx_..."
+POSTHOG_PROJECT_ID="..."
 ```
 
-## Contributing / updating content
+## Content Management
 
-- Blog posts: add MDX files to `content/blog/` with frontmatter (`title`, `date`, `description`, optional `source`, `sourceUrl`).
-- Jobs: update `src/data/jobs.ts`.
-- Candidates: update `src/data/candidates.ts`.
-- Portfolio: update `src/data/investments.ts`.
-- Affiliations: update `src/data/affiliations.ts`.
+### Via Admin Dashboard (Recommended)
+1. Navigate to `/admin`
+2. Enter your API key
+3. Use the dashboard to manage all content
+
+### Via API
+```bash
+# Create a job
+curl -X POST https://dcbuilder.dev/api/v1/jobs \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{"title": "...", "company": "...", "link": "..."}'
+```
+
+### Blog Posts
+Create blog posts via the admin dashboard or API. Posts use MDX format and support:
+- Markdown with syntax highlighting
+- Custom components
+- Source attribution for republished content
+
+```bash
+# Create via API
+curl -X POST https://yoursite.com/api/v1/blog \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "slug": "my-post",
+    "title": "Post Title",
+    "content": "# Heading\n\nContent...",
+    "date": "2024-01-15"
+  }'
+```
+
+## Deployment
+
+The site deploys as a standard Next.js app. Ensure all environment variables are configured in your deployment platform.
+
+## Cloning This Project
+
+Want to create your own version? See [CLONE.md](./CLONE.md) for a complete setup guide covering:
+- Database setup (local or hosted PostgreSQL)
+- Cloudflare R2 configuration for image storage
+- PostHog analytics integration
+- Admin authentication setup
+- Customization options
 
 ## Contact
 
-You can reach me on Telegram: `https://t.me/dcbuilder`.
-
-## Notes
-
-- This repo uses Bun (see `bun.lock`).
-- The UI is built with TailwindCSS utility classes and custom components in `src/components`.
-- The site is deployed as a standard Next.js app; no backend or database is required.
+Telegram: [@dcbuilder](https://t.me/dcbuilder)

@@ -1,10 +1,16 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import Markdown from "react-markdown";
 import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
 import { CustomSelect } from "./CustomSelect";
+import {
+	trackJobView,
+	trackJobApplyClick,
+	trackJobDetailsClick,
+} from "@/lib/posthog";
 
 // Job type labels for display
 const jobTypeLabels: Record<string, string> = {
@@ -14,11 +20,17 @@ const jobTypeLabels: Record<string, string> = {
 	internship: "Internship",
 };
 
+// Check if item was created within the last 2 weeks
+const isNewItem = (createdAt: string | Date | undefined): boolean => {
+	if (!createdAt) return false;
+	const created = new Date(createdAt);
+	const twoWeeksAgo = new Date();
+	twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+	return created > twoWeeksAgo;
+};
+
 type JobDescriptionContent = {
 	description?: string;
-	responsibilities?: string[];
-	qualifications?: string[];
-	benefits?: string[];
 };
 
 const jobDescriptionCache = new Map<string, JobDescriptionContent>();
@@ -30,23 +42,22 @@ function ExpandedJobView({
 	jobUrl,
 	onViewOtherJobs,
 	otherJobsCount,
+	onApplyClick,
 }: {
 	job: Job;
 	onClose: () => void;
 	jobUrl: string;
 	onViewOtherJobs: () => void;
 	otherJobsCount: number;
+	onApplyClick?: () => void;
 }) {
 	const isHot = job.tags?.includes("hot");
 	const [copiedLink, setCopiedLink] = useState<"job" | "apply" | null>(null);
 	const [enrichedContent, setEnrichedContent] =
 		useState<JobDescriptionContent | null>(null);
 	const [isEnriching, setIsEnriching] = useState(false);
-	const missingSections =
-		!job.description ||
-		!job.responsibilities?.length ||
-		!job.qualifications?.length ||
-		!job.benefits?.length;
+	// Only enrich if we have no description at all
+	const missingSections = !job.description;
 
 	useEffect(() => {
 		setEnrichedContent(null);
@@ -91,24 +102,6 @@ function ExpandedJobView({
 		job.description?.trim() ||
 		enrichedContent?.description?.trim() ||
 		(isEnriching ? loadingLabel : defaultBullet);
-	const responsibilities =
-		job.responsibilities && job.responsibilities.length > 0
-			? job.responsibilities
-			: enrichedContent?.responsibilities?.length
-				? enrichedContent.responsibilities
-				: [isEnriching ? loadingLabel : defaultBullet];
-	const qualifications =
-		job.qualifications && job.qualifications.length > 0
-			? job.qualifications
-			: enrichedContent?.qualifications?.length
-				? enrichedContent.qualifications
-				: [isEnriching ? loadingLabel : defaultBullet];
-	const benefits =
-		job.benefits && job.benefits.length > 0
-			? job.benefits
-			: enrichedContent?.benefits?.length
-				? enrichedContent.benefits
-				: [isEnriching ? loadingLabel : defaultBullet];
 
 	const copyToClipboard = async (text: string, type: "job" | "apply") => {
 		try {
@@ -169,14 +162,14 @@ function ExpandedJobView({
 						{/* Company Logo */}
 						<div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-white p-2 ring-2 ring-neutral-200 dark:ring-neutral-700 hover:scale-[1.08] transition-transform duration-150">
 							<Image
-								src={job.company.logo}
+								src={job.company.logo || "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg"}
 								alt={job.company.name}
 								width={96}
 								height={96}
 								className="object-contain w-full h-full"
 								onError={(e) => {
 									e.currentTarget.onerror = null;
-									e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
+									e.currentTarget.src = "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
 								}}
 							/>
 						</div>
@@ -192,6 +185,11 @@ function ExpandedJobView({
 								{isHot && (
 									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_0_10px_rgba(251,146,60,0.5)]">
 										🔥 HOT
+									</span>
+								)}
+								{isNewItem(job.createdAt) && (
+									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+										NEW
 									</span>
 								)}
 							</div>
@@ -264,40 +262,11 @@ function ExpandedJobView({
 					{/* Description */}
 					<div>
 						<h3 className="text-lg font-semibold mb-3">About the Role</h3>
-						<p className="text-neutral-600 dark:text-neutral-400 leading-relaxed whitespace-pre-line">
-							{description}
-						</p>
+						<div className="prose-jd">
+							<Markdown>{description}</Markdown>
+						</div>
 					</div>
 
-					{/* Responsibilities */}
-					<div>
-						<h3 className="text-lg font-semibold mb-3">Responsibilities</h3>
-						<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
-							{responsibilities.map((item, index) => (
-								<li key={index}>{item}</li>
-							))}
-						</ul>
-					</div>
-
-					{/* Qualifications */}
-					<div>
-						<h3 className="text-lg font-semibold mb-3">Qualifications</h3>
-						<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
-							{qualifications.map((item, index) => (
-								<li key={index}>{item}</li>
-							))}
-						</ul>
-					</div>
-
-					{/* Benefits */}
-					<div>
-						<h3 className="text-lg font-semibold mb-3">Benefits</h3>
-						<ul className="list-disc list-inside space-y-2 text-neutral-600 dark:text-neutral-400">
-							{benefits.map((item, index) => (
-								<li key={index}>{item}</li>
-							))}
-						</ul>
-					</div>
 
 				</div>
 
@@ -309,6 +278,7 @@ function ExpandedJobView({
 							href={job.link}
 							target="_blank"
 							rel="noopener noreferrer"
+							onClick={onApplyClick}
 							className="w-full sm:w-auto px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors text-center"
 						>
 							Apply Now →
@@ -513,11 +483,28 @@ interface JobsGridProps {
   jobs: Job[];
 }
 
-// Fisher-Yates shuffle (pure function - takes array and returns new shuffled array)
-function shuffleArray<T>(array: T[]): T[] {
+function hashString(value: string): number {
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash << 5) - hash + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function seededRandom(seed: number): () => number {
+  let current = seed;
+  return () => {
+    current = (current * 9301 + 49297) % 233280;
+    return current / 233280;
+  };
+}
+
+// Fisher-Yates shuffle with deterministic RNG
+function shuffleArray<T>(array: T[], random: () => number): T[] {
   const result = [...array];
   for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
@@ -525,26 +512,67 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export function JobsGrid({ jobs }: JobsGridProps) {
   const searchParams = useSearchParams();
-  const [filterCategory, setFilterCategory] = useState<FilterCategory>("all");
-  const [selectedCompany, setSelectedCompany] = useState<string>("all");
-  const [selectedLocation, setSelectedLocation] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTags, setSelectedTags] = useState<JobTag[]>([]);
-  const [tagsExpanded, setTagsExpanded] = useState(false);
-  const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
-  const [shuffledJobs, setShuffledJobs] = useState<Job[]>([]);
-  const [shuffledJobsKey, setShuffledJobsKey] = useState("");
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [expandedJob, setExpandedJob] = useState<Job | null>(null);
-  const hasInitializedFromUrl = useRef(false);
-	const shuffledJobsKeyRef = useRef("");
+  const initialParams = useMemo(() => {
+    const typeParam = searchParams.get("type");
+    const filterCategory: FilterCategory =
+      typeParam === "portfolio" || typeParam === "network" ? typeParam : "all";
+    const selectedCompany = searchParams.get("company") || "all";
+    const selectedLocation = searchParams.get("location") || "all";
+    const searchQuery = searchParams.get("q") || "";
+    const showFeaturedOnly = searchParams.get("featured") === "1";
+    const tagsParam = searchParams.get("tags");
+    const selectedTags = tagsParam
+      ? tagsParam
+          .split(",")
+          .filter((tag): tag is JobTag => Object.keys(tagLabels).includes(tag))
+      : [];
+    const jobId = searchParams.get("job");
+    return {
+      filterCategory,
+      selectedCompany,
+      selectedLocation,
+      searchQuery,
+      selectedTags,
+      showFeaturedOnly,
+      jobId,
+    };
+  }, [searchParams]);
 
-  // Create job lookup map
-  const jobsById = useMemo(() => {
-    const map = new Map<string, Job>();
-    jobs.forEach((job) => map.set(job.id, job));
-    return map;
-  }, [jobs]);
+  const [filterCategory, setFilterCategory] = useState<FilterCategory>(initialParams.filterCategory);
+  const [selectedCompany, setSelectedCompany] = useState<string>(initialParams.selectedCompany);
+  const [selectedLocation, setSelectedLocation] = useState<string>(initialParams.selectedLocation);
+  const [searchQuery, setSearchQuery] = useState(initialParams.searchQuery);
+  const [selectedTags, setSelectedTags] = useState<JobTag[]>(initialParams.selectedTags);
+  const [tagsExpanded, setTagsExpanded] = useState(false);
+  const [showFeaturedOnly, setShowFeaturedOnly] = useState(initialParams.showFeaturedOnly);
+  const [expandedJob, setExpandedJob] = useState<Job | null>(() => {
+    if (!initialParams.jobId) return null;
+    return jobs.find((job) => job.id === initialParams.jobId) ?? null;
+  });
+  const [dataHotJobIds, setDataHotJobIds] = useState<Set<string>>(new Set());
+
+  // Fetch data-driven hot jobs from analytics
+  useEffect(() => {
+    fetch("/api/hot-jobs")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.hotJobIds) {
+          setDataHotJobIds(new Set(data.hotJobIds));
+        }
+      })
+      .catch((error) => console.warn("Failed to fetch hot jobs:", error));
+  }, []);
+
+  // Helper to build job event properties for analytics
+  const getJobEventProps = useCallback((job: Job) => ({
+    job_id: job.id,
+    job_title: job.title,
+    company_name: job.company.name,
+    company_category: job.company.category,
+    location: job.location,
+    is_featured: job.featured ?? false,
+    is_hot: job.tags?.includes("hot") ?? false,
+  }), []);
 
   // Helper to update URL params without React re-render
   const updateUrlParams = useCallback((updates: Record<string, string | null>) => {
@@ -563,7 +591,8 @@ export function JobsGrid({ jobs }: JobsGridProps) {
   const openJob = useCallback((job: Job) => {
     setExpandedJob(job);
     updateUrlParams({ job: job.id });
-  }, [updateUrlParams]);
+    trackJobView(getJobEventProps(job));
+  }, [updateUrlParams, getJobEventProps]);
 
   const closeJob = useCallback(() => {
     setExpandedJob(null);
@@ -641,63 +670,6 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     searchQuery !== "" ||
     selectedTags.length > 0 ||
     showFeaturedOnly;
-
-  // Initialize all state from URL on first load
-  useEffect(() => {
-    if (hasInitializedFromUrl.current) return;
-    hasInitializedFromUrl.current = true;
-
-    // Job modal
-    const jobId = searchParams.get("job");
-    if (jobId) {
-      const job = jobsById.get(jobId);
-      if (job) {
-        setExpandedJob(job);
-      }
-    }
-
-    // Filters
-    const type = searchParams.get("type") as FilterCategory | null;
-    if (type && (type === "portfolio" || type === "network")) {
-      setFilterCategory(type);
-    }
-
-    const company = searchParams.get("company");
-    if (company) {
-      setSelectedCompany(company);
-    }
-
-    const location = searchParams.get("location");
-    if (location) {
-      setSelectedLocation(location);
-    }
-
-    const q = searchParams.get("q");
-    if (q) {
-      setSearchQuery(q);
-    }
-
-    const featured = searchParams.get("featured");
-    if (featured === "1") {
-      setShowFeaturedOnly(true);
-    }
-
-    const tags = searchParams.get("tags");
-    if (tags) {
-      const tagList = tags.split(",").filter((t): t is JobTag =>
-        Object.keys(tagLabels).includes(t)
-      );
-      if (tagList.length > 0) {
-        setSelectedTags(tagList);
-      }
-    }
-  }, [searchParams, jobsById]);
-
-  // Mark as hydrated after mount
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration flag set post-mount.
-    setIsHydrated(true);
-  }, []);
 
   // Handle escape key and body scroll for modal
   useEffect(() => {
@@ -842,6 +814,9 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     showFeaturedOnly,
   ]);
 
+  // Include today's date so shuffle changes daily (stable after hydration)
+  const [shuffleSeed] = useState(() => new Date().toISOString().split("T")[0]);
+
   const filterKey = useMemo(
     () =>
       [
@@ -851,12 +826,16 @@ export function JobsGrid({ jobs }: JobsGridProps) {
         searchQuery,
         selectedTags.join(","),
         showFeaturedOnly,
+        shuffleSeed,
       ].join("|"),
-    [filterCategory, selectedCompany, selectedLocation, searchQuery, selectedTags, showFeaturedOnly],
+    [filterCategory, selectedCompany, selectedLocation, searchQuery, selectedTags, showFeaturedOnly, shuffleSeed],
   );
 
-  // Helper to check if job is hot
-  const isHotJob = (job: Job) => job.tags?.includes("hot");
+  // Helper to check if job is hot (manual tag OR data-driven)
+  const isHotJob = useCallback(
+    (job: Job) => job.tags?.includes("hot") || dataHotJobIds.has(job.id),
+    [dataHotJobIds]
+  );
 
   // Helper to get company tier (useCallback for stable reference in useEffect)
   const getTier = useCallback(
@@ -866,41 +845,17 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     [],
   );
 
-  // Sort jobs deterministically (no shuffle - that happens in useEffect)
-  const sortedJobs = useMemo(() => {
+  // Deterministic shuffle based on filter key (stable between server/client)
+  const displayJobs = useMemo(() => {
     const hot = filteredJobs.filter((j) => isHotJob(j));
     const featured = filteredJobs.filter((j) => j.featured && !isHotJob(j));
     const nonFeatured = filteredJobs.filter((j) => !j.featured && !isHotJob(j));
 
-    // Group non-featured by tier
-    const tierGroups: Record<number, Job[]> = {};
-    nonFeatured.forEach((job) => {
-      const tier = getTier(job);
-      if (!tierGroups[tier]) tierGroups[tier] = [];
-      tierGroups[tier].push(job);
-    });
+    const hotRandom = seededRandom(hashString(`${filterKey}|hot`));
+    const featuredRandom = seededRandom(hashString(`${filterKey}|featured`));
 
-    // Combine tiers in order (deterministic)
-    const sortedNonFeatured = Object.keys(tierGroups)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .flatMap((tier) => tierGroups[tier]);
-
-    return [...hot, ...featured, ...sortedNonFeatured];
-  }, [filteredJobs, getTier]);
-
-  // Shuffle jobs in useEffect after hydration (React-safe)
-  useEffect(() => {
-    if (!isHydrated) return;
-		if (shuffledJobsKeyRef.current === filterKey) return;
-
-    const hot = filteredJobs.filter((j) => isHotJob(j));
-    const featured = filteredJobs.filter((j) => j.featured && !isHotJob(j));
-    const nonFeatured = filteredJobs.filter((j) => !j.featured && !isHotJob(j));
-
-    // Shuffle each group
-    const shuffledHot = shuffleArray(hot);
-    const shuffledFeatured = shuffleArray(featured);
+    const shuffledHot = shuffleArray(hot, hotRandom);
+    const shuffledFeatured = shuffleArray(featured, featuredRandom);
 
     // Group and shuffle non-featured by tier
     const tierGroups: Record<number, Job[]> = {};
@@ -910,26 +865,18 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       tierGroups[tier].push(job);
     });
 
-    const sortedNonFeatured = Object.keys(tierGroups)
+    const shuffledNonFeatured = Object.keys(tierGroups)
       .map(Number)
       .sort((a, b) => a - b)
-      .flatMap((tier) => shuffleArray(tierGroups[tier]));
+      .flatMap((tier) =>
+        shuffleArray(
+          tierGroups[tier],
+          seededRandom(hashString(`${filterKey}|tier-${tier}`))
+        )
+      );
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Shuffle is derived after hydration.
-    setShuffledJobs([
-      ...shuffledHot,
-      ...shuffledFeatured,
-      ...sortedNonFeatured,
-    ]);
-		shuffledJobsKeyRef.current = filterKey;
-    setShuffledJobsKey(filterKey);
-  }, [filteredJobs, isHydrated, getTier, filterKey]);
-
-  // Use shuffled jobs after hydration, otherwise use deterministic sort
-  const displayJobs =
-    isHydrated && shuffledJobs.length > 0 && shuffledJobsKey === filterKey
-      ? shuffledJobs
-      : sortedJobs;
+    return [...shuffledHot, ...shuffledFeatured, ...shuffledNonFeatured];
+  }, [filteredJobs, getTier, filterKey, isHotJob]);
 
   return (
     <div className="space-y-6">
@@ -1050,7 +997,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
         {/* Results count and reset */}
         <div className="flex items-center gap-3">
           <span className="text-sm text-neutral-500">
-            {sortedJobs.length} {sortedJobs.length === 1 ? "job" : "jobs"}
+            {displayJobs.length} {displayJobs.length === 1 ? "job" : "jobs"}
           </span>
           {hasActiveFilters && (
             <button
@@ -1187,7 +1134,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 
       {/* Jobs List */}
       <div className="space-y-4">
-        {sortedJobs.length === 0 ? (
+        {displayJobs.length === 0 ? (
           <p className="text-center py-8 text-neutral-500">
             No jobs found matching your criteria.
           </p>
@@ -1218,16 +1165,16 @@ export function JobsGrid({ jobs }: JobsGridProps) {
               <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                 {/* Company Logo */}
                 <div className="w-full sm:w-auto flex justify-center sm:justify-start">
-                  <div className="w-20 h-20 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center">
+                  <div className="w-20 h-20 sm:w-16 sm:h-16 flex-shrink-0 flex items-center justify-center">
                     <Image
-                      src={job.company.logo}
+                      src={job.company.logo || "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg"}
                       alt={job.company.name}
                       width={80}
                       height={80}
-                      className="w-full h-full object-contain bg-white rounded-lg p-2 sm:p-1 group-hover:scale-[1.08] transition-transform duration-150"
+                      className="w-full h-full object-contain bg-white rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/images/candidates/anonymous-placeholder.svg";
+                        e.currentTarget.src = "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
                       }}
                     />
                   </div>
@@ -1246,6 +1193,11 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                         {isHotJob(job) && (
                           <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-orange-400 dark:bg-orange-700 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(194,65,12,0.5)] animate-pulse">
                             🔥 HOT
+                          </span>
+                        )}
+                        {isNewItem(job.createdAt) && (
+                          <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+                            NEW
                           </span>
                         )}
                       </h3>
@@ -1303,6 +1255,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
+                          trackJobDetailsClick(getJobEventProps(job));
                           openJob(job);
                         }}
                         className="px-4 py-2 text-sm font-medium rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -1313,7 +1266,10 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                         href={job.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          trackJobApplyClick(getJobEventProps(job));
+                        }}
                         className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
                           isHotJob(job)
                             ? "bg-orange-400 dark:bg-orange-700 text-white hover:bg-orange-500 dark:hover:bg-orange-600 shadow-[0_0_10px_rgba(251,146,60,0.4)]"
@@ -1342,6 +1298,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
             closeJob();
           }}
           otherJobsCount={jobs.filter(j => j.company.name === expandedJob.company.name && j.id !== expandedJob.id).length}
+          onApplyClick={() => trackJobApplyClick(getJobEventProps(expandedJob))}
         />
       )}
     </div>
