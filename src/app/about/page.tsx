@@ -8,8 +8,8 @@ export const metadata = {
 	title: "About",
 };
 
-// Revalidate every 60 seconds
-export const revalidate = 60;
+// Force dynamic rendering since we need database access
+export const dynamic = "force-dynamic";
 
 // Check if role is advisory (secondary to full jobs)
 const isAdvisoryRole = (role: string): boolean => {
