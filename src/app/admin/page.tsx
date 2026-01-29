@@ -36,7 +36,8 @@ interface Candidate {
 interface Job {
   id: string;
   title: string;
-  company: { name: string; logo: string };
+  company: string;
+  companyLogo?: string | null;
 }
 
 // Skeleton for analytics list items
@@ -365,10 +366,10 @@ export default function AdminDashboard() {
                       className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800"
                     >
                       <div className="flex items-center gap-3">
-                        {job?.company?.logo ? (
+                        {job?.companyLogo ? (
                           <img
-                            src={job.company.logo}
-                            alt={job.company.name}
+                            src={job.companyLogo}
+                            alt={job.company}
                             className="w-8 h-8 rounded object-contain bg-white p-0.5"
                           />
                         ) : (
@@ -378,8 +379,8 @@ export default function AdminDashboard() {
                           <p className="font-medium text-sm">
                             {job?.title || jobId}
                           </p>
-                          {job?.company?.name && (
-                            <p className="text-xs text-neutral-500">{job.company.name}</p>
+                          {job?.company && (
+                            <p className="text-xs text-neutral-500">{job.company}</p>
                           )}
                         </div>
                       </div>

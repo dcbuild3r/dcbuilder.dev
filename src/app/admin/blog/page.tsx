@@ -4,7 +4,10 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Markdown from "react-markdown";
 import { getSourceColor, getSourceDisplay } from "@/lib/source-colors";
-import { TableSkeleton, withMinDelay } from "@/components/admin/TableSkeleton";
+import { TableSkeleton } from "@/components/admin/TableSkeleton";
+import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
+import { ViewButton, EditButton, DeleteButton, ErrorAlert } from "@/components/admin/ActionButtons";
+import { ADMIN_THEMES } from "@/lib/admin-themes";
 
 interface BlogPost {
   slug: string;
@@ -43,20 +46,21 @@ export default function AdminBlog() {
   const [columnSearchValue, setColumnSearchValue] = useState("");
   const [blogViews, setBlogViews] = useState<Record<string, number>>({});
   const [sourceFilter, setSourceFilter] = useState<string[]>([]);
-
-  const getApiKey = () => localStorage.getItem("admin_api_key") || "";
+  const [error, setError] = useState<string | null>(null);
+  const theme = ADMIN_THEMES.blog;
 
   // Get unique sources from posts
   const sourceOptions = [...new Set(posts.map(p => p.source).filter((s): s is string => !!s))];
 
   const fetchPosts = useCallback(async () => {
-    try {
-      const data = await withMinDelay(
-        fetch("/api/v1/blog").then(res => res.json())
-      );
-      setPosts(data.data || []);
-    } catch (error) {
-      console.error("Failed to fetch blog posts:", error);
+    setError(null);
+    const { data, error: fetchError } = await withMinDelay(
+      adminFetch<BlogPost[]>("/api/v1/blog")
+    );
+    if (fetchError) {
+      setError(fetchError);
+    } else {
+      setPosts(data || []);
     }
     setLoading(false);
   }, []);
@@ -71,16 +75,11 @@ export default function AdminBlog() {
 
   useEffect(() => {
     async function fetchAnalytics() {
-      try {
-        const res = await fetch("/api/v1/admin/analytics?type=blog", {
-          headers: { "x-api-key": getApiKey() },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setBlogViews(data.data || {});
-        }
-      } catch (error) {
-        console.error("Failed to fetch blog analytics:", error);
+      const { data } = await adminFetch<Record<string, number>>("/api/v1/admin/analytics?type=blog", {
+        headers: { "x-api-key": getAdminApiKey() },
+      });
+      if (data) {
+        setBlogViews(data);
       }
     }
     fetchAnalytics();
@@ -95,36 +94,26 @@ export default function AdminBlog() {
 
   const handleEdit = async (post: BlogPost) => {
     // Fetch full content
-    try {
-      const res = await fetch(`/api/v1/blog/${post.slug}`);
-      const data = await res.json();
-      if (data.data) {
-        setEditingPost(data.data);
-        setIsNew(false);
-      }
-    } catch (error) {
-      console.error("Failed to fetch post:", error);
-      alert("Failed to load post content");
+    const { data, error: fetchError } = await adminFetch<BlogPost>(`/api/v1/blog/${post.slug}`);
+    if (fetchError) {
+      setError(fetchError);
+    } else if (data) {
+      setEditingPost({ ...data, content: data.content || "" });
+      setIsNew(false);
     }
   };
 
   const handleDelete = async (slug: string) => {
     if (!confirm("Are you sure you want to delete this blog post? This cannot be undone.")) return;
 
-    try {
-      const res = await fetch(`/api/v1/blog/${slug}`, {
-        method: "DELETE",
-        headers: { "x-api-key": getApiKey() },
-      });
-      if (res.ok) {
-        setPosts(posts.filter((p) => p.slug !== slug));
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to delete post");
-      }
-    } catch (error) {
-      console.error("Failed to delete post:", error);
-      alert("Failed to delete post");
+    const { error: deleteError } = await adminFetch(`/api/v1/blog/${slug}`, {
+      method: "DELETE",
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+    if (deleteError) {
+      setError(deleteError);
+    } else {
+      setPosts(posts.filter((p) => p.slug !== slug));
     }
   };
 
@@ -132,31 +121,25 @@ export default function AdminBlog() {
     if (!editingPost) return;
     setSaving(true);
 
-    try {
-      const url = isNew ? "/api/v1/blog" : `/api/v1/blog/${editingPost.slug}`;
-      const method = isNew ? "POST" : "PUT";
+    const url = isNew ? "/api/v1/blog" : `/api/v1/blog/${editingPost.slug}`;
+    const method = isNew ? "POST" : "PUT";
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
-        },
-        body: JSON.stringify(editingPost),
-      });
+    const { error: saveError } = await adminFetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify(editingPost),
+    });
 
-      if (res.ok) {
-        await fetchPosts();
-        setEditingPost(null);
-        setIsNew(false);
-        setShowPreview(false);
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to save post");
-      }
-    } catch (error) {
-      console.error("Failed to save post:", error);
-      alert("Failed to save post");
+    if (saveError) {
+      setError(saveError);
+    } else {
+      await fetchPosts();
+      setEditingPost(null);
+      setIsNew(false);
+      setShowPreview(false);
     }
     setSaving(false);
   };
@@ -236,6 +219,9 @@ export default function AdminBlog() {
             </button>
           </div>
         </div>
+
+        {/* Error Alert in editor view */}
+        {error && <ErrorAlert message={error} onRetry={() => setError(null)} />}
 
         <div className={`flex-1 flex gap-4 min-h-0 ${showPreview ? "" : ""}`}>
           {/* Editor Panel */}
@@ -409,11 +395,14 @@ export default function AdminBlog() {
             setEditingPost({ ...emptyPost });
             setIsNew(true);
           }}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
+          className={`px-4 py-2 ${theme.addButtonBg} text-white rounded-lg font-medium`}
         >
           New Post
         </button>
       </div>
+
+      {/* Error Alert */}
+      {error && <ErrorAlert message={error} onRetry={() => { setError(null); fetchPosts(); }} />}
 
       {/* Search */}
       <div className="relative">
@@ -612,26 +601,9 @@ export default function AdminBlog() {
                   </td>
                   <td className="px-4 py-3 text-sm text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <a
-                        href={`/blog/${post.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-600 hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-400 dark:hover:bg-sky-800/40 transition-colors"
-                      >
-                        View
-                      </a>
-                      <button
-                        onClick={() => handleEdit(post)}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-600 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-800/40 transition-colors"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(post.slug)}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors"
-                      >
-                        Delete
-                      </button>
+                      <ViewButton href={`/blog/${post.slug}`} variant="sky" />
+                      <EditButton onClick={() => handleEdit(post)} variant={theme.buttonVariant} />
+                      <DeleteButton onClick={() => handleDelete(post.slug)} />
                     </div>
                   </td>
                 </tr>

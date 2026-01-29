@@ -5,7 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { Combobox } from "@/components/admin/Combobox";
 import { ImageInput } from "@/components/admin/ImagePreview";
 import { getSkillColor } from "@/lib/skill-colors";
-import { TableSkeleton, withMinDelay } from "@/components/admin/TableSkeleton";
+import { TableSkeleton } from "@/components/admin/TableSkeleton";
+import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
+import { EditButton, DeleteButton, ErrorAlert } from "@/components/admin/ActionButtons";
+import { ADMIN_THEMES } from "@/lib/admin-themes";
 
 interface CuratedLink {
   id: string;
@@ -76,23 +79,30 @@ export default function AdminNews() {
 
   const platformOptions = ["x", "blog", "discord", "github", "other"];
 
+  const [error, setError] = useState<string | null>(null);
+  const curatedTheme = ADMIN_THEMES["news-curated"];
+  const announcementsTheme = ADMIN_THEMES["news-announcements"];
+
   // Get unique categories from curated links
   const categoryOptions = [...new Set(curatedLinks.map(l => l.category).filter(Boolean))];
 
-  const getApiKey = () => localStorage.getItem("admin_api_key") || "";
-
   const fetchData = useCallback(async () => {
-    try {
-      const [curatedData, announcementsData] = await withMinDelay(
-        Promise.all([
-          fetch("/api/v1/news/curated?limit=100").then(res => res.json()),
-          fetch("/api/v1/news/announcements?limit=100").then(res => res.json()),
-        ])
-      );
-      setCuratedLinks(curatedData.data || []);
-      setAnnouncements(announcementsData.data || []);
-    } catch (error) {
-      console.error("Failed to fetch news:", error);
+    setError(null);
+    const [curatedResult, announcementsResult] = await withMinDelay(
+      Promise.all([
+        adminFetch<CuratedLink[]>("/api/v1/news/curated?limit=100"),
+        adminFetch<Announcement[]>("/api/v1/news/announcements?limit=100"),
+      ])
+    );
+    if (curatedResult.error) {
+      setError(curatedResult.error);
+    } else {
+      setCuratedLinks(curatedResult.data || []);
+    }
+    if (announcementsResult.error && !curatedResult.error) {
+      setError(announcementsResult.error);
+    } else if (!announcementsResult.error) {
+      setAnnouncements(announcementsResult.data || []);
     }
     setLoading(false);
   }, []);
@@ -133,23 +143,18 @@ export default function AdminNews() {
         ? `/api/v1/news/curated/${id}`
         : `/api/v1/news/announcements/${id}`;
 
-    try {
-      const res = await fetch(endpoint, {
-        method: "DELETE",
-        headers: { "x-api-key": getApiKey() },
-      });
-      if (res.ok) {
-        if (type === "curated") {
-          setCuratedLinks(curatedLinks.filter((l) => l.id !== id));
-        } else {
-          setAnnouncements(announcements.filter((a) => a.id !== id));
-        }
+    const { error: deleteError } = await adminFetch(endpoint, {
+      method: "DELETE",
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+    if (deleteError) {
+      setError(deleteError);
+    } else {
+      if (type === "curated") {
+        setCuratedLinks(curatedLinks.filter((l) => l.id !== id));
       } else {
-        alert("Failed to delete item");
+        setAnnouncements(announcements.filter((a) => a.id !== id));
       }
-    } catch (error) {
-      console.error("Failed to delete item:", error);
-      alert("Failed to delete item");
     }
   };
 
@@ -159,31 +164,24 @@ export default function AdminNews() {
 
     const endpoint =
       activeTab === "curated" ? "/api/v1/news/curated" : "/api/v1/news/announcements";
+    const url = isNew ? endpoint : `${endpoint}/${editingItem.id}`;
+    const method = isNew ? "POST" : "PUT";
 
-    try {
-      const url = isNew ? endpoint : `${endpoint}/${editingItem.id}`;
-      const method = isNew ? "POST" : "PUT";
+    const { error: saveError } = await adminFetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify(editingItem),
+    });
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
-        },
-        body: JSON.stringify(editingItem),
-      });
-
-      if (res.ok) {
-        await fetchData();
-        setEditingItem(null);
-        setIsNew(false);
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to save item");
-      }
-    } catch (error) {
-      console.error("Failed to save item:", error);
-      alert("Failed to save item");
+    if (saveError) {
+      setError(saveError);
+    } else {
+      await fetchData();
+      setEditingItem(null);
+      setIsNew(false);
     }
     setSaving(false);
   };
@@ -436,7 +434,7 @@ export default function AdminNews() {
               setIsNew(true);
               setActiveTab("curated");
             }}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium"
+            className={`px-4 py-2 ${curatedTheme.addButtonBg} text-white rounded-lg font-medium`}
           >
             Add Curated Link
           </button>
@@ -446,12 +444,15 @@ export default function AdminNews() {
               setIsNew(true);
               setActiveTab("announcements");
             }}
-            className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium"
+            className={`px-4 py-2 ${announcementsTheme.addButtonBg} text-white rounded-lg font-medium`}
           >
             Add Announcement
           </button>
         </div>
       </div>
+
+      {/* Error Alert */}
+      {error && <ErrorAlert message={error} onRetry={() => { setError(null); fetchData(); }} />}
 
       {/* Search */}
       <div className="relative max-w-md">
@@ -687,18 +688,8 @@ export default function AdminNews() {
                   </td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(link, "curated")}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-600 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:hover:bg-purple-800/40 transition-colors"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(link.id, "curated")}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors"
-                      >
-                        Delete
-                      </button>
+                      <EditButton onClick={() => handleEdit(link, "curated")} variant={curatedTheme.buttonVariant} />
+                      <DeleteButton onClick={() => handleDelete(link.id, "curated")} />
                     </div>
                   </td>
                 </tr>
@@ -709,7 +700,7 @@ export default function AdminNews() {
       ) : (
         <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-purple-100 dark:bg-purple-900/30">
+            <thead className="bg-orange-100 dark:bg-orange-900/30">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-medium">
                   {columnSearch === "title" ? (
@@ -883,20 +874,8 @@ export default function AdminNews() {
                   </td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(announcement, "announcements")}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-600 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:hover:bg-orange-800/40 transition-colors"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleDelete(announcement.id, "announcements")
-                        }
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors"
-                      >
-                        Delete
-                      </button>
+                      <EditButton onClick={() => handleEdit(announcement, "announcements")} variant={announcementsTheme.buttonVariant} />
+                      <DeleteButton onClick={() => handleDelete(announcement.id, "announcements")} />
                     </div>
                   </td>
                 </tr>

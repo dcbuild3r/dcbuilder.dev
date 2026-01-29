@@ -8,7 +8,10 @@ import {
   MultiSelectHeader,
   useColumnFilters,
 } from "@/components/admin/ColumnFilters";
-import { TableSkeleton, withMinDelay } from "@/components/admin/TableSkeleton";
+import { TableSkeleton } from "@/components/admin/TableSkeleton";
+import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
+import { StarToggle, EditButton, DeleteButton, TableImage, ErrorAlert } from "@/components/admin/ActionButtons";
+import { ADMIN_THEMES } from "@/lib/admin-themes";
 
 interface Investment {
   id: string;
@@ -50,21 +53,22 @@ export default function AdminInvestments() {
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [tierFilter, setTierFilter] = useState<string[]>([]);
 
+  const [error, setError] = useState<string | null>(null);
   const columnFilters = useColumnFilters();
-
-  const getApiKey = () => localStorage.getItem("admin_api_key") || "";
+  const theme = ADMIN_THEMES.investments;
 
   const statusOptions = ["active", "exited", "defunct"];
   const tierOptions = ["1", "2", "3", "4"];
 
   const fetchInvestments = useCallback(async () => {
-    try {
-      const data = await withMinDelay(
-        fetch("/api/v1/investments?limit=100").then(res => res.json())
-      );
-      setInvestments(data.data || []);
-    } catch (error) {
-      console.error("Failed to fetch investments:", error);
+    setError(null);
+    const { data, error: fetchError } = await withMinDelay(
+      adminFetch<Investment[]>("/api/v1/investments?limit=100")
+    );
+    if (fetchError) {
+      setError(fetchError);
+    } else {
+      setInvestments(data || []);
     }
     setLoading(false);
   }, []);
@@ -92,37 +96,30 @@ export default function AdminInvestments() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this investment?")) return;
 
-    try {
-      const res = await fetch(`/api/v1/investments/${id}`, {
-        method: "DELETE",
-        headers: { "x-api-key": getApiKey() },
-      });
-      if (res.ok) {
-        setInvestments(investments.filter((i) => i.id !== id));
-      } else {
-        alert("Failed to delete investment");
-      }
-    } catch (error) {
-      console.error("Failed to delete investment:", error);
-      alert("Failed to delete investment");
+    const { error: deleteError } = await adminFetch(`/api/v1/investments/${id}`, {
+      method: "DELETE",
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+    if (deleteError) {
+      setError(deleteError);
+    } else {
+      setInvestments(investments.filter((i) => i.id !== id));
     }
   };
 
   const handleToggleFeatured = async (investment: Investment) => {
-    try {
-      const res = await fetch(`/api/v1/investments/${investment.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
-        },
-        body: JSON.stringify({ featured: !investment.featured }),
-      });
-      if (res.ok) {
-        setInvestments(investments.map((i) => (i.id === investment.id ? { ...i, featured: !i.featured } : i)));
-      }
-    } catch (error) {
-      console.error("Failed to toggle featured:", error);
+    const { error: toggleError } = await adminFetch(`/api/v1/investments/${investment.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify({ featured: !investment.featured }),
+    });
+    if (toggleError) {
+      setError(toggleError);
+    } else {
+      setInvestments(investments.map((i) => (i.id === investment.id ? { ...i, featured: !i.featured } : i)));
     }
   };
 
@@ -130,32 +127,26 @@ export default function AdminInvestments() {
     if (!editingInvestment) return;
     setSaving(true);
 
-    try {
-      const url = isNew
-        ? "/api/v1/investments"
-        : `/api/v1/investments/${editingInvestment.id}`;
-      const method = isNew ? "POST" : "PUT";
+    const url = isNew
+      ? "/api/v1/investments"
+      : `/api/v1/investments/${editingInvestment.id}`;
+    const method = isNew ? "POST" : "PUT";
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
-        },
-        body: JSON.stringify(editingInvestment),
-      });
+    const { error: saveError } = await adminFetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify(editingInvestment),
+    });
 
-      if (res.ok) {
-        await fetchInvestments();
-        setEditingInvestment(null);
-        setIsNew(false);
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to save investment");
-      }
-    } catch (error) {
-      console.error("Failed to save investment:", error);
-      alert("Failed to save investment");
+    if (saveError) {
+      setError(saveError);
+    } else {
+      await fetchInvestments();
+      setEditingInvestment(null);
+      setIsNew(false);
     }
     setSaving(false);
   };
@@ -384,11 +375,14 @@ export default function AdminInvestments() {
             setEditingInvestment(emptyInvestment);
             setIsNew(true);
           }}
-          className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium"
+          className={`px-4 py-2 ${theme.addButtonBg} text-white rounded-lg font-medium`}
         >
           Add Investment
         </button>
       </div>
+
+      {/* Error Alert */}
+      {error && <ErrorAlert message={error} onRetry={() => { setError(null); fetchInvestments(); }} />}
 
       <input
         type="text"
@@ -459,15 +453,7 @@ export default function AdminInvestments() {
                   className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
                 >
                   <td className="px-2 py-3">
-                    {investment.logo ? (
-                      <img
-                        src={investment.logo}
-                        alt={investment.title}
-                        className="w-8 h-8 rounded object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded bg-neutral-200 dark:bg-neutral-700" />
-                    )}
+                    <TableImage src={investment.logo} alt={investment.title} />
                   </td>
                   <td className="px-4 py-3 text-sm">{investment.title}</td>
                   <td className="px-4 py-3 text-sm">
@@ -494,34 +480,16 @@ export default function AdminInvestments() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
-                    <button
-                      onClick={() => handleToggleFeatured(investment)}
-                      title={investment.featured ? "Remove star" : "Star this investment"}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        investment.featured
-                          ? "bg-amber-50 text-amber-500 hover:bg-amber-100 dark:bg-amber-500/20 dark:text-amber-400"
-                          : "bg-white text-neutral-400 border border-neutral-200 hover:border-amber-300 hover:text-amber-500 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-amber-500"
-                      }`}
-                    >
-                      <svg className="w-4 h-4" fill={investment.featured ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                      </svg>
-                    </button>
+                    <StarToggle
+                      featured={investment.featured || false}
+                      onToggle={() => handleToggleFeatured(investment)}
+                      label="investment"
+                    />
                   </td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(investment)}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-600 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-800/40 transition-colors whitespace-nowrap"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(investment.id)}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors whitespace-nowrap"
-                      >
-                        Delete
-                      </button>
+                      <EditButton onClick={() => handleEdit(investment)} variant={theme.buttonVariant} />
+                      <DeleteButton onClick={() => handleDelete(investment.id)} />
                     </div>
                   </td>
                 </tr>

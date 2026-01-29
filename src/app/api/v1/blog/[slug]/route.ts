@@ -2,14 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { requireAuth } from "@/lib/api-auth";
 
 const BLOG_DIR = path.join(process.cwd(), "content/blog");
-
-// Validate API key for write operations
-function validateApiKey(request: NextRequest): boolean {
-  const apiKey = request.headers.get("x-api-key");
-  return apiKey === process.env.ADMIN_API_KEY;
-}
 
 // Find the file path for a slug (could be .md or .mdx)
 function findPostFile(slug: string): string | null {
@@ -63,9 +58,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  if (!validateApiKey(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAuth(request, "admin:write");
+  if (auth instanceof Response) return auth;
 
   try {
     const { slug } = await params;
@@ -150,9 +144,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  if (!validateApiKey(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAuth(request, "admin:write");
+  if (auth instanceof Response) return auth;
 
   try {
     const { slug } = await params;

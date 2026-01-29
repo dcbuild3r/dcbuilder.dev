@@ -3,7 +3,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { ImageInput } from "@/components/admin/ImagePreview";
-import { TableSkeleton, withMinDelay } from "@/components/admin/TableSkeleton";
+import { TableSkeleton } from "@/components/admin/TableSkeleton";
+import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
+import { EditButton, DeleteButton, TableImage, ErrorAlert } from "@/components/admin/ActionButtons";
+import { ADMIN_THEMES } from "@/lib/admin-themes";
 
 interface Affiliation {
   id: string;
@@ -33,17 +36,18 @@ export default function AdminAffiliations() {
     useState<Partial<Affiliation> | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  const getApiKey = () => localStorage.getItem("admin_api_key") || "";
+  const [error, setError] = useState<string | null>(null);
+  const theme = ADMIN_THEMES.affiliations;
 
   const fetchAffiliations = useCallback(async () => {
-    try {
-      const data = await withMinDelay(
-        fetch("/api/v1/affiliations?limit=100").then(res => res.json())
-      );
-      setAffiliations(data.data || []);
-    } catch (error) {
-      console.error("Failed to fetch affiliations:", error);
+    setError(null);
+    const { data, error: fetchError } = await withMinDelay(
+      adminFetch<Affiliation[]>("/api/v1/affiliations?limit=100")
+    );
+    if (fetchError) {
+      setError(fetchError);
+    } else {
+      setAffiliations(data || []);
     }
     setLoading(false);
   }, []);
@@ -71,19 +75,14 @@ export default function AdminAffiliations() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this affiliation?")) return;
 
-    try {
-      const res = await fetch(`/api/v1/affiliations/${id}`, {
-        method: "DELETE",
-        headers: { "x-api-key": getApiKey() },
-      });
-      if (res.ok) {
-        setAffiliations(affiliations.filter((a) => a.id !== id));
-      } else {
-        alert("Failed to delete affiliation");
-      }
-    } catch (error) {
-      console.error("Failed to delete affiliation:", error);
-      alert("Failed to delete affiliation");
+    const { error: deleteError } = await adminFetch(`/api/v1/affiliations/${id}`, {
+      method: "DELETE",
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+    if (deleteError) {
+      setError(deleteError);
+    } else {
+      setAffiliations(affiliations.filter((a) => a.id !== id));
     }
   };
 
@@ -91,32 +90,26 @@ export default function AdminAffiliations() {
     if (!editingAffiliation) return;
     setSaving(true);
 
-    try {
-      const url = isNew
-        ? "/api/v1/affiliations"
-        : `/api/v1/affiliations/${editingAffiliation.id}`;
-      const method = isNew ? "POST" : "PUT";
+    const url = isNew
+      ? "/api/v1/affiliations"
+      : `/api/v1/affiliations/${editingAffiliation.id}`;
+    const method = isNew ? "POST" : "PUT";
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
-        },
-        body: JSON.stringify(editingAffiliation),
-      });
+    const { error: saveError } = await adminFetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify(editingAffiliation),
+    });
 
-      if (res.ok) {
-        await fetchAffiliations();
-        setEditingAffiliation(null);
-        setIsNew(false);
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to save affiliation");
-      }
-    } catch (error) {
-      console.error("Failed to save affiliation:", error);
-      alert("Failed to save affiliation");
+    if (saveError) {
+      setError(saveError);
+    } else {
+      await fetchAffiliations();
+      setEditingAffiliation(null);
+      setIsNew(false);
     }
     setSaving(false);
   };
@@ -243,11 +236,14 @@ export default function AdminAffiliations() {
             setEditingAffiliation(emptyAffiliation);
             setIsNew(true);
           }}
-          className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 font-medium"
+          className={`px-4 py-2 ${theme.addButtonBg} text-white rounded-lg font-medium`}
         >
           Add Affiliation
         </button>
       </div>
+
+      {/* Error Alert */}
+      {error && <ErrorAlert message={error} onRetry={() => { setError(null); fetchAffiliations(); }} />}
 
       {loading ? (
         <TableSkeleton columns={4} rows={8} headerColor="bg-pink-100 dark:bg-pink-900/30" headerHeight="h-[44px]" />
@@ -277,32 +273,14 @@ export default function AdminAffiliations() {
                   className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
                 >
                   <td className="px-2 py-3">
-                    {affiliation.logo ? (
-                      <img
-                        src={affiliation.logo}
-                        alt={affiliation.title}
-                        className="w-8 h-8 rounded object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded bg-neutral-200 dark:bg-neutral-700" />
-                    )}
+                    <TableImage src={affiliation.logo} alt={affiliation.title} />
                   </td>
                   <td className="px-4 py-3 text-sm">{affiliation.title}</td>
                   <td className="px-4 py-3 text-sm">{affiliation.role}</td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(affiliation)}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-600 hover:bg-pink-200 dark:bg-pink-900/30 dark:text-pink-400 dark:hover:bg-pink-800/40 transition-colors"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(affiliation.id)}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors"
-                      >
-                        Delete
-                      </button>
+                      <EditButton onClick={() => handleEdit(affiliation)} variant={theme.buttonVariant} />
+                      <DeleteButton onClick={() => handleDelete(affiliation.id)} />
                     </div>
                   </td>
                 </tr>

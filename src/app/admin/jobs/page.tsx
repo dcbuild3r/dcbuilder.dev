@@ -6,7 +6,10 @@ import { Combobox, MultiCombobox } from "@/components/admin/Combobox";
 import { ImageInput } from "@/components/admin/ImagePreview";
 import { MultiSelectHeader, SearchableMultiSelectHeader, useColumnFilters } from "@/components/admin/ColumnFilters";
 import { getSkillColor } from "@/lib/skill-colors";
-import { TableSkeleton, withMinDelay } from "@/components/admin/TableSkeleton";
+import { TableSkeleton } from "@/components/admin/TableSkeleton";
+import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
+import { StarToggle, HotToggle, EditButton, DeleteButton, TableImage, ErrorAlert } from "@/components/admin/ActionButtons";
+import { ADMIN_THEMES } from "@/lib/admin-themes";
 
 interface Job {
   id: string;
@@ -51,6 +54,83 @@ const emptyJob: Partial<Job> = {
 type SortField = "title" | "company" | "category" | "clicks" | "createdAt" | null;
 type SortDirection = "asc" | "desc";
 
+interface SearchableSortHeaderProps {
+  field: SortField;
+  searchKey: string;
+  children: React.ReactNode;
+  sortField: SortField;
+  sortDirection: SortDirection;
+  columnSearch: string | null;
+  columnSearchValue: string;
+  onSort: (field: SortField) => void;
+  onColumnSearchChange: (value: string) => void;
+  onOpenSearch: () => void;
+  onClearSearch: () => void;
+}
+
+function SearchableSortHeader({
+  field,
+  searchKey,
+  children,
+  sortField,
+  sortDirection,
+  columnSearch,
+  columnSearchValue,
+  onSort,
+  onColumnSearchChange,
+  onOpenSearch,
+  onClearSearch,
+}: SearchableSortHeaderProps) {
+  return (
+    <th className="px-4 py-3 text-left text-sm font-medium">
+      {columnSearch === searchKey ? (
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={columnSearchValue}
+            onChange={(e) => onColumnSearchChange(e.target.value)}
+            placeholder={`Search ${searchKey}...`}
+            className="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700"
+            autoFocus
+          />
+          <button
+            onClick={onClearSearch}
+            className="text-neutral-400 hover:text-neutral-600"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-1">
+          <button
+            className="flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white"
+            onClick={() => onSort(field)}
+          >
+            {children}
+            <span className="text-neutral-400">
+              {sortField === field ? (sortDirection === "desc" ? "↓" : "↑") : "↕"}
+            </span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenSearch();
+            }}
+            className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+            title={`Search by ${searchKey}`}
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+            </svg>
+          </button>
+        </div>
+      )}
+    </th>
+  );
+}
+
 export default function AdminJobs() {
   const searchParams = useSearchParams();
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -69,7 +149,9 @@ export default function AdminJobs() {
   const [tagsFilter, setTagsFilter] = useState<string[]>([]);
   const [featuredFilter, setFeaturedFilter] = useState<string[]>([]);
 
+  const [error, setError] = useState<string | null>(null);
   const columnFilters = useColumnFilters();
+  const theme = ADMIN_THEMES.jobs;
 
   const categoryOptions = ["portfolio", "network"];
   const featuredOptions = ["yes", "no"];
@@ -85,92 +167,27 @@ export default function AdminJobs() {
     }
   };
 
-  const SortHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
-    <th
-      className="px-4 py-3 text-left text-sm font-medium cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 select-none"
-      onClick={() => handleSort(field)}
-    >
-      <div className="flex items-center gap-1">
-        {children}
-        <span className="text-neutral-400">
-          {sortField === field ? (sortDirection === "desc" ? "↓" : "↑") : "↕"}
-        </span>
-      </div>
-    </th>
-  );
-
-  const SearchableSortHeader = ({ field, searchKey, children }: { field: SortField; searchKey: string; children: React.ReactNode }) => (
-    <th className="px-4 py-3 text-left text-sm font-medium">
-      {columnSearch === searchKey ? (
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={columnSearchValue}
-            onChange={(e) => setColumnSearchValue(e.target.value)}
-            placeholder={`Search ${searchKey}...`}
-            className="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700"
-            autoFocus
-          />
-          <button
-            onClick={() => { setColumnSearch(null); setColumnSearchValue(""); }}
-            className="text-neutral-400 hover:text-neutral-600"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-1">
-          <button
-            className="flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white"
-            onClick={() => handleSort(field)}
-          >
-            {children}
-            <span className="text-neutral-400">
-              {sortField === field ? (sortDirection === "desc" ? "↓" : "↑") : "↕"}
-            </span>
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); setColumnSearch(searchKey); setColumnSearchValue(""); }}
-            className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-            title={`Search by ${searchKey}`}
-          >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-            </svg>
-          </button>
-        </div>
-      )}
-    </th>
-  );
-
-  const getApiKey = () => localStorage.getItem("admin_api_key") || "";
-
   const fetchJobs = useCallback(async () => {
-    try {
-      const data = await withMinDelay(
-        fetch("/api/v1/jobs?limit=500").then(res => res.json())
-      );
-      setJobs(data.data || []);
-    } catch (error) {
-      console.error("Failed to fetch jobs:", error);
+    setError(null);
+    const { data, error: fetchError } = await withMinDelay(
+      adminFetch<Job[]>("/api/v1/jobs?limit=500")
+    );
+    if (fetchError) {
+      setError(fetchError);
+    } else {
+      setJobs(data || []);
     }
     setLoading(false);
   }, []);
 
   const fetchAnalytics = useCallback(async () => {
-    try {
-      const res = await fetch("/api/v1/admin/analytics?type=jobs", {
-        headers: { "x-api-key": getApiKey() },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setJobClicks(data.data || {});
-      }
-    } catch (error) {
-      console.error("Failed to fetch analytics:", error);
+    const { data } = await adminFetch<Record<string, number>>("/api/v1/admin/analytics?type=jobs", {
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+    if (data) {
+      setJobClicks(data);
     }
+    // Analytics failures are non-critical, no error state needed
   }, []);
 
   useEffect(() => {
@@ -199,37 +216,30 @@ export default function AdminJobs() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this job?")) return;
 
-    try {
-      const res = await fetch(`/api/v1/jobs/${id}`, {
-        method: "DELETE",
-        headers: { "x-api-key": getApiKey() },
-      });
-      if (res.ok) {
-        setJobs(jobs.filter((j) => j.id !== id));
-      } else {
-        alert("Failed to delete job");
-      }
-    } catch (error) {
-      console.error("Failed to delete job:", error);
-      alert("Failed to delete job");
+    const { error: deleteError } = await adminFetch(`/api/v1/jobs/${id}`, {
+      method: "DELETE",
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+    if (deleteError) {
+      setError(deleteError);
+    } else {
+      setJobs(jobs.filter((j) => j.id !== id));
     }
   };
 
   const handleToggleFeatured = async (job: Job) => {
-    try {
-      const res = await fetch(`/api/v1/jobs/${job.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
-        },
-        body: JSON.stringify({ featured: !job.featured }),
-      });
-      if (res.ok) {
-        setJobs(jobs.map((j) => (j.id === job.id ? { ...j, featured: !j.featured } : j)));
-      }
-    } catch (error) {
-      console.error("Failed to toggle featured:", error);
+    const { error: toggleError } = await adminFetch(`/api/v1/jobs/${job.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify({ featured: !job.featured }),
+    });
+    if (toggleError) {
+      setError(toggleError);
+    } else {
+      setJobs(jobs.map((j) => (j.id === job.id ? { ...j, featured: !j.featured } : j)));
     }
   };
 
@@ -240,20 +250,18 @@ export default function AdminJobs() {
       ? currentTags.filter((t) => t !== "hot")
       : [...currentTags, "hot"];
 
-    try {
-      const res = await fetch(`/api/v1/jobs/${job.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
-        },
-        body: JSON.stringify({ tags: newTags }),
-      });
-      if (res.ok) {
-        setJobs(jobs.map((j) => (j.id === job.id ? { ...j, tags: newTags } : j)));
-      }
-    } catch (error) {
-      console.error("Failed to toggle hot:", error);
+    const { error: toggleError } = await adminFetch(`/api/v1/jobs/${job.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify({ tags: newTags }),
+    });
+    if (toggleError) {
+      setError(toggleError);
+    } else {
+      setJobs(jobs.map((j) => (j.id === job.id ? { ...j, tags: newTags } : j)));
     }
   };
 
@@ -269,30 +277,24 @@ export default function AdminJobs() {
         .filter(Boolean),
     };
 
-    try {
-      const url = isNew ? "/api/v1/jobs" : `/api/v1/jobs/${editingJob.id}`;
-      const method = isNew ? "POST" : "PUT";
+    const url = isNew ? "/api/v1/jobs" : `/api/v1/jobs/${editingJob.id}`;
+    const method = isNew ? "POST" : "PUT";
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
-        },
-        body: JSON.stringify(jobData),
-      });
+    const { error: saveError } = await adminFetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify(jobData),
+    });
 
-      if (res.ok) {
-        await fetchJobs();
-        setEditingJob(null);
-        setIsNew(false);
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to save job");
-      }
-    } catch (error) {
-      console.error("Failed to save job:", error);
-      alert("Failed to save job");
+    if (saveError) {
+      setError(saveError);
+    } else {
+      await fetchJobs();
+      setEditingJob(null);
+      setIsNew(false);
     }
     setSaving(false);
   };
@@ -608,11 +610,14 @@ export default function AdminJobs() {
             setIsNew(true);
             setTagsInput("");
           }}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+          className={`px-4 py-2 ${theme.addButtonBg} text-white rounded-lg font-medium`}
         >
           Add Job
         </button>
       </div>
+
+      {/* Error Alert */}
+      {error && <ErrorAlert message={error} onRetry={() => { setError(null); fetchJobs(); }} />}
 
       {/* Search */}
       <div>
@@ -633,9 +638,47 @@ export default function AdminJobs() {
           <table className="w-full">
             <thead className="bg-blue-100 dark:bg-blue-900/30">
               <tr>
-                <SearchableSortHeader field="title" searchKey="title">Title</SearchableSortHeader>
+                <SearchableSortHeader
+                  field="title"
+                  searchKey="title"
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  columnSearch={columnSearch}
+                  columnSearchValue={columnSearchValue}
+                  onSort={handleSort}
+                  onColumnSearchChange={setColumnSearchValue}
+                  onOpenSearch={() => {
+                    setColumnSearch("title");
+                    setColumnSearchValue("");
+                  }}
+                  onClearSearch={() => {
+                    setColumnSearch(null);
+                    setColumnSearchValue("");
+                  }}
+                >
+                  Title
+                </SearchableSortHeader>
                 <th className="px-2 py-3 text-left text-sm font-medium w-12"></th>
-                <SearchableSortHeader field="company" searchKey="company">Company</SearchableSortHeader>
+                <SearchableSortHeader
+                  field="company"
+                  searchKey="company"
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  columnSearch={columnSearch}
+                  columnSearchValue={columnSearchValue}
+                  onSort={handleSort}
+                  onColumnSearchChange={setColumnSearchValue}
+                  onOpenSearch={() => {
+                    setColumnSearch("company");
+                    setColumnSearchValue("");
+                  }}
+                  onClearSearch={() => {
+                    setColumnSearch(null);
+                    setColumnSearchValue("");
+                  }}
+                >
+                  Company
+                </SearchableSortHeader>
                 <th className="px-4 py-3 text-left text-sm font-medium relative">
                   {columnSearch === "category" ? (
                     <div className="absolute top-full left-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 z-10 min-w-32">
@@ -748,15 +791,7 @@ export default function AdminJobs() {
                 <tr key={job.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
                   <td className="px-4 py-3 text-sm">{job.title}</td>
                   <td className="px-2 py-3">
-                    {job.companyLogo ? (
-                      <img
-                        src={job.companyLogo}
-                        alt={job.company}
-                        className="w-8 h-8 rounded object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded bg-neutral-200 dark:bg-neutral-700" />
-                    )}
+                    <TableImage src={job.companyLogo} alt={job.company} />
                   </td>
                   <td className="px-4 py-3 text-sm">{job.company}</td>
                   <td className="px-4 py-3 text-sm">
@@ -796,46 +831,22 @@ export default function AdminJobs() {
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
                     <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => handleToggleFeatured(job)}
-                        title={job.featured ? "Remove star" : "Star this job"}
-                        className={`p-1.5 rounded-lg transition-colors ${
-                          job.featured
-                            ? "bg-amber-50 text-amber-500 hover:bg-amber-100 dark:bg-amber-500/20 dark:text-amber-400"
-                            : "bg-white text-neutral-400 border border-neutral-200 hover:border-yellow-300 hover:text-yellow-500 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-yellow-500"
-                        }`}
-                      >
-                        <svg className="w-4 h-4" fill={job.featured ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleToggleHot(job)}
-                        title={job.tags?.includes("hot") ? "Remove HOT" : "Mark as HOT"}
-                        className={`px-2 py-1 rounded-lg text-xs font-bold transition-colors ${
-                          job.tags?.includes("hot")
-                            ? "bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 animate-pulse-hot"
-                            : "bg-white text-neutral-400 border border-neutral-200 hover:border-red-300 hover:text-red-500 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-red-500"
-                        }`}
-                      >
-                        🔥
-                      </button>
+                      <StarToggle
+                        featured={job.featured || false}
+                        onToggle={() => handleToggleFeatured(job)}
+                        label="job"
+                      />
+                      <HotToggle
+                        hot={job.tags?.includes("hot") || false}
+                        onToggle={() => handleToggleHot(job)}
+                        label="job"
+                      />
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(job)}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/40 transition-colors"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(job.id)}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors"
-                      >
-                        Delete
-                      </button>
+                      <EditButton onClick={() => handleEdit(job)} variant={theme.buttonVariant} />
+                      <DeleteButton onClick={() => handleDelete(job.id)} />
                     </div>
                   </td>
                 </tr>

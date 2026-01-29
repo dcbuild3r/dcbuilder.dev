@@ -49,17 +49,6 @@ export function TableSkeleton({
   );
 }
 
-// Minimum loading delay to prevent jarring quick flashes
-export const MIN_LOADING_DELAY = 800;
-
-export async function withMinDelay<T>(promise: Promise<T>, minDelay: number = MIN_LOADING_DELAY): Promise<T> {
-  const [result] = await Promise.all([
-    promise,
-    new Promise(resolve => setTimeout(resolve, minDelay))
-  ]);
-  return result;
-}
-
 export function SkeletonRow({ columns }: { columns: number }) {
   return (
     <tr className="animate-pulse h-[60px]">
@@ -71,3 +60,6 @@ export function SkeletonRow({ columns }: { columns: number }) {
     </tr>
   );
 }
+
+// Re-export from admin-utils for backwards compatibility
+export { withMinDelay, MIN_LOADING_DELAY } from "@/lib/admin-utils";

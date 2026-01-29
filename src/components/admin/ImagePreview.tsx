@@ -32,9 +32,18 @@ function ImageModal({ url, onClose }: ImageModalProps) {
   useEffect(() => {
     setStatus("loading");
     const img = new window.Image();
-    img.onload = () => setStatus("loaded");
-    img.onerror = () => setStatus("error");
+    const handleLoad = () => setStatus("loaded");
+    const handleError = () => setStatus("error");
+    img.addEventListener("load", handleLoad);
+    img.addEventListener("error", handleError);
     img.src = url;
+
+    // Cleanup to prevent memory leaks
+    return () => {
+      img.removeEventListener("load", handleLoad);
+      img.removeEventListener("error", handleError);
+      img.src = ""; // Cancel any pending load
+    };
   }, [url]);
 
   const modalContent = (

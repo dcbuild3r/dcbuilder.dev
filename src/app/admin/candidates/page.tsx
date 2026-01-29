@@ -6,7 +6,10 @@ import { Combobox, MultiCombobox } from "@/components/admin/Combobox";
 import { ImageInput } from "@/components/admin/ImagePreview";
 import { SearchableMultiSelectHeader, useColumnFilters } from "@/components/admin/ColumnFilters";
 import { getSkillColor } from "@/lib/skill-colors";
-import { TableSkeleton, withMinDelay } from "@/components/admin/TableSkeleton";
+import { TableSkeleton } from "@/components/admin/TableSkeleton";
+import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
+import { StarToggle, TopToggle, EditButton, DeleteButton, TableImage, ErrorAlert } from "@/components/admin/ActionButtons";
+import { ADMIN_THEMES } from "@/lib/admin-themes";
 
 interface Candidate {
   id: string;
@@ -55,6 +58,117 @@ const emptyCandidate: Partial<Candidate> = {
 type SortField = "name" | "title" | "views" | "createdAt" | null;
 type SortDirection = "asc" | "desc";
 
+interface SortHeaderProps {
+  field: SortField;
+  children: React.ReactNode;
+  center?: boolean;
+  sortField: SortField;
+  sortDirection: SortDirection;
+  onSort: (field: SortField) => void;
+}
+
+function SortHeader({
+  field,
+  children,
+  center,
+  sortField,
+  sortDirection,
+  onSort,
+}: SortHeaderProps) {
+  return (
+    <th
+      className={`px-4 py-3 text-sm font-medium cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 select-none ${center ? "text-center" : "text-left"}`}
+      onClick={() => onSort(field)}
+    >
+      <div className={`flex items-center gap-1 ${center ? "justify-center" : ""}`}>
+        {children}
+        <span className="text-neutral-400">
+          {sortField === field ? (sortDirection === "desc" ? "↓" : "↑") : "↕"}
+        </span>
+      </div>
+    </th>
+  );
+}
+
+interface SearchableSortHeaderProps {
+  field: SortField;
+  searchKey: string;
+  children: React.ReactNode;
+  center?: boolean;
+  sortField: SortField;
+  sortDirection: SortDirection;
+  columnSearch: string | null;
+  columnSearchValue: string;
+  onSort: (field: SortField) => void;
+  onColumnSearchChange: (value: string) => void;
+  onOpenSearch: () => void;
+  onClearSearch: () => void;
+}
+
+function SearchableSortHeader({
+  field,
+  searchKey,
+  children,
+  center,
+  sortField,
+  sortDirection,
+  columnSearch,
+  columnSearchValue,
+  onSort,
+  onColumnSearchChange,
+  onOpenSearch,
+  onClearSearch,
+}: SearchableSortHeaderProps) {
+  return (
+    <th className={`px-4 py-3 text-sm font-medium ${center ? "text-center" : "text-left"}`}>
+      {columnSearch === searchKey ? (
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={columnSearchValue}
+            onChange={(e) => onColumnSearchChange(e.target.value)}
+            placeholder={`Search ${searchKey}...`}
+            className="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700"
+            autoFocus
+          />
+          <button
+            onClick={onClearSearch}
+            className="text-neutral-400 hover:text-neutral-600"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      ) : (
+        <div className={`flex items-center gap-1 ${center ? "justify-center" : ""}`}>
+          <button
+            className="flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white"
+            onClick={() => onSort(field)}
+          >
+            {children}
+            <span className="text-neutral-400">
+              {sortField === field ? (sortDirection === "desc" ? "↓" : "↑") : "↕"}
+            </span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenSearch();
+            }}
+            className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+            title={`Search by ${searchKey}`}
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+            </svg>
+          </button>
+        </div>
+      )}
+    </th>
+  );
+}
+
 export default function AdminCandidates() {
   const searchParams = useSearchParams();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -74,7 +188,9 @@ export default function AdminCandidates() {
   const [availableFilter, setAvailableFilter] = useState<string[]>([]);
   const [skillsFilter, setSkillsFilter] = useState<string[]>([]);
 
+  const [error, setError] = useState<string | null>(null);
   const columnFilters = useColumnFilters();
+  const theme = ADMIN_THEMES.candidates;
 
   const experienceOptions = ["0-1", "1-3", "3-5", "5-10", "10+"];
   // Get unique skills from all candidates (excluding 'top' since that's a special marker)
@@ -88,68 +204,6 @@ export default function AdminCandidates() {
       setSortDirection("desc");
     }
   };
-
-  const SortHeader = ({ field, children, center }: { field: SortField; children: React.ReactNode; center?: boolean }) => (
-    <th
-      className={`px-4 py-3 text-sm font-medium cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 select-none ${center ? "text-center" : "text-left"}`}
-      onClick={() => handleSort(field)}
-    >
-      <div className={`flex items-center gap-1 ${center ? "justify-center" : ""}`}>
-        {children}
-        <span className="text-neutral-400">
-          {sortField === field ? (sortDirection === "desc" ? "↓" : "↑") : "↕"}
-        </span>
-      </div>
-    </th>
-  );
-
-  const SearchableSortHeader = ({ field, searchKey, children, center }: { field: SortField; searchKey: string; children: React.ReactNode; center?: boolean }) => (
-    <th className={`px-4 py-3 text-sm font-medium ${center ? "text-center" : "text-left"}`}>
-      {columnSearch === searchKey ? (
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={columnSearchValue}
-            onChange={(e) => setColumnSearchValue(e.target.value)}
-            placeholder={`Search ${searchKey}...`}
-            className="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700"
-            autoFocus
-          />
-          <button
-            onClick={() => { setColumnSearch(null); setColumnSearchValue(""); }}
-            className="text-neutral-400 hover:text-neutral-600"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-      ) : (
-        <div className={`flex items-center gap-1 ${center ? "justify-center" : ""}`}>
-          <button
-            className="flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white"
-            onClick={() => handleSort(field)}
-          >
-            {children}
-            <span className="text-neutral-400">
-              {sortField === field ? (sortDirection === "desc" ? "↓" : "↑") : "↕"}
-            </span>
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); setColumnSearch(searchKey); setColumnSearchValue(""); }}
-            className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-            title={`Search by ${searchKey}`}
-          >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-            </svg>
-          </button>
-        </div>
-      )}
-    </th>
-  );
-
-  const getApiKey = () => localStorage.getItem("admin_api_key") || "";
 
   const filteredCandidates = candidates
     .filter((candidate) => {
@@ -209,29 +263,26 @@ export default function AdminCandidates() {
     });
 
   const fetchCandidates = useCallback(async () => {
-    try {
-      const data = await withMinDelay(
-        fetch("/api/v1/candidates?limit=100").then(res => res.json())
-      );
-      setCandidates(data.data || []);
-    } catch (error) {
-      console.error("Failed to fetch candidates:", error);
+    setError(null);
+    const { data, error: fetchError } = await withMinDelay(
+      adminFetch<Candidate[]>("/api/v1/candidates?limit=100")
+    );
+    if (fetchError) {
+      setError(fetchError);
+    } else {
+      setCandidates(data || []);
     }
     setLoading(false);
   }, []);
 
   const fetchAnalytics = useCallback(async () => {
-    try {
-      const res = await fetch("/api/v1/admin/analytics?type=candidates", {
-        headers: { "x-api-key": getApiKey() },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCandidateViews(data.data || {});
-      }
-    } catch (error) {
-      console.error("Failed to fetch analytics:", error);
+    const { data } = await adminFetch<Record<string, number>>("/api/v1/admin/analytics?type=candidates", {
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+    if (data) {
+      setCandidateViews(data);
     }
+    // Analytics failures are non-critical, no error state needed
   }, []);
 
   useEffect(() => {
@@ -260,37 +311,30 @@ export default function AdminCandidates() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this candidate?")) return;
 
-    try {
-      const res = await fetch(`/api/v1/candidates/${id}`, {
-        method: "DELETE",
-        headers: { "x-api-key": getApiKey() },
-      });
-      if (res.ok) {
-        setCandidates(candidates.filter((c) => c.id !== id));
-      } else {
-        alert("Failed to delete candidate");
-      }
-    } catch (error) {
-      console.error("Failed to delete candidate:", error);
-      alert("Failed to delete candidate");
+    const { error: deleteError } = await adminFetch(`/api/v1/candidates/${id}`, {
+      method: "DELETE",
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+    if (deleteError) {
+      setError(deleteError);
+    } else {
+      setCandidates(candidates.filter((c) => c.id !== id));
     }
   };
 
   const handleToggleFeatured = async (candidate: Candidate) => {
-    try {
-      const res = await fetch(`/api/v1/candidates/${candidate.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
-        },
-        body: JSON.stringify({ featured: !candidate.featured }),
-      });
-      if (res.ok) {
-        setCandidates(candidates.map((c) => (c.id === candidate.id ? { ...c, featured: !c.featured } : c)));
-      }
-    } catch (error) {
-      console.error("Failed to toggle featured:", error);
+    const { error: toggleError } = await adminFetch(`/api/v1/candidates/${candidate.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify({ featured: !candidate.featured }),
+    });
+    if (toggleError) {
+      setError(toggleError);
+    } else {
+      setCandidates(candidates.map((c) => (c.id === candidate.id ? { ...c, featured: !c.featured } : c)));
     }
   };
 
@@ -300,20 +344,18 @@ export default function AdminCandidates() {
       ? (candidate.skills || []).filter((s) => s !== "top")
       : [...(candidate.skills || []), "top"];
 
-    try {
-      const res = await fetch(`/api/v1/candidates/${candidate.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
-        },
-        body: JSON.stringify({ skills: newSkills }),
-      });
-      if (res.ok) {
-        setCandidates(candidates.map((c) => (c.id === candidate.id ? { ...c, skills: newSkills } : c)));
-      }
-    } catch (error) {
-      console.error("Failed to toggle top:", error);
+    const { error: toggleError } = await adminFetch(`/api/v1/candidates/${candidate.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify({ skills: newSkills }),
+    });
+    if (toggleError) {
+      setError(toggleError);
+    } else {
+      setCandidates(candidates.map((c) => (c.id === candidate.id ? { ...c, skills: newSkills } : c)));
     }
   };
 
@@ -329,32 +371,26 @@ export default function AdminCandidates() {
         .filter(Boolean),
     };
 
-    try {
-      const url = isNew
-        ? "/api/v1/candidates"
-        : `/api/v1/candidates/${editingCandidate.id}`;
-      const method = isNew ? "POST" : "PUT";
+    const url = isNew
+      ? "/api/v1/candidates"
+      : `/api/v1/candidates/${editingCandidate.id}`;
+    const method = isNew ? "POST" : "PUT";
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
-        },
-        body: JSON.stringify(candidateData),
-      });
+    const { error: saveError } = await adminFetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify(candidateData),
+    });
 
-      if (res.ok) {
-        await fetchCandidates();
-        setEditingCandidate(null);
-        setIsNew(false);
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to save candidate");
-      }
-    } catch (error) {
-      console.error("Failed to save candidate:", error);
-      alert("Failed to save candidate");
+    if (saveError) {
+      setError(saveError);
+    } else {
+      await fetchCandidates();
+      setEditingCandidate(null);
+      setIsNew(false);
     }
     setSaving(false);
   };
@@ -646,11 +682,14 @@ export default function AdminCandidates() {
             setIsNew(true);
             setSkillsInput("");
           }}
-          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium"
+          className={`px-4 py-2 ${theme.addButtonBg} text-white rounded-lg font-medium`}
         >
           Add Candidate
         </button>
       </div>
+
+      {/* Error Alert */}
+      {error && <ErrorAlert message={error} onRetry={() => { setError(null); fetchCandidates(); }} />}
 
       {/* Search */}
       <div className="relative">
@@ -680,8 +719,34 @@ export default function AdminCandidates() {
             <thead className="bg-green-100 dark:bg-green-900/30">
               <tr>
                 <th className="px-2 py-3 text-left text-sm font-medium w-12"></th>
-                <SearchableSortHeader field="name" searchKey="name">Name</SearchableSortHeader>
-                <SearchableSortHeader field="title" searchKey="title">Title</SearchableSortHeader>
+                <SearchableSortHeader
+                  field="name"
+                  searchKey="name"
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  columnSearch={columnSearch}
+                  columnSearchValue={columnSearchValue}
+                  onSort={handleSort}
+                  onColumnSearchChange={setColumnSearchValue}
+                  onOpenSearch={() => { setColumnSearch("name"); setColumnSearchValue(""); }}
+                  onClearSearch={() => { setColumnSearch(null); setColumnSearchValue(""); }}
+                >
+                  Name
+                </SearchableSortHeader>
+                <SearchableSortHeader
+                  field="title"
+                  searchKey="title"
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  columnSearch={columnSearch}
+                  columnSearchValue={columnSearchValue}
+                  onSort={handleSort}
+                  onColumnSearchChange={setColumnSearchValue}
+                  onOpenSearch={() => { setColumnSearch("title"); setColumnSearchValue(""); }}
+                  onClearSearch={() => { setColumnSearch(null); setColumnSearchValue(""); }}
+                >
+                  Title
+                </SearchableSortHeader>
                 <SearchableMultiSelectHeader
                   label="Skills"
                   filterKey="skills"
@@ -751,7 +816,15 @@ export default function AdminCandidates() {
                     </button>
                   </div>
                 </th>
-                <SortHeader field="views" center>Views (7d)</SortHeader>
+                <SortHeader
+                  field="views"
+                  center
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                >
+                  Views (7d)
+                </SortHeader>
                 <th className="px-4 py-3 text-center text-sm font-medium">
                   Star
                 </th>
@@ -817,7 +890,14 @@ export default function AdminCandidates() {
                     </button>
                   </div>
                 </th>
-                <SortHeader field="createdAt">Created</SortHeader>
+                <SortHeader
+                  field="createdAt"
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                >
+                  Created
+                </SortHeader>
                 <th className="px-4 py-3 text-right text-sm font-medium">
                   Actions
                 </th>
@@ -830,15 +910,7 @@ export default function AdminCandidates() {
                   className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
                 >
                   <td className="px-2 py-3">
-                    {candidate.image ? (
-                      <img
-                        src={candidate.image}
-                        alt={candidate.name}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700" />
-                    )}
+                    <TableImage src={candidate.image} alt={candidate.name} rounded="full" />
                   </td>
                   <td className="px-4 py-3 text-sm">{candidate.name}</td>
                   <td className="px-4 py-3 text-sm">{candidate.title || "-"}</td>
@@ -869,32 +941,18 @@ export default function AdminCandidates() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
-                    <button
-                      onClick={() => handleToggleFeatured(candidate)}
-                      title={candidate.featured ? "Remove star" : "Star this candidate"}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        candidate.featured
-                          ? "bg-amber-50 text-amber-500 hover:bg-amber-100 dark:bg-amber-500/20 dark:text-amber-400"
-                          : "bg-white text-neutral-400 border border-neutral-200 hover:border-yellow-300 hover:text-yellow-500 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-yellow-500"
-                      }`}
-                    >
-                      <svg className="w-4 h-4" fill={candidate.featured ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                      </svg>
-                    </button>
+                    <StarToggle
+                      featured={candidate.featured || false}
+                      onToggle={() => handleToggleFeatured(candidate)}
+                      label="candidate"
+                    />
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
-                    <button
-                      onClick={() => handleToggleTop(candidate)}
-                      title={candidate.skills?.includes("top") ? "Remove TOP" : "Mark as TOP"}
-                      className={`px-2 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                        candidate.skills?.includes("top")
-                          ? "bg-gradient-to-r from-violet-500 to-purple-500 text-white animate-pulse-top"
-                          : "bg-white text-neutral-400 border border-neutral-200 hover:border-violet-300 hover:text-violet-500 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-violet-500"
-                      }`}
-                    >
-                      ⭐️ TOP
-                    </button>
+                    <TopToggle
+                      top={candidate.skills?.includes("top") || false}
+                      onToggle={() => handleToggleTop(candidate)}
+                      label="candidate"
+                    />
                   </td>
                   <td className="px-4 py-3 text-sm">
                     <span
@@ -912,18 +970,8 @@ export default function AdminCandidates() {
                   </td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(candidate)}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-800/40 transition-colors whitespace-nowrap"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(candidate.id)}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40 transition-colors whitespace-nowrap"
-                      >
-                        Delete
-                      </button>
+                      <EditButton onClick={() => handleEdit(candidate)} variant={theme.buttonVariant} />
+                      <DeleteButton onClick={() => handleDelete(candidate.id)} />
                     </div>
                   </td>
                 </tr>

@@ -2,14 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { requireAuth } from "@/lib/api-auth";
 
 const BLOG_DIR = path.join(process.cwd(), "content/blog");
-
-// Validate API key for write operations
-function validateApiKey(request: NextRequest): boolean {
-  const apiKey = request.headers.get("x-api-key");
-  return apiKey === process.env.ADMIN_API_KEY;
-}
 
 // GET - List all blog posts
 export async function GET() {
@@ -53,9 +48,8 @@ export async function GET() {
 
 // POST - Create new blog post
 export async function POST(request: NextRequest) {
-  if (!validateApiKey(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAuth(request, "admin:write");
+  if (auth instanceof Response) return auth;
 
   try {
     const body = await request.json();

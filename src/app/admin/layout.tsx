@@ -15,34 +15,18 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [apiKey, setApiKey] = useState<string | null>(null);
   const [inputKey, setInputKey] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
 
-  useEffect(() => {
-    document.title = "Admin | dcbuilder.eth";
-  }, []);
-
-  useEffect(() => {
-    const storedKey = localStorage.getItem("admin_api_key");
-    if (storedKey) {
-      setApiKey(storedKey);
-      validateKey(storedKey);
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
-
   const validateKey = async (key: string) => {
     try {
-      const res = await fetch("/api/v1/jobs?limit=1", {
+      const res = await fetch("/api/v1/admin/auth", {
         headers: { "x-api-key": key },
       });
       if (res.ok) {
         setIsAuthenticated(true);
-        setApiKey(key);
         localStorage.setItem("admin_api_key", key);
       } else {
         localStorage.removeItem("admin_api_key");
@@ -54,6 +38,19 @@ export default function AdminLayout({
     setIsLoading(false);
   };
 
+  useEffect(() => {
+    document.title = "Admin | dcbuilder.eth";
+  }, []);
+
+  useEffect(() => {
+    const storedKey = localStorage.getItem("admin_api_key");
+    if (storedKey) {
+      validateKey(storedKey);
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -62,7 +59,6 @@ export default function AdminLayout({
 
   const handleLogout = () => {
     localStorage.removeItem("admin_api_key");
-    setApiKey(null);
     setIsAuthenticated(false);
   };
 
