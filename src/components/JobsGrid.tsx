@@ -262,7 +262,7 @@ function ExpandedJobView({
 					{/* Description */}
 					<div>
 						<h3 className="text-lg font-semibold mb-3">About the Role</h3>
-						<div className="text-neutral-600 dark:text-neutral-400 leading-relaxed prose prose-neutral dark:prose-invert prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-li:my-0.5 prose-strong:text-neutral-700 dark:prose-strong:text-neutral-300">
+						<div className="prose-jd">
 							<Markdown>{description}</Markdown>
 						</div>
 					</div>

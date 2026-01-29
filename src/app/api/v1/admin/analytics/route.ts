@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/api-auth";
 import {
   getJobApplyClicksLast7Days,
   getCandidateViewsLast7Days,
+  getSiteStats,
 } from "@/lib/posthog-api";
 
 // GET /api/v1/admin/analytics - Get analytics data for admin
@@ -34,10 +35,16 @@ export async function GET(request: NextRequest) {
       return Response.json({ data: candidateViews });
     }
 
+    if (type === "site") {
+      const siteStats = await getSiteStats();
+      return Response.json({ data: siteStats });
+    }
+
     // Return all analytics
-    const [jobClicks, candidateViews] = await Promise.all([
+    const [jobClicks, candidateViews, siteStats] = await Promise.all([
       getJobApplyClicksLast7Days(),
       getCandidateViewsLast7Days(),
+      getSiteStats(),
     ]);
 
     const jobClicksMap: Record<string, number> = {};
@@ -54,6 +61,7 @@ export async function GET(request: NextRequest) {
       data: {
         jobClicks: jobClicksMap,
         candidateViews: candidateViewsMap,
+        siteStats,
       },
     });
   } catch (error) {

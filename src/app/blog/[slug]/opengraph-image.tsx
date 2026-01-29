@@ -48,7 +48,7 @@ export default async function Image({ params }: Props) {
 						}}
 					>
 					<img
-							src="https://dcbuilder.dev/images/dcbuilder.png"
+							src="https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/dcbuilder.png"
 							alt="dcbuilder"
 							width={56}
 							height={56}

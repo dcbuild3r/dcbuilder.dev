@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
+import { R2_PUBLIC_URL } from "@/lib/r2";
 
 export default function Home() {
 	return (
@@ -12,7 +13,7 @@ export default function Home() {
 					<div className="w-full lg:w-[65%]">
 						<div className="bg-white dark:bg-[radial-gradient(circle,_#d9d9d9_0%,_#d9d9d9_50%,_#161616_100%)] rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 w-full overflow-hidden hover:scale-[1.03] transition-transform duration-150">
 							<Image
-								src="/images/kaneki.png"
+								src={`${R2_PUBLIC_URL}/kaneki.png`}
 								alt="dcbuilder.eth"
 								width={800}
 								height={800}

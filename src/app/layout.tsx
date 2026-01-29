@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Lora } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PostHogProvider } from "@/lib/posthog";
 import "./globals.css";
@@ -12,6 +12,12 @@ const inter = Inter({
 const jetbrainsMono = JetBrains_Mono({
 	variable: "--font-mono",
 	subsets: ["latin"],
+});
+
+const lora = Lora({
+	variable: "--font-serif",
+	subsets: ["latin"],
+	weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -51,7 +57,7 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en" suppressHydrationWarning>
-			<body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
+			<body className={`${inter.variable} ${jetbrainsMono.variable} ${lora.variable} antialiased`}>
 				<PostHogProvider>
 					<ThemeProvider>{children}</ThemeProvider>
 				</PostHogProvider>

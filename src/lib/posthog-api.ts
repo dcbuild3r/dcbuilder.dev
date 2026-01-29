@@ -14,6 +14,13 @@ interface TrendResult {
   count: number;
 }
 
+export interface SiteStats {
+  pageviews7d: number;
+  pageviews30d: number;
+  uniqueVisitors7d: number;
+  uniqueVisitors30d: number;
+}
+
 async function fetchPostHogTrend(
   eventName: string,
   breakdownProperty: string
@@ -125,4 +132,66 @@ export function determineHotNews(
     .slice(0, topN)
     .filter((c) => c.count > 0)
     .map((c) => c.id);
+}
+
+// Site-wide analytics
+export async function getSiteStats(): Promise<SiteStats> {
+  if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
+    console.warn("PostHog API credentials not configured");
+    return { pageviews7d: 0, pageviews30d: 0, uniqueVisitors7d: 0, uniqueVisitors30d: 0 };
+  }
+
+  try {
+    // Fetch pageviews and unique users for 7d and 30d
+    const [res7d, res30d] = await Promise.all([
+      fetch(`${POSTHOG_HOST}/api/projects/${POSTHOG_PROJECT_ID}/insights/trend/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${POSTHOG_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          events: [
+            { id: "$pageview", type: "events", math: "total" },
+            { id: "$pageview", type: "events", math: "dau" },
+          ],
+          date_from: "-7d",
+        }),
+        next: { revalidate: 3600 },
+      }),
+      fetch(`${POSTHOG_HOST}/api/projects/${POSTHOG_PROJECT_ID}/insights/trend/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${POSTHOG_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          events: [
+            { id: "$pageview", type: "events", math: "total" },
+            { id: "$pageview", type: "events", math: "dau" },
+          ],
+          date_from: "-30d",
+        }),
+        next: { revalidate: 3600 },
+      }),
+    ]);
+
+    if (!res7d.ok || !res30d.ok) {
+      console.error("PostHog API error fetching site stats");
+      return { pageviews7d: 0, pageviews30d: 0, uniqueVisitors7d: 0, uniqueVisitors30d: 0 };
+    }
+
+    const [data7d, data30d] = await Promise.all([res7d.json(), res30d.json()]);
+
+    // Sum up the counts from each day
+    const pageviews7d = data7d.result?.[0]?.count ?? 0;
+    const uniqueVisitors7d = data7d.result?.[1]?.count ?? 0;
+    const pageviews30d = data30d.result?.[0]?.count ?? 0;
+    const uniqueVisitors30d = data30d.result?.[1]?.count ?? 0;
+
+    return { pageviews7d, pageviews30d, uniqueVisitors7d, uniqueVisitors30d };
+  } catch (error) {
+    console.error("Failed to fetch site stats:", error);
+    return { pageviews7d: 0, pageviews30d: 0, uniqueVisitors7d: 0, uniqueVisitors30d: 0 };
+  }
 }
