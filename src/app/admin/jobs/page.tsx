@@ -141,7 +141,7 @@ export default function AdminJobs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [tagsInput, setTagsInput] = useState("");
   const [jobClicks, setJobClicks] = useState<Record<string, number>>({});
-  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortField, setSortField] = useState<SortField>("views");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [columnSearch, setColumnSearch] = useState<string | null>(null);
   const [columnSearchValue, setColumnSearchValue] = useState("");

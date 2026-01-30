@@ -195,7 +195,7 @@ export default function AdminCandidates() {
   const [skillsInput, setSkillsInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [candidateViews, setCandidateViews] = useState<Record<string, number>>({});
-  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortField, setSortField] = useState<SortField>("views");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [columnSearch, setColumnSearch] = useState<string | null>(null);
   const [columnSearchValue, setColumnSearchValue] = useState("");
