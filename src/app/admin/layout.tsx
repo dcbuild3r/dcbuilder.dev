@@ -90,14 +90,16 @@ export default function AdminLayout({
     setIsAuthenticated(false);
   };
 
+  // Order matches main navbar: Home, About, Blog, News, Portfolio, Jobs, Candidates
+  // Dashboard stays first, Affiliations at end (not in main nav)
   const navItems = [
     { href: "/admin", label: "Dashboard", color: "neutral", bg: "bg-neutral-100 dark:bg-neutral-800", bgHover: "hover:bg-neutral-200 dark:hover:bg-neutral-700", bgActive: "bg-neutral-700 dark:bg-neutral-600", text: "text-neutral-600 dark:text-neutral-400" },
+    { href: "/admin/blog", label: "Blog", color: "indigo", bg: "bg-indigo-100 dark:bg-indigo-900/30", bgHover: "hover:bg-indigo-200 dark:hover:bg-indigo-800/40", bgActive: "bg-indigo-500 dark:bg-indigo-600", text: "text-indigo-600 dark:text-indigo-400" },
+    { href: "/admin/news", label: "News", color: "purple", bg: "bg-purple-100 dark:bg-purple-900/30", bgHover: "hover:bg-purple-200 dark:hover:bg-purple-800/40", bgActive: "bg-purple-500 dark:bg-purple-600", text: "text-purple-600 dark:text-purple-400" },
+    { href: "/admin/investments", label: "Portfolio", color: "amber", bg: "bg-amber-100 dark:bg-amber-900/30", bgHover: "hover:bg-amber-200 dark:hover:bg-amber-800/40", bgActive: "bg-amber-500 dark:bg-amber-600", text: "text-amber-600 dark:text-amber-400" },
     { href: "/admin/jobs", label: "Jobs", color: "blue", bg: "bg-blue-100 dark:bg-blue-900/30", bgHover: "hover:bg-blue-200 dark:hover:bg-blue-800/40", bgActive: "bg-blue-500 dark:bg-blue-600", text: "text-blue-600 dark:text-blue-400" },
     { href: "/admin/candidates", label: "Candidates", color: "green", bg: "bg-green-100 dark:bg-green-900/30", bgHover: "hover:bg-green-200 dark:hover:bg-green-800/40", bgActive: "bg-green-500 dark:bg-green-600", text: "text-green-600 dark:text-green-400" },
-    { href: "/admin/investments", label: "Investments", color: "amber", bg: "bg-amber-100 dark:bg-amber-900/30", bgHover: "hover:bg-amber-200 dark:hover:bg-amber-800/40", bgActive: "bg-amber-500 dark:bg-amber-600", text: "text-amber-600 dark:text-amber-400" },
-    { href: "/admin/news", label: "News", color: "purple", bg: "bg-purple-100 dark:bg-purple-900/30", bgHover: "hover:bg-purple-200 dark:hover:bg-purple-800/40", bgActive: "bg-purple-500 dark:bg-purple-600", text: "text-purple-600 dark:text-purple-400" },
     { href: "/admin/affiliations", label: "Affiliations", color: "pink", bg: "bg-pink-100 dark:bg-pink-900/30", bgHover: "hover:bg-pink-200 dark:hover:bg-pink-800/40", bgActive: "bg-pink-500 dark:bg-pink-600", text: "text-pink-600 dark:text-pink-400" },
-    { href: "/admin/blog", label: "Blog", color: "indigo", bg: "bg-indigo-100 dark:bg-indigo-900/30", bgHover: "hover:bg-indigo-200 dark:hover:bg-indigo-800/40", bgActive: "bg-indigo-500 dark:bg-indigo-600", text: "text-indigo-600 dark:text-indigo-400" },
   ];
 
   if (isLoading) {

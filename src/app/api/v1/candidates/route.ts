@@ -6,17 +6,15 @@ import { requireAuth, parsePaginationParams } from "@/lib/api-auth";
 // GET /api/v1/candidates - List candidates with optional filters
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const available = searchParams.get("available");
+  const availability = searchParams.get("availability"); // "looking" | "open" | "not-looking"
   const featured = searchParams.get("featured");
   const { limit, offset } = parsePaginationParams(searchParams);
 
   try {
     const conditions: SQL[] = [];
 
-    if (available === "true") {
-      conditions.push(eq(candidates.available, true));
-    } else if (available === "false") {
-      conditions.push(eq(candidates.available, false));
+    if (availability && ["looking", "open", "not-looking"].includes(availability)) {
+      conditions.push(eq(candidates.availability, availability));
     }
     if (featured === "true") {
       conditions.push(eq(candidates.featured, true));

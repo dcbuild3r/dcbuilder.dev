@@ -11,6 +11,8 @@ import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
 import { StarToggle, TopToggle, EditButton, DeleteButton, TableImage, ErrorAlert } from "@/components/admin/ActionButtons";
 import { ADMIN_THEMES } from "@/lib/admin-themes";
 
+type AvailabilityStatus = "looking" | "open" | "not-looking";
+
 interface Candidate {
   id: string;
   name: string;
@@ -23,7 +25,7 @@ interface Candidate {
   image: string | null;
   cv: string | null;
   featured: boolean | null;
-  available: boolean | null;
+  availability: AvailabilityStatus | null;
   email: string | null;
   telegram: string | null;
   calendly: string | null;
@@ -33,6 +35,12 @@ interface Candidate {
   website: string | null;
   createdAt: string;
 }
+
+const AVAILABILITY_OPTIONS: { value: AvailabilityStatus; label: string; color: string }[] = [
+  { value: "looking", label: "Actively Looking", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
+  { value: "open", label: "Open to Opportunities", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
+  { value: "not-looking", label: "Not Looking", color: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400" },
+];
 
 const emptyCandidate: Partial<Candidate> = {
   name: "",
@@ -45,7 +53,7 @@ const emptyCandidate: Partial<Candidate> = {
   image: "",
   cv: "",
   featured: false,
-  available: true,
+  availability: "looking",
   email: "",
   telegram: "",
   calendly: "",
@@ -185,7 +193,7 @@ export default function AdminCandidates() {
   const [columnSearch, setColumnSearch] = useState<string | null>(null);
   const [columnSearchValue, setColumnSearchValue] = useState("");
   const [experienceFilter, setExperienceFilter] = useState<string[]>([]);
-  const [availableFilter, setAvailableFilter] = useState<string[]>([]);
+  const [availabilityFilter, setAvailabilityFilter] = useState<string[]>([]);
   const [skillsFilter, setSkillsFilter] = useState<string[]>([]);
 
   const [error, setError] = useState<string | null>(null);
@@ -235,13 +243,10 @@ export default function AdminCandidates() {
           return false;
         }
       }
-      // Available filter
-      if (availableFilter.length > 0) {
-        const isAvailable = candidate.available !== false;
-        const wantAvailable = availableFilter.includes("yes");
-        const wantUnavailable = availableFilter.includes("no");
-        if (wantAvailable && !wantUnavailable && !isAvailable) return false;
-        if (wantUnavailable && !wantAvailable && isAvailable) return false;
+      // Availability filter
+      if (availabilityFilter.length > 0) {
+        const candidateAvailability = candidate.availability || "looking";
+        if (!availabilityFilter.includes(candidateAvailability)) return false;
       }
       return true;
     })
@@ -356,6 +361,27 @@ export default function AdminCandidates() {
       setError(toggleError);
     } else {
       setCandidates(candidates.map((c) => (c.id === candidate.id ? { ...c, skills: newSkills } : c)));
+    }
+  };
+
+  const handleCycleAvailability = async (candidate: Candidate) => {
+    const currentStatus = candidate.availability || "looking";
+    const statusOrder: AvailabilityStatus[] = ["looking", "open", "not-looking"];
+    const currentIndex = statusOrder.indexOf(currentStatus as AvailabilityStatus);
+    const nextStatus = statusOrder[(currentIndex + 1) % statusOrder.length];
+
+    const { error: toggleError } = await adminFetch(`/api/v1/candidates/${candidate.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify({ availability: nextStatus }),
+    });
+    if (toggleError) {
+      setError(toggleError);
+    } else {
+      setCandidates(candidates.map((c) => (c.id === candidate.id ? { ...c, availability: nextStatus } : c)));
     }
   };
 
@@ -598,41 +624,43 @@ export default function AdminCandidates() {
                 className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
               />
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="featured"
-                  checked={editingCandidate.featured || false}
-                  onChange={(e) =>
-                    setEditingCandidate({
-                      ...editingCandidate,
-                      featured: e.target.checked,
-                    })
-                  }
-                  className="w-4 h-4"
-                />
-                <label htmlFor="featured" className="text-sm font-medium">
-                  Featured
-                </label>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="available"
-                  checked={editingCandidate.available !== false}
-                  onChange={(e) =>
-                    setEditingCandidate({
-                      ...editingCandidate,
-                      available: e.target.checked,
-                    })
-                  }
-                  className="w-4 h-4"
-                />
-                <label htmlFor="available" className="text-sm font-medium">
-                  Available
-                </label>
-              </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Availability Status
+              </label>
+              <select
+                value={editingCandidate.availability || "looking"}
+                onChange={(e) =>
+                  setEditingCandidate({
+                    ...editingCandidate,
+                    availability: e.target.value as AvailabilityStatus,
+                  })
+                }
+                className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+              >
+                {AVAILABILITY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="featured"
+                checked={editingCandidate.featured || false}
+                onChange={(e) =>
+                  setEditingCandidate({
+                    ...editingCandidate,
+                    featured: e.target.checked,
+                  })
+                }
+                className="w-4 h-4"
+              />
+              <label htmlFor="featured" className="text-sm font-medium">
+                Featured
+              </label>
             </div>
           </div>
           <div>
@@ -718,8 +746,12 @@ export default function AdminCandidates() {
             "Name",
             "Title",
             "Skills",
-            { label: "Available", align: "center" },
-            { label: "Featured", align: "center" },
+            "Experience",
+            { label: "Views (7d)", align: "center" },
+            { label: "Star", align: "center" },
+            { label: "Top", align: "center" },
+            "Status",
+            "Created",
             { label: "Actions", align: "right" },
           ]}
           rows={10}
@@ -844,10 +876,10 @@ export default function AdminCandidates() {
                   Top
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium relative">
-                  {columnSearch === "available" ? (
-                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 z-10 min-w-32">
+                  {columnSearch === "availability" ? (
+                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 z-10 min-w-40">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-neutral-500">Filter by available</span>
+                        <span className="text-xs text-neutral-500">Filter by status</span>
                         <button
                           onClick={() => setColumnSearch(null)}
                           className="text-neutral-400 hover:text-neutral-600"
@@ -857,26 +889,26 @@ export default function AdminCandidates() {
                           </svg>
                         </button>
                       </div>
-                      {["yes", "no"].map((avail) => (
-                        <label key={avail} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 px-1 rounded">
+                      {AVAILABILITY_OPTIONS.map((opt) => (
+                        <label key={opt.value} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 px-1 rounded">
                           <input
                             type="checkbox"
-                            checked={availableFilter.includes(avail)}
+                            checked={availabilityFilter.includes(opt.value)}
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setAvailableFilter([...availableFilter, avail]);
+                                setAvailabilityFilter([...availabilityFilter, opt.value]);
                               } else {
-                                setAvailableFilter(availableFilter.filter((a) => a !== avail));
+                                setAvailabilityFilter(availabilityFilter.filter((a) => a !== opt.value));
                               }
                             }}
                             className="rounded"
                           />
-                          <span className="text-sm capitalize">{avail}</span>
+                          <span className="text-sm">{opt.label}</span>
                         </label>
                       ))}
-                      {availableFilter.length > 0 && (
+                      {availabilityFilter.length > 0 && (
                         <button
-                          onClick={() => setAvailableFilter([])}
+                          onClick={() => setAvailabilityFilter([])}
                           className="text-xs text-blue-600 hover:text-blue-700 mt-2"
                         >
                           Clear all
@@ -885,16 +917,16 @@ export default function AdminCandidates() {
                     </div>
                   ) : null}
                   <div className="flex items-center gap-1">
-                    <span>Available</span>
-                    {availableFilter.length > 0 && (
+                    <span>Status</span>
+                    {availabilityFilter.length > 0 && (
                       <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 rounded-full">
-                        {availableFilter.length}
+                        {availabilityFilter.length}
                       </span>
                     )}
                     <button
-                      onClick={() => setColumnSearch(columnSearch === "available" ? null : "available")}
+                      onClick={() => setColumnSearch(columnSearch === "availability" ? null : "availability")}
                       className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-                      title="Filter by available"
+                      title="Filter by status"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
@@ -967,15 +999,18 @@ export default function AdminCandidates() {
                     />
                   </td>
                   <td className="px-4 py-3 text-sm">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        candidate.available !== false
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400"
-                      }`}
-                    >
-                      {candidate.available !== false ? "Yes" : "No"}
-                    </span>
+                    {(() => {
+                      const opt = AVAILABILITY_OPTIONS.find(o => o.value === (candidate.availability || "looking"));
+                      return (
+                        <button
+                          onClick={() => handleCycleAvailability(candidate)}
+                          className={`px-2 py-1 rounded-full text-xs whitespace-nowrap cursor-pointer hover:opacity-80 transition-opacity ${opt?.color || AVAILABILITY_OPTIONS[0].color}`}
+                          title="Click to cycle status"
+                        >
+                          {opt?.label || "Actively Looking"}
+                        </button>
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-3 text-sm text-neutral-500">
                     {new Date(candidate.createdAt).toLocaleDateString()}

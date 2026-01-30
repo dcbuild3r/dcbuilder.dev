@@ -61,7 +61,7 @@ export async function getCandidatesFromDB(): Promise<Candidate[]> {
     location: candidate.location || "",
     remote: true,
     experience: (candidate.experience || "3-5") as ExperienceLevel,
-    availability: candidate.available ? "looking" : "not-looking" as AvailabilityStatus,
+    availability: (candidate.availability || "looking") as AvailabilityStatus,
     preferredRoles: [],
     lookingFor: [] as RoleType[],
     socials: {
