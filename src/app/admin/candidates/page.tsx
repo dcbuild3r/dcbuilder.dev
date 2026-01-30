@@ -25,6 +25,7 @@ interface Candidate {
   image: string | null;
   cv: string | null;
   featured: boolean | null;
+  available: boolean | null; // Legacy field - used until migration complete
   availability: AvailabilityStatus | null;
   email: string | null;
   telegram: string | null;
@@ -34,6 +35,13 @@ interface Candidate {
   linkedin: string | null;
   website: string | null;
   createdAt: string;
+}
+
+// Helper to get availability status from either new column or legacy boolean
+function getAvailability(candidate: Candidate): AvailabilityStatus {
+  if (candidate.availability) return candidate.availability;
+  // Fallback to legacy boolean field
+  return candidate.available === false ? "not-looking" : "looking";
 }
 
 const AVAILABILITY_OPTIONS: { value: AvailabilityStatus; label: string; color: string }[] = [
@@ -53,6 +61,7 @@ const emptyCandidate: Partial<Candidate> = {
   image: "",
   cv: "",
   featured: false,
+  available: true,
   availability: "looking",
   email: "",
   telegram: "",
@@ -245,7 +254,7 @@ export default function AdminCandidates() {
       }
       // Availability filter
       if (availabilityFilter.length > 0) {
-        const candidateAvailability = candidate.availability || "looking";
+        const candidateAvailability = getAvailability(candidate);
         if (!availabilityFilter.includes(candidateAvailability)) return false;
       }
       return true;
@@ -365,7 +374,7 @@ export default function AdminCandidates() {
   };
 
   const handleCycleAvailability = async (candidate: Candidate) => {
-    const currentStatus = candidate.availability || "looking";
+    const currentStatus = getAvailability(candidate);
     const statusOrder: AvailabilityStatus[] = ["looking", "open", "not-looking"];
     const currentIndex = statusOrder.indexOf(currentStatus as AvailabilityStatus);
     const nextStatus = statusOrder[(currentIndex + 1) % statusOrder.length];
@@ -1000,7 +1009,7 @@ export default function AdminCandidates() {
                   </td>
                   <td className="px-4 py-3 text-sm">
                     {(() => {
-                      const opt = AVAILABILITY_OPTIONS.find(o => o.value === (candidate.availability || "looking"));
+                      const opt = AVAILABILITY_OPTIONS.find(o => o.value === getAvailability(candidate));
                       return (
                         <button
                           onClick={() => handleCycleAvailability(candidate)}
