@@ -60,7 +60,7 @@ export const candidates = pgTable(
     image: text("image"),
     cv: text("cv"),
     featured: boolean("featured").default(false),
-    available: boolean("available").default(true), // Legacy - will be removed after migration
+    available: boolean("available").default(true), // Legacy - kept for backwards compatibility
     availability: text("availability").default("looking"), // "looking" | "open" | "not-looking"
     email: text("email"),
     telegram: text("telegram"),

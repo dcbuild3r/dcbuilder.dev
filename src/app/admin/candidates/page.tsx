@@ -25,7 +25,7 @@ interface Candidate {
   image: string | null;
   cv: string | null;
   featured: boolean | null;
-  available: boolean | null; // Legacy field - used until migration complete
+  available: boolean | null;
   availability: AvailabilityStatus | null;
   email: string | null;
   telegram: string | null;
@@ -37,11 +37,9 @@ interface Candidate {
   createdAt: string;
 }
 
-// Helper to get availability status from either new column or legacy boolean
+// Helper to get availability status
 function getAvailability(candidate: Candidate): AvailabilityStatus {
-  if (candidate.availability) return candidate.availability;
-  // Fallback to legacy boolean field
-  return candidate.available === false ? "not-looking" : "looking";
+  return candidate.availability || "looking";
 }
 
 const AVAILABILITY_OPTIONS: { value: AvailabilityStatus; label: string; color: string }[] = [
@@ -376,7 +374,7 @@ export default function AdminCandidates() {
   const handleCycleAvailability = async (candidate: Candidate) => {
     const currentStatus = getAvailability(candidate);
     const statusOrder: AvailabilityStatus[] = ["looking", "open", "not-looking"];
-    const currentIndex = statusOrder.indexOf(currentStatus as AvailabilityStatus);
+    const currentIndex = statusOrder.indexOf(currentStatus);
     const nextStatus = statusOrder[(currentIndex + 1) % statusOrder.length];
 
     const { error: toggleError } = await adminFetch(`/api/v1/candidates/${candidate.id}`, {
