@@ -32,6 +32,7 @@ type SortOption = "relevance" | "alphabetical" | "alphabetical-desc";
 
 interface PortfolioGridProps {
 	investments: Investment[];
+	jobCounts?: Record<string, number>;
 }
 
 function hashString(value: string): number {
@@ -63,7 +64,7 @@ function shuffleArray<T>(array: T[], random: () => number): T[] {
 
 type FilterOption = "main" | "featured" | "all";
 
-export function PortfolioGrid({ investments }: PortfolioGridProps) {
+export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProps) {
 	const [sortBy, setSortBy] = useState<SortOption>("relevance");
 	const [filter, setFilter] = useState<FilterOption>("all");
 
@@ -342,6 +343,19 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 								</a>
 							)}
 						</div>
+						{/* Join Button - only show if there are job openings */}
+						{jobCounts[investment.title] > 0 && (
+							<a
+								href={`/jobs?company=${encodeURIComponent(investment.title)}`}
+								className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+								aria-label={`View ${jobCounts[investment.title]} job openings at ${investment.title}`}
+							>
+								<span>Join the team</span>
+								<span className="bg-white/20 rounded-full px-2 py-0.5 text-xs">
+									{jobCounts[investment.title]}
+								</span>
+							</a>
+						)}
 					</div>
 				))}
 			</div>
