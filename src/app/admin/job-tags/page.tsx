@@ -37,8 +37,12 @@ export default function AdminJobTags() {
 
   const fetchTags = useCallback(async () => {
     try {
-      const data = await withMinDelay(adminFetch("/api/v1/job-tags"));
-      setTags(data);
+      const { data, error } = await withMinDelay(adminFetch<JobTag[]>("/api/v1/job-tags"));
+      if (error) {
+        setError(error);
+      } else if (data) {
+        setTags(data);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch tags");
     } finally {
@@ -56,19 +60,31 @@ export default function AdminJobTags() {
 
     try {
       if (isCreating) {
-        const newTag = await adminFetch("/api/v1/job-tags", {
+        const { data: newTag, error } = await adminFetch<JobTag>("/api/v1/job-tags", {
           method: "POST",
           headers: { "x-api-key": apiKey, "Content-Type": "application/json" },
           body: JSON.stringify(editingTag),
         });
-        setTags([...tags, newTag].sort((a, b) => a.label.localeCompare(b.label)));
+        if (error) {
+          setError(error);
+          return;
+        }
+        if (newTag) {
+          setTags([...tags, newTag].sort((a, b) => a.label.localeCompare(b.label)));
+        }
       } else {
-        const updated = await adminFetch("/api/v1/job-tags", {
+        const { data: updated, error } = await adminFetch<JobTag>("/api/v1/job-tags", {
           method: "PATCH",
           headers: { "x-api-key": apiKey, "Content-Type": "application/json" },
           body: JSON.stringify(editingTag),
         });
-        setTags(tags.map((t) => (t.id === updated.id ? updated : t)));
+        if (error) {
+          setError(error);
+          return;
+        }
+        if (updated) {
+          setTags(tags.map((t) => (t.id === updated.id ? updated : t)));
+        }
       }
       setEditingTag(null);
       setIsCreating(false);
@@ -97,7 +113,7 @@ export default function AdminJobTags() {
     tag.slug.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) return <TableSkeleton columns={4} rows={10} />;
+  if (loading) return <TableSkeleton headers={["Slug", "Label", "Color", "Preview", "Actions"]} rows={10} />;
 
   return (
     <div className="space-y-6">
@@ -114,7 +130,7 @@ export default function AdminJobTags() {
         </button>
       </div>
 
-      {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
+      {error && <ErrorAlert message={error} onRetry={() => { setError(null); fetchTags(); }} />}
 
       {/* Search */}
       <div className="flex gap-4">
@@ -229,6 +245,7 @@ export default function AdminJobTags() {
                         setEditingTag(tag);
                         setIsCreating(false);
                       }}
+                      variant={theme.buttonVariant}
                     />
                     <DeleteButton onClick={() => handleDelete(tag)} />
                   </div>

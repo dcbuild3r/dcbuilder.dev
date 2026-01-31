@@ -253,7 +253,7 @@ function ExpandedJobView({
 													: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
 										}`}
 									>
-										{tagLabels[tag] ?? tag}
+										{defaultTagLabels[tag as JobTag] ?? tag}
 									</span>
 								))}
 							</div>
@@ -1371,7 +1371,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
           onClose={closeJob}
           jobUrl={typeof window !== "undefined" ? `${window.location.origin}/jobs?job=${expandedJob.id}` : `/jobs?job=${expandedJob.id}`}
           onViewOtherJobs={() => {
-            handleCompanyChange(expandedJob.company.name);
+            handleCompanyChange([expandedJob.company.name]);
             closeJob();
           }}
           otherJobsCount={jobs.filter(j => j.company.name === expandedJob.company.name && j.id !== expandedJob.id).length}

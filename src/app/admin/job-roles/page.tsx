@@ -30,8 +30,12 @@ export default function AdminJobRoles() {
 
   const fetchRoles = useCallback(async () => {
     try {
-      const data = await withMinDelay(adminFetch("/api/v1/job-roles"));
-      setRoles(data);
+      const { data, error } = await withMinDelay(adminFetch<JobRole[]>("/api/v1/job-roles"));
+      if (error) {
+        setError(error);
+      } else if (data) {
+        setRoles(data);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch roles");
     } finally {
@@ -49,19 +53,31 @@ export default function AdminJobRoles() {
 
     try {
       if (isCreating) {
-        const newRole = await adminFetch("/api/v1/job-roles", {
+        const { data: newRole, error } = await adminFetch<JobRole>("/api/v1/job-roles", {
           method: "POST",
           headers: { "x-api-key": apiKey, "Content-Type": "application/json" },
           body: JSON.stringify(editingRole),
         });
-        setRoles([...roles, newRole].sort((a, b) => a.label.localeCompare(b.label)));
+        if (error) {
+          setError(error);
+          return;
+        }
+        if (newRole) {
+          setRoles([...roles, newRole].sort((a, b) => a.label.localeCompare(b.label)));
+        }
       } else {
-        const updated = await adminFetch("/api/v1/job-roles", {
+        const { data: updated, error } = await adminFetch<JobRole>("/api/v1/job-roles", {
           method: "PATCH",
           headers: { "x-api-key": apiKey, "Content-Type": "application/json" },
           body: JSON.stringify(editingRole),
         });
-        setRoles(roles.map((r) => (r.id === updated.id ? updated : r)));
+        if (error) {
+          setError(error);
+          return;
+        }
+        if (updated) {
+          setRoles(roles.map((r) => (r.id === updated.id ? updated : r)));
+        }
       }
       setEditingRole(null);
       setIsCreating(false);
@@ -90,7 +106,7 @@ export default function AdminJobRoles() {
     role.slug.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) return <TableSkeleton columns={3} rows={10} />;
+  if (loading) return <TableSkeleton headers={["Slug", "Label", "Actions"]} rows={10} />;
 
   return (
     <div className="space-y-6">
@@ -107,7 +123,7 @@ export default function AdminJobRoles() {
         </button>
       </div>
 
-      {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
+      {error && <ErrorAlert message={error} onRetry={() => { setError(null); fetchRoles(); }} />}
 
       {/* Search */}
       <div className="flex gap-4">
@@ -195,6 +211,7 @@ export default function AdminJobRoles() {
                         setEditingRole(role);
                         setIsCreating(false);
                       }}
+                      variant={theme.buttonVariant}
                     />
                     <DeleteButton onClick={() => handleDelete(role)} />
                   </div>
