@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { db, investments, NewInvestment } from "@/db";
-import { eq, desc, and, SQL } from "drizzle-orm";
+import { eq, desc, and, SQL, arrayContains } from "drizzle-orm";
 import { requireAuth, parsePaginationParams } from "@/lib/api-auth";
 
 // GET /api/v1/investments - List investments
@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   const tier = searchParams.get("tier");
   const featured = searchParams.get("featured");
   const status = searchParams.get("status");
+  const category = searchParams.get("category");
   const { limit, offset } = parsePaginationParams(searchParams);
 
   try {
@@ -22,6 +23,9 @@ export async function GET(request: NextRequest) {
     }
     if (status) {
       conditions.push(eq(investments.status, status));
+    }
+    if (category) {
+      conditions.push(arrayContains(investments.categories, [category]));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;

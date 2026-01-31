@@ -23,6 +23,7 @@ const getInvestments = unstable_cache(
       ...inv,
       tier: (parseInt(inv.tier || "2") || 2) as 1 | 2 | 3 | 4,
       featured: inv.featured ?? false,
+      categories: inv.categories ?? [],
     }));
   },
   ["investments"],
