@@ -27,6 +27,30 @@ const COLOR_OPTIONS = [
   "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose", "slate", "gray"
 ];
 
+const TAG_COLOR_CLASSES: Record<string, string> = {
+  red: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
+  orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
+  amber: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+  yellow: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400",
+  lime: "bg-lime-100 dark:bg-lime-900/30 text-lime-700 dark:text-lime-400",
+  green: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+  emerald: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+  teal: "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400",
+  cyan: "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400",
+  sky: "bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400",
+  blue: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+  indigo: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400",
+  violet: "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400",
+  purple: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
+  fuchsia: "bg-fuchsia-100 dark:bg-fuchsia-900/30 text-fuchsia-700 dark:text-fuchsia-400",
+  pink: "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400",
+  rose: "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400",
+  slate: "bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-400",
+  gray: "bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400",
+};
+
+const DEFAULT_TAG_COLOR_CLASS = "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300";
+
 export default function AdminJobTags() {
   const [tags, setTags] = useState<JobTag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -230,9 +254,7 @@ export default function AdminJobTags() {
                 <td className="py-3 px-4">
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
-                      tag.color
-                        ? `bg-${tag.color}-100 dark:bg-${tag.color}-900/30 text-${tag.color}-700 dark:text-${tag.color}-400`
-                        : "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+                      tag.color ? TAG_COLOR_CLASSES[tag.color] ?? DEFAULT_TAG_COLOR_CLASS : DEFAULT_TAG_COLOR_CLASS
                     }`}
                   >
                     {tag.label}
