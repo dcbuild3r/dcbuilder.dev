@@ -1049,7 +1049,7 @@ function ExpandedCandidateView({
 
 	return (
 		<div
-			className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+			className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center bg-black/50 backdrop-blur-sm"
 			onClick={onClose}
 		>
 			<div
@@ -1071,10 +1071,11 @@ function ExpandedCandidateView({
 			>
 				{/* Sticky header with close button for mobile */}
 				<div className="sm:hidden sticky top-0 z-20 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-800">
-					<div className="flex items-center justify-between px-4 py-3">
-						{/* Drag handle indicator */}
-						<div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-
+					{/* Drag handle indicator - centered and prominent */}
+					<div className="flex justify-center pt-3 pb-1">
+						<div className="w-16 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
+					</div>
+					<div className="flex items-center justify-end px-4 pb-3">
 						<div className="flex items-center gap-2">
 							{/* Copy Link Button */}
 							<button
