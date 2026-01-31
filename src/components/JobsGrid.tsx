@@ -1269,17 +1269,33 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
                         {job.featured && (
                           <span className="ml-2 text-base text-amber-500">★</span>
                         )}
+                        {/* Desktop: show HOT and NEW inline */}
                         {isHotJob(job) && (
-                          <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-orange-400 dark:bg-orange-700 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(194,65,12,0.5)] animate-pulse">
+                          <span className="hidden sm:inline-flex ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-orange-400 dark:bg-orange-700 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(194,65,12,0.5)] animate-pulse">
                             🔥 HOT
                           </span>
                         )}
                         {isNewItem(job.createdAt) && (
-                          <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+                          <span className="hidden sm:inline-flex ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
                             NEW
                           </span>
                         )}
                       </h3>
+                      {/* Mobile: HOT and NEW on separate line */}
+                      {(isHotJob(job) || isNewItem(job.createdAt)) && (
+                        <div className="sm:hidden flex justify-center gap-2 mt-1">
+                          {isHotJob(job) && (
+                            <span className="px-2.5 py-1 text-sm font-semibold rounded-full bg-orange-400 dark:bg-orange-700 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(194,65,12,0.5)] animate-pulse">
+                              🔥 HOT
+                            </span>
+                          )}
+                          {isNewItem(job.createdAt) && (
+                            <span className="px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+                              NEW
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <p className="text-sm text-neutral-600 dark:text-neutral-400">
                         {job.company.name}
                       </p>
