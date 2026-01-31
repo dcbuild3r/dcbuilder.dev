@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
+import { INVESTMENT_CATEGORIES } from "@/db/schema";
 
 // Investment interface matching what comes from the database
 interface Investment {
@@ -13,6 +14,7 @@ interface Investment {
 	tier: 1 | 2 | 3 | 4;
 	featured: boolean;
 	status?: string | null;
+	categories?: string[] | null;
 	website?: string | null;
 	x?: string | null;
 	github?: string | null;
@@ -85,8 +87,9 @@ function getJobsUrl(title: string): string {
 export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProps) {
 	const [sortBy, setSortBy] = useState<SortOption>("relevance");
 	const [filter, setFilter] = useState<FilterOption>("all");
+	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-	// Count investments by category
+	// Count investments by tier/featured
 	const mainCount = useMemo(
 		() => investments.filter((i) => i.tier <= 3).length,
 		[investments]
@@ -97,13 +100,38 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 	);
 	const tier4Count = investments.length - mainCount;
 
-	// Filtered investments based on filter option
+	// Get categories that have at least one investment
+	const categoriesWithCounts = useMemo(() => {
+		const counts: Record<string, number> = {};
+		investments.forEach((inv) => {
+			inv.categories?.forEach((cat) => {
+				counts[cat] = (counts[cat] || 0) + 1;
+			});
+		});
+		// Only include categories that exist in INVESTMENT_CATEGORIES and have counts
+		return INVESTMENT_CATEGORIES
+			.filter((cat) => counts[cat] > 0)
+			.map((cat) => ({ category: cat, count: counts[cat] }));
+	}, [investments]);
+
+	// Filtered investments based on filter option and category
 	const filteredInvestments = useMemo(() => {
-		if (filter === "featured") return investments.filter((i) => i.featured);
-		if (filter === "all") return investments;
-		// Default "main": show tier 1, 2, 3 (hide tier 4)
-		return investments.filter((i) => i.tier <= 3);
-	}, [investments, filter]);
+		let result = investments;
+
+		// Apply tier/featured filter
+		if (filter === "featured") {
+			result = result.filter((i) => i.featured);
+		} else if (filter === "main") {
+			result = result.filter((i) => i.tier <= 3);
+		}
+
+		// Apply category filter
+		if (selectedCategory) {
+			result = result.filter((i) => i.categories?.includes(selectedCategory));
+		}
+
+		return result;
+	}, [investments, filter, selectedCategory]);
 
 	// Deterministic sort (no shuffle - that happens in useEffect)
 	// Deterministic display order (stable between server/client)
@@ -129,7 +157,7 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 		const featured = active.filter((i) => i.featured);
 		const nonFeatured = active.filter((i) => !i.featured);
 
-		const seedBase = `${filter}|${sortBy}`;
+		const seedBase = `${filter}|${sortBy}|${selectedCategory || "all"}`;
 
 		// Group featured by tier and shuffle each group
 		const featuredTierGroups: Record<number, Investment[]> = {};
@@ -171,7 +199,7 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 		);
 
 		return [...shuffledFeatured, ...shuffledNonFeatured, ...shuffledDefunct];
-	}, [filteredInvestments, sortBy, filter]);
+	}, [filteredInvestments, sortBy, filter, selectedCategory]);
 
 	// Split into active and defunct for rendering with separator
 	const activeInvestments = displayInvestments.filter((i) => i.status !== "defunct");
@@ -235,6 +263,38 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 					)}
 				</div>
 			</div>
+
+			{/* Category Filters */}
+			{categoriesWithCounts.length > 0 && (
+				<div className="flex flex-wrap items-center gap-2">
+					<span className="text-sm text-neutral-600 dark:text-neutral-400 mr-1">
+						Category:
+					</span>
+					<button
+						onClick={() => setSelectedCategory(null)}
+						className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+							selectedCategory === null
+								? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
+								: "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+						}`}
+					>
+						All
+					</button>
+					{categoriesWithCounts.map(({ category, count }) => (
+						<button
+							key={category}
+							onClick={() => setSelectedCategory(category)}
+							className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+								selectedCategory === category
+									? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
+									: "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+							}`}
+						>
+							{category} ({count})
+						</button>
+					))}
+				</div>
+			)}
 
 			{/* Grid - Active Investments */}
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -126,6 +126,27 @@ export const announcements = pgTable(
   ]
 );
 
+// Investment categories
+export const INVESTMENT_CATEGORIES = [
+  "Crypto",
+  "AI",
+  "DeFi",
+  "MEV",
+  "Privacy",
+  "Health/Longevity",
+  "Security",
+  "L1",
+  "L2",
+  "Governance",
+  "Agents",
+  "Hardware",
+  "Devtools",
+  "Social",
+  "Network States",
+  "ZK",
+] as const;
+export type InvestmentCategory = (typeof INVESTMENT_CATEGORIES)[number];
+
 // Investments table
 export const investments = pgTable(
   "investments",
@@ -140,6 +161,7 @@ export const investments = pgTable(
     tier: text("tier"), // 1, 2, 3, 4
     featured: boolean("featured").default(false),
     status: text("status").default("active"), // active, inactive, acquired
+    categories: text("categories").array(), // Array of category tags
     website: text("website"),
     x: text("x"),
     github: text("github"),
