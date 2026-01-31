@@ -23,8 +23,14 @@ export interface AggregatedNewsItem {
 }
 
 export async function getAllNews(): Promise<AggregatedNewsItem[]> {
-  // Get blog posts from database
-  const blogPosts = await getAllPosts();
+  // Fetch all data sources in parallel
+  const [blogPosts, dbCuratedLinks, dbAnnouncements] = await Promise.all([
+    getAllPosts(),
+    db.select().from(curatedLinksTable).orderBy(desc(curatedLinksTable.date)),
+    db.select().from(announcementsTable).orderBy(desc(announcementsTable.date)),
+  ]);
+
+  // Map blog posts
   const blogItems: AggregatedNewsItem[] = blogPosts.map((post) => ({
     id: `blog-${post.slug}`,
     type: "blog" as const,
@@ -37,8 +43,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     image: post.image,
   }));
 
-  // Get curated links from database
-  const dbCuratedLinks = await db.select().from(curatedLinksTable).orderBy(desc(curatedLinksTable.date));
+  // Map curated links
   const curatedItems: AggregatedNewsItem[] = dbCuratedLinks.map((link) => ({
     id: link.id,
     type: "curated" as const,
@@ -51,8 +56,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     source: link.source,
   }));
 
-  // Get announcements from database
-  const dbAnnouncements = await db.select().from(announcementsTable).orderBy(desc(announcementsTable.date));
+  // Map announcements
   const announcementItems: AggregatedNewsItem[] = dbAnnouncements.map((ann) => ({
     id: ann.id,
     type: "announcement" as const,
