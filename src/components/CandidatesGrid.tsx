@@ -655,14 +655,14 @@ function CandidateCard({
 			className={`p-4 rounded-xl border transition-all overflow-hidden ${getCardClassName()}`}
 		>
 			{/* Header */}
-			<div className="flex items-start gap-3">
+			<div className="flex flex-col items-center gap-3 text-center">
 				{/* Profile Image */}
-				<div className="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 hover:scale-[1.08] transition-transform duration-150">
+				<div className="w-14 h-14 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 hover:scale-[1.08] transition-transform duration-150">
 					<Image
 						src={profileImage}
 						alt={displayName}
-						width={48}
-						height={48}
+						width={56}
+						height={56}
 						className="object-cover w-full h-full"
 						onError={(e) => {
 							e.currentTarget.onerror = null; // Prevent infinite loop
@@ -672,9 +672,9 @@ function CandidateCard({
 					/>
 				</div>
 
-				<div className="flex-1 min-w-0">
-					<h3 className="font-semibold flex items-center gap-1">
-						<span className="truncate">{displayName}</span>
+				<div>
+					<h3 className="font-semibold flex items-center justify-center gap-1">
+						<span>{displayName}</span>
 						<span className="flex-shrink-0 flex items-center gap-0.5">
 							{candidate.featured && (
 								<span className="text-xs text-amber-600 dark:text-amber-400">
@@ -701,7 +701,7 @@ function CandidateCard({
 					<p className="text-sm text-neutral-600 dark:text-neutral-400 truncate">
 						{candidate.title}
 					</p>
-					<div className="flex items-center gap-1.5 mt-1 flex-nowrap">
+					<div className="flex items-center justify-center gap-1.5 mt-1 flex-nowrap">
 						<span
 							className={`inline-block px-2 py-0.5 text-xs rounded-full whitespace-nowrap ${availabilityColor[candidate.availability]}`}
 						>
@@ -727,25 +727,26 @@ function CandidateCard({
 			</div>
 
 			{/* Bio */}
-			<p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
+			<p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 text-center">
 				{candidate.bio}
 			</p>
 
 			{/* Meta info */}
-			<div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
-				<span>{candidate.location}</span>
+			<div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-neutral-500">
+				{candidate.location && <span>{candidate.location}</span>}
 				{candidate.remote && (
 					<span className="text-green-600 dark:text-green-400">Remote OK</span>
 				)}
-				<span>{experienceLabels[candidate.experience]}</span>
+				{candidate.experience && <span>{experienceLabels[candidate.experience]}</span>}
 			</div>
 
 			{/* Skills */}
 			{candidate.skills && candidate.skills.length > 0 && (() => {
 				const displaySkills = candidate.skills.filter((tag) => tag !== "hot" && tag !== "top");
+				const maxTags = 3;
 				return displaySkills.length > 0 && (
-					<div className="mt-3 flex flex-wrap gap-1">
-						{displaySkills.slice(0, 4).map((tag) => (
+					<div className="mt-3 flex items-center justify-center gap-1">
+						{displaySkills.slice(0, maxTags).map((tag) => (
 							<span
 								key={tag}
 								className="px-2 py-0.5 text-xs rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
@@ -753,54 +754,55 @@ function CandidateCard({
 								{tagLabels[tag] ?? tag}
 							</span>
 						))}
-						{displaySkills.length > 4 && (
+						{displaySkills.length > maxTags && (
 							<span className="px-2 py-0.5 text-xs text-neutral-500">
-								+{displaySkills.length - 4} more
+								+{displaySkills.length - maxTags} more
 							</span>
 						)}
 					</div>
 				);
 			})()}
 
+			{/* View Details Button - above separator */}
+			<div className="mt-4">
+				<button
+					onClick={(event) => {
+						event.stopPropagation();
+						onExpand();
+					}}
+					className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500 transition-all"
+				>
+					<span>View Details</span>
+					<svg
+						className="w-4 h-4"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2.5"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					>
+						<polyline points="9 18 15 12 9 6" />
+					</svg>
+				</button>
+			</div>
+
 			{/* Contact Section */}
-			<div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700">
+			<div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700">
 				{isAnonymous ? (
-					<div className="flex items-center gap-2">
-						<a
-							href={DCBUILDER_TELEGRAM}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 transition-opacity"
-						>
-							<svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-								<path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-							</svg>
-							Request Introduction
-						</a>
-						<button
-							onClick={(event) => {
-								event.stopPropagation();
-								onExpand();
-							}}
-							className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all hover:scale-110"
-							title="View full profile"
-							aria-label="View full profile"
-						>
-							<svg
-								className="w-5 h-5"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<polyline points="9 18 15 12 9 6" />
-							</svg>
-						</button>
-					</div>
+					<a
+						href={DCBUILDER_TELEGRAM}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 transition-opacity"
+					>
+						<svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+						</svg>
+						Request Introduction
+					</a>
 				) : (
-					<div className="flex items-center justify-between">
+					<div className="flex items-center justify-center">
 						<div className="flex items-center gap-1">
 						{candidate.socials?.x && (
 							<a
@@ -946,27 +948,6 @@ function CandidateCard({
 							</a>
 						)}
 						</div>
-						<button
-							onClick={(event) => {
-								event.stopPropagation();
-								onExpand();
-							}}
-							className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all hover:scale-110"
-							title="View full profile"
-							aria-label="View full profile"
-						>
-							<svg
-								className="w-5 h-5"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<polyline points="9 18 15 12 9 6" />
-							</svg>
-						</button>
 					</div>
 				)}
 			</div>
@@ -1003,6 +984,20 @@ function ExpandedCandidateView({
 	const titleId = `candidate-${candidate.id}-title`;
 	const descriptionId = `candidate-${candidate.id}-bio`;
 	const [copySuccess, setCopySuccess] = useState(false);
+	const [isClosing, setIsClosing] = useState(false);
+	const [isOpen, setIsOpen] = useState(false);
+
+	useEffect(() => {
+		// Trigger open animation after mount
+		requestAnimationFrame(() => setIsOpen(true));
+	}, []);
+
+	const handleClose = useCallback(() => {
+		setIsClosing(true);
+		setTimeout(() => {
+			onClose();
+		}, 300);
+	}, [onClose]);
 
 	const availabilityColor = {
 		looking:
@@ -1049,8 +1044,10 @@ function ExpandedCandidateView({
 
 	return (
 		<div
-			className="fixed inset-0 z-50 flex sm:items-center sm:justify-center bg-black/50 backdrop-blur-sm"
-			onClick={onClose}
+			className={`fixed inset-0 z-50 flex sm:items-center sm:justify-center backdrop-blur-sm transition-all duration-300 ${
+				isClosing ? "bg-black/0" : isOpen ? "bg-black/50" : "bg-black/0"
+			}`}
+			onClick={handleClose}
 		>
 			<div
 				ref={dialogRef}
@@ -1060,92 +1057,27 @@ function ExpandedCandidateView({
 				aria-describedby={descriptionId}
 				tabIndex={-1}
 				onKeyDown={handleDialogKeyDown}
-				className={`fixed inset-0 sm:relative sm:inset-auto w-full h-[100dvh] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
+				className={`fixed inset-0 sm:relative sm:inset-auto w-full h-[100dvh] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl transition-all duration-300 ${
+					isClosing
+						? "translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0 ease-out"
+						: isOpen
+							? "translate-y-0 sm:scale-100 sm:opacity-100 ease-out"
+							: "translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0 ease-in"
+				} ${
 					isHot
-						? "ring-2 ring-orange-500 dark:ring-orange-400"
+						? "sm:ring-2 sm:ring-orange-500 sm:dark:ring-orange-400"
 						: isTop
-							? "ring-2 ring-violet-500 dark:ring-violet-400"
-							: "ring-1 ring-neutral-200 dark:ring-neutral-700"
+							? "sm:ring-2 sm:ring-violet-500 sm:dark:ring-violet-400"
+							: "sm:ring-1 sm:ring-neutral-200 sm:dark:ring-neutral-700"
 				}`}
 				onClick={(e) => e.stopPropagation()}
 			>
-				{/* Sticky header with close button for mobile */}
-				<div className="sm:hidden sticky top-0 z-20 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-800">
-					{/* Drag handle indicator - centered and prominent */}
-					<div className="flex justify-center pt-3 pb-1">
-						<div className="w-16 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
-					</div>
-					<div className="flex items-center justify-end px-4 pb-3">
-						<div className="flex items-center gap-2">
-							{/* Copy Link Button */}
-							<button
-								onClick={handleCopyLink}
-								className={`p-2 rounded-full transition-colors ${
-									copySuccess
-										? "bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400"
-										: "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400"
-								}`}
-								aria-label={copySuccess ? "Link copied!" : "Copy link to profile"}
-								title={copySuccess ? "Link copied!" : "Copy link to profile"}
-							>
-								{copySuccess ? (
-									<svg
-										className="w-5 h-5"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="2"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									>
-										<polyline points="20 6 9 17 4 12" />
-									</svg>
-								) : (
-									<svg
-										className="w-5 h-5"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="2"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									>
-										<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-										<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-									</svg>
-								)}
-							</button>
-
-							{/* Close Button - Larger on mobile */}
-							<button
-								ref={closeButtonRef}
-								onClick={onClose}
-								className="p-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
-								aria-label="Close profile"
-							>
-								<svg
-									className="w-7 h-7"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2.5"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<line x1="18" y1="6" x2="6" y2="18" />
-									<line x1="6" y1="6" x2="18" y2="18" />
-								</svg>
-							</button>
-						</div>
-					</div>
-				</div>
-
-				{/* Desktop action buttons - Copy Link and Close */}
+					{/* Desktop action buttons - Copy Link and Close */}
 				<div className="hidden sm:flex absolute top-4 right-4 z-10 items-center gap-2">
 					{/* Copy Link Button */}
 					<button
 						onClick={handleCopyLink}
-						className={`p-2 rounded-full transition-colors ${
+						className={`p-2 rounded-full transition-all active:scale-90 ${
 							copySuccess
 								? "bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400"
 								: "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400"
@@ -1183,8 +1115,8 @@ function ExpandedCandidateView({
 
 					{/* Close Button */}
 					<button
-						onClick={onClose}
-						className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
+						onClick={handleClose}
+						className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-all active:scale-90"
 						aria-label="Close profile"
 					>
 						<svg
@@ -1212,6 +1144,49 @@ function ExpandedCandidateView({
 								: "bg-neutral-50 dark:bg-neutral-800/50"
 					}`}
 				>
+					{/* Mobile: Copy link, drag handle, and close on same line */}
+					<div className="sm:hidden flex items-center justify-between mb-6 -mt-3">
+						{/* Copy link button - left */}
+						<button
+							onClick={handleCopyLink}
+							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-all active:scale-90"
+							aria-label={copySuccess ? "Link copied!" : "Copy link"}
+						>
+							{copySuccess ? (
+								<svg className="w-6 h-6 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+									<polyline points="20 6 9 17 4 12" />
+								</svg>
+							) : (
+								<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+									<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+									<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+								</svg>
+							)}
+						</button>
+						{/* Centered drag handle */}
+						<div className="w-28 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
+						{/* Close button - right */}
+						<button
+							ref={closeButtonRef}
+							onClick={handleClose}
+							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-all active:scale-90"
+							aria-label="Close"
+						>
+							<svg
+								className="w-6 h-6"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<line x1="18" y1="6" x2="6" y2="18" />
+								<line x1="6" y1="6" x2="18" y2="18" />
+							</svg>
+						</button>
+					</div>
+
 					<div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
 						{/* Profile Image */}
 						<div className="w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 ring-4 ring-white dark:ring-neutral-900 hover:scale-[1.08] transition-transform duration-150">
@@ -1278,12 +1253,16 @@ function ExpandedCandidateView({
 								>
 									{availabilityLabels[candidate.availability]}
 								</span>
-								<span className="px-3 py-1 text-sm rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-									{experienceLabels[candidate.experience]}
-								</span>
-								<span className="px-3 py-1 text-sm rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-									{candidate.location}
-								</span>
+								{candidate.experience && (
+									<span className="px-3 py-1 text-sm rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+										{experienceLabels[candidate.experience]}
+									</span>
+								)}
+								{candidate.location && (
+									<span className="px-3 py-1 text-sm rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+										{candidate.location}
+									</span>
+								)}
 								{candidate.remote && (
 									<span className="px-3 py-1 text-sm rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
 										Remote OK
@@ -1295,7 +1274,7 @@ function ExpandedCandidateView({
 				</div>
 
 				{/* Content Section */}
-				<div className="p-6 sm:p-8 space-y-6 sm:space-y-8">
+				<div className="p-6 sm:p-8 space-y-6 sm:space-y-8 text-center">
 					{/* Bio */}
 					<div>
 						<h3 className="text-lg font-semibold mb-3">About</h3>
@@ -1313,7 +1292,7 @@ function ExpandedCandidateView({
 						return displaySkills.length > 0 && (
 							<div>
 								<h3 className="text-lg font-semibold mb-3">Skills</h3>
-								<div className="flex flex-wrap gap-2">
+								<div className="flex flex-wrap justify-center gap-2">
 									{displaySkills.map((tag) => (
 										<span
 											key={tag}
@@ -1331,7 +1310,7 @@ function ExpandedCandidateView({
 					{candidate.preferredRoles && candidate.preferredRoles.length > 0 && (
 						<div>
 							<h3 className="text-lg font-semibold mb-3">Looking For</h3>
-							<div className="flex flex-wrap gap-2">
+							<div className="flex flex-wrap justify-center gap-2">
 								{candidate.preferredRoles.map((role) => (
 									<span
 										key={role}
@@ -1348,7 +1327,7 @@ function ExpandedCandidateView({
 					{candidate.companies && candidate.companies.length > 0 && (
 						<div>
 							<h3 className="text-lg font-semibold mb-3">Experience</h3>
-							<div className="flex flex-wrap gap-3">
+							<div className="flex flex-wrap justify-center gap-3">
 								{candidate.companies.map((company) => (
 									<a
 										key={company.name}
@@ -1432,7 +1411,7 @@ function ExpandedCandidateView({
 								Request Introduction via Telegram
 							</a>
 						) : (
-							<div className="flex flex-wrap gap-3">
+							<div className="flex flex-wrap justify-center gap-3">
 								{candidate.socials?.x && (
 									<a
 										href={candidate.socials.x}

@@ -59,6 +59,20 @@ function ExpandedJobView({
 	const [enrichedContent, setEnrichedContent] =
 		useState<JobDescriptionContent | null>(null);
 	const [isEnriching, setIsEnriching] = useState(false);
+	const [isClosing, setIsClosing] = useState(false);
+	const [isOpen, setIsOpen] = useState(false);
+
+	useEffect(() => {
+		// Trigger open animation after mount
+		requestAnimationFrame(() => setIsOpen(true));
+	}, []);
+
+	const handleClose = useCallback(() => {
+		setIsClosing(true);
+		setTimeout(() => {
+			onClose();
+		}, 300);
+	}, [onClose]);
 	// Only enrich if we have no description at all
 	const missingSections = !job.description;
 
@@ -118,14 +132,22 @@ function ExpandedJobView({
 
 	return (
 		<div
-			className="fixed inset-0 z-50 flex sm:items-center sm:justify-center bg-black/50 backdrop-blur-sm"
-			onClick={onClose}
+			className={`fixed inset-0 z-50 flex sm:items-center sm:justify-center backdrop-blur-sm transition-all duration-300 ${
+				isClosing ? "bg-black/0" : isOpen ? "bg-black/50" : "bg-black/0"
+			}`}
+			onClick={handleClose}
 		>
 			<div
-				className={`fixed inset-0 sm:relative sm:inset-auto w-full h-[100dvh] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
+				className={`fixed inset-0 sm:relative sm:inset-auto w-full h-[100dvh] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl transition-all duration-300 ${
+					isClosing
+						? "translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0 ease-out"
+						: isOpen
+							? "translate-y-0 sm:scale-100 sm:opacity-100 ease-out"
+							: "translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0 ease-in"
+				} ${
 					isHot
-						? "ring-2 ring-orange-400 dark:ring-orange-500"
-						: "ring-1 ring-neutral-200 dark:ring-neutral-700"
+						? "sm:ring-2 sm:ring-orange-400 sm:dark:ring-orange-500"
+						: "sm:ring-1 sm:ring-neutral-200 sm:dark:ring-neutral-700"
 				}`}
 				onClick={(e) => e.stopPropagation()}
 			>
@@ -137,12 +159,31 @@ function ExpandedJobView({
 							: "bg-neutral-50 dark:bg-neutral-800/50"
 					}`}
 				>
-					{/* Mobile: Drag handle and close button */}
-					<div className="sm:hidden flex items-center justify-between mb-4">
-						<div className="w-16 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
+					{/* Mobile: Copy link, drag handle, and close on same line */}
+					<div className="sm:hidden flex items-center justify-between mb-6 -mt-3">
+						{/* Copy link button - left */}
 						<button
-							onClick={onClose}
-							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
+							onClick={() => copyToClipboard(jobUrl, "job")}
+							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-all active:scale-90"
+							aria-label="Copy link"
+						>
+							{copiedLink === "job" ? (
+								<svg className="w-6 h-6 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+									<polyline points="20 6 9 17 4 12" />
+								</svg>
+							) : (
+								<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+									<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+									<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+								</svg>
+							)}
+						</button>
+						{/* Centered drag handle */}
+						<div className="w-28 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
+						{/* Close button - right */}
+						<button
+							onClick={handleClose}
+							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-all active:scale-90"
 							aria-label="Close"
 						>
 							<svg
@@ -162,8 +203,8 @@ function ExpandedJobView({
 
 					{/* Desktop: Close button */}
 					<button
-						onClick={onClose}
-						className="hidden sm:block absolute top-4 right-4 z-10 p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
+						onClick={handleClose}
+						className="hidden sm:block absolute top-4 right-4 z-10 p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-all active:scale-90"
 					>
 						<svg
 							className="w-6 h-6"
@@ -196,28 +237,42 @@ function ExpandedJobView({
 						</div>
 
 						<div className="flex-1">
-							<div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
-								<h2 className="text-xl sm:text-3xl font-bold">{job.title}</h2>
+							{/* 1. Title */}
+							<h2 className="text-xl sm:text-3xl font-bold mb-1">
+								{job.title}
 								{job.featured && (
-									<span className="text-lg text-amber-600 dark:text-amber-400">
-										★
-									</span>
+									<span className="ml-2 text-lg text-amber-600 dark:text-amber-400">★</span>
 								)}
+							</h2>
+							{/* 2. Company */}
+							<p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 mb-2">
+								{job.company.name}
+							</p>
+							{/* 3. Location + 4. Type, Team, Comp (as text, not tag-like) */}
+							<p className="text-sm text-neutral-500 dark:text-neutral-400 mb-3">
+								{job.location}
+								{job.remote && " · Remote OK"}
+								{job.type && ` · ${jobTypeLabels[job.type] ?? job.type}`}
+								{job.department && ` · ${job.department}`}
+								{job.salary && ` · ${job.salary}`}
+							</p>
+							{/* 5. HOT/NEW/TOP badges + 6. Network/Portfolio */}
+							<div className="flex flex-wrap justify-center sm:justify-start gap-2">
 								{isHot && (
-									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_0_10px_rgba(251,146,60,0.5)]">
+									<span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_0_10px_rgba(251,146,60,0.5)]">
 										🔥 HOT
 									</span>
 								)}
+								{job.tags?.includes("top") && (
+									<span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white">
+										TOP
+									</span>
+								)}
 								{isNewItem(job.createdAt) && (
-									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+									<span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
 										NEW
 									</span>
 								)}
-							</div>
-							<p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 mb-3">
-								{job.company.name}
-							</p>
-							<div className="flex flex-wrap justify-center sm:justify-start gap-2">
 								<span
 									className={`px-3 py-1 text-sm rounded-full ${
 										job.company.category === "portfolio"
@@ -227,29 +282,6 @@ function ExpandedJobView({
 								>
 									{job.company.category === "portfolio" ? "Portfolio" : "Network"}
 								</span>
-								{job.type && (
-									<span className="px-3 py-1 text-sm rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-										{jobTypeLabels[job.type] ?? job.type}
-									</span>
-								)}
-								<span className="px-3 py-1 text-sm rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-									{job.location}
-								</span>
-								{job.remote && (
-									<span className="px-3 py-1 text-sm rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-										Remote OK
-									</span>
-								)}
-								{job.department && (
-									<span className="px-3 py-1 text-sm rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-										{job.department}
-									</span>
-								)}
-								{job.salary && (
-									<span className="px-3 py-1 text-sm rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-										{job.salary}
-									</span>
-								)}
 							</div>
 						</div>
 					</div>
@@ -257,21 +289,15 @@ function ExpandedJobView({
 
 				{/* Content Section */}
 				<div className="p-6 sm:p-8 space-y-6 sm:space-y-8">
-					{/* Tags */}
-					{job.tags && job.tags.length > 0 && (
+					{/* Tags - exclude hot, top, new as they're shown in header */}
+					{job.tags && job.tags.filter(t => !["hot", "top", "new"].includes(t)).length > 0 && (
 						<div>
 							<h3 className="text-lg font-semibold mb-3">Tags</h3>
 							<div className="flex flex-wrap gap-2">
-								{job.tags.map((tag) => (
+								{job.tags.filter(t => !["hot", "top", "new"].includes(t)).map((tag) => (
 									<span
 										key={tag}
-										className={`px-3 py-1.5 text-sm rounded-full ${
-											tag === "hot"
-												? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold"
-												: tag === "top"
-													? "bg-gradient-to-r from-violet-500 to-purple-500 text-white font-semibold"
-													: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
-										}`}
+										className="px-3 py-1.5 text-sm rounded-full bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
 									>
 										{tagLabels[tag] ?? tag}
 									</span>
