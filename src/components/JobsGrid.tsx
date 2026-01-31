@@ -255,7 +255,7 @@ function ExpandedJobView({
 													: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
 										}`}
 									>
-										{tagLabels[tag as JobTag] ?? tag}
+										{tagLabels[tag] ?? tag}
 									</span>
 								))}
 							</div>
