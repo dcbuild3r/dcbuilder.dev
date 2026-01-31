@@ -1317,12 +1317,15 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
                     <p className="text-base font-medium text-neutral-700 dark:text-neutral-300">
                       {job.company.name}
                     </p>
-                    {/* 3. Department/Role */}
-                    {job.department && (
-                      <p className="text-sm text-neutral-500">
-                        {job.department}
-                      </p>
-                    )}
+                    {/* 3. Department/Role + Location, type */}
+                    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-neutral-500">
+                      {job.department && <span>{job.department}</span>}
+                      <span>{job.location}</span>
+                      {job.type && (
+                        <span className="capitalize">{job.type.replace("-", " ")}</span>
+                      )}
+                      {job.salary && <span>{job.salary}</span>}
+                    </div>
                     {/* 4. Portfolio/Network badge */}
                     <div className="flex justify-center">
                       <span
@@ -1350,14 +1353,6 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
                         )}
                       </div>
                     )}
-                    {/* 6. Location, type, salary */}
-                    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-neutral-500">
-                      <span>{job.location}</span>
-                      {job.type && (
-                        <span className="capitalize">{job.type.replace("-", " ")}</span>
-                      )}
-                      {job.salary && <span>{job.salary}</span>}
-                    </div>
                   </div>
 
                   {/* Row 3: Tags */}
