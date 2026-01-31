@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, jobRoles } from "@/db";
 import { eq, asc } from "drizzle-orm";
-import { validateApiKey } from "@/lib/api-auth";
+import { requireAuth } from "@/lib/api-auth";
 
 // GET all job roles
 export async function GET() {
@@ -19,8 +19,8 @@ export async function GET() {
 
 // POST create a new job role
 export async function POST(request: NextRequest) {
-  const authError = await validateApiKey(request);
-  if (authError) return authError;
+  const auth = await requireAuth(request, "jobs:write");
+  if (auth instanceof Response) return auth;
 
   try {
     const body = await request.json();
@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
 
 // DELETE a job role
 export async function DELETE(request: NextRequest) {
-  const authError = await validateApiKey(request);
-  if (authError) return authError;
+  const auth = await requireAuth(request, "jobs:write");
+  if (auth instanceof Response) return auth;
 
   try {
     const { searchParams } = new URL(request.url);
@@ -86,8 +86,8 @@ export async function DELETE(request: NextRequest) {
 
 // PATCH update a job role
 export async function PATCH(request: NextRequest) {
-  const authError = await validateApiKey(request);
-  if (authError) return authError;
+  const auth = await requireAuth(request, "jobs:write");
+  if (auth instanceof Response) return auth;
 
   try {
     const body = await request.json();
