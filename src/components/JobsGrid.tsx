@@ -1304,32 +1304,27 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
                     {job.salary && <span>{job.salary}</span>}
                   </div>
 
-                  {/* Row 3: Tags + Buttons */}
-                  <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2">
-                    {/* Tags (excluding "hot" which is shown next to title) */}
-                    {job.tags && job.tags.filter(t => t !== "hot").length > 0 && (
-                      <div className="flex flex-wrap justify-center sm:justify-start gap-1">
-                        {job.tags.filter(t => t !== "hot").map((tag, index) => (
-                          <span
-                            key={tag}
-                            className={`px-2.5 py-1 text-sm rounded-full ${index >= 3 ? "hidden sm:inline-flex" : ""} bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400`}
-                          >
-                            {tagLabels[tag] ?? tag}
-                          </span>
-                        ))}
-                        {job.tags.filter(t => t !== "hot").length > 3 && (
-                          <span className="sm:hidden px-2.5 py-1 text-sm text-neutral-500">
-                            +{job.tags.filter(t => t !== "hot").length - 3}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                  {/* Row 3: Tags */}
+                  {job.tags && job.tags.filter(t => t !== "hot").length > 0 && (
+                    <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-1">
+                      {job.tags.filter(t => t !== "hot").map((tag, index) => (
+                        <span
+                          key={tag}
+                          className={`px-2.5 py-1 text-sm rounded-full ${index >= 3 ? "hidden sm:inline-flex" : ""} bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400`}
+                        >
+                          {tagLabels[tag] ?? tag}
+                        </span>
+                      ))}
+                      {job.tags.filter(t => t !== "hot").length > 3 && (
+                        <span className="sm:hidden px-2.5 py-1 text-sm text-neutral-500">
+                          +{job.tags.filter(t => t !== "hot").length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
-                    {/* Spacer */}
-                    <div className="hidden sm:block flex-1" />
-
-                    {/* Buttons */}
-                    <div className="flex items-center justify-center sm:justify-end gap-2">
+                  {/* Row 4: Buttons */}
+                  <div className="mt-3 flex items-center justify-center sm:justify-end gap-2">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -1358,7 +1353,6 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
                         Apply →
                       </a>
                     </div>
-                  </div>
                 </div>
               </div>
             </div>

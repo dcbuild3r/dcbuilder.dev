@@ -1060,7 +1060,7 @@ function ExpandedCandidateView({
 				aria-describedby={descriptionId}
 				tabIndex={-1}
 				onKeyDown={handleDialogKeyDown}
-				className={`relative w-full sm:max-w-4xl h-[90vh] sm:h-auto sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
+				className={`relative w-full sm:max-w-4xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
 					isHot
 						? "ring-2 ring-orange-500 dark:ring-orange-400"
 						: isTop
@@ -1069,17 +1069,82 @@ function ExpandedCandidateView({
 				}`}
 				onClick={(e) => e.stopPropagation()}
 			>
-				{/* Drag handle indicator for mobile */}
-				<div className="sm:hidden flex justify-center pt-3">
-					<div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+				{/* Sticky header with close button for mobile */}
+				<div className="sm:hidden sticky top-0 z-20 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-800">
+					<div className="flex items-center justify-between px-4 py-3">
+						{/* Drag handle indicator */}
+						<div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+
+						<div className="flex items-center gap-2">
+							{/* Copy Link Button */}
+							<button
+								onClick={handleCopyLink}
+								className={`p-2 rounded-full transition-colors ${
+									copySuccess
+										? "bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400"
+										: "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400"
+								}`}
+								aria-label={copySuccess ? "Link copied!" : "Copy link to profile"}
+								title={copySuccess ? "Link copied!" : "Copy link to profile"}
+							>
+								{copySuccess ? (
+									<svg
+										className="w-5 h-5"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										strokeWidth="2"
+										strokeLinecap="round"
+										strokeLinejoin="round"
+									>
+										<polyline points="20 6 9 17 4 12" />
+									</svg>
+								) : (
+									<svg
+										className="w-5 h-5"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										strokeWidth="2"
+										strokeLinecap="round"
+										strokeLinejoin="round"
+									>
+										<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+										<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+									</svg>
+								)}
+							</button>
+
+							{/* Close Button - Larger on mobile */}
+							<button
+								ref={closeButtonRef}
+								onClick={onClose}
+								className="p-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
+								aria-label="Close profile"
+							>
+								<svg
+									className="w-7 h-7"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2.5"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+								>
+									<line x1="18" y1="6" x2="6" y2="18" />
+									<line x1="6" y1="6" x2="18" y2="18" />
+								</svg>
+							</button>
+						</div>
+					</div>
 				</div>
 
-				{/* Action buttons - Copy Link and Close */}
-				<div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+				{/* Desktop action buttons - Copy Link and Close */}
+				<div className="hidden sm:flex absolute top-4 right-4 z-10 items-center gap-2">
 					{/* Copy Link Button */}
 					<button
 						onClick={handleCopyLink}
-						className={`p-3 sm:p-2 rounded-full transition-colors ${
+						className={`p-2 rounded-full transition-colors ${
 							copySuccess
 								? "bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400"
 								: "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400"
@@ -1089,7 +1154,7 @@ function ExpandedCandidateView({
 					>
 						{copySuccess ? (
 							<svg
-								className="w-5 h-5 sm:w-6 sm:h-6"
+								className="w-6 h-6"
 								viewBox="0 0 24 24"
 								fill="none"
 								stroke="currentColor"
@@ -1101,7 +1166,7 @@ function ExpandedCandidateView({
 							</svg>
 						) : (
 							<svg
-								className="w-5 h-5 sm:w-6 sm:h-6"
+								className="w-6 h-6"
 								viewBox="0 0 24 24"
 								fill="none"
 								stroke="currentColor"
@@ -1117,13 +1182,12 @@ function ExpandedCandidateView({
 
 					{/* Close Button */}
 					<button
-						ref={closeButtonRef}
 						onClick={onClose}
-						className="p-3 sm:p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
+						className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
 						aria-label="Close profile"
 					>
 						<svg
-							className="w-5 h-5 sm:w-6 sm:h-6"
+							className="w-6 h-6"
 							viewBox="0 0 24 24"
 							fill="none"
 							stroke="currentColor"

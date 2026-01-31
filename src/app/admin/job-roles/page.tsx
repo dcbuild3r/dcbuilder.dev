@@ -28,6 +28,10 @@ export default function AdminJobRoles() {
   const [isCreating, setIsCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  useEffect(() => {
+    document.title = "Admin | dcbuilder.eth";
+  }, []);
+
   const fetchRoles = useCallback(async () => {
     try {
       const { data, error } = await withMinDelay(adminFetch<JobRole[]>("/api/v1/job-roles"));
