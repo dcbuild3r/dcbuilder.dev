@@ -1060,7 +1060,7 @@ function ExpandedCandidateView({
 				aria-describedby={descriptionId}
 				tabIndex={-1}
 				onKeyDown={handleDialogKeyDown}
-				className={`absolute inset-0 sm:relative sm:inset-auto w-full sm:max-w-4xl sm:h-auto sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
+				className={`fixed inset-0 sm:relative sm:inset-auto w-full h-[100dvh] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
 					isHot
 						? "ring-2 ring-orange-500 dark:ring-orange-400"
 						: isTop
