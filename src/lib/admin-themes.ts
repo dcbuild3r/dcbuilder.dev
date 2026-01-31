@@ -73,16 +73,16 @@ export const ADMIN_THEMES: Record<AdminSection, SectionTheme> = {
     primary: "bg-orange-600",
   },
   tags: {
-    headerBg: "bg-cyan-100 dark:bg-cyan-900/30",
-    buttonVariant: "sky",
-    addButtonBg: "bg-cyan-600 hover:bg-cyan-700",
-    primary: "bg-cyan-600",
+    headerBg: "bg-orange-100 dark:bg-orange-900/30",
+    buttonVariant: "orange",
+    addButtonBg: "bg-orange-600 hover:bg-orange-700",
+    primary: "bg-orange-600",
   },
   roles: {
-    headerBg: "bg-teal-100 dark:bg-teal-900/30",
-    buttonVariant: "green",
-    addButtonBg: "bg-teal-600 hover:bg-teal-700",
-    primary: "bg-teal-600",
+    headerBg: "bg-violet-100 dark:bg-violet-900/30",
+    buttonVariant: "purple",
+    addButtonBg: "bg-violet-600 hover:bg-violet-700",
+    primary: "bg-violet-600",
   },
 };
 
