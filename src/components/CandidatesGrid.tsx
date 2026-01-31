@@ -1049,7 +1049,7 @@ function ExpandedCandidateView({
 
 	return (
 		<div
-			className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+			className="fixed inset-0 z-50 flex sm:items-center sm:justify-center bg-black/50 backdrop-blur-sm"
 			onClick={onClose}
 		>
 			<div
@@ -1060,7 +1060,7 @@ function ExpandedCandidateView({
 				aria-describedby={descriptionId}
 				tabIndex={-1}
 				onKeyDown={handleDialogKeyDown}
-				className={`relative w-full sm:max-w-4xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
+				className={`absolute inset-0 sm:relative sm:inset-auto w-full sm:max-w-4xl sm:h-auto sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
 					isHot
 						? "ring-2 ring-orange-500 dark:ring-orange-400"
 						: isTop
