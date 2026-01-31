@@ -44,6 +44,7 @@ function ExpandedJobView({
 	onViewOtherJobs,
 	otherJobsCount,
 	onApplyClick,
+	tagLabels,
 }: {
 	job: Job;
 	onClose: () => void;
@@ -51,6 +52,7 @@ function ExpandedJobView({
 	onViewOtherJobs: () => void;
 	otherJobsCount: number;
 	onApplyClick?: () => void;
+	tagLabels: Record<string, string>;
 }) {
 	const isHot = job.tags?.includes("hot");
 	const [copiedLink, setCopiedLink] = useState<"job" | "apply" | null>(null);
@@ -1376,6 +1378,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
           }}
           otherJobsCount={jobs.filter(j => j.company.name === expandedJob.company.name && j.id !== expandedJob.id).length}
           onApplyClick={() => trackJobApplyClick(getJobEventProps(expandedJob))}
+          tagLabels={tagLabels}
         />
       )}
     </div>
