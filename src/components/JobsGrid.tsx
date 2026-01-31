@@ -159,9 +159,8 @@ function ExpandedJobView({
 							: "bg-neutral-50 dark:bg-neutral-800/50"
 					}`}
 				>
-					{/* Mobile: Copy link, drag handle, and close on same line */}
-					<div className="sm:hidden flex items-center justify-between mb-6 -mt-3">
-						{/* Copy link button - left */}
+					{/* Mobile: Copy link and close buttons */}
+					<div className="sm:hidden flex items-center justify-end gap-2 mb-4 -mt-2">
 						<button
 							onClick={() => copyToClipboard(jobUrl, "job")}
 							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-all active:scale-90"
@@ -178,9 +177,6 @@ function ExpandedJobView({
 								</svg>
 							)}
 						</button>
-						{/* Centered drag handle */}
-						<div className="w-28 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
-						{/* Close button - right */}
 						<button
 							onClick={handleClose}
 							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-all active:scale-90"
