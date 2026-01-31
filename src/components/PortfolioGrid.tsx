@@ -369,8 +369,8 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 								aria-label={`View ${getJobCount(investment.title, jobCounts)} job openings at ${investment.title}`}
 							>
 								<span className="relative flex h-2 w-2">
-									<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-									<span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+									<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white dark:bg-neutral-900 opacity-75"></span>
+									<span className="relative inline-flex rounded-full h-2 w-2 bg-white dark:bg-neutral-900"></span>
 								</span>
 								<span>Hiring</span>
 								<span className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none">
