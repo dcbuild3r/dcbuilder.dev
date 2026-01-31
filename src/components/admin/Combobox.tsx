@@ -8,6 +8,7 @@ interface ComboboxProps {
   field: string;
   placeholder?: string;
   className?: string;
+  options?: string[]; // Optional: provide options directly instead of fetching from API
 }
 
 export function Combobox({
@@ -16,6 +17,7 @@ export function Combobox({
   field,
   placeholder,
   className = "",
+  options,
 }: ComboboxProps) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +27,14 @@ export function Combobox({
 
   const fetchSuggestions = useCallback(
     async (query: string) => {
+      // If options are provided, filter them locally instead of API call
+      if (options) {
+        const filtered = options.filter((opt) =>
+          opt.toLowerCase().includes(query.toLowerCase())
+        );
+        setSuggestions(filtered);
+        return;
+      }
       try {
         const res = await fetch(
           `/api/v1/autocomplete?field=${field}&q=${encodeURIComponent(query)}`
@@ -37,7 +47,7 @@ export function Combobox({
         console.error("Failed to fetch suggestions:", error);
       }
     },
-    [field]
+    [field, options]
   );
 
   useEffect(() => {
@@ -154,6 +164,8 @@ interface MultiComboboxProps {
   field: string;
   placeholder?: string;
   className?: string;
+  options?: string[]; // Optional: provide options directly instead of fetching from API
+  labelMap?: Record<string, string>; // Optional: map values to display labels
 }
 
 export function MultiCombobox({
@@ -162,6 +174,8 @@ export function MultiCombobox({
   field,
   placeholder,
   className = "",
+  options,
+  labelMap,
 }: MultiComboboxProps) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -180,6 +194,16 @@ export function MultiCombobox({
 
   const fetchSuggestions = useCallback(
     async (query: string) => {
+      // If options are provided, filter them locally
+      if (options) {
+        const filtered = options.filter(
+          (opt) =>
+            opt.toLowerCase().includes(query.toLowerCase()) &&
+            !existingValues.includes(opt)
+        );
+        setSuggestions(filtered);
+        return;
+      }
       try {
         const res = await fetch(
           `/api/v1/autocomplete?field=${field}&q=${encodeURIComponent(query)}`
@@ -192,7 +216,7 @@ export function MultiCombobox({
         console.error("Failed to fetch suggestions:", error);
       }
     },
-    [field]
+    [field, options, existingValues]
   );
 
   useEffect(() => {

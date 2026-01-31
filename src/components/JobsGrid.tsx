@@ -4,8 +4,9 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Markdown from "react-markdown";
-import { Job, JobTag, RelationshipCategory, tagLabels } from "@/data/jobs";
+import { Job, JobTag, RelationshipCategory, tagLabels as defaultTagLabels } from "@/data/jobs";
 import { CustomSelect } from "./CustomSelect";
+import { CustomMultiSelect } from "./CustomMultiSelect";
 import {
 	trackJobView,
 	trackJobApplyClick,
@@ -479,8 +480,23 @@ const companyTiers: Record<string, number> = {
   Goldsky: 6,
 };
 
+interface TagDefinition {
+  id: string;
+  slug: string;
+  label: string;
+  color: string | null;
+}
+
+interface RoleDefinition {
+  id: string;
+  slug: string;
+  label: string;
+}
+
 interface JobsGridProps {
   jobs: Job[];
+  tagDefinitions?: TagDefinition[];
+  roleDefinitions?: RoleDefinition[];
 }
 
 function hashString(value: string): number {
@@ -510,13 +526,31 @@ function shuffleArray<T>(array: T[], random: () => number): T[] {
   return result;
 }
 
-export function JobsGrid({ jobs }: JobsGridProps) {
+export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: JobsGridProps) {
+  // Build tag labels from definitions (with fallback to hardcoded)
+  const tagLabels = useMemo(() => {
+    const labels: Record<string, string> = { ...defaultTagLabels };
+    tagDefinitions.forEach((tag) => {
+      labels[tag.slug] = tag.label;
+    });
+    return labels;
+  }, [tagDefinitions]);
+
+  // Build tag colors from definitions
+  const tagColors = useMemo(() => {
+    const colors: Record<string, string | null> = {};
+    tagDefinitions.forEach((tag) => {
+      colors[tag.slug] = tag.color;
+    });
+    return colors;
+  }, [tagDefinitions]);
   const searchParams = useSearchParams();
   const initialParams = useMemo(() => {
     const typeParam = searchParams.get("type");
     const filterCategory: FilterCategory =
       typeParam === "portfolio" || typeParam === "network" ? typeParam : "all";
-    const selectedCompany = searchParams.get("company") || "all";
+    const companyParams = searchParams.getAll("company");
+    const selectedCompanies = companyParams.length > 0 ? companyParams : ["all"];
     const selectedLocation = searchParams.get("location") || "all";
     const searchQuery = searchParams.get("q") || "";
     const showFeaturedOnly = searchParams.get("featured") === "1";
@@ -527,19 +561,22 @@ export function JobsGrid({ jobs }: JobsGridProps) {
           .filter((tag): tag is JobTag => Object.keys(tagLabels).includes(tag))
       : [];
     const jobId = searchParams.get("job");
+    const selectedRole = searchParams.get("role") || "all";
     return {
       filterCategory,
-      selectedCompany,
+      selectedCompanies,
       selectedLocation,
       searchQuery,
       selectedTags,
       showFeaturedOnly,
       jobId,
+      selectedRole,
     };
   }, [searchParams]);
 
   const [filterCategory, setFilterCategory] = useState<FilterCategory>(initialParams.filterCategory);
-  const [selectedCompany, setSelectedCompany] = useState<string>(initialParams.selectedCompany);
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>(initialParams.selectedCompanies);
+  const [selectedRole, setSelectedRole] = useState<string>(initialParams.selectedRole);
   const [selectedLocation, setSelectedLocation] = useState<string>(initialParams.selectedLocation);
   const [searchQuery, setSearchQuery] = useState(initialParams.searchQuery);
   const [selectedTags, setSelectedTags] = useState<JobTag[]>(initialParams.selectedTags);
@@ -605,14 +642,25 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     updateUrlParams({ type: value === "all" ? null : value });
   }, [updateUrlParams]);
 
-  const handleCompanyChange = useCallback((value: string) => {
-    setSelectedCompany(value);
-    updateUrlParams({ company: value === "all" ? null : value });
-  }, [updateUrlParams]);
+  const handleCompanyChange = useCallback((values: string[]) => {
+    setSelectedCompanies(values.length === 0 ? ["all"] : values);
+    // Update URL with multiple company params
+    const url = new URL(window.location.href);
+    url.searchParams.delete("company");
+    if (values.length > 0) {
+      values.forEach((v) => url.searchParams.append("company", v));
+    }
+    window.history.replaceState(null, "", url.pathname + url.search);
+  }, []);
 
   const handleLocationChange = useCallback((value: string) => {
     setSelectedLocation(value);
     updateUrlParams({ location: value === "all" ? null : value });
+  }, [updateUrlParams]);
+
+  const handleRoleChange = useCallback((value: string) => {
+    setSelectedRole(value);
+    updateUrlParams({ role: value === "all" ? null : value });
   }, [updateUrlParams]);
 
   const handleSearchChange = useCallback((value: string) => {
@@ -646,7 +694,8 @@ export function JobsGrid({ jobs }: JobsGridProps) {
 
   const handleResetAllFilters = useCallback(() => {
     setFilterCategory("all");
-    setSelectedCompany("all");
+    setSelectedCompanies(["all"]);
+    setSelectedRole("all");
     setSelectedLocation("all");
     setSearchQuery("");
     setSelectedTags([]);
@@ -655,6 +704,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     const url = new URL(window.location.href);
     url.searchParams.delete("type");
     url.searchParams.delete("company");
+    url.searchParams.delete("role");
     url.searchParams.delete("location");
     url.searchParams.delete("q");
     url.searchParams.delete("tags");
@@ -665,7 +715,8 @@ export function JobsGrid({ jobs }: JobsGridProps) {
   // Check if any filter is active
   const hasActiveFilters =
     filterCategory !== "all" ||
-    selectedCompany !== "all" ||
+    !selectedCompanies.includes("all") ||
+    selectedRole !== "all" ||
     selectedLocation !== "all" ||
     searchQuery !== "" ||
     selectedTags.length > 0 ||
@@ -701,6 +752,26 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     jobs.forEach((job) => companies.set(job.company.name, job.company.name));
     return Array.from(companies.values()).sort();
   }, [jobs]);
+
+  // Get all unique roles/departments - prefer definitions, fall back to extracting from jobs
+  const allRoles = useMemo(() => {
+    if (roleDefinitions.length > 0) {
+      // Use defined roles that exist in jobs
+      const jobDepartments = new Set(jobs.map((j) => j.department).filter(Boolean));
+      return roleDefinitions
+        .filter((r) => jobDepartments.has(r.label) || jobDepartments.has(r.slug))
+        .map((r) => r.label)
+        .sort();
+    }
+    // Fallback: extract from jobs
+    const roles = new Set<string>();
+    jobs.forEach((job) => {
+      if (job.department) {
+        roles.add(job.department);
+      }
+    });
+    return Array.from(roles).sort();
+  }, [jobs, roleDefinitions]);
 
   // Get all unique locations from jobs (split on "/", " or ", ",", "(", ")" for multi-location jobs)
   // But keep "Remote (...)" as a single entry (timezone info in parens)
@@ -740,8 +811,13 @@ export function JobsGrid({ jobs }: JobsGridProps) {
         return false;
       }
 
-      // Company filter
-      if (selectedCompany !== "all" && job.company.name !== selectedCompany) {
+      // Company filter (supports multiple companies)
+      if (!selectedCompanies.includes("all") && !selectedCompanies.includes(job.company.name)) {
+        return false;
+      }
+
+      // Role/Department filter
+      if (selectedRole !== "all" && job.department !== selectedRole) {
         return false;
       }
 
@@ -807,7 +883,8 @@ export function JobsGrid({ jobs }: JobsGridProps) {
   }, [
     jobs,
     filterCategory,
-    selectedCompany,
+    selectedCompanies,
+    selectedRole,
     selectedLocation,
     searchQuery,
     selectedTags,
@@ -821,14 +898,15 @@ export function JobsGrid({ jobs }: JobsGridProps) {
     () =>
       [
         filterCategory,
-        selectedCompany,
+        selectedCompanies.join(","),
+        selectedRole,
         selectedLocation,
         searchQuery,
         selectedTags.join(","),
         showFeaturedOnly,
         shuffleSeed,
       ].join("|"),
-    [filterCategory, selectedCompany, selectedLocation, searchQuery, selectedTags, showFeaturedOnly, shuffleSeed],
+    [filterCategory, selectedCompanies, selectedRole, selectedLocation, searchQuery, selectedTags, showFeaturedOnly, shuffleSeed],
   );
 
   // Helper to check if job is hot (manual tag OR data-driven)
@@ -884,16 +962,16 @@ export function JobsGrid({ jobs }: JobsGridProps) {
       <div className="space-y-4">
         {/* Row 1: Category and Company filters */}
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* Category Filter */}
+          {/* Affiliation Filter (Portfolio/Network) */}
           <div className="flex items-center gap-2">
             <label
-              htmlFor="category-filter"
+              htmlFor="affiliation-filter"
               className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
             >
-              Type:
+              Affiliation:
             </label>
             <CustomSelect
-              id="category-filter"
+              id="affiliation-filter"
               value={filterCategory}
               onChange={(value) => handleCategoryChange(value as FilterCategory)}
               options={[
@@ -905,7 +983,28 @@ export function JobsGrid({ jobs }: JobsGridProps) {
             />
           </div>
 
-          {/* Company Filter */}
+          {/* Role Filter (Department) */}
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="role-filter"
+              className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
+            >
+              Role:
+            </label>
+            <CustomSelect
+              id="role-filter"
+              value={selectedRole}
+              onChange={handleRoleChange}
+              options={[
+                { value: "all", label: "All Roles" },
+                ...allRoles.map((role) => ({ value: role, label: role })),
+              ]}
+              className="flex-1 sm:flex-none sm:min-w-[140px]"
+              searchable
+            />
+          </div>
+
+          {/* Company Filter (Multi-select) */}
           <div className="flex items-center gap-2">
             <label
               htmlFor="company-filter"
@@ -913,37 +1012,15 @@ export function JobsGrid({ jobs }: JobsGridProps) {
             >
               Company:
             </label>
-            <CustomSelect
+            <CustomMultiSelect
               id="company-filter"
-              value={selectedCompany}
+              values={selectedCompanies.includes("all") ? [] : selectedCompanies}
               onChange={handleCompanyChange}
-              options={[
-                { value: "all", label: "All Companies" },
-                ...allCompanies.map((company) => ({ value: company, label: company })),
-              ]}
+              options={allCompanies.map((company) => ({ value: company, label: company }))}
+              placeholder="All Companies"
               className="flex-1 sm:flex-none sm:min-w-[160px]"
               searchable
             />
-            {selectedCompany !== "all" && (() => {
-              const companyJob = jobs.find(j => j.company.name === selectedCompany);
-              const careersUrl = companyJob?.company.careers;
-              return careersUrl ? (
-                <a
-                  href={careersUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                  title={`View all ${selectedCompany} jobs`}
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                    <polyline points="15 3 21 3 21 9" />
-                    <line x1="10" y1="14" x2="21" y2="3" />
-                  </svg>
-                  <span className="hidden sm:inline">Careers</span>
-                </a>
-              ) : null;
-            })()}
           </div>
         </div>
 
@@ -1188,7 +1265,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                       <h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
                         {job.title}
                         {job.featured && (
-                          <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">★</span>
+                          <span className="ml-2 text-base text-amber-500">★</span>
                         )}
                         {isHotJob(job) && (
                           <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-orange-400 dark:bg-orange-700 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(194,65,12,0.5)] animate-pulse">
@@ -1206,7 +1283,7 @@ export function JobsGrid({ jobs }: JobsGridProps) {
                       </p>
                     </div>
                     <span
-                      className={`self-center sm:self-start flex-shrink-0 px-2 py-0.5 text-xs rounded-full ${
+                      className={`self-center sm:self-start flex-shrink-0 px-2.5 py-1 text-sm rounded-full ${
                         job.company.category === "portfolio"
                           ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                           : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"

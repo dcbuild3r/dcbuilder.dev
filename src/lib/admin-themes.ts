@@ -7,7 +7,9 @@ export type AdminSection =
   | "affiliations"
   | "blog"
   | "news-curated"
-  | "news-announcements";
+  | "news-announcements"
+  | "tags"
+  | "roles";
 
 export type ButtonVariant =
   | "blue"
@@ -24,6 +26,7 @@ interface SectionTheme {
   headerBg: string;
   buttonVariant: ButtonVariant;
   addButtonBg: string;
+  primary: string;
 }
 
 export const ADMIN_THEMES: Record<AdminSection, SectionTheme> = {
@@ -31,36 +34,55 @@ export const ADMIN_THEMES: Record<AdminSection, SectionTheme> = {
     headerBg: "bg-blue-100 dark:bg-blue-900/30",
     buttonVariant: "blue",
     addButtonBg: "bg-blue-600 hover:bg-blue-700",
+    primary: "bg-blue-600",
   },
   candidates: {
     headerBg: "bg-green-100 dark:bg-green-900/30",
     buttonVariant: "green",
     addButtonBg: "bg-green-600 hover:bg-green-700",
+    primary: "bg-green-600",
   },
   investments: {
     headerBg: "bg-amber-100 dark:bg-amber-900/30",
     buttonVariant: "amber",
     addButtonBg: "bg-amber-600 hover:bg-amber-700",
+    primary: "bg-amber-600",
   },
   affiliations: {
     headerBg: "bg-pink-100 dark:bg-pink-900/30",
     buttonVariant: "pink",
     addButtonBg: "bg-pink-600 hover:bg-pink-700",
+    primary: "bg-pink-600",
   },
   blog: {
     headerBg: "bg-sky-100 dark:bg-sky-900/30",
     buttonVariant: "indigo",
     addButtonBg: "bg-indigo-600 hover:bg-indigo-700",
+    primary: "bg-indigo-600",
   },
   "news-curated": {
     headerBg: "bg-purple-100 dark:bg-purple-900/30",
     buttonVariant: "purple",
     addButtonBg: "bg-purple-600 hover:bg-purple-700",
+    primary: "bg-purple-600",
   },
   "news-announcements": {
     headerBg: "bg-orange-100 dark:bg-orange-900/30",
     buttonVariant: "orange",
     addButtonBg: "bg-orange-600 hover:bg-orange-700",
+    primary: "bg-orange-600",
+  },
+  tags: {
+    headerBg: "bg-cyan-100 dark:bg-cyan-900/30",
+    buttonVariant: "sky",
+    addButtonBg: "bg-cyan-600 hover:bg-cyan-700",
+    primary: "bg-cyan-600",
+  },
+  roles: {
+    headerBg: "bg-teal-100 dark:bg-teal-900/30",
+    buttonVariant: "green",
+    addButtonBg: "bg-teal-600 hover:bg-teal-700",
+    primary: "bg-teal-600",
   },
 };
 
