@@ -1261,63 +1261,103 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
 
                 {/* Job Details */}
                 <div className="flex-1 min-w-0 text-center sm:text-left">
-                  {/* Row 1: Title and company */}
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2">
-                    <div className="min-w-0">
-                      <h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
-                        {job.title}
-                        {job.featured && (
-                          <span className="ml-2 text-base text-amber-500">★</span>
-                        )}
-                        {/* Desktop: show HOT and NEW inline */}
-                        {isHotJob(job) && (
-                          <span className="hidden sm:inline-flex ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-orange-400 dark:bg-orange-700 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(194,65,12,0.5)] animate-pulse">
-                            🔥 HOT
-                          </span>
-                        )}
-                        {isNewItem(job.createdAt) && (
-                          <span className="hidden sm:inline-flex ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
-                            NEW
-                          </span>
-                        )}
-                      </h3>
-                      {/* Mobile: HOT and NEW on separate line */}
-                      {(isHotJob(job) || isNewItem(job.createdAt)) && (
-                        <div className="sm:hidden flex justify-center gap-2 mt-1">
+                  {/* Desktop layout */}
+                  <div className="hidden sm:block">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
+                          {job.title}
+                          {job.featured && (
+                            <span className="ml-2 text-base text-amber-500">★</span>
+                          )}
                           {isHotJob(job) && (
-                            <span className="px-2.5 py-1 text-sm font-semibold rounded-full bg-orange-400 dark:bg-orange-700 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(194,65,12,0.5)] animate-pulse">
+                            <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-orange-400 dark:bg-orange-700 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(194,65,12,0.5)] animate-pulse">
                               🔥 HOT
                             </span>
                           )}
                           {isNewItem(job.createdAt) && (
-                            <span className="px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+                            <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
                               NEW
                             </span>
                           )}
-                        </div>
-                      )}
-                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                        {job.company.name}
-                      </p>
+                        </h3>
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                          {job.company.name}
+                        </p>
+                      </div>
+                      <span
+                        className={`flex-shrink-0 px-2.5 py-1 text-sm rounded-full ${
+                          job.company.category === "portfolio"
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                            : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        }`}
+                      >
+                        {job.company.category === "portfolio" ? "Portfolio" : "Network"}
+                      </span>
                     </div>
-                    <span
-                      className={`self-center sm:self-start flex-shrink-0 px-2.5 py-1 text-sm rounded-full ${
-                        job.company.category === "portfolio"
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      }`}
-                    >
-                      {job.company.category === "portfolio" ? "Portfolio" : "Network"}
-                    </span>
+                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
+                      <span>{job.location}</span>
+                      {job.type && (
+                        <span className="capitalize">{job.type.replace("-", " ")}</span>
+                      )}
+                      {job.salary && <span>{job.salary}</span>}
+                    </div>
                   </div>
 
-                  {/* Row 2: Location */}
-                  <div className="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-xs sm:text-sm text-neutral-500">
-                    <span>{job.location}</span>
-                    {job.type && (
-                      <span className="capitalize">{job.type.replace("-", " ")}</span>
+                  {/* Mobile layout - reordered */}
+                  <div className="sm:hidden space-y-1.5">
+                    {/* 1. Title */}
+                    <h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
+                      {job.title}
+                      {job.featured && (
+                        <span className="ml-2 text-base text-amber-500">★</span>
+                      )}
+                    </h3>
+                    {/* 2. Company name - bigger */}
+                    <p className="text-base font-medium text-neutral-700 dark:text-neutral-300">
+                      {job.company.name}
+                    </p>
+                    {/* 3. Department/Role */}
+                    {job.department && (
+                      <p className="text-sm text-neutral-500">
+                        {job.department}
+                      </p>
                     )}
-                    {job.salary && <span>{job.salary}</span>}
+                    {/* 4. Portfolio/Network badge */}
+                    <div className="flex justify-center">
+                      <span
+                        className={`px-2.5 py-1 text-sm rounded-full ${
+                          job.company.category === "portfolio"
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                            : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        }`}
+                      >
+                        {job.company.category === "portfolio" ? "Portfolio" : "Network"}
+                      </span>
+                    </div>
+                    {/* 5. HOT / NEW tags */}
+                    {(isHotJob(job) || isNewItem(job.createdAt)) && (
+                      <div className="flex justify-center gap-2">
+                        {isHotJob(job) && (
+                          <span className="px-2.5 py-1 text-sm font-semibold rounded-full bg-orange-400 dark:bg-orange-700 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(194,65,12,0.5)] animate-pulse">
+                            🔥 HOT
+                          </span>
+                        )}
+                        {isNewItem(job.createdAt) && (
+                          <span className="px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+                            NEW
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {/* 6. Location, type, salary */}
+                    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-neutral-500">
+                      <span>{job.location}</span>
+                      {job.type && (
+                        <span className="capitalize">{job.type.replace("-", " ")}</span>
+                      )}
+                      {job.salary && <span>{job.salary}</span>}
+                    </div>
                   </div>
 
                   {/* Row 3: Tags */}
