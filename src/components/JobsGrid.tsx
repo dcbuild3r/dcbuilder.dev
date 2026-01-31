@@ -118,49 +118,67 @@ function ExpandedJobView({
 
 	return (
 		<div
-			className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+			className="fixed inset-0 z-50 flex sm:items-center sm:justify-center bg-black/50 backdrop-blur-sm"
 			onClick={onClose}
 		>
 			<div
-				className={`relative w-full sm:max-w-4xl h-[90vh] sm:h-auto sm:max-h-[90vh] flex flex-col rounded-t-2xl sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl overflow-hidden ${
+				className={`fixed inset-0 sm:relative sm:inset-auto w-full h-[100dvh] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl ${
 					isHot
 						? "ring-2 ring-orange-400 dark:ring-orange-500"
 						: "ring-1 ring-neutral-200 dark:ring-neutral-700"
 				}`}
 				onClick={(e) => e.stopPropagation()}
 			>
-				{/* Drag handle indicator for mobile */}
-				<div className="sm:hidden flex justify-center pt-3">
-					<div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-				</div>
-
-				{/* Close Button */}
-				<button
-					onClick={onClose}
-					className="absolute top-4 right-4 z-10 p-3 sm:p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
-				>
-					<svg
-						className="w-5 h-5 sm:w-6 sm:h-6"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-					>
-						<line x1="18" y1="6" x2="6" y2="18" />
-						<line x1="6" y1="6" x2="18" y2="18" />
-					</svg>
-				</button>
-
-				{/* Header Section */}
+				{/* Header Section - with drag handle inside */}
 				<div
 					className={`p-6 sm:p-8 ${
 						isHot
-							? "bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20"
+							? "bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30"
 							: "bg-neutral-50 dark:bg-neutral-800/50"
 					}`}
 				>
+					{/* Mobile: Drag handle and close button */}
+					<div className="sm:hidden flex items-center justify-between mb-4">
+						<div className="w-16 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
+						<button
+							onClick={onClose}
+							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
+							aria-label="Close"
+						>
+							<svg
+								className="w-6 h-6"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<line x1="18" y1="6" x2="6" y2="18" />
+								<line x1="6" y1="6" x2="18" y2="18" />
+							</svg>
+						</button>
+					</div>
+
+					{/* Desktop: Close button */}
+					<button
+						onClick={onClose}
+						className="hidden sm:block absolute top-4 right-4 z-10 p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors"
+					>
+						<svg
+							className="w-6 h-6"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						>
+							<line x1="18" y1="6" x2="6" y2="18" />
+							<line x1="6" y1="6" x2="18" y2="18" />
+						</svg>
+					</button>
+
 					<div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
 						{/* Company Logo */}
 						<div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-white p-2 ring-2 ring-neutral-200 dark:ring-neutral-700 hover:scale-[1.08] transition-transform duration-150">
@@ -237,8 +255,8 @@ function ExpandedJobView({
 					</div>
 				</div>
 
-				{/* Content Section - Scrollable */}
-				<div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 sm:space-y-8">
+				{/* Content Section */}
+				<div className="p-6 sm:p-8 space-y-6 sm:space-y-8">
 					{/* Tags */}
 					{job.tags && job.tags.length > 0 && (
 						<div>
@@ -270,29 +288,24 @@ function ExpandedJobView({
 						</div>
 					</div>
 
-
-				</div>
-
-				{/* Footer - Sticky Apply Button */}
-				<div className="flex-shrink-0 p-4 sm:p-6 border-t border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
-					<div className="flex flex-col sm:flex-row items-center gap-4">
+					{/* Actions Section - scrollable with content */}
+					<div className="pt-6 border-t border-neutral-200 dark:border-neutral-700 space-y-4">
 						{/* Apply Button */}
 						<a
 							href={job.link}
 							target="_blank"
 							rel="noopener noreferrer"
 							onClick={onApplyClick}
-							className="w-full sm:w-auto px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors text-center"
+							className="block w-full px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors text-center"
 						>
 							Apply Now →
 						</a>
 
-						{/* Copy Buttons */}
-						<div className="flex items-center gap-2">
+						{/* Copy Buttons - with labels */}
+						<div className="flex flex-wrap justify-center gap-2">
 							<button
 								onClick={() => copyToClipboard(jobUrl, "job")}
-								className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-								title="Copy job link"
+								className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 							>
 								{copiedLink === "job" ? (
 									<>
@@ -307,14 +320,13 @@ function ExpandedJobView({
 											<rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
 											<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
 										</svg>
-										<span className="hidden sm:inline">Copy link</span>
+										<span>Copy link</span>
 									</>
 								)}
 							</button>
 							<button
 								onClick={() => copyToClipboard(job.link, "apply")}
-								className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-								title="Copy application link"
+								className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 							>
 								{copiedLink === "apply" ? (
 									<>
@@ -330,18 +342,18 @@ function ExpandedJobView({
 											<polyline points="15 3 21 3 21 9" />
 											<line x1="10" y1="14" x2="21" y2="3" />
 										</svg>
-										<span className="hidden sm:inline">Copy apply link</span>
+										<span>Copy apply link</span>
 									</>
 								)}
 							</button>
 						</div>
 
-						{/* Other Jobs & Careers */}
-						<div className="flex items-center gap-2">
+						{/* Other Jobs & Careers - with labels */}
+						<div className="flex flex-wrap justify-center gap-2">
 							{otherJobsCount > 0 && (
 								<button
 									onClick={onViewOtherJobs}
-									className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+									className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 								>
 									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 										<rect x="3" y="3" width="7" height="7" />
@@ -349,8 +361,7 @@ function ExpandedJobView({
 										<rect x="14" y="14" width="7" height="7" />
 										<rect x="3" y="14" width="7" height="7" />
 									</svg>
-									<span className="hidden sm:inline">{otherJobsCount} more {otherJobsCount === 1 ? "job" : "jobs"}</span>
-									<span className="sm:hidden">+{otherJobsCount}</span>
+									<span>{otherJobsCount} more {otherJobsCount === 1 ? "job" : "jobs"}</span>
 								</button>
 							)}
 							{job.company.careers && (
@@ -358,30 +369,27 @@ function ExpandedJobView({
 									href={job.company.careers}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-									title="View all open positions"
+									className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 								>
 									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 										<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
 										<circle cx="12" cy="7" r="4" />
 									</svg>
-									<span className="hidden sm:inline">Careers page</span>
+									<span>Careers page</span>
 								</a>
 							)}
 						</div>
 
-						{/* Company Links */}
-						<div className="flex items-center gap-3">
+						{/* Company Links - with labels */}
+						<div className="flex flex-wrap justify-center gap-2">
 							<a
 								href={job.company.website}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-								title="Company Website"
-								aria-label={`Visit ${job.company.name} website`}
+								className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 							>
 								<svg
-									className="w-5 h-5"
+									className="w-4 h-4"
 									viewBox="0 0 24 24"
 									fill="none"
 									stroke="currentColor"
@@ -393,19 +401,19 @@ function ExpandedJobView({
 									<line x1="2" y1="12" x2="22" y2="12" />
 									<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
 								</svg>
+								<span>Website</span>
 							</a>
 							{job.company.x && (
 								<a
 									href={job.company.x}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-									title="X"
-									aria-label={`Visit ${job.company.name} on X`}
+									className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 								>
-									<svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
 										<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
 									</svg>
+									<span>X</span>
 								</a>
 							)}
 							{job.company.github && (
@@ -413,13 +421,12 @@ function ExpandedJobView({
 									href={job.company.github}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-									title="GitHub"
-									aria-label={`Visit ${job.company.name} on GitHub`}
+									className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
 								>
-									<svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
 										<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
 									</svg>
+									<span>GitHub</span>
 								</a>
 							)}
 						</div>
