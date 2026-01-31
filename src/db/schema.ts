@@ -195,6 +195,35 @@ export const blogPosts = pgTable(
   ]
 );
 
+// Job tags (dynamic tag definitions)
+export const jobTags = pgTable(
+  "job_tags",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    slug: text("slug").notNull().unique(), // e.g., "ai", "design", "leadership"
+    label: text("label").notNull(), // e.g., "AI", "Design", "Leadership"
+    color: text("color"), // Optional color for the tag (hex or tailwind class)
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [index("job_tags_slug_idx").on(table.slug)]
+);
+
+// Job roles/departments (dynamic role definitions)
+export const jobRoles = pgTable(
+  "job_roles",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    slug: text("slug").notNull().unique(), // e.g., "engineering", "design", "product"
+    label: text("label").notNull(), // e.g., "Engineering", "Design", "Product"
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [index("job_roles_slug_idx").on(table.slug)]
+);
+
 // API keys for authentication
 export const apiKeys = pgTable(
   "api_keys",
@@ -235,3 +264,9 @@ export type NewAffiliation = typeof affiliations.$inferInsert;
 
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type NewBlogPost = typeof blogPosts.$inferInsert;
+
+export type JobTag = typeof jobTags.$inferSelect;
+export type NewJobTag = typeof jobTags.$inferInsert;
+
+export type JobRole = typeof jobRoles.$inferSelect;
+export type NewJobRole = typeof jobRoles.$inferInsert;

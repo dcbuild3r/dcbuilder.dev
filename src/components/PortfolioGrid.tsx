@@ -32,6 +32,7 @@ type SortOption = "relevance" | "alphabetical" | "alphabetical-desc";
 
 interface PortfolioGridProps {
 	investments: Investment[];
+	jobCounts?: Record<string, number>;
 }
 
 function hashString(value: string): number {
@@ -63,7 +64,25 @@ function shuffleArray<T>(array: T[], random: () => number): T[] {
 
 type FilterOption = "main" | "featured" | "all";
 
-export function PortfolioGrid({ investments }: PortfolioGridProps) {
+// Map investment titles to all their hiring entities (for umbrella orgs)
+const HIRING_ENTITIES: Record<string, string[]> = {
+	"Monad": ["Monad Foundation", "Category Labs"],
+};
+
+// Get total job count for an investment (including related entities)
+function getJobCount(title: string, jobCounts: Record<string, number>): number {
+	const entities = HIRING_ENTITIES[title] || [title];
+	return entities.reduce((sum, entity) => sum + (jobCounts[entity] || 0), 0);
+}
+
+// Build jobs page URL with all related company filters
+function getJobsUrl(title: string): string {
+	const entities = HIRING_ENTITIES[title] || [title];
+	const params = entities.map(e => `company=${encodeURIComponent(e)}`).join('&');
+	return `/jobs?${params}`;
+}
+
+export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProps) {
 	const [sortBy, setSortBy] = useState<SortOption>("relevance");
 	const [filter, setFilter] = useState<FilterOption>("all");
 
@@ -236,7 +255,7 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 								if (investment.website) window.open(investment.website, '_blank', 'noopener,noreferrer');
 							}
 						}}
-						className={`group p-6 rounded-xl border transition-colors flex flex-col items-center text-center cursor-pointer ${
+						className={`group relative p-6 pb-8 rounded-xl border transition-colors flex flex-col items-center text-center cursor-pointer ${
 							investment.tier === 1
 								? "border-neutral-300 dark:border-neutral-600 hover:border-neutral-500 dark:hover:border-neutral-400"
 								: investment.tier === 3
@@ -342,6 +361,23 @@ export function PortfolioGrid({ investments }: PortfolioGridProps) {
 								</a>
 							)}
 						</div>
+						{/* Join Button - positioned at bottom right */}
+						{getJobCount(investment.title, jobCounts) > 0 && (
+							<a
+								href={getJobsUrl(investment.title)}
+								className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm hover:bg-black dark:hover:bg-neutral-100 hover:shadow-md hover:scale-105 active:scale-100 transition-all duration-150"
+								aria-label={`View ${getJobCount(investment.title, jobCounts)} job openings at ${investment.title}`}
+							>
+								<span className="relative flex h-2 w-2">
+									<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white dark:bg-neutral-900 opacity-75"></span>
+									<span className="relative inline-flex rounded-full h-2 w-2 bg-white dark:bg-neutral-900"></span>
+								</span>
+								<span>Hiring</span>
+								<span className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none">
+									{getJobCount(investment.title, jobCounts)}
+								</span>
+							</a>
+						)}
 					</div>
 				))}
 			</div>

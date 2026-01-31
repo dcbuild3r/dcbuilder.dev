@@ -44,13 +44,24 @@ export async function PUT(
   try {
     const body = await request.json();
 
+    // Only update allowed fields, explicitly handle timestamps
+    const updateData: Record<string, unknown> = {
+      updatedAt: new Date(),
+    };
+
+    if (body.title !== undefined) updateData.title = body.title;
+    if (body.url !== undefined) updateData.url = body.url;
+    if (body.company !== undefined) updateData.company = body.company;
+    if (body.companyLogo !== undefined) updateData.companyLogo = body.companyLogo;
+    if (body.platform !== undefined) updateData.platform = body.platform;
+    if (body.date !== undefined) updateData.date = new Date(body.date);
+    if (body.description !== undefined) updateData.description = body.description;
+    if (body.category !== undefined) updateData.category = body.category;
+    if (body.featured !== undefined) updateData.featured = body.featured;
+
     const [updated] = await db
       .update(announcements)
-      .set({
-        ...body,
-        date: body.date ? new Date(body.date) : undefined,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(announcements.id, id))
       .returning();
 

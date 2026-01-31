@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
 import { JobsGrid } from "@/components/JobsGrid";
 import { getJobsFromDB } from "@/lib/data";
+import { db, jobTags, jobRoles } from "@/db";
+import { asc } from "drizzle-orm";
 
 export const metadata = {
 	title: "Jobs",
@@ -24,8 +26,19 @@ function JobsGridFallback() {
 	);
 }
 
+async function getTagsAndRoles() {
+	const [tags, roles] = await Promise.all([
+		db.select().from(jobTags).orderBy(asc(jobTags.label)),
+		db.select().from(jobRoles).orderBy(asc(jobRoles.label)),
+	]);
+	return { tags, roles };
+}
+
 export default async function Jobs() {
-	const jobs = await getJobsFromDB();
+	const [jobs, { tags, roles }] = await Promise.all([
+		getJobsFromDB(),
+		getTagsAndRoles(),
+	]);
 
 	return (
 		<>
@@ -62,7 +75,7 @@ export default async function Jobs() {
 
 					{/* Jobs Grid */}
 					<Suspense fallback={<JobsGridFallback />}>
-						<JobsGrid jobs={jobs} />
+						<JobsGrid jobs={jobs} tagDefinitions={tags} roleDefinitions={roles} />
 					</Suspense>
 				</div>
 			</main>

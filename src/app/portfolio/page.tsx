@@ -1,31 +1,55 @@
 import { Navbar } from "@/components/Navbar";
 import { PortfolioGrid } from "@/components/PortfolioGrid";
-import { db, investments as investmentsTable } from "@/db";
-import { desc, asc } from "drizzle-orm";
+import { db, investments as investmentsTable, jobs as jobsTable } from "@/db";
+import { desc, asc, sql } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 
 export const metadata = {
   title: "Portfolio",
 };
 
-// Force dynamic rendering since we need database access
-export const dynamic = "force-dynamic";
+// Use ISR with 5 minute revalidation instead of force-dynamic
+export const revalidate = 300;
 
-async function getInvestments() {
-  const data = await db
-    .select()
-    .from(investmentsTable)
-    .orderBy(asc(investmentsTable.tier), desc(investmentsTable.featured));
+const getInvestments = unstable_cache(
+  async () => {
+    const data = await db
+      .select()
+      .from(investmentsTable)
+      .orderBy(asc(investmentsTable.tier), desc(investmentsTable.featured));
 
-  // Map to expected format with tier as number
-  return data.map(inv => ({
-    ...inv,
-    tier: (parseInt(inv.tier || "2") || 2) as 1 | 2 | 3 | 4,
-    featured: inv.featured ?? false,
-  }));
-}
+    // Map to expected format with tier as number
+    return data.map(inv => ({
+      ...inv,
+      tier: (parseInt(inv.tier || "2") || 2) as 1 | 2 | 3 | 4,
+      featured: inv.featured ?? false,
+    }));
+  },
+  ["investments"],
+  { revalidate: 300, tags: ["investments"] }
+);
+
+const getJobCountsByCompany = unstable_cache(
+  async (): Promise<Record<string, number>> => {
+    const results = await db
+      .select({
+        company: jobsTable.company,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(jobsTable)
+      .groupBy(jobsTable.company);
+
+    return Object.fromEntries(results.map(r => [r.company, r.count]));
+  },
+  ["job-counts-by-company"],
+  { revalidate: 300, tags: ["jobs"] }
+);
 
 export default async function Portfolio() {
-  const investments = await getInvestments();
+  const [investments, jobCounts] = await Promise.all([
+    getInvestments(),
+    getJobCountsByCompany(),
+  ]);
 
   return (
     <>
@@ -48,7 +72,7 @@ export default async function Portfolio() {
           {/* Investments */}
           <section className="space-y-8">
             <h2 className="text-4xl font-bold text-center">Investments</h2>
-            <PortfolioGrid investments={investments} />
+            <PortfolioGrid investments={investments} jobCounts={jobCounts} />
           </section>
         </div>
       </main>

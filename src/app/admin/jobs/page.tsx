@@ -148,6 +148,8 @@ export default function AdminJobs() {
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [tagsFilter, setTagsFilter] = useState<string[]>([]);
   const [featuredFilter, setFeaturedFilter] = useState<string[]>([]);
+  const [tagDefinitions, setTagDefinitions] = useState<{ slug: string; label: string; color: string | null }[]>([]);
+  const [roleDefinitions, setRoleDefinitions] = useState<{ slug: string; label: string }[]>([]);
 
   const [error, setError] = useState<string | null>(null);
   const columnFilters = useColumnFilters();
@@ -155,8 +157,14 @@ export default function AdminJobs() {
 
   const categoryOptions = ["portfolio", "network"];
   const featuredOptions = ["yes", "no"];
-  // Get unique tags from all jobs
-  const tagOptions = [...new Set(jobs.flatMap(j => j.tags || []).filter(Boolean))];
+  // Get tag options from definitions, with fallback to tags from jobs
+  const tagOptions = tagDefinitions.length > 0
+    ? tagDefinitions.map(t => t.slug)
+    : [...new Set(jobs.flatMap(j => j.tags || []).filter(Boolean))];
+  // Map slug to label for display
+  const tagLabelMap = Object.fromEntries(tagDefinitions.map(t => [t.slug, t.label]));
+  // Get role options from definitions
+  const roleOptions = roleDefinitions.map(r => r.label);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -190,6 +198,15 @@ export default function AdminJobs() {
     // Analytics failures are non-critical, no error state needed
   }, []);
 
+  const fetchTagsAndRoles = useCallback(async () => {
+    const [tagsRes, rolesRes] = await Promise.all([
+      adminFetch<{ slug: string; label: string; color: string | null }[]>("/api/v1/job-tags"),
+      adminFetch<{ slug: string; label: string }[]>("/api/v1/job-roles"),
+    ]);
+    if (tagsRes.data) setTagDefinitions(tagsRes.data);
+    if (rolesRes.data) setRoleDefinitions(rolesRes.data);
+  }, []);
+
   useEffect(() => {
     document.title = "Admin | dcbuilder.eth";
   }, []);
@@ -197,7 +214,8 @@ export default function AdminJobs() {
   useEffect(() => {
     fetchJobs();
     fetchAnalytics();
-  }, [fetchJobs, fetchAnalytics]);
+    fetchTagsAndRoles();
+  }, [fetchJobs, fetchAnalytics, fetchTagsAndRoles]);
 
   useEffect(() => {
     if (searchParams.get("action") === "new") {
@@ -489,6 +507,7 @@ export default function AdminJobs() {
                 }
                 field="department"
                 placeholder="Start typing to see suggestions..."
+                options={roleOptions.length > 0 ? roleOptions : undefined}
               />
             </div>
             <div>
@@ -500,6 +519,8 @@ export default function AdminJobs() {
                 onChange={setTagsInput}
                 field="tags"
                 placeholder="e.g., hot, defi, protocol"
+                options={tagOptions.length > 0 ? tagOptions : undefined}
+                labelMap={Object.keys(tagLabelMap).length > 0 ? tagLabelMap : undefined}
               />
             </div>
             <ImageInput
