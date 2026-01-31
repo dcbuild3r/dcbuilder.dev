@@ -59,6 +59,10 @@ export default function AdminJobTags() {
   const [isCreating, setIsCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  useEffect(() => {
+    document.title = "Admin | dcbuilder.eth";
+  }, []);
+
   const fetchTags = useCallback(async () => {
     try {
       const { data, error } = await withMinDelay(adminFetch<JobTag[]>("/api/v1/job-tags"));
