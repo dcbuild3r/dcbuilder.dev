@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { PortfolioGrid } from "@/components/PortfolioGrid";
-import { db, investments as investmentsTable, jobs as jobsTable } from "@/db";
+import { db, investments as investmentsTable, jobs as jobsTable, investmentCategories as categoriesTable } from "@/db";
 import { desc, asc, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 
@@ -23,6 +23,7 @@ const getInvestments = unstable_cache(
       ...inv,
       tier: (parseInt(inv.tier || "2") || 2) as 1 | 2 | 3 | 4,
       featured: inv.featured ?? false,
+      categories: inv.categories ?? [],
     }));
   },
   ["investments"],
@@ -45,10 +46,19 @@ const getJobCountsByCompany = unstable_cache(
   { revalidate: 300, tags: ["jobs"] }
 );
 
+const getInvestmentCategories = unstable_cache(
+  async () => {
+    return db.select().from(categoriesTable).orderBy(asc(categoriesTable.label));
+  },
+  ["investment-categories"],
+  { revalidate: 300, tags: ["investment-categories"] }
+);
+
 export default async function Portfolio() {
-  const [investments, jobCounts] = await Promise.all([
+  const [investments, jobCounts, categories] = await Promise.all([
     getInvestments(),
     getJobCountsByCompany(),
+    getInvestmentCategories(),
   ]);
 
   return (
@@ -72,7 +82,7 @@ export default async function Portfolio() {
           {/* Investments */}
           <section className="space-y-8">
             <h2 className="text-4xl font-bold text-center">Investments</h2>
-            <PortfolioGrid investments={investments} jobCounts={jobCounts} />
+            <PortfolioGrid investments={investments} jobCounts={jobCounts} categories={categories} />
           </section>
         </div>
       </main>

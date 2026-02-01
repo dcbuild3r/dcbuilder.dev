@@ -13,6 +13,7 @@ interface Investment {
 	tier: 1 | 2 | 3 | 4;
 	featured: boolean;
 	status?: string | null;
+	categories?: string[] | null;
 	website?: string | null;
 	x?: string | null;
 	github?: string | null;
@@ -30,9 +31,17 @@ const isNew = (createdAt: string | Date | null | undefined): boolean => {
 
 type SortOption = "relevance" | "alphabetical" | "alphabetical-desc";
 
+interface InvestmentCategory {
+	id: string;
+	slug: string;
+	label: string;
+	color: string | null;
+}
+
 interface PortfolioGridProps {
 	investments: Investment[];
 	jobCounts?: Record<string, number>;
+	categories?: InvestmentCategory[];
 }
 
 function hashString(value: string): number {
@@ -82,11 +91,12 @@ function getJobsUrl(title: string): string {
 	return `/jobs?${params}`;
 }
 
-export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProps) {
+export function PortfolioGrid({ investments, jobCounts = {}, categories = [] }: PortfolioGridProps) {
 	const [sortBy, setSortBy] = useState<SortOption>("relevance");
 	const [filter, setFilter] = useState<FilterOption>("all");
+	const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-	// Count investments by category
+	// Count investments by tier/featured
 	const mainCount = useMemo(
 		() => investments.filter((i) => i.tier <= 3).length,
 		[investments]
@@ -97,13 +107,41 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 	);
 	const tier4Count = investments.length - mainCount;
 
-	// Filtered investments based on filter option
+	// Get categories with their investment counts
+	const categoriesWithCounts = useMemo(() => {
+		const counts: Record<string, number> = {};
+		investments.forEach((inv) => {
+			inv.categories?.forEach((cat) => {
+				counts[cat] = (counts[cat] || 0) + 1;
+			});
+		});
+		// Show all categories from props, with their counts (including 0)
+		return categories.map((c) => ({
+			category: c.label,
+			count: counts[c.label] || 0,
+		}));
+	}, [investments, categories]);
+
+	// Filtered investments based on filter option and category (multi-select)
 	const filteredInvestments = useMemo(() => {
-		if (filter === "featured") return investments.filter((i) => i.featured);
-		if (filter === "all") return investments;
-		// Default "main": show tier 1, 2, 3 (hide tier 4)
-		return investments.filter((i) => i.tier <= 3);
-	}, [investments, filter]);
+		let result = investments;
+
+		// Apply tier/featured filter
+		if (filter === "featured") {
+			result = result.filter((i) => i.featured);
+		} else if (filter === "main") {
+			result = result.filter((i) => i.tier <= 3);
+		}
+
+		// Apply category filter (match ANY selected category)
+		if (selectedCategories.length > 0) {
+			result = result.filter((i) =>
+				selectedCategories.some((cat) => i.categories?.includes(cat))
+			);
+		}
+
+		return result;
+	}, [investments, filter, selectedCategories]);
 
 	// Deterministic sort (no shuffle - that happens in useEffect)
 	// Deterministic display order (stable between server/client)
@@ -129,7 +167,7 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 		const featured = active.filter((i) => i.featured);
 		const nonFeatured = active.filter((i) => !i.featured);
 
-		const seedBase = `${filter}|${sortBy}`;
+		const seedBase = `${filter}|${sortBy}|${selectedCategories.join(",") || "all"}`;
 
 		// Group featured by tier and shuffle each group
 		const featuredTierGroups: Record<number, Investment[]> = {};
@@ -171,7 +209,7 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 		);
 
 		return [...shuffledFeatured, ...shuffledNonFeatured, ...shuffledDefunct];
-	}, [filteredInvestments, sortBy, filter]);
+	}, [filteredInvestments, sortBy, filter, selectedCategories]);
 
 	// Split into active and defunct for rendering with separator
 	const activeInvestments = displayInvestments.filter((i) => i.status !== "defunct");
@@ -235,6 +273,45 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 					)}
 				</div>
 			</div>
+
+			{/* Category Filters (Multi-select) */}
+			{categories.length > 0 && (
+				<div className="flex flex-wrap items-center gap-2">
+					<span className="text-sm text-neutral-600 dark:text-neutral-400 mr-1">
+						Category:
+					</span>
+					{selectedCategories.length > 0 && (
+						<button
+							onClick={() => setSelectedCategories([])}
+							className="px-3 py-1 text-xs rounded-full border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+						>
+							Clear ({selectedCategories.length})
+						</button>
+					)}
+					{categoriesWithCounts.map(({ category, count }) => {
+						const isSelected = selectedCategories.includes(category);
+						return (
+							<button
+								key={category}
+								onClick={() => {
+									if (isSelected) {
+										setSelectedCategories(selectedCategories.filter((c) => c !== category));
+									} else {
+										setSelectedCategories([...selectedCategories, category]);
+									}
+								}}
+								className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+									isSelected
+										? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
+										: "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+								}`}
+							>
+								{category} ({count})
+							</button>
+						);
+					})}
+				</div>
+			)}
 
 			{/* Grid - Active Investments */}
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

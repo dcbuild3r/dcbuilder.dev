@@ -21,10 +21,18 @@ interface Investment {
   tier: string | null;
   featured: boolean | null;
   status: string | null;
+  categories: string[] | null;
   website: string | null;
   x: string | null;
   github: string | null;
   createdAt: string;
+}
+
+interface InvestmentCategory {
+  id: string;
+  slug: string;
+  label: string;
+  color: string | null;
 }
 
 const emptyInvestment: Partial<Investment> = {
@@ -34,6 +42,7 @@ const emptyInvestment: Partial<Investment> = {
   tier: "2",
   featured: false,
   status: "active",
+  categories: [],
   website: "",
   x: "",
   github: "",
@@ -42,6 +51,7 @@ const emptyInvestment: Partial<Investment> = {
 export default function AdminInvestments() {
   const searchParams = useSearchParams();
   const [investments, setInvestments] = useState<Investment[]>([]);
+  const [investmentCategories, setInvestmentCategories] = useState<InvestmentCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingInvestment, setEditingInvestment] =
     useState<Partial<Investment> | null>(null);
@@ -52,6 +62,7 @@ export default function AdminInvestments() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [tierFilter, setTierFilter] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
   const [error, setError] = useState<string | null>(null);
   const columnFilters = useColumnFilters();
@@ -60,15 +71,22 @@ export default function AdminInvestments() {
   const statusOptions = ["active", "exited", "defunct"];
   const tierOptions = ["1", "2", "3", "4"];
 
+  // Get category labels for display
+  const categoryLabels = investmentCategories.map((c) => c.label);
+
   const fetchInvestments = useCallback(async () => {
     setError(null);
-    const { data, error: fetchError } = await withMinDelay(
-      adminFetch<Investment[]>("/api/v1/investments?limit=100")
-    );
-    if (fetchError) {
-      setError(fetchError);
+    const [investmentsResult, categoriesResult] = await Promise.all([
+      withMinDelay(adminFetch<Investment[]>("/api/v1/investments?limit=100")),
+      adminFetch<InvestmentCategory[]>("/api/v1/investment-categories"),
+    ]);
+    if (investmentsResult.error) {
+      setError(investmentsResult.error);
     } else {
-      setInvestments(data || []);
+      setInvestments(investmentsResult.data || []);
+    }
+    if (categoriesResult.data) {
+      setInvestmentCategories(categoriesResult.data);
     }
     setLoading(false);
   }, []);
@@ -223,6 +241,40 @@ export default function AdminInvestments() {
               </select>
             </div>
 
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Categories</label>
+              <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 min-h-[42px]">
+                {investmentCategories.map((cat) => {
+                  const isSelected = editingInvestment.categories?.includes(cat.label);
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => {
+                        const current = editingInvestment.categories || [];
+                        const updated = isSelected
+                          ? current.filter((c) => c !== cat.label)
+                          : [...current, cat.label];
+                        setEditingInvestment({
+                          ...editingInvestment,
+                          categories: updated,
+                        });
+                      }}
+                      className={`px-2 py-1 text-xs rounded-full border transition-colors ${
+                        isSelected
+                          ? "bg-amber-500 text-white border-transparent"
+                          : "border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <ImageInput
                 label="Logo URL"
@@ -355,6 +407,13 @@ export default function AdminInvestments() {
       if (statusFilter.length > 0 && !statusFilter.includes(investment.status || "active")) {
         return false;
       }
+      // Category multi-select filter
+      if (categoryFilter.length > 0) {
+        const investmentCategories = investment.categories || [];
+        if (!categoryFilter.some((cat) => investmentCategories.includes(cat))) {
+          return false;
+        }
+      }
       return true;
     })
     .sort((a, b) => {
@@ -399,6 +458,7 @@ export default function AdminInvestments() {
             "Title",
             "Tier",
             "Status",
+            "Categories",
             { label: "Actions", align: "right" },
           ]}
           rows={10}
@@ -452,6 +512,16 @@ export default function AdminInvestments() {
                   onSelectionChange={setStatusFilter}
                   formatOption={(s) => s.charAt(0).toUpperCase() + s.slice(1)}
                 />
+                <MultiSelectHeader
+                  label="Categories"
+                  filterKey="categories"
+                  options={categoryLabels}
+                  selectedValues={categoryFilter}
+                  isOpen={columnFilters.isActive("categories")}
+                  onToggle={() => columnFilters.toggleFilter("categories")}
+                  onClose={columnFilters.closeSearch}
+                  onSelectionChange={setCategoryFilter}
+                />
                 <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
               </tr>
             </thead>
@@ -487,6 +557,23 @@ export default function AdminInvestments() {
                     >
                       {investment.status || "active"}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex flex-wrap gap-1 max-w-[200px]">
+                      {investment.categories?.slice(0, 3).map((cat) => (
+                        <span
+                          key={cat}
+                          className="px-1.5 py-0.5 rounded text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                        >
+                          {cat}
+                        </span>
+                      ))}
+                      {(investment.categories?.length || 0) > 3 && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400">
+                          +{(investment.categories?.length || 0) - 3}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center justify-end gap-2">

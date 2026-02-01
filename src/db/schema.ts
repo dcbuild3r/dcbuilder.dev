@@ -126,6 +126,27 @@ export const announcements = pgTable(
   ]
 );
 
+// Investment categories
+export const INVESTMENT_CATEGORIES = [
+  "Crypto",
+  "AI",
+  "DeFi",
+  "MEV",
+  "Privacy",
+  "Health/Longevity",
+  "Security",
+  "L1",
+  "L2",
+  "Governance",
+  "Agents",
+  "Hardware",
+  "Devtools",
+  "Social",
+  "Network States",
+  "ZK",
+] as const;
+export type InvestmentCategoryLabel = (typeof INVESTMENT_CATEGORIES)[number];
+
 // Investments table
 export const investments = pgTable(
   "investments",
@@ -140,6 +161,7 @@ export const investments = pgTable(
     tier: text("tier"), // 1, 2, 3, 4
     featured: boolean("featured").default(false),
     status: text("status").default("active"), // active, inactive, acquired
+    categories: text("categories").array(), // Array of category tags
     website: text("website"),
     x: text("x"),
     github: text("github"),
@@ -193,6 +215,21 @@ export const blogPosts = pgTable(
     index("blog_posts_date_idx").on(table.date),
     index("blog_posts_published_idx").on(table.published),
   ]
+);
+
+// Investment categories (dynamic category definitions)
+export const investmentCategories = pgTable(
+  "investment_categories",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    slug: text("slug").notNull().unique(),
+    label: text("label").notNull(),
+    color: text("color"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [index("investment_categories_slug_idx").on(table.slug)]
 );
 
 // Job tags (dynamic tag definitions)
@@ -270,3 +307,6 @@ export type NewJobTag = typeof jobTags.$inferInsert;
 
 export type JobRole = typeof jobRoles.$inferSelect;
 export type NewJobRole = typeof jobRoles.$inferInsert;
+
+export type InvestmentCategory = typeof investmentCategories.$inferSelect;
+export type NewInvestmentCategory = typeof investmentCategories.$inferInsert;
