@@ -15,6 +15,13 @@
       "when": 1769893509073,
       "tag": "0001_add_categories_to_investments",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769898563430,
+      "tag": "0002_small_red_hulk",
+      "breakpoints": true
     }
   ]
 }

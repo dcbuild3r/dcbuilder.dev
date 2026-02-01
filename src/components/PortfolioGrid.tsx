@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
-import { INVESTMENT_CATEGORIES } from "@/db/schema";
 
 // Investment interface matching what comes from the database
 interface Investment {
@@ -32,9 +31,17 @@ const isNew = (createdAt: string | Date | null | undefined): boolean => {
 
 type SortOption = "relevance" | "alphabetical" | "alphabetical-desc";
 
+interface InvestmentCategory {
+	id: string;
+	slug: string;
+	label: string;
+	color: string | null;
+}
+
 interface PortfolioGridProps {
 	investments: Investment[];
 	jobCounts?: Record<string, number>;
+	categories?: InvestmentCategory[];
 }
 
 function hashString(value: string): number {
@@ -84,10 +91,10 @@ function getJobsUrl(title: string): string {
 	return `/jobs?${params}`;
 }
 
-export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProps) {
+export function PortfolioGrid({ investments, jobCounts = {}, categories = [] }: PortfolioGridProps) {
 	const [sortBy, setSortBy] = useState<SortOption>("relevance");
 	const [filter, setFilter] = useState<FilterOption>("all");
-	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+	const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
 	// Count investments by tier/featured
 	const mainCount = useMemo(
@@ -108,13 +115,14 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 				counts[cat] = (counts[cat] || 0) + 1;
 			});
 		});
-		// Only include categories that exist in INVESTMENT_CATEGORIES and have counts
-		return INVESTMENT_CATEGORIES
+		// Use dynamic categories from props, filter to those with counts
+		const categoryLabels = categories.map((c) => c.label);
+		return categoryLabels
 			.filter((cat) => counts[cat] > 0)
 			.map((cat) => ({ category: cat, count: counts[cat] }));
-	}, [investments]);
+	}, [investments, categories]);
 
-	// Filtered investments based on filter option and category
+	// Filtered investments based on filter option and category (multi-select)
 	const filteredInvestments = useMemo(() => {
 		let result = investments;
 
@@ -125,13 +133,15 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 			result = result.filter((i) => i.tier <= 3);
 		}
 
-		// Apply category filter
-		if (selectedCategory) {
-			result = result.filter((i) => i.categories?.includes(selectedCategory));
+		// Apply category filter (match ANY selected category)
+		if (selectedCategories.length > 0) {
+			result = result.filter((i) =>
+				selectedCategories.some((cat) => i.categories?.includes(cat))
+			);
 		}
 
 		return result;
-	}, [investments, filter, selectedCategory]);
+	}, [investments, filter, selectedCategories]);
 
 	// Deterministic sort (no shuffle - that happens in useEffect)
 	// Deterministic display order (stable between server/client)
@@ -157,7 +167,7 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 		const featured = active.filter((i) => i.featured);
 		const nonFeatured = active.filter((i) => !i.featured);
 
-		const seedBase = `${filter}|${sortBy}|${selectedCategory || "all"}`;
+		const seedBase = `${filter}|${sortBy}|${selectedCategories.join(",") || "all"}`;
 
 		// Group featured by tier and shuffle each group
 		const featuredTierGroups: Record<number, Investment[]> = {};
@@ -199,7 +209,7 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 		);
 
 		return [...shuffledFeatured, ...shuffledNonFeatured, ...shuffledDefunct];
-	}, [filteredInvestments, sortBy, filter, selectedCategory]);
+	}, [filteredInvestments, sortBy, filter, selectedCategories]);
 
 	// Split into active and defunct for rendering with separator
 	const activeInvestments = displayInvestments.filter((i) => i.status !== "defunct");
@@ -264,35 +274,42 @@ export function PortfolioGrid({ investments, jobCounts = {} }: PortfolioGridProp
 				</div>
 			</div>
 
-			{/* Category Filters */}
+			{/* Category Filters (Multi-select) */}
 			{categoriesWithCounts.length > 0 && (
 				<div className="flex flex-wrap items-center gap-2">
 					<span className="text-sm text-neutral-600 dark:text-neutral-400 mr-1">
 						Category:
 					</span>
-					<button
-						onClick={() => setSelectedCategory(null)}
-						className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-							selectedCategory === null
-								? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
-								: "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-						}`}
-					>
-						All
-					</button>
-					{categoriesWithCounts.map(({ category, count }) => (
+					{selectedCategories.length > 0 && (
 						<button
-							key={category}
-							onClick={() => setSelectedCategory(category)}
-							className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-								selectedCategory === category
-									? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
-									: "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-							}`}
+							onClick={() => setSelectedCategories([])}
+							className="px-3 py-1 text-xs rounded-full border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
 						>
-							{category} ({count})
+							Clear ({selectedCategories.length})
 						</button>
-					))}
+					)}
+					{categoriesWithCounts.map(({ category, count }) => {
+						const isSelected = selectedCategories.includes(category);
+						return (
+							<button
+								key={category}
+								onClick={() => {
+									if (isSelected) {
+										setSelectedCategories(selectedCategories.filter((c) => c !== category));
+									} else {
+										setSelectedCategories([...selectedCategories, category]);
+									}
+								}}
+								className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+									isSelected
+										? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
+										: "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+								}`}
+							>
+								{category} ({count})
+							</button>
+						);
+					})}
 				</div>
 			)}
 

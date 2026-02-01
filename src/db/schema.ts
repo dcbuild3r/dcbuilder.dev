@@ -145,7 +145,7 @@ export const INVESTMENT_CATEGORIES = [
   "Network States",
   "ZK",
 ] as const;
-export type InvestmentCategory = (typeof INVESTMENT_CATEGORIES)[number];
+export type InvestmentCategoryLabel = (typeof INVESTMENT_CATEGORIES)[number];
 
 // Investments table
 export const investments = pgTable(
@@ -215,6 +215,21 @@ export const blogPosts = pgTable(
     index("blog_posts_date_idx").on(table.date),
     index("blog_posts_published_idx").on(table.published),
   ]
+);
+
+// Investment categories (dynamic category definitions)
+export const investmentCategories = pgTable(
+  "investment_categories",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    slug: text("slug").notNull().unique(),
+    label: text("label").notNull(),
+    color: text("color"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [index("investment_categories_slug_idx").on(table.slug)]
 );
 
 // Job tags (dynamic tag definitions)
@@ -292,3 +307,6 @@ export type NewJobTag = typeof jobTags.$inferInsert;
 
 export type JobRole = typeof jobRoles.$inferSelect;
 export type NewJobRole = typeof jobRoles.$inferInsert;
+
+export type InvestmentCategory = typeof investmentCategories.$inferSelect;
+export type NewInvestmentCategory = typeof investmentCategories.$inferInsert;

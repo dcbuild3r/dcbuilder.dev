@@ -12,7 +12,6 @@ import { TableSkeleton } from "@/components/admin/TableSkeleton";
 import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
 import { StarToggle, EditButton, DeleteButton, TableImage, ErrorAlert } from "@/components/admin/ActionButtons";
 import { ADMIN_THEMES } from "@/lib/admin-themes";
-import { INVESTMENT_CATEGORIES } from "@/db/schema";
 
 interface Investment {
   id: string;
@@ -27,6 +26,13 @@ interface Investment {
   x: string | null;
   github: string | null;
   createdAt: string;
+}
+
+interface InvestmentCategory {
+  id: string;
+  slug: string;
+  label: string;
+  color: string | null;
 }
 
 const emptyInvestment: Partial<Investment> = {
@@ -45,6 +51,7 @@ const emptyInvestment: Partial<Investment> = {
 export default function AdminInvestments() {
   const searchParams = useSearchParams();
   const [investments, setInvestments] = useState<Investment[]>([]);
+  const [investmentCategories, setInvestmentCategories] = useState<InvestmentCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingInvestment, setEditingInvestment] =
     useState<Partial<Investment> | null>(null);
@@ -64,15 +71,22 @@ export default function AdminInvestments() {
   const statusOptions = ["active", "exited", "defunct"];
   const tierOptions = ["1", "2", "3", "4"];
 
+  // Get category labels for display
+  const categoryLabels = investmentCategories.map((c) => c.label);
+
   const fetchInvestments = useCallback(async () => {
     setError(null);
-    const { data, error: fetchError } = await withMinDelay(
-      adminFetch<Investment[]>("/api/v1/investments?limit=100")
-    );
-    if (fetchError) {
-      setError(fetchError);
+    const [investmentsResult, categoriesResult] = await Promise.all([
+      withMinDelay(adminFetch<Investment[]>("/api/v1/investments?limit=100")),
+      adminFetch<InvestmentCategory[]>("/api/v1/investment-categories"),
+    ]);
+    if (investmentsResult.error) {
+      setError(investmentsResult.error);
     } else {
-      setInvestments(data || []);
+      setInvestments(investmentsResult.data || []);
+    }
+    if (categoriesResult.data) {
+      setInvestmentCategories(categoriesResult.data);
     }
     setLoading(false);
   }, []);
@@ -230,17 +244,17 @@ export default function AdminInvestments() {
             <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-1">Categories</label>
               <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 min-h-[42px]">
-                {INVESTMENT_CATEGORIES.map((cat) => {
-                  const isSelected = editingInvestment.categories?.includes(cat);
+                {investmentCategories.map((cat) => {
+                  const isSelected = editingInvestment.categories?.includes(cat.label);
                   return (
                     <button
-                      key={cat}
+                      key={cat.id}
                       type="button"
                       onClick={() => {
                         const current = editingInvestment.categories || [];
                         const updated = isSelected
-                          ? current.filter((c) => c !== cat)
-                          : [...current, cat];
+                          ? current.filter((c) => c !== cat.label)
+                          : [...current, cat.label];
                         setEditingInvestment({
                           ...editingInvestment,
                           categories: updated,
@@ -252,7 +266,7 @@ export default function AdminInvestments() {
                           : "border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                       }`}
                     >
-                      {cat}
+                      {cat.label}
                     </button>
                   );
                 })}
@@ -501,7 +515,7 @@ export default function AdminInvestments() {
                 <MultiSelectHeader
                   label="Categories"
                   filterKey="categories"
-                  options={[...INVESTMENT_CATEGORIES]}
+                  options={categoryLabels}
                   selectedValues={categoryFilter}
                   isOpen={columnFilters.isActive("categories")}
                   onToggle={() => columnFilters.toggleFilter("categories")}
