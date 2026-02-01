@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { ImageInput } from "@/components/admin/ImagePreview";
 import {
   SearchableHeader,
@@ -429,15 +430,23 @@ export default function AdminInvestments() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Investments ({investments.length})</h1>
-        <button
-          onClick={() => {
-            setEditingInvestment(emptyInvestment);
-            setIsNew(true);
-          }}
-          className={`px-4 py-2 ${theme.addButtonBg} text-white rounded-lg font-medium`}
-        >
-          Add Investment
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/investment-categories"
+            className="px-4 py-2 border border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400 rounded-lg font-medium hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+          >
+            Manage Categories
+          </Link>
+          <button
+            onClick={() => {
+              setEditingInvestment(emptyInvestment);
+              setIsNew(true);
+            }}
+            className={`px-4 py-2 ${theme.addButtonBg} text-white rounded-lg font-medium`}
+          >
+            Add Investment
+          </button>
+        </div>
       </div>
 
       {/* Error Alert */}
