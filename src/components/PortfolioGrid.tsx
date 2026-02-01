@@ -107,7 +107,7 @@ export function PortfolioGrid({ investments, jobCounts = {}, categories = [] }: 
 	);
 	const tier4Count = investments.length - mainCount;
 
-	// Get categories that have at least one investment
+	// Get categories with their investment counts
 	const categoriesWithCounts = useMemo(() => {
 		const counts: Record<string, number> = {};
 		investments.forEach((inv) => {
@@ -115,11 +115,11 @@ export function PortfolioGrid({ investments, jobCounts = {}, categories = [] }: 
 				counts[cat] = (counts[cat] || 0) + 1;
 			});
 		});
-		// Use dynamic categories from props, filter to those with counts
-		const categoryLabels = categories.map((c) => c.label);
-		return categoryLabels
-			.filter((cat) => counts[cat] > 0)
-			.map((cat) => ({ category: cat, count: counts[cat] }));
+		// Show all categories from props, with their counts (including 0)
+		return categories.map((c) => ({
+			category: c.label,
+			count: counts[c.label] || 0,
+		}));
 	}, [investments, categories]);
 
 	// Filtered investments based on filter option and category (multi-select)
@@ -275,7 +275,7 @@ export function PortfolioGrid({ investments, jobCounts = {}, categories = [] }: 
 			</div>
 
 			{/* Category Filters (Multi-select) */}
-			{categoriesWithCounts.length > 0 && (
+			{categories.length > 0 && (
 				<div className="flex flex-wrap items-center gap-2">
 					<span className="text-sm text-neutral-600 dark:text-neutral-400 mr-1">
 						Category:
