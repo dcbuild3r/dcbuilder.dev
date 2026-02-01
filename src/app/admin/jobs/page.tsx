@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Combobox, MultiCombobox } from "@/components/admin/Combobox";
 import { ImageInput } from "@/components/admin/ImagePreview";
 import { MultiSelectHeader, SearchableMultiSelectHeader, useColumnFilters } from "@/components/admin/ColumnFilters";
@@ -625,16 +626,30 @@ export default function AdminJobs() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Jobs ({jobs.length})</h1>
-        <button
-          onClick={() => {
-            setEditingJob(emptyJob);
-            setIsNew(true);
-            setTagsInput("");
-          }}
-          className={`px-4 py-2 ${theme.addButtonBg} text-white rounded-lg font-medium`}
-        >
-          Add Job
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/job-tags"
+            className="px-4 py-2 border border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 rounded-lg font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+          >
+            Manage Tags
+          </Link>
+          <Link
+            href="/admin/job-roles"
+            className="px-4 py-2 border border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 rounded-lg font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+          >
+            Manage Roles
+          </Link>
+          <button
+            onClick={() => {
+              setEditingJob(emptyJob);
+              setIsNew(true);
+              setTagsInput("");
+            }}
+            className={`px-4 py-2 ${theme.addButtonBg} text-white rounded-lg font-medium`}
+          >
+            Add Job
+          </button>
+        </div>
       </div>
 
       {/* Error Alert */}
