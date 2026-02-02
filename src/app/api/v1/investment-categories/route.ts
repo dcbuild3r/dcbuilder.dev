@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, investmentCategories } from "@/db";
 import { eq, asc } from "drizzle-orm";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/services/auth";
 
 // GET all investment categories
 export async function GET() {

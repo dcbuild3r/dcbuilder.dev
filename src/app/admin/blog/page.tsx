@@ -70,6 +70,7 @@ export default function AdminBlog() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPosts();
   }, [fetchPosts]);
 
@@ -87,6 +88,7 @@ export default function AdminBlog() {
 
   useEffect(() => {
     if (searchParams.get("action") === "new") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditingPost({ ...emptyPost });
       setIsNew(true);
     }

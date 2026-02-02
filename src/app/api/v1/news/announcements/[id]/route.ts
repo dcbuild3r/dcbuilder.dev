@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db, announcements } from "@/db";
 import { eq } from "drizzle-orm";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/services/auth";
 
 // GET /api/v1/news/announcements/[id] - Get an announcement by ID
 export async function GET(

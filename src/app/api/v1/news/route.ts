@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db, curatedLinks, announcements } from "@/db";
 import { desc } from "drizzle-orm";
-import { parsePaginationParams } from "@/lib/api-auth";
+import { parsePaginationParams } from "@/services/auth";
 
 // GET /api/v1/news - Get all news (curated links + announcements) combined
 export async function GET(request: NextRequest) {

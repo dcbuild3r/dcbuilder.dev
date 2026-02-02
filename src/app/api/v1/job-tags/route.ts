@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, jobTags } from "@/db";
 import { eq, asc } from "drizzle-orm";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/services/auth";
 
 // GET all job tags
 export async function GET() {

@@ -15,6 +15,7 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 ## Features
 
 ### Public Pages
+
 - **Home**: Hero with focus areas and featured content
 - **About**: Bio, affiliations, and social links
 - **Blog**: MDX posts with syntax highlighting and OG images
@@ -24,6 +25,7 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 - **News**: Curated links and portfolio announcements
 
 ### Admin Dashboard (`/admin`)
+
 - **Dashboard**: Site-wide analytics and quick actions
 - **Blog Management**: Markdown editor with live preview
 - **Jobs Management**: Full CRUD with analytics
@@ -33,6 +35,7 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 - **Affiliations Management**: About page affiliations
 
 #### Admin Features
+
 - **Colorful UI**: Section-specific color themes (blue for jobs, green for candidates, etc.)
 - **Skeleton Loading**: Smooth table loading with animated placeholders
 - **Column Filters**: Text search and multi-select for enumerable fields
@@ -46,20 +49,23 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 ## Architecture
 
 ### Data Flow
+
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Client    │────▶│  API Routes │────▶│  PostgreSQL │
-│  (React)    │◀────│  (Next.js)  │◀────│  (Drizzle)  │
-└─────────────┘     └─────────────┘     └─────────────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │  PostHog    │
-                    │ (Analytics) │
-                    └─────────────┘
+
+┌─────────────┐     ┌─────────────┐     ┌───────────────┐     ┌─────────────┐
+│   Client    │────▶│  API Routes │────▶│ Services Layer│────▶│  PostgreSQL │
+│  (React)    │◀────│  (Next.js)  │◀────│ (Auth, R2...) │◀────│  (Drizzle)  │
+└─────────────┘     └─────────────┘     └───────────────┘     └─────────────┘
+                                               │
+                                               ▼
+                                        ┌─────────────┐
+                                        │  PostHog    │
+                                        │ (Analytics) │
+                                        └─────────────┘
 ```
 
 ### Directory Structure
+
 ```
 src/
 ├── app/                  # Next.js App Router pages
@@ -69,8 +75,11 @@ src/
 ├── components/          # React components
 │   ├── admin/           # Admin-specific components
 │   └── ...              # Shared components
-├── db/                  # Database schema and client
-└── lib/                 # Utilities and helpers
+├── db/                  # Database configuration
+│   ├── schema/          # Modular Drizzle schema definitions
+│   └── index.ts         # DB client export
+├── services/            # Business logic & External clients (R2, PostHog, Auth)
+└── lib/                 # Shared utilities and helpers
 
 docs/
 ├── API.md               # API documentation
@@ -82,6 +91,7 @@ docs/
 See [API Documentation](./docs/API.md) for full endpoint documentation.
 
 ### Quick Reference
+
 | Resource | Endpoint | Auth |
 |----------|----------|------|
 | Jobs | `/api/v1/jobs` | Read: Public, Write: API Key |
@@ -146,11 +156,13 @@ POSTHOG_PROJECT_ID="..."
 ## Content Management
 
 ### Via Admin Dashboard (Recommended)
+
 1. Navigate to `/admin`
 2. Enter your API key
 3. Use the dashboard to manage all content
 
 ### Via API
+
 ```bash
 # Create a job
 curl -X POST https://dcbuilder.dev/api/v1/jobs \
@@ -160,7 +172,9 @@ curl -X POST https://dcbuilder.dev/api/v1/jobs \
 ```
 
 ### Blog Posts
+
 Create blog posts via the admin dashboard or API. Posts use MDX format and support:
+
 - Markdown with syntax highlighting
 - Custom components
 - Source attribution for republished content
@@ -185,6 +199,7 @@ The site deploys as a standard Next.js app. Ensure all environment variables are
 ## Cloning This Project
 
 Want to create your own version? See [CLONE.md](./CLONE.md) for a complete setup guide covering:
+
 - Database setup (local or hosted PostgreSQL)
 - Cloudflare R2 configuration for image storage
 - PostHog analytics integration

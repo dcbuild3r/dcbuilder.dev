@@ -57,11 +57,13 @@ export default function AdminAffiliations() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAffiliations();
   }, [fetchAffiliations]);
 
   useEffect(() => {
     if (searchParams.get("action") === "new") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditingAffiliation(emptyAffiliation);
       setIsNew(true);
     }

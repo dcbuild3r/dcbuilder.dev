@@ -4,6 +4,8 @@ const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
 
 export default defineConfig({
 	testDir: "./tests",
+	testMatch: "**/*.spec.ts", // Only run .spec.ts files (exclude unit tests)
+	globalSetup: "./tests/global-setup.ts",
 	timeout: 30_000,
 	expect: {
 		timeout: 10_000,

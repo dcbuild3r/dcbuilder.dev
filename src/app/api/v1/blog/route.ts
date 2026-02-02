@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, blogPosts } from "@/db";
 import { desc, eq } from "drizzle-orm";
-import { requireAuth, validateApiKey } from "@/lib/api-auth";
+import { requireAuth, validateApiKey } from "@/services/auth";
 
 function isValidDate(dateStr: string): boolean {
   const parsed = new Date(dateStr);

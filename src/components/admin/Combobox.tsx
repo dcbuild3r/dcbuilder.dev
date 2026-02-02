@@ -165,7 +165,7 @@ interface MultiComboboxProps {
   placeholder?: string;
   className?: string;
   options?: string[]; // Optional: provide options directly instead of fetching from API
-  labelMap?: Record<string, string>; // Optional: map values to display labels
+  labelMap?: Record<string, string>; // Optional: map option values to display labels
 }
 
 export function MultiCombobox({
@@ -321,7 +321,7 @@ export function MultiCombobox({
                   : "hover:bg-neutral-50 dark:hover:bg-neutral-700"
               }`}
             >
-              {suggestion}
+              {labelMap?.[suggestion] ?? suggestion}
             </li>
           ))}
         </ul>
