@@ -75,17 +75,12 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	);
 
 	// Helper to check if candidate should show TOP badge
-	// Only show TOP after we've loaded hot data and confirmed they're not hot
+	// Shows for anyone with "top" skill tag (can show alongside HOT)
 	const isTopCandidate = useCallback(
 		(candidate: Candidate) => {
-			const hasTopTag = candidate.skills?.includes("top" as SkillTag) ?? false;
-			if (!hasTopTag) return false;
-			// Wait for hot data to load before showing TOP (prevents flicker)
-			if (!hotDataLoaded) return false;
-			// Don't show TOP if they're hot
-			return !isHotCandidate(candidate);
+			return candidate.skills?.includes("top" as SkillTag) ?? false;
 		},
-		[hotDataLoaded, isHotCandidate]
+		[]
 	);
 
 	// Helper to update URL params without React re-render
