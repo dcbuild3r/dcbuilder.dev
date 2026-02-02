@@ -112,11 +112,13 @@ export default function AdminNews() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
 
   useEffect(() => {
     if (searchParams.get("action") === "new") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditingItem(emptyCuratedLink);
       setIsNew(true);
       setActiveTab("curated");

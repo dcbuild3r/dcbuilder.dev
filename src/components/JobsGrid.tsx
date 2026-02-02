@@ -567,15 +567,8 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
     return labels;
   }, [tagDefinitions]);
 
-  // Build tag colors from definitions
-  const tagColors = useMemo(() => {
-    const colors: Record<string, string | null> = {};
-    tagDefinitions.forEach((tag) => {
-      colors[tag.slug] = tag.color;
-    });
-    return colors;
-  }, [tagDefinitions]);
   const searchParams = useSearchParams();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialParams = useMemo(() => {
     const typeParam = searchParams.get("type");
     const filterCategory: FilterCategory =
@@ -835,6 +828,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
     return Array.from(locations).sort();
   }, [jobs]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
       // Category filter

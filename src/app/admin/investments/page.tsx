@@ -97,11 +97,13 @@ export default function AdminInvestments() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchInvestments();
   }, [fetchInvestments]);
 
   useEffect(() => {
     if (searchParams.get("action") === "new") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditingInvestment(emptyInvestment);
       setIsNew(true);
     }

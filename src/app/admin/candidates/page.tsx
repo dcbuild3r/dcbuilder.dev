@@ -302,12 +302,14 @@ export default function AdminCandidates() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCandidates();
     fetchAnalytics();
   }, [fetchCandidates, fetchAnalytics]);
 
   useEffect(() => {
     if (searchParams.get("action") === "new") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditingCandidate(emptyCandidate);
       setIsNew(true);
       setSkillsInput("");

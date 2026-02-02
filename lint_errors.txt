@@ -1,0 +1,320 @@
+$ eslint
+
+/Users/dcbuilder/Code/dcbuilder.dev/scripts/migrate-job-tags-roles.ts
+  145:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+  170:16  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/affiliations/page.tsx
+  60:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/affiliations/page.tsx:60:5
+  58 |
+  59 |   useEffect(() => {
+> 60 |     fetchAffiliations();
+     |     ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  61 |   }, [fetchAffiliations]);
+  62 |
+  63 |   useEffect(() => {                                                                                 react-hooks/set-state-in-effect
+  65:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/affiliations/page.tsx:65:7
+  63 |   useEffect(() => {
+  64 |     if (searchParams.get("action") === "new") {
+> 65 |       setEditingAffiliation(emptyAffiliation);
+     |       ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  66 |       setIsNew(true);
+  67 |     }
+  68 |   }, [searchParams]);  react-hooks/set-state-in-effect
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/blog/page.tsx
+  73:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/blog/page.tsx:73:5
+  71 |
+  72 |   useEffect(() => {
+> 73 |     fetchPosts();
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  74 |   }, [fetchPosts]);
+  75 |
+  76 |   useEffect(() => {                                                                                        react-hooks/set-state-in-effect
+  90:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/blog/page.tsx:90:7
+  88 |   useEffect(() => {
+  89 |     if (searchParams.get("action") === "new") {
+> 90 |       setEditingPost({ ...emptyPost });
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  91 |       setIsNew(true);
+  92 |     }
+  93 |   }, [searchParams]);  react-hooks/set-state-in-effect
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/candidates/page.tsx
+  305:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/candidates/page.tsx:305:5
+  303 |
+  304 |   useEffect(() => {
+> 305 |     fetchCandidates();
+      |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  306 |     fetchAnalytics();
+  307 |   }, [fetchCandidates, fetchAnalytics]);
+  308 |                                                                   react-hooks/set-state-in-effect
+  311:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/candidates/page.tsx:311:7
+  309 |   useEffect(() => {
+  310 |     if (searchParams.get("action") === "new") {
+> 311 |       setEditingCandidate(emptyCandidate);
+      |       ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  312 |       setIsNew(true);
+  313 |       setSkillsInput("");
+  314 |     }  react-hooks/set-state-in-effect
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/investments/page.tsx
+  100:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/investments/page.tsx:100:5
+   98 |
+   99 |   useEffect(() => {
+> 100 |     fetchInvestments();
+      |     ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  101 |   }, [fetchInvestments]);
+  102 |
+  103 |   useEffect(() => {                                                                                 react-hooks/set-state-in-effect
+  105:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/investments/page.tsx:105:7
+  103 |   useEffect(() => {
+  104 |     if (searchParams.get("action") === "new") {
+> 105 |       setEditingInvestment(emptyInvestment);
+      |       ^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  106 |       setIsNew(true);
+  107 |     }
+  108 |   }, [searchParams]);  react-hooks/set-state-in-effect
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/jobs/page.tsx
+  216:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/jobs/page.tsx:216:5
+  214 |
+  215 |   useEffect(() => {
+> 216 |     fetchJobs();
+      |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  217 |     fetchAnalytics();
+  218 |     fetchTagsAndRoles();
+  219 |   }, [fetchJobs, fetchAnalytics, fetchTagsAndRoles]);                     react-hooks/set-state-in-effect
+  223:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/jobs/page.tsx:223:7
+  221 |   useEffect(() => {
+  222 |     if (searchParams.get("action") === "new") {
+> 223 |       setEditingJob(emptyJob);
+      |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  224 |       setIsNew(true);
+  225 |       setTagsInput("");
+  226 |     }  react-hooks/set-state-in-effect
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/news/page.tsx
+  115:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/news/page.tsx:115:5
+  113 |
+  114 |   useEffect(() => {
+> 115 |     fetchData();
+      |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  116 |   }, [fetchData]);
+  117 |
+  118 |   useEffect(() => {                                                                                                    react-hooks/set-state-in-effect
+  120:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/app/admin/news/page.tsx:120:7
+  118 |   useEffect(() => {
+  119 |     if (searchParams.get("action") === "new") {
+> 120 |       setEditingItem(emptyCuratedLink);
+      |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  121 |       setIsNew(true);
+  122 |       setActiveTab("curated");
+  123 |     }  react-hooks/set-state-in-effect
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/components/CandidatesGrid.tsx
+  185:3  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/components/CandidatesGrid.tsx:185:3
+  183 | 	// Reset display count when filters change
+  184 | 	useEffect(() => {
+> 185 | 		setDisplayCount(12);
+      | 		^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  186 | 	}, [availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]);
+  187 |
+  188 | 	// Get all unique tags from candidates  react-hooks/set-state-in-effect
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/components/JobsGrid.tsx
+  571:9   warning  'tagColors' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+  579:33  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `tagLabels`, but the source dependencies were [searchParams]. Inferred different dependency than source.
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/components/JobsGrid.tsx:579:33
+  577 |   }, [tagDefinitions]);
+  578 |   const searchParams = useSearchParams();
+> 579 |   const initialParams = useMemo(() => {
+      |                                 ^^^^^^^
+> 580 |     const typeParam = searchParams.get("type");
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 581 |     const filterCategory: FilterCategory =
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 605 |     };
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 606 |   }, [searchParams]);
+      | ^^^^ Could not preserve existing manual memoization
+  607 |
+  608 |   const [filterCategory, setFilterCategory] = useState<FilterCategory>(initialParams.filterCategory);
+  609 |   const [selectedCompanies, setSelectedCompanies] = useState<string[]>(initialParams.selectedCompanies);  react-hooks/preserve-manual-memoization
+  606:6   warning  React Hook useMemo has a missing dependency: 'tagLabels'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/exhaustive-deps
+  838:32  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `tagLabels`, but the source dependencies were [jobs, filterCategory_0, selectedCompanies_0, selectedRole_0, selectedLocation_0, searchQuery_0, selectedTags_0, showFeaturedOnly_0]. Inferred different dependency than source.
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/components/JobsGrid.tsx:838:32
+  836 |   }, [jobs]);
+  837 |
+> 838 |   const filteredJobs = useMemo(() => {
+      |                                ^^^^^^^
+> 839 |     return jobs.filter((job) => {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 840 |       // Category filter
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 913 |     });
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 914 |   }, [
+      | ^^^^ Could not preserve existing manual memoization
+  915 |     jobs,
+  916 |     filterCategory,
+  917 |     selectedCompanies,                                                                                                                                                                                    react-hooks/preserve-manual-memoization
+  838:32  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `tagLabels`, but the source dependencies were [jobs, filterCategory_0, selectedCompanies_0, selectedRole_0, selectedLocation_0, searchQuery_0, selectedTags_0, showFeaturedOnly_0]. Inferred different dependency than source.
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/components/JobsGrid.tsx:838:32
+  836 |   }, [jobs]);
+  837 |
+> 838 |   const filteredJobs = useMemo(() => {
+      |                                ^^^^^^^
+> 839 |     return jobs.filter((job) => {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 840 |       // Category filter
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 913 |     });
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 914 |   }, [
+      | ^^^^ Could not preserve existing manual memoization
+  915 |     jobs,
+  916 |     filterCategory,
+  917 |     selectedCompanies,                                                                                                                                                                                    react-hooks/preserve-manual-memoization
+  914:6   warning  React Hook useMemo has a missing dependency: 'tagLabels'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/exhaustive-deps
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/components/ThemeToggle.tsx
+  11:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/components/ThemeToggle.tsx:11:5
+   9 |
+  10 |   useEffect(() => {
+> 11 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  12 |   }, []);
+  13 |
+  14 |   // Prevent hydration mismatch by rendering placeholder until mounted  react-hooks/set-state-in-effect
+
+/Users/dcbuilder/Code/dcbuilder.dev/src/components/admin/Combobox.tsx
+  178:3  warning  'labelMap' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 23 problems (17 errors, 6 warnings)
+
+error: script "lint" exited with code 1

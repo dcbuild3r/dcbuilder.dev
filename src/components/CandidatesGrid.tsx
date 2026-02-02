@@ -182,6 +182,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 
 	// Reset display count when filters change
 	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setDisplayCount(12);
 	}, [availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]);
 

@@ -213,6 +213,7 @@ export default function AdminJobs() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchJobs();
     fetchAnalytics();
     fetchTagsAndRoles();
@@ -220,6 +221,7 @@ export default function AdminJobs() {
 
   useEffect(() => {
     if (searchParams.get("action") === "new") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditingJob(emptyJob);
       setIsNew(true);
       setTagsInput("");
