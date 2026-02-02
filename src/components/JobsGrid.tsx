@@ -12,6 +12,7 @@ import {
 	trackJobApplyClick,
 	trackJobDetailsClick,
 } from "@/lib/posthog";
+import { hashString, seededRandom, shuffleArray, isNew } from "@/lib/shuffle";
 
 // Job type labels for display
 const jobTypeLabels: Record<string, string> = {
@@ -19,15 +20,6 @@ const jobTypeLabels: Record<string, string> = {
 	"part-time": "Part-time",
 	contract: "Contract",
 	internship: "Internship",
-};
-
-// Check if item was created within the last 2 weeks
-const isNewItem = (createdAt: string | Date | undefined): boolean => {
-	if (!createdAt) return false;
-	const created = new Date(createdAt);
-	const twoWeeksAgo = new Date();
-	twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-	return created > twoWeeksAgo;
 };
 
 type JobDescriptionContent = {
@@ -99,8 +91,8 @@ function ExpandedJobView({
 					jobDescriptionCache.set(job.id, data);
 					setEnrichedContent(data);
 				}
-			} catch (error) {
-				console.warn("[JobsGrid] Failed to enrich job description", error);
+			} catch {
+				// Failed to enrich - will show default description
 			} finally {
 				if (!cancelled) setIsEnriching(false);
 			}
@@ -264,7 +256,7 @@ function ExpandedJobView({
 										TOP
 									</span>
 								)}
-								{isNewItem(job.createdAt) && (
+								{isNew(job.createdAt) && (
 									<span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
 										NEW
 									</span>
@@ -530,33 +522,6 @@ interface JobsGridProps {
   roleDefinitions?: RoleDefinition[];
 }
 
-function hashString(value: string): number {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    hash = (hash << 5) - hash + value.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-function seededRandom(seed: number): () => number {
-  let current = seed;
-  return () => {
-    current = (current * 9301 + 49297) % 233280;
-    return current / 233280;
-  };
-}
-
-// Fisher-Yates shuffle with deterministic RNG
-function shuffleArray<T>(array: T[], random: () => number): T[] {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
-
 export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: JobsGridProps) {
   // Build tag labels from definitions (with fallback to hardcoded)
   const tagLabels = useMemo(() => {
@@ -568,7 +533,6 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
   }, [tagDefinitions]);
 
   const searchParams = useSearchParams();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialParams = useMemo(() => {
     const typeParam = searchParams.get("type");
     const filterCategory: FilterCategory =
@@ -621,7 +585,9 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
           setDataHotJobIds(new Set(data.hotJobIds));
         }
       })
-      .catch((error) => console.warn("Failed to fetch hot jobs:", error));
+      .catch(() => {
+				// Silently fail - hot jobs badge is non-critical
+			});
   }, []);
 
   // Helper to build job event properties for analytics
@@ -825,7 +791,9 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
         }
       }
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return Array.from(locations).sort();
+  }, [jobs]);
+
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
       // Category filter
@@ -982,7 +950,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
   }, [filteredJobs, getTier, filterKey, isHotJob]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="jobs-grid">
       {/* Filters */}
       <div className="space-y-4">
         {/* Row 1: Category and Company filters */}
@@ -1298,7 +1266,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
                               🔥 HOT
                             </span>
                           )}
-                          {isNewItem(job.createdAt) && (
+                          {isNew(job.createdAt) && (
                             <span className="ml-2 px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
                               NEW
                             </span>
@@ -1362,14 +1330,14 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
                       </span>
                     </div>
                     {/* 5. HOT / NEW tags */}
-                    {(isHotJob(job) || isNewItem(job.createdAt)) && (
+                    {(isHotJob(job) || isNew(job.createdAt)) && (
                       <div className="flex justify-center gap-2">
                         {isHotJob(job) && (
                           <span className="px-2.5 py-1 text-sm font-semibold rounded-full bg-orange-400 dark:bg-orange-700 text-white shadow-[0_0_12px_rgba(251,146,60,0.6)] dark:shadow-[0_0_16px_rgba(194,65,12,0.5)] animate-pulse">
                             🔥 HOT
                           </span>
                         )}
-                        {isNewItem(job.createdAt) && (
+                        {isNew(job.createdAt) && (
                           <span className="px-2.5 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
                             NEW
                           </span>

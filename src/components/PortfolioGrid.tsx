@@ -3,67 +3,19 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { InvestmentCard } from "./InvestmentCard";
-
-// Investment interface matching what comes from the database
-interface Investment {
-  id?: string;
-  title: string;
-  description: string | null;
-  imageUrl: string | null;
-  logo: string | null;
-  tier: 1 | 2 | 3 | 4;
-  featured: boolean;
-  status?: string | null;
-  categories?: string[] | null;
-  website?: string | null;
-  x?: string | null;
-  github?: string | null;
-  createdAt?: string | Date | null;
-}
-
-type SortOption = "relevance" | "alphabetical" | "alphabetical-desc";
-
-interface InvestmentCategory {
-  id: string;
-  slug: string;
-  label: string;
-  color: string | null;
-}
+import {
+  Investment,
+  InvestmentCategory,
+  SortOption,
+  FilterOption,
+} from "@/types/investments";
+import { hashString, seededRandom, shuffleArray } from "@/lib/shuffle";
 
 interface PortfolioGridProps {
   investments: Investment[];
   jobCounts?: Record<string, number>;
   categories?: InvestmentCategory[];
 }
-
-function hashString(value: string): number {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    hash = (hash << 5) - hash + value.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-function seededRandom(seed: number): () => number {
-  let current = seed;
-  return () => {
-    current = (current * 9301 + 49297) % 233280;
-    return current / 233280;
-  };
-}
-
-// Fisher-Yates shuffle with deterministic RNG
-function shuffleArray<T>(array: T[], random: () => number): T[] {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
-
-type FilterOption = "main" | "featured" | "all";
 
 // Map investment titles to all their hiring entities (for umbrella orgs)
 const HIRING_ENTITIES: Record<string, string[]> = {
@@ -220,7 +172,7 @@ export function PortfolioGrid({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="portfolio-grid">
       {/* Controls */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">

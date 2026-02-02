@@ -22,45 +22,10 @@ import {
 	trackCandidateSocialClick,
 	trackCandidateContactClick,
 } from "@/lib/posthog";
+import { hashString, seededRandom, shuffleArray, isNew } from "@/lib/shuffle";
 
 interface CandidatesGridProps {
 	candidates: Candidate[];
-}
-
-// Check if item was created within the last 2 weeks
-const isNew = (createdAt: string | Date | undefined): boolean => {
-	if (!createdAt) return false;
-	const date = new Date(createdAt);
-	const twoWeeksAgo = new Date();
-	twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-	return date > twoWeeksAgo;
-};
-
-function hashString(value: string): number {
-	let hash = 0;
-	for (let i = 0; i < value.length; i++) {
-		hash = (hash << 5) - hash + value.charCodeAt(i);
-		hash |= 0;
-	}
-	return Math.abs(hash);
-}
-
-function seededRandom(seed: number): () => number {
-	let current = seed;
-	return () => {
-		current = (current * 9301 + 49297) % 233280;
-		return current / 233280;
-	};
-}
-
-// Fisher-Yates shuffle with deterministic RNG
-function shuffleArray<T>(array: T[], random: () => number): T[] {
-	const result = [...array];
-	for (let i = result.length - 1; i > 0; i--) {
-		const j = Math.floor(random() * (i + 1));
-		[result[i], result[j]] = [result[j], result[i]];
-	}
-	return result;
 }
 
 export function CandidatesGrid({ candidates }: CandidatesGridProps) {
@@ -94,7 +59,9 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 					setDataHotCandidateIds(new Set(data.hotCandidateIds));
 				}
 			})
-			.catch((error) => console.warn("Failed to fetch hot candidates:", error));
+			.catch(() => {
+				// Silently fail - hot candidates badge is non-critical
+			});
 	}, []);
 
 	// Helper to check if candidate is hot (manual flag OR data-driven)
@@ -351,6 +318,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const [hydrated, setHydrated] = useState(false);
 
 	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setHydrated(true);
 	}, []);
 
@@ -673,8 +641,7 @@ function CandidateCard({
 						height={56}
 						className="object-cover w-full h-full"
 						onError={(e) => {
-							e.currentTarget.onerror = null; // Prevent infinite loop
-							console.warn(`[CandidatesGrid] Failed to load image for ${displayName}`);
+							e.currentTarget.onerror = null;
 							e.currentTarget.src = "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
 						}}
 					/>
@@ -1201,7 +1168,7 @@ function ExpandedCandidateView({
 								height={128}
 								className="object-cover w-full h-full"
 								onError={(e) => {
-									console.warn(`[CandidatesGrid] Failed to load image for ${displayName}`);
+									e.currentTarget.onerror = null;
 									e.currentTarget.src = "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
 								}}
 							/>
@@ -1348,8 +1315,7 @@ function ExpandedCandidateView({
 												height={24}
 												className="rounded"
 												onError={(e) => {
-													e.currentTarget.onerror = null; // Prevent infinite loop
-													console.warn(`[CandidatesGrid] Failed to load logo for ${company.name}`);
+													e.currentTarget.onerror = null;
 													e.currentTarget.style.display = "none";
 												}}
 											/>

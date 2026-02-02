@@ -290,3 +290,69 @@ code, pre, .font-mono {
   animation: pulse-top 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* ====================================
+   Badge Component Classes
+   ==================================== */
+
+/* HOT badge - orange/amber gradient */
+.badge-hot {
+  background: linear-gradient(to right, #f97316, #f59e0b);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+}
+
+.badge-hot:hover {
+  box-shadow: 0 0 15px rgba(251, 146, 60, 0.6);
+}
+
+/* TOP badge - violet/purple gradient */
+.badge-top {
+  background: linear-gradient(to right, #8b5cf6, #a855f7);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+.badge-top:hover {
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.6);
+}
+
+/* NEW badge - sky blue */
+.badge-new {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  font-weight: 600;
+}
+
+.dark .badge-new {
+  background-color: rgba(14, 165, 233, 0.2);
+  color: #38bdf8;
+}
+
+/* Card styling for HOT items */
+.card-hot {
+  border-color: #f97316;
+  background: linear-gradient(to right, #fff7ed, #fffbeb);
+  box-shadow: 0 0 8px rgba(251, 146, 60, 0.5);
+}
+
+.dark .card-hot {
+  border-color: #fb923c;
+  background: linear-gradient(to right, rgba(154, 52, 18, 0.4), rgba(146, 64, 14, 0.4));
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.4);
+}
+
+/* Card styling for TOP items */
+.card-top {
+  border-color: #8b5cf6;
+  background: linear-gradient(to right, #f5f3ff, #faf5ff);
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+}
+
+.dark .card-top {
+  border-color: #a78bfa;
+  background: linear-gradient(to right, rgba(91, 33, 182, 0.4), rgba(126, 34, 206, 0.4));
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+}
+

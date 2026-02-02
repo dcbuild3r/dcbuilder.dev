@@ -1,37 +1,14 @@
 "use client";
 
 import Image from "next/image";
-
-interface Investment {
-  id?: string;
-  title: string;
-  description: string | null;
-  imageUrl: string | null;
-  logo: string | null;
-  tier: 1 | 2 | 3 | 4;
-  featured: boolean;
-  status?: string | null;
-  categories?: string[] | null;
-  website?: string | null;
-  x?: string | null;
-  github?: string | null;
-  createdAt?: string | Date | null;
-}
+import { Investment } from "@/types/investments";
+import { isNew } from "@/lib/shuffle";
 
 interface InvestmentCardProps {
   investment: Investment;
   jobCount?: number;
   jobsUrl?: string;
 }
-
-// Check if item was created within the last 2 weeks
-const isNew = (createdAt: string | Date | null | undefined): boolean => {
-  if (!createdAt) return false;
-  const date = new Date(createdAt);
-  const twoWeeksAgo = new Date();
-  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-  return date > twoWeeksAgo;
-};
 
 export function InvestmentCard({
   investment,
@@ -58,6 +35,7 @@ export function InvestmentCard({
             window.open(investment.website, "_blank", "noopener,noreferrer");
         }
       }}
+      data-testid="investment-card"
       className={`group relative p-6 pb-8 rounded-xl border transition-colors flex flex-col items-center text-center cursor-pointer ${
         isDefunct
           ? "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
@@ -79,9 +57,7 @@ export function InvestmentCard({
               isDefunct ? "grayscale opacity-80" : ""
             }`}
             onError={(e) => {
-              console.warn(
-                `[PortfolioGrid] Failed to load logo for ${investment.title}`
-              );
+              e.currentTarget.onerror = null;
               e.currentTarget.style.display = "none";
             }}
           />
