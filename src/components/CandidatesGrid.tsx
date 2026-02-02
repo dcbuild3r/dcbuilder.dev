@@ -68,10 +68,24 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			});
 	}, []);
 
-	// Helper to check if candidate is hot (manual flag OR data-driven)
+	// Helper to check if candidate is hot (manual flag OR data-driven OR has hot skill tag)
 	const isHotCandidate = useCallback(
-		(candidate: Candidate) => candidate.hot || dataHotCandidateIds.has(candidate.id),
+		(candidate: Candidate) => candidate.hot || dataHotCandidateIds.has(candidate.id) || candidate.skills?.includes("hot" as SkillTag),
 		[dataHotCandidateIds]
+	);
+
+	// Helper to check if candidate should show TOP badge
+	// Only show TOP after we've loaded hot data and confirmed they're not hot
+	const isTopCandidate = useCallback(
+		(candidate: Candidate) => {
+			const hasTopTag = candidate.skills?.includes("top" as SkillTag) ?? false;
+			if (!hasTopTag) return false;
+			// Wait for hot data to load before showing TOP (prevents flicker)
+			if (!hotDataLoaded) return false;
+			// Don't show TOP if they're hot
+			return !isHotCandidate(candidate);
+		},
+		[hotDataLoaded, isHotCandidate]
 	);
 
 	// Helper to update URL params without React re-render
@@ -539,7 +553,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 							key={candidate.id}
 							candidate={candidate}
 							isHot={isHotCandidate(candidate)}
-							isTop={hotDataLoaded && hasSkillTag(candidate, "top") && !hasSkillTag(candidate, "hot") && !isHotCandidate(candidate)}
+							isTop={isTopCandidate(candidate)}
 							onExpand={() => openCandidate(candidate)}
 						/>
 					))
@@ -551,7 +565,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				<ExpandedCandidateView
 					candidate={expandedCandidate}
 					isHot={isHotCandidate(expandedCandidate)}
-					isTop={hotDataLoaded && hasSkillTag(expandedCandidate, "top") && !hasSkillTag(expandedCandidate, "hot") && !isHotCandidate(expandedCandidate)}
+					isTop={isTopCandidate(expandedCandidate)}
 					onClose={closeCandidate}
 					onCVClick={() => trackCandidateCVClick(getCandidateEventProps(expandedCandidate))}
 					onSocialClick={(platform, url) => trackCandidateSocialClick({
@@ -717,28 +731,31 @@ function CandidateCard({
 				{candidate.experience && <span>{experienceLabels[candidate.experience]}</span>}
 			</div>
 
-			{/* Skills */}
-			{candidate.skills && candidate.skills.length > 0 && (() => {
-				const displaySkills = candidate.skills.filter((tag) => tag !== "hot" && tag !== "top");
-				const maxTags = 3;
-				return displaySkills.length > 0 && (
-					<div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
-						{displaySkills.slice(0, maxTags).map((tag) => (
-							<span
-								key={tag}
-								className="px-2 py-1 text-xs leading-none rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
-							>
-								{tagLabels[tag] ?? tag}
-							</span>
-						))}
-						{displaySkills.length > maxTags && (
-							<span className="px-2 py-1 text-xs leading-none text-neutral-500">
-								+{displaySkills.length - maxTags} more
-							</span>
-						)}
-					</div>
-				);
-			})()}
+			{/* Skills - fixed height for consistent card sizing */}
+			<div className="mt-3 h-[52px] flex flex-wrap items-start justify-center gap-1.5 overflow-hidden">
+				{(() => {
+					const displaySkills = (candidate.skills || []).filter((tag) => tag !== "hot" && tag !== "top");
+					const maxTags = 4;
+					if (displaySkills.length === 0) return null;
+					return (
+						<>
+							{displaySkills.slice(0, maxTags).map((tag) => (
+								<span
+									key={tag}
+									className="px-2 py-1 text-xs leading-none rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+								>
+									{tagLabels[tag] ?? tag}
+								</span>
+							))}
+							{displaySkills.length > maxTags && (
+								<span className="px-2 py-1 text-xs leading-none text-neutral-500">
+									+{displaySkills.length - maxTags} more
+								</span>
+							)}
+						</>
+					);
+				})()}
+			</div>
 
 			{/* View Details Button - above separator */}
 			<div className="mt-4">
