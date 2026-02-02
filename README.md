@@ -47,16 +47,16 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 
 ### Data Flow
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Client    │────▶│  API Routes │────▶│  PostgreSQL │
-│  (React)    │◀────│  (Next.js)  │◀────│  (Drizzle)  │
-└─────────────┘     └─────────────┘     └─────────────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │  PostHog    │
-                    │ (Analytics) │
-                    └─────────────┘
+┌─────────────┐     ┌─────────────┐     ┌───────────────┐     ┌─────────────┐
+│   Client    │────▶│  API Routes │────▶│ Services Layer│────▶│  PostgreSQL │
+│  (React)    │◀────│  (Next.js)  │◀────│ (Auth, R2...) │◀────│  (Drizzle)  │
+└─────────────┘     └─────────────┘     └───────────────┘     └─────────────┘
+                                               │
+                                               ▼
+                                        ┌─────────────┐
+                                        │  PostHog    │
+                                        │ (Analytics) │
+                                        └─────────────┘
 ```
 
 ### Directory Structure
@@ -69,8 +69,11 @@ src/
 ├── components/          # React components
 │   ├── admin/           # Admin-specific components
 │   └── ...              # Shared components
-├── db/                  # Database schema and client
-└── lib/                 # Utilities and helpers
+├── db/                  # Database configuration
+│   ├── schema/          # Modular Drizzle schema definitions
+│   └── index.ts         # DB client export
+├── services/            # Business logic & External clients (R2, PostHog, Auth)
+└── lib/                 # Shared utilities and helpers
 
 docs/
 ├── API.md               # API documentation
