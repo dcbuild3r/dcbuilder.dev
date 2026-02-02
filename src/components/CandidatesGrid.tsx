@@ -74,13 +74,21 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		[dataHotCandidateIds]
 	);
 
-	// Helper to check if candidate should show TOP badge
-	// Shows for anyone with "top" skill tag (can show alongside HOT)
-	const isTopCandidate = useCallback(
-		(candidate: Candidate) => {
-			return candidate.skills?.includes("top" as SkillTag) ?? false;
-		},
+	// Helper to check if candidate has TOP skill tag (for badge display)
+	const hasTopTag = useCallback(
+		(candidate: Candidate) => candidate.skills?.includes("top" as SkillTag) ?? false,
 		[]
+	);
+
+	// Helper to check if candidate should show TOP card styling (background/border)
+	// Wait for hot data to prevent purple→orange flicker
+	const showTopCardStyle = useCallback(
+		(candidate: Candidate) => {
+			if (!hotDataLoaded) return false;
+			if (!hasTopTag(candidate)) return false;
+			return !isHotCandidate(candidate);
+		},
+		[hotDataLoaded, hasTopTag, isHotCandidate]
 	);
 
 	// Helper to update URL params without React re-render
@@ -548,7 +556,8 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 							key={candidate.id}
 							candidate={candidate}
 							isHot={isHotCandidate(candidate)}
-							isTop={isTopCandidate(candidate)}
+							isTop={hasTopTag(candidate)}
+							isTopStyle={showTopCardStyle(candidate)}
 							onExpand={() => openCandidate(candidate)}
 						/>
 					))
@@ -560,7 +569,8 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				<ExpandedCandidateView
 					candidate={expandedCandidate}
 					isHot={isHotCandidate(expandedCandidate)}
-					isTop={isTopCandidate(expandedCandidate)}
+					isTop={hasTopTag(expandedCandidate)}
+					isTopStyle={showTopCardStyle(expandedCandidate)}
 					onClose={closeCandidate}
 					onCVClick={() => trackCandidateCVClick(getCandidateEventProps(expandedCandidate))}
 					onSocialClick={(platform, url) => trackCandidateSocialClick({
@@ -604,11 +614,13 @@ function CandidateCard({
 	candidate,
 	isHot,
 	isTop,
+	isTopStyle,
 	onExpand,
 }: {
 	candidate: Candidate;
 	isHot: boolean;
 	isTop: boolean;
+	isTopStyle: boolean;
 	onExpand: () => void;
 }) {
 	const isAnonymous = candidate.visibility === "anonymous";
@@ -626,12 +638,12 @@ function CandidateCard({
 			"bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
 	};
 
-	// Determine card styling based on status
+	// Determine card styling based on status (uses isTopStyle to prevent flicker)
 	const getCardClassName = () => {
 		if (isHot) {
 			return "border-orange-500 dark:border-orange-400 bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40 shadow-[0_0_8px_rgba(251,146,60,0.5)] dark:shadow-[0_0_10px_rgba(251,146,60,0.4)]";
 		}
-		if (isTop) {
+		if (isTopStyle) {
 			return "border-violet-500 dark:border-violet-400 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40 shadow-[0_0_8px_rgba(139,92,246,0.5)] dark:shadow-[0_0_10px_rgba(139,92,246,0.4)]";
 		}
 		return "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600";
@@ -700,7 +712,7 @@ function CandidateCard({
 						)}
 						{isTop && (
 							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white whitespace-nowrap">
-								🔝 TOP
+								✨ TOP
 							</span>
 						)}
 						{isNew(candidate.createdAt) && (
@@ -948,6 +960,7 @@ function ExpandedCandidateView({
 	candidate,
 	isHot,
 	isTop,
+	isTopStyle,
 	onClose,
 	onCVClick,
 	onSocialClick,
@@ -956,6 +969,7 @@ function ExpandedCandidateView({
 	candidate: Candidate;
 	isHot: boolean;
 	isTop: boolean;
+	isTopStyle: boolean;
 	onClose: () => void;
 	onCVClick?: () => void;
 	onSocialClick?: (platform: string, url: string) => void;
@@ -1055,7 +1069,7 @@ function ExpandedCandidateView({
 				} ${
 					isHot
 						? "sm:ring-2 sm:ring-orange-500 sm:dark:ring-orange-400"
-						: isTop
+						: isTopStyle
 							? "sm:ring-2 sm:ring-violet-500 sm:dark:ring-violet-400"
 							: "sm:ring-1 sm:ring-neutral-200 sm:dark:ring-neutral-700"
 				}`}
@@ -1128,7 +1142,7 @@ function ExpandedCandidateView({
 					className={`p-6 sm:p-8 ${
 						isHot
 							? "bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40"
-							: isTop
+							: isTopStyle
 								? "bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40"
 								: "bg-neutral-50 dark:bg-neutral-800/50"
 					}`}
@@ -1220,7 +1234,7 @@ function ExpandedCandidateView({
 								)}
 								{isTop && (
 									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.5)]">
-										🔝 TOP
+										✨ TOP
 									</span>
 								)}
 								{isNew(candidate.createdAt) && (
