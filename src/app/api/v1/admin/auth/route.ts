@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/services/auth";
 
 // GET /api/v1/admin/auth - Validate admin API key
 export async function GET(request: NextRequest) {

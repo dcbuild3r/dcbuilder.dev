@@ -193,7 +193,7 @@ The database schema supports:
 | `blog_posts` | Blog content (MDX) |
 | `api_keys` | Admin authentication |
 
-To add/modify fields, edit `src/db/schema.ts` and run:
+To add/modify fields, edit `src/db/schema/*.ts` and run:
 ```bash
 bunx drizzle-kit push
 ```

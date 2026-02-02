@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCandidateViewsLast7Days, determineHotCandidates } from "@/lib/posthog-api";
+import { getCandidateViewsLast7Days, determineHotCandidates } from "@/services/posthog";
 
 export const revalidate = 3600; // Cache for 1 hour
 

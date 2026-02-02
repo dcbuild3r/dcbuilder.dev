@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db, affiliations, NewAffiliation } from "@/db";
 import { desc } from "drizzle-orm";
-import { requireAuth, parsePaginationParams } from "@/lib/api-auth";
+import { requireAuth, parsePaginationParams } from "@/services/auth";
 
 // GET /api/v1/affiliations - List affiliations
 export async function GET(request: NextRequest) {

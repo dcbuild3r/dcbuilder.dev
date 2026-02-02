@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db, candidates, NewCandidate } from "@/db";
 import { eq, desc, and, SQL } from "drizzle-orm";
-import { requireAuth, parsePaginationParams } from "@/lib/api-auth";
+import { requireAuth, parsePaginationParams } from "@/services/auth";
 
 // GET /api/v1/candidates - List candidates with optional filters
 export async function GET(request: NextRequest) {

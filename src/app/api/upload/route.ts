@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { createId } from "@paralleldrive/cuid2";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/services/auth";
 
 // Initialize R2 client
 const r2 = new S3Client({

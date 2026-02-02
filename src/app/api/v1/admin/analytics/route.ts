@@ -1,12 +1,12 @@
 import { NextRequest } from "next/server";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/services/auth";
 import {
   getJobApplyClicksLast7Days,
   getCandidateViewsLast7Days,
   getBlogViewsLast7Days,
   getSiteStats,
   isPostHogConfigured,
-} from "@/lib/posthog-api";
+} from "@/services/posthog";
 
 // GET /api/v1/admin/analytics - Get analytics data for admin
 export async function GET(request: NextRequest) {

@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db, affiliations } from "@/db";
 import { eq } from "drizzle-orm";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/services/auth";
 
 // GET /api/v1/affiliations/[id]
 export async function GET(

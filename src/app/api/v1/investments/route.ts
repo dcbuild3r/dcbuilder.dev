@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db, investments, NewInvestment } from "@/db";
 import { eq, desc, and, SQL, arrayContains } from "drizzle-orm";
-import { requireAuth, parsePaginationParams } from "@/lib/api-auth";
+import { requireAuth, parsePaginationParams } from "@/services/auth";
 
 // GET /api/v1/investments - List investments
 export async function GET(request: NextRequest) {

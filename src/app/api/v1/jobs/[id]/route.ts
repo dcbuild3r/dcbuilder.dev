@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db, jobs, NewJob } from "@/db";
 import { eq } from "drizzle-orm";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/services/auth";
 
 type Params = { params: Promise<{ id: string }> };
 
