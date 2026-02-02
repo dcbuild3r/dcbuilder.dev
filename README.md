@@ -74,12 +74,16 @@ src/
 │   └── ...              # Public pages
 ├── components/          # React components
 │   ├── admin/           # Admin-specific components
+│   ├── ui/              # Reusable UI primitives (Badge, Icons, SocialLinks)
 │   └── ...              # Shared components
 ├── db/                  # Database configuration
 │   ├── schema/          # Modular Drizzle schema definitions
 │   └── index.ts         # DB client export
+├── hooks/               # Custom React hooks (useHotCandidates, etc.)
 ├── services/            # Business logic & External clients (R2, PostHog, Auth)
-└── lib/                 # Shared utilities and helpers
+└── lib/                 # Shared utilities and helpers (cn, skill-colors, etc.)
+
+tests/                   # E2E tests (Playwright)
 
 docs/
 ├── API.md               # API documentation
