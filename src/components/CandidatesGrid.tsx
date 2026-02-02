@@ -49,6 +49,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const lastActiveRef = useRef<HTMLElement | null>(null);
 	const loadMoreRef = useRef<HTMLDivElement>(null);
 	const [dataHotCandidateIds, setDataHotCandidateIds] = useState<Set<string>>(new Set());
+	const [hotDataLoaded, setHotDataLoaded] = useState(false);
 
 	// Fetch data-driven hot candidates from analytics
 	useEffect(() => {
@@ -61,6 +62,9 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			})
 			.catch(() => {
 				// Silently fail - hot candidates badge is non-critical
+			})
+			.finally(() => {
+				setHotDataLoaded(true);
 			});
 	}, []);
 
@@ -535,7 +539,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 							key={candidate.id}
 							candidate={candidate}
 							isHot={isHotCandidate(candidate)}
-							isTop={hasSkillTag(candidate, "top") && !hasSkillTag(candidate, "hot") && !isHotCandidate(candidate)}
+							isTop={hotDataLoaded && hasSkillTag(candidate, "top") && !hasSkillTag(candidate, "hot") && !isHotCandidate(candidate)}
 							onExpand={() => openCandidate(candidate)}
 						/>
 					))
@@ -547,7 +551,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				<ExpandedCandidateView
 					candidate={expandedCandidate}
 					isHot={isHotCandidate(expandedCandidate)}
-					isTop={hasSkillTag(expandedCandidate, "top") && !hasSkillTag(expandedCandidate, "hot") && !isHotCandidate(expandedCandidate)}
+					isTop={hotDataLoaded && hasSkillTag(expandedCandidate, "top") && !hasSkillTag(expandedCandidate, "hot") && !isHotCandidate(expandedCandidate)}
 					onClose={closeCandidate}
 					onCVClick={() => trackCandidateCVClick(getCandidateEventProps(expandedCandidate))}
 					onSocialClick={(platform, url) => trackCandidateSocialClick({
