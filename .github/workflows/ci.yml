@@ -11,6 +11,21 @@ jobs:
     name: Test & Lint
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: dcbuilder_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -29,11 +44,16 @@ jobs:
       - name: Install Playwright Browsers
         run: bunx playwright install --with-deps
 
+      - name: Run Migrations
+        run: bunx drizzle-kit push
+        env:
+          DATABASE_URL: "postgresql://postgres:password@localhost:5432/dcbuilder_dev"
+
       - name: Run Tests
         run: bun run test
         env:
           # Mock env vars for build/test context
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/dcbuilder_dev"
+          DATABASE_URL: "postgresql://postgres:password@localhost:5432/dcbuilder_dev"
           NEXT_PUBLIC_POSTHOG_KEY: "mock_key"
           POSTHOG_PERSONAL_API_KEY: "mock_key"
           POSTHOG_PROJECT_ID: "mock_id"
