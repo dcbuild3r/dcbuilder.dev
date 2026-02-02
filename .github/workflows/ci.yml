@@ -54,11 +54,11 @@ jobs:
         env:
           # Mock env vars for build/test context
           DATABASE_URL: "postgresql://postgres:password@localhost:5432/dcbuilder_dev"
-          NEXT_PUBLIC_POSTHOG_KEY: "mock_key"
-          POSTHOG_PERSONAL_API_KEY: "mock_key"
-          POSTHOG_PROJECT_ID: "mock_id"
-          R2_ENDPOINT: "https://mock.r2.cloudflarestorage.com"
-          R2_ACCESS_KEY_ID: "mock_id"
-          R2_SECRET_ACCESS_KEY: "mock_secret"
-          R2_BUCKET_NAME: "mock_bucket"
-          R2_PUBLIC_URL: "https://mock.r2.dev"
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
