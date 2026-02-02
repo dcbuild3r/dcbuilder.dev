@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
-import { R2_PUBLIC_URL } from "@/lib/r2";
+import { HERO, SECTIONS } from "@/data/home";
+import { R2_PUBLIC_URL } from "@/services/r2";
 
 export default function Home() {
   return (
@@ -13,8 +14,8 @@ export default function Home() {
           <div className="w-full lg:w-[65%]">
             <div className="bg-white dark:bg-[radial-gradient(circle,_#d9d9d9_0%,_#d9d9d9_50%,_#161616_100%)] rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 w-full overflow-hidden hover:scale-[1.03] transition-transform duration-150">
               <Image
-                src={`${R2_PUBLIC_URL}/kaneki.png`}
-                alt="dcbuilder.eth"
+                src={`${R2_PUBLIC_URL}${HERO.image}`}
+                alt={HERO.alt}
                 width={800}
                 height={800}
                 className="w-full h-auto"
@@ -28,41 +29,37 @@ export default function Home() {
             {/* Research */}
             <section>
               <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
-                Research
+                {SECTIONS.research.title}
               </h2>
               <ul className="space-y-1.5 sm:space-y-2 text-base sm:text-lg">
-                <li>Ethereum</li>
-                <li>
-                  Programmable Cryptography
-                  <span className="hidden sm:inline"> (ZK, FHE, MPC, TEE)</span>
-                </li>
-                <li>Digital Identity</li>
-                <li>Distributed Systems</li>
-                <li>Decentralized AI</li>
+                {SECTIONS.research.items.map((item, index) => (
+                  <li key={index}>
+                    {item.text}
+                    {item.suffix && <span className="hidden sm:inline">{item.suffix}</span>}
+                  </li>
+                ))}
               </ul>
             </section>
 
             {/* Engineering */}
             <section>
               <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
-                Engineering
+                {SECTIONS.engineering.title}
               </h2>
               <ul className="space-y-1.5 sm:space-y-2 text-base sm:text-lg">
-                <li>Rust</li>
-                <li>Solidity</li>
-                <li>Full Stack</li>
+                {SECTIONS.engineering.items.map((item, index) => (
+                  <li key={index}>{item.text}</li>
+                ))}
               </ul>
             </section>
 
             {/* Angel Investing */}
             <section>
               <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
-                Angel Investing
+                {SECTIONS.angelInvesting.title}
               </h2>
               <p className="text-base sm:text-lg">
-                Supporting teams building cool things in the areas of
-                programmable cryptography, distributed systems, digital
-                identity, AI, scalability, privacy, and more. Read more in the{" "}
+                {SECTIONS.angelInvesting.text}{" "}
                 <Link
                   href="/portfolio"
                   className="underline hover:opacity-70 transition-opacity"

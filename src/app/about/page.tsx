@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { db, affiliations as affiliationsTable } from "@/db";
-import { R2_PUBLIC_URL } from "@/lib/r2";
+import { R2_PUBLIC_URL } from "@/services/r2";
 
 export const metadata = {
 	title: "About",
