@@ -9,7 +9,7 @@ test("home page loads and nav is visible", async ({ page }) => {
 test("jobs page renders filters", async ({ page }) => {
 	await page.goto("/jobs");
 	await expect(page.getByRole("heading", { name: "Jobs" })).toBeVisible();
-	await expect(page.getByLabel("Type:")).toBeVisible();
+	await expect(page.getByLabel("Affiliation:")).toBeVisible();
 	await expect(page.getByLabel("Company:")).toBeVisible();
 	await expect(page.getByLabel("Location:")).toBeVisible();
 	await expect(page.getByPlaceholder("Search jobs...")).toBeVisible();

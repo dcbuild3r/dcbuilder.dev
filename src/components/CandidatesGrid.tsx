@@ -348,10 +348,17 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const displayedCandidates = candidatesToDisplay.slice(0, displayCount);
 	const hasMore = candidatesToDisplay.length > displayCount;
 
+	const [hydrated, setHydrated] = useState(false);
+
+	useEffect(() => {
+		setHydrated(true);
+	}, []);
+
 	return (
 		<div
 			className="space-y-6"
 			data-testid="candidates-grid"
+			data-hydrated={hydrated}
 		>
 			{/* Filters */}
 			<div className="space-y-4">
