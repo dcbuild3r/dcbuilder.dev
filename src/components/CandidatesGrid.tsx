@@ -535,7 +535,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 							key={candidate.id}
 							candidate={candidate}
 							isHot={isHotCandidate(candidate)}
-							isTop={hasSkillTag(candidate, "top") && !hasSkillTag(candidate, "hot")}
+							isTop={hasSkillTag(candidate, "top") && !hasSkillTag(candidate, "hot") && !isHotCandidate(candidate)}
 							onExpand={() => openCandidate(candidate)}
 						/>
 					))
@@ -547,7 +547,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				<ExpandedCandidateView
 					candidate={expandedCandidate}
 					isHot={isHotCandidate(expandedCandidate)}
-					isTop={hasSkillTag(expandedCandidate, "top") && !hasSkillTag(expandedCandidate, "hot")}
+					isTop={hasSkillTag(expandedCandidate, "top") && !hasSkillTag(expandedCandidate, "hot") && !isHotCandidate(expandedCandidate)}
 					onClose={closeCandidate}
 					onCVClick={() => trackCandidateCVClick(getCandidateEventProps(expandedCandidate))}
 					onSocialClick={(platform, url) => trackCandidateSocialClick({
@@ -718,17 +718,17 @@ function CandidateCard({
 				const displaySkills = candidate.skills.filter((tag) => tag !== "hot" && tag !== "top");
 				const maxTags = 3;
 				return displaySkills.length > 0 && (
-					<div className="mt-3 flex items-center justify-center gap-1">
+					<div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
 						{displaySkills.slice(0, maxTags).map((tag) => (
 							<span
 								key={tag}
-								className="px-2 py-0.5 text-xs rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+								className="px-2 py-1 text-xs leading-none rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
 							>
 								{tagLabels[tag] ?? tag}
 							</span>
 						))}
 						{displaySkills.length > maxTags && (
-							<span className="px-2 py-0.5 text-xs text-neutral-500">
+							<span className="px-2 py-1 text-xs leading-none text-neutral-500">
 								+{displaySkills.length - maxTags} more
 							</span>
 						)}
