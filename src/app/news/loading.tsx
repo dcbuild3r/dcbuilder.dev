@@ -1,5 +1,5 @@
 import { Navbar } from "@/components/Navbar";
-import { NewsFiltersSkeleton, NewsItemSkeleton } from "@/components/skeletons";
+import { NewsFiltersStatic, NewsItemSkeleton } from "@/components/skeletons";
 import { NEWS_PAGE } from "@/data/page-content";
 
 export default function NewsLoading() {
@@ -16,9 +16,12 @@ export default function NewsLoading() {
             </p>
           </div>
 
-          {/* News Grid - Dynamic content skeleton */}
+          {/* News Grid */}
           <div className="space-y-6">
-            <NewsFiltersSkeleton />
+            {/* Static filters - render immediately */}
+            <NewsFiltersStatic />
+
+            {/* News items - skeleton for dynamic data */}
             <div className="space-y-4">
               {Array.from({ length: 8 }).map((_, i) => (
                 <NewsItemSkeleton key={i} />

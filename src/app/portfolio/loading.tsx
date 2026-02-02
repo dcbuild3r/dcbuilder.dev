@@ -1,5 +1,5 @@
 import { Navbar } from "@/components/Navbar";
-import { PortfolioFiltersSkeleton, InvestmentCardSkeleton } from "@/components/skeletons";
+import { PortfolioFiltersStatic, InvestmentCardSkeleton } from "@/components/skeletons";
 import { PORTFOLIO_PAGE } from "@/data/page-content";
 
 export default function PortfolioLoading() {
@@ -16,11 +16,14 @@ export default function PortfolioLoading() {
             </p>
           </section>
 
-          {/* Investments - Dynamic content skeleton */}
+          {/* Investments */}
           <section className="space-y-8">
             <h2 className="text-4xl font-bold text-center">{PORTFOLIO_PAGE.investments.title}</h2>
-            <div className="space-y-6">
-              <PortfolioFiltersSkeleton />
+            <div className="space-y-6" data-testid="portfolio-grid">
+              {/* Static filters - render immediately */}
+              <PortfolioFiltersStatic />
+
+              {/* Investments grid - skeleton for dynamic data */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Array.from({ length: 9 }).map((_, i) => (
                   <InvestmentCardSkeleton key={i} />

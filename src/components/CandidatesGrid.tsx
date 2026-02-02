@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, memo } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import {
@@ -23,6 +23,17 @@ import {
 	trackCandidateContactClick,
 } from "@/lib/posthog";
 import { hashString, seededRandom, shuffleArray, isNew } from "@/lib/shuffle";
+import { cn } from "@/lib/utils";
+import { useHotCandidates } from "@/hooks/useHotCandidates";
+import { HotBadge, TopBadge, NewBadge, Badge } from "./ui/badge";
+import { SocialLinks } from "./ui/social-links";
+import {
+	CloseIcon,
+	ChevronDownIcon,
+	ChevronRightIcon,
+	SpinnerIcon,
+	TelegramIcon,
+} from "./ui/icons";
 
 interface CandidatesGridProps {
 	candidates: Candidate[];
@@ -48,27 +59,9 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	});
 	const lastActiveRef = useRef<HTMLElement | null>(null);
 	const loadMoreRef = useRef<HTMLDivElement>(null);
-	const [dataHotCandidateIds, setDataHotCandidateIds] = useState<Set<string>>(new Set());
 
-	// Fetch data-driven hot candidates from analytics
-	useEffect(() => {
-		fetch("/api/hot-candidates")
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.hotCandidateIds) {
-					setDataHotCandidateIds(new Set(data.hotCandidateIds));
-				}
-			})
-			.catch(() => {
-				// Silently fail - hot candidates badge is non-critical
-			});
-	}, []);
-
-	// Helper to check if candidate is hot (manual flag OR data-driven)
-	const isHotCandidate = useCallback(
-		(candidate: Candidate) => candidate.hot || dataHotCandidateIds.has(candidate.id),
-		[dataHotCandidateIds]
-	);
+	// Use custom hook for hot candidates logic (better separation of concerns)
+	const { isHotCandidate, hasTopTag, showTopCardStyle } = useHotCandidates();
 
 	// Helper to update URL params without React re-render
 	const updateUrlParams = useCallback((updates: Record<string, string | null>) => {
@@ -377,29 +370,27 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 					</div>
 
 					{/* Role Type Filter */}
-					{allRoleTypes.length > 0 && (
-						<div className="flex items-center gap-2">
-							<label
-								htmlFor="role-filter"
-								className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
-							>
-								Looking For:
-							</label>
-							<CustomSelect
-								id="role-filter"
-								value={roleFilter}
-								onChange={(value) => setRoleFilter(value as "all" | RoleType)}
-								options={[
-									{ value: "all", label: "All Roles" },
-									...allRoleTypes.map((role) => ({
-										value: role,
-										label: roleTypeLabels[role],
-									})),
-								]}
-								className="flex-1 sm:flex-none sm:min-w-[160px]"
-							/>
-						</div>
-					)}
+					<div className="flex items-center gap-2">
+						<label
+							htmlFor="role-filter"
+							className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
+						>
+							Looking For:
+						</label>
+						<CustomSelect
+							id="role-filter"
+							value={roleFilter}
+							onChange={(value) => setRoleFilter(value as "all" | RoleType)}
+							options={[
+								{ value: "all", label: "All Roles" },
+								...allRoleTypes.map((role) => ({
+									value: role,
+									label: roleTypeLabels[role],
+								})),
+							]}
+							className="flex-1 sm:flex-none sm:min-w-[160px]"
+						/>
+					</div>
 				</div>
 
 				{/* Row 2: Search */}
@@ -419,10 +410,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 								className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
 								aria-label="Clear search"
 							>
-								<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-									<line x1="18" y1="6" x2="6" y2="18" />
-									<line x1="6" y1="6" x2="18" y2="18" />
-								</svg>
+								<CloseIcon className="size-4" />
 							</button>
 						)}
 					</div>
@@ -444,14 +432,9 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 							className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-full border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
 						>
 							<span>Filter by skills</span>
-							<svg
-								className={`w-4 h-4 transition-transform ${tagsExpanded ? 'rotate-180' : ''}`}
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-							</svg>
+							<ChevronDownIcon
+								className={cn("transition-transform", tagsExpanded && "rotate-180")}
+							/>
 						</button>
 						{/* Selected tags as pills */}
 						{selectedTags.map((tag) => (
@@ -471,9 +454,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 									className="ml-1 hover:opacity-70"
 									aria-label={`Remove ${tagLabels[tag] ?? tag} filter`}
 								>
-									<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-									</svg>
+									<CloseIcon className="size-3.5" />
 								</button>
 							</span>
 						))}
@@ -515,9 +496,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 								onClick={() => setTagsExpanded(false)}
 								className="ml-auto px-3 py-1.5 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 flex items-center gap-1"
 							>
-								<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-								</svg>
+								<CloseIcon className="size-4" />
 								Close
 							</button>
 						</div>
@@ -537,7 +516,8 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 							key={candidate.id}
 							candidate={candidate}
 							isHot={isHotCandidate(candidate)}
-							isTop={hasSkillTag(candidate, "top") && !hasSkillTag(candidate, "hot")}
+							isTop={hasTopTag(candidate)}
+							isTopStyle={showTopCardStyle(candidate)}
 							onExpand={() => openCandidate(candidate)}
 						/>
 					))
@@ -549,7 +529,8 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				<ExpandedCandidateView
 					candidate={expandedCandidate}
 					isHot={isHotCandidate(expandedCandidate)}
-					isTop={hasSkillTag(expandedCandidate, "top") && !hasSkillTag(expandedCandidate, "hot")}
+					isTop={hasTopTag(expandedCandidate)}
+					isTopStyle={showTopCardStyle(expandedCandidate)}
 					onClose={closeCandidate}
 					onCVClick={() => trackCandidateCVClick(getCandidateEventProps(expandedCandidate))}
 					onSocialClick={(platform, url) => trackCandidateSocialClick({
@@ -571,16 +552,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 					className="flex justify-center py-8"
 				>
 					<div className="flex items-center gap-2 text-neutral-500">
-						<svg
-							className="w-5 h-5 animate-spin"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2"
-						>
-							<circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
-							<path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
-						</svg>
+						<SpinnerIcon />
 						<span className="text-sm">Loading more candidates...</span>
 					</div>
 				</div>
@@ -589,46 +561,54 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	);
 }
 
-function CandidateCard({
-	candidate,
-	isHot,
-	isTop,
-	onExpand,
-}: {
+// Constants for image URLs (hoisted to avoid recreating on each render)
+const ANONYMOUS_PLACEHOLDER =
+	"https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
+
+// Card style variants (hoisted for performance)
+const CARD_STYLES = {
+	hot: "border-orange-500 dark:border-orange-400 bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40 shadow-[0_0_8px_rgba(251,146,60,0.5)] dark:shadow-[0_0_10px_rgba(251,146,60,0.4)]",
+	top: "border-violet-500 dark:border-violet-400 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40 shadow-[0_0_8px_rgba(139,92,246,0.5)] dark:shadow-[0_0_10px_rgba(139,92,246,0.4)]",
+	default: "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600",
+} as const;
+
+interface CandidateCardProps {
 	candidate: Candidate;
 	isHot: boolean;
 	isTop: boolean;
+	isTopStyle: boolean;
 	onExpand: () => void;
-}) {
+}
+
+/**
+ * Memoized candidate card component to prevent unnecessary re-renders.
+ * Uses React.memo for performance optimization in large lists.
+ */
+const CandidateCard = memo(function CandidateCard({
+	candidate,
+	isHot,
+	isTop,
+	isTopStyle,
+	onExpand,
+}: CandidateCardProps) {
 	const isAnonymous = candidate.visibility === "anonymous";
 	const displayName = isAnonymous
 		? candidate.anonymousAlias || "Anonymous"
 		: candidate.name;
 	const profileImage = isAnonymous
-		? "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg"
-		: candidate.profileImage || "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
-	const availabilityColor = {
-		looking:
-			"bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-		open: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-		"not-looking":
-			"bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
-	};
+		? ANONYMOUS_PLACEHOLDER
+		: candidate.profileImage || ANONYMOUS_PLACEHOLDER;
 
-	// Determine card styling based on status
-	const getCardClassName = () => {
-		if (isHot) {
-			return "border-orange-500 dark:border-orange-400 bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40 shadow-[0_0_8px_rgba(251,146,60,0.5)] dark:shadow-[0_0_10px_rgba(251,146,60,0.4)]";
-		}
-		if (isTop) {
-			return "border-violet-500 dark:border-violet-400 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40 shadow-[0_0_8px_rgba(139,92,246,0.5)] dark:shadow-[0_0_10px_rgba(139,92,246,0.4)]";
-		}
-		return "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600";
-	};
+	// Determine card styling based on status (uses isTopStyle to prevent flicker)
+	const cardStyle = isHot
+		? CARD_STYLES.hot
+		: isTopStyle
+			? CARD_STYLES.top
+			: CARD_STYLES.default;
 
 	return (
 		<div
-			className={`p-4 rounded-xl border transition-all overflow-hidden ${getCardClassName()}`}
+			className={cn("p-4 rounded-xl border transition-all overflow-hidden", cardStyle)}
 		>
 			{/* Header */}
 			<div className="flex flex-col items-center gap-3 text-center">
@@ -676,27 +656,16 @@ function CandidateCard({
 					<p className="text-sm text-neutral-600 dark:text-neutral-400 truncate">
 						{candidate.title}
 					</p>
-					<div className="flex items-center justify-center gap-1.5 mt-1 flex-nowrap">
-						<span
-							className={`inline-block px-2 py-0.5 text-xs rounded-full whitespace-nowrap ${availabilityColor[candidate.availability]}`}
+					<div className="flex items-center justify-center gap-1.5 mt-1 flex-wrap">
+						<Badge
+							variant={candidate.availability === "looking" ? "success" : candidate.availability === "open" ? "info" : "muted"}
+							size="sm"
 						>
 							{availabilityLabels[candidate.availability]}
-						</span>
-						{isNew(candidate.createdAt) && !isTop && (
-							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap animate-pulse-new">
-								NEW
-							</span>
-						)}
-						{isTop && (
-							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white whitespace-nowrap">
-								⭐️ TOP
-							</span>
-						)}
-						{isNew(candidate.createdAt) && isTop && (
-							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap animate-pulse-new">
-								NEW
-							</span>
-						)}
+						</Badge>
+						{isHot && <HotBadge size="sm" />}
+						{isTop && <TopBadge size="sm" />}
+						{isNew(candidate.createdAt) && <NewBadge size="sm" />}
 					</div>
 				</div>
 			</div>
@@ -715,28 +684,31 @@ function CandidateCard({
 				{candidate.experience && <span>{experienceLabels[candidate.experience]}</span>}
 			</div>
 
-			{/* Skills */}
-			{candidate.skills && candidate.skills.length > 0 && (() => {
-				const displaySkills = candidate.skills.filter((tag) => tag !== "hot" && tag !== "top");
-				const maxTags = 3;
-				return displaySkills.length > 0 && (
-					<div className="mt-3 flex items-center justify-center gap-1">
-						{displaySkills.slice(0, maxTags).map((tag) => (
-							<span
-								key={tag}
-								className="px-2 py-0.5 text-xs rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
-							>
-								{tagLabels[tag] ?? tag}
-							</span>
-						))}
-						{displaySkills.length > maxTags && (
-							<span className="px-2 py-0.5 text-xs text-neutral-500">
-								+{displaySkills.length - maxTags} more
-							</span>
-						)}
-					</div>
-				);
-			})()}
+			{/* Skills - min-height for consistent card sizing, allows expansion if needed */}
+			<div className="mt-3 min-h-[52px] flex flex-wrap items-start justify-center gap-1.5 overflow-hidden">
+				{(() => {
+					const displaySkills = (candidate.skills || []).filter((tag) => tag !== "hot" && tag !== "top");
+					const maxTags = 4;
+					if (displaySkills.length === 0) return null;
+					return (
+						<>
+							{displaySkills.slice(0, maxTags).map((tag) => (
+								<span
+									key={tag}
+									className="px-2 py-1 text-xs leading-none rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+								>
+									{tagLabels[tag] ?? tag}
+								</span>
+							))}
+							{displaySkills.length > maxTags && (
+								<span className="px-2 py-1 text-xs leading-none text-neutral-500">
+									+{displaySkills.length - maxTags} more
+								</span>
+							)}
+						</>
+					);
+				})()}
+			</div>
 
 			{/* View Details Button - above separator */}
 			<div className="mt-4">
@@ -748,17 +720,7 @@ function CandidateCard({
 					className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500 transition-all"
 				>
 					<span>View Details</span>
-					<svg
-						className="w-4 h-4"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2.5"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-					>
-						<polyline points="9 18 15 12 9 6" />
-					</svg>
+					<ChevronRightIcon />
 				</button>
 			</div>
 
@@ -771,169 +733,29 @@ function CandidateCard({
 						rel="noopener noreferrer"
 						className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 transition-opacity"
 					>
-						<svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-							<path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-						</svg>
+						<TelegramIcon className="size-4" />
 						Request Introduction
 					</a>
 				) : (
-					<div className="flex items-center justify-center">
-						<div className="flex items-center gap-1">
-						{candidate.socials?.x && (
-							<a
-								href={candidate.socials.x}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-								title="X"
-								aria-label={`X profile for ${displayName}`}
-							>
-								<svg
-									className="w-5 h-5 sm:w-4 sm:h-4"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-								>
-									<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-								</svg>
-							</a>
-						)}
-						{candidate.socials?.github && (
-							<a
-								href={candidate.socials.github}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-								title="GitHub"
-								aria-label={`GitHub profile for ${displayName}`}
-							>
-								<svg
-									className="w-5 h-5 sm:w-4 sm:h-4"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-								>
-									<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-								</svg>
-							</a>
-						)}
-						{candidate.socials?.linkedin && (
-							<a
-								href={candidate.socials.linkedin}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-								title="LinkedIn"
-								aria-label={`LinkedIn profile for ${displayName}`}
-							>
-								<svg
-									className="w-5 h-5 sm:w-4 sm:h-4"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-								>
-									<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-								</svg>
-							</a>
-						)}
-						{candidate.socials?.email && (
-							<a
-								href={`mailto:${candidate.socials.email}`}
-								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-								title="Email"
-								aria-label={`Email ${displayName}`}
-							>
-								<svg
-									className="w-5 h-5 sm:w-4 sm:h-4"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<rect x="2" y="4" width="20" height="16" rx="2" />
-									<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-								</svg>
-							</a>
-						)}
-						{candidate.socials?.website && (
-							<a
-								href={candidate.socials.website}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-								title="Website"
-								aria-label={`Website for ${displayName}`}
-							>
-								<svg
-									className="w-5 h-5 sm:w-4 sm:h-4"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<circle cx="12" cy="12" r="10" />
-									<line x1="2" y1="12" x2="22" y2="12" />
-									<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-								</svg>
-							</a>
-						)}
-						{candidate.socials?.telegram && (
-							<a
-								href={candidate.socials.telegram}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-								title="Telegram"
-								aria-label={`Telegram for ${displayName}`}
-							>
-								<svg
-									className="w-5 h-5 sm:w-4 sm:h-4"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-								>
-									<path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-								</svg>
-							</a>
-						)}
-						{candidate.socials?.cv && (
-							<a
-								href={candidate.socials.cv}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-								title="CV / Resume"
-								aria-label={`CV or resume for ${displayName}`}
-							>
-								<svg
-									className="w-5 h-5 sm:w-4 sm:h-4"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-									<polyline points="14 2 14 8 20 8" />
-									<line x1="16" y1="13" x2="8" y2="13" />
-									<line x1="16" y1="17" x2="8" y2="17" />
-									<polyline points="10 9 9 9 8 9" />
-								</svg>
-							</a>
-						)}
-						</div>
-					</div>
+					candidate.socials && (
+						<SocialLinks
+							socials={candidate.socials}
+							displayName={displayName}
+							variant="compact"
+							className="justify-center"
+						/>
+					)
 				)}
 			</div>
 		</div>
 	);
-}
+});
 
 function ExpandedCandidateView({
 	candidate,
 	isHot,
 	isTop,
+	isTopStyle,
 	onClose,
 	onCVClick,
 	onSocialClick,
@@ -942,6 +764,7 @@ function ExpandedCandidateView({
 	candidate: Candidate;
 	isHot: boolean;
 	isTop: boolean;
+	isTopStyle: boolean;
 	onClose: () => void;
 	onCVClick?: () => void;
 	onSocialClick?: (platform: string, url: string) => void;
@@ -1041,7 +864,7 @@ function ExpandedCandidateView({
 				} ${
 					isHot
 						? "sm:ring-2 sm:ring-orange-500 sm:dark:ring-orange-400"
-						: isTop
+						: isTopStyle
 							? "sm:ring-2 sm:ring-violet-500 sm:dark:ring-violet-400"
 							: "sm:ring-1 sm:ring-neutral-200 sm:dark:ring-neutral-700"
 				}`}
@@ -1114,7 +937,7 @@ function ExpandedCandidateView({
 					className={`p-6 sm:p-8 ${
 						isHot
 							? "bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/40 dark:to-amber-900/40"
-							: isTop
+							: isTopStyle
 								? "bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900/40 dark:to-purple-900/40"
 								: "bg-neutral-50 dark:bg-neutral-800/50"
 					}`}
@@ -1199,6 +1022,11 @@ function ExpandedCandidateView({
 										◇
 									</span>
 								)}
+							</div>
+							<div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-3">
+								<p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400">
+									{candidate.title}
+								</p>
 								{isHot && (
 									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_0_10px_rgba(251,146,60,0.5)]">
 										🔥 HOT
@@ -1206,18 +1034,15 @@ function ExpandedCandidateView({
 								)}
 								{isTop && (
 									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.5)]">
-										⭐️ TOP
+										✨ TOP
 									</span>
 								)}
 								{isNew(candidate.createdAt) && (
-									<span className="px-3 py-1 text-sm font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
+									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
 										NEW
 									</span>
 								)}
 							</div>
-							<p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 mb-3">
-								{candidate.title}
-							</p>
 							<div className="flex flex-wrap justify-center sm:justify-start gap-2">
 								<span
 									className={`px-3 py-1 text-sm rounded-full ${availabilityColor[candidate.availability]}`}

@@ -40,11 +40,42 @@ Collect the following information from the user:
 - `companyX` - X/Twitter handle (just the handle, e.g., "@company" or "company")
 - `companyGithub` - GitHub organization name or URL
 
+**Candidate socials (when adding candidates):**
+- `x` - X/Twitter handle or URL
+- `telegram` - Telegram handle or URL
+- `github` - GitHub username or URL
+- `linkedin` - LinkedIn profile URL
+- `website` - Personal website URL
+- `email` - Email address
+
 **Assets:**
 - `companyLogo` - Logo image (URL or local file path)
 - `cv` - CV/resume (local PDF path or URL)
 
-### Step 2: Handle Company Logo
+### Step 2: Normalize Social URLs
+
+**IMPORTANT:** Always normalize social handles to full URLs before storing in the database.
+
+| Platform | Input Examples | Normalized Output |
+|----------|---------------|-------------------|
+| X/Twitter | `@username`, `username`, `x.com/username`, `twitter.com/username` | `https://x.com/username` |
+| Telegram | `@username`, `username`, `t.me/username` | `https://t.me/username` |
+| GitHub | `username`, `github.com/username` | `https://github.com/username` |
+| LinkedIn | `in/username`, `linkedin.com/in/username` | `https://linkedin.com/in/username` |
+
+**Normalization rules:**
+1. Remove `@` prefix if present
+2. If input is just a username (no domain), prepend the appropriate base URL
+3. If input already has the domain, ensure it uses `https://` protocol
+4. For X/Twitter, always use `x.com` (not `twitter.com`)
+
+**Examples:**
+- `@ciefa_eth` → `https://x.com/ciefa_eth` (for X)
+- `ciefa_eth` → `https://t.me/ciefa_eth` (for Telegram)
+- `ciefa` → `https://github.com/ciefa` (for GitHub)
+- `twitter.com/user` → `https://x.com/user`
+
+### Step 3: Handle Company Logo
 
 If a company logo is provided:
 
@@ -122,7 +153,7 @@ console.log('Logo URL:', process.env.R2_PUBLIC_URL + '/' + key);
 "
 ```
 
-### Step 3: Handle CV/Resume
+### Step 4: Handle CV/Resume
 
 If a CV is provided:
 
@@ -163,7 +194,7 @@ console.log('CV URL:', process.env.R2_PUBLIC_URL + '/' + key);
 #### Option B: CV is already online
 Use the URL directly - no upload needed. Just store the URL.
 
-### Step 4: Assign Tags
+### Step 5: Assign Tags
 
 Based on the job information, assign appropriate tags. Consider:
 
@@ -196,7 +227,7 @@ Based on the job information, assign appropriate tags. Consider:
 
 See `references/tag-mapping.md` for the full list of available tags.
 
-### Step 5: Insert Job into Database
+### Step 6: Insert Job/Candidate into Database
 
 ```bash
 bun -e "
@@ -231,7 +262,7 @@ process.exit(0);
 "
 ```
 
-### Step 6: Verify
+### Step 7: Verify
 
 After insertion, verify the job was created:
 

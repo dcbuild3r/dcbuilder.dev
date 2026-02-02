@@ -1,5 +1,5 @@
 import { Navbar } from "@/components/Navbar";
-import { JobsFiltersSkeleton, ListSkeleton } from "@/components/skeletons";
+import { JobsFiltersStatic, JobCardSkeleton } from "@/components/skeletons";
 import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { JOBS_PAGE } from "@/data/page-content";
 
@@ -29,10 +29,17 @@ export default function JobsLoading() {
             </p>
           </section>
 
-          {/* Jobs Grid - Dynamic content skeleton */}
-          <div className="space-y-6">
-            <JobsFiltersSkeleton />
-            <ListSkeleton count={6} />
+          {/* Jobs Grid */}
+          <div className="space-y-6" data-testid="jobs-grid">
+            {/* Static filters - render immediately */}
+            <JobsFiltersStatic />
+
+            {/* Jobs list - skeleton for dynamic data */}
+            <div className="space-y-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <JobCardSkeleton key={i} />
+              ))}
+            </div>
           </div>
         </div>
       </main>
