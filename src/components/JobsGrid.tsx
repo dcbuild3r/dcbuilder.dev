@@ -596,7 +596,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
       jobId,
       selectedRole,
     };
-  }, [searchParams]);
+  }, [searchParams, tagLabels]);
 
   const [filterCategory, setFilterCategory] = useState<FilterCategory>(initialParams.filterCategory);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>(initialParams.selectedCompanies);
@@ -825,9 +825,6 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
         }
       }
     });
-    return Array.from(locations).sort();
-  }, [jobs]);
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
@@ -914,7 +911,10 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
     searchQuery,
     selectedTags,
     showFeaturedOnly,
+    tagLabels,
   ]);
+
+
 
   // Include today's date so shuffle changes daily (stable after hydration)
   const [shuffleSeed] = useState(() => new Date().toISOString().split("T")[0]);

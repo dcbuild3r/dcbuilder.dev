@@ -165,7 +165,7 @@ interface MultiComboboxProps {
   placeholder?: string;
   className?: string;
   options?: string[]; // Optional: provide options directly instead of fetching from API
-  labelMap?: Record<string, string>; // Optional: map values to display labels
+
 }
 
 export function MultiCombobox({
@@ -175,7 +175,6 @@ export function MultiCombobox({
   placeholder,
   className = "",
   options,
-  labelMap,
 }: MultiComboboxProps) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);

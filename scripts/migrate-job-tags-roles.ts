@@ -142,7 +142,7 @@ async function migrate() {
         ON CONFLICT (slug) DO NOTHING
       `;
       console.log(`  ✓ Added role from job: ${dept}`);
-    } catch (_e) {
+    } catch {
       // Ignore conflicts
     }
   }
@@ -167,7 +167,7 @@ async function migrate() {
           ON CONFLICT (slug) DO NOTHING
         `;
         console.log(`  ✓ Added tag from job: ${tag} -> ${label}`);
-      } catch (_e) {
+      } catch {
         // Ignore conflicts
       }
     }
