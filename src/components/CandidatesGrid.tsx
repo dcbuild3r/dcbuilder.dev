@@ -678,23 +678,23 @@ function CandidateCard({
 					<p className="text-sm text-neutral-600 dark:text-neutral-400 truncate">
 						{candidate.title}
 					</p>
-					<div className="flex items-center justify-center gap-1.5 mt-1 flex-nowrap">
+					<div className="flex items-center justify-center gap-1.5 mt-1 flex-wrap">
 						<span
 							className={`inline-block px-2 py-0.5 text-xs rounded-full whitespace-nowrap ${availabilityColor[candidate.availability]}`}
 						>
 							{availabilityLabels[candidate.availability]}
 						</span>
-						{isNew(candidate.createdAt) && !isTop && (
-							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap animate-pulse-new">
-								NEW
+						{isHot && (
+							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white whitespace-nowrap">
+								🔥 HOT
 							</span>
 						)}
 						{isTop && (
 							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white whitespace-nowrap">
-								⭐️ TOP
+								🔝 TOP
 							</span>
 						)}
-						{isNew(candidate.createdAt) && isTop && (
+						{isNew(candidate.createdAt) && (
 							<span className="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 whitespace-nowrap animate-pulse-new">
 								NEW
 							</span>
@@ -1208,7 +1208,7 @@ function ExpandedCandidateView({
 								)}
 								{isTop && (
 									<span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.5)]">
-										⭐️ TOP
+										🔝 TOP
 									</span>
 								)}
 								{isNew(candidate.createdAt) && (
