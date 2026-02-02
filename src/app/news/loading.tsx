@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { NewsFiltersSkeleton, NewsItemSkeleton } from "@/components/skeletons";
+import { NEWS_PAGE } from "@/data/page-content";
 
 export default function NewsLoading() {
   return (
@@ -9,10 +10,9 @@ export default function NewsLoading() {
         <div className="max-w-4xl mx-auto py-8 sm:py-12">
           {/* Header - Static content */}
           <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-4">News</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4">{NEWS_PAGE.title}</h1>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
-              Curated articles, my blog posts, and announcements from portfolio
-              companies.
+              {NEWS_PAGE.description}
             </p>
           </div>
 

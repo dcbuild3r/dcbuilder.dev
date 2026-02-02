@@ -84,8 +84,11 @@ jobs:
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
           R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
 
-      - name: Run Tests
-        run: bun run test
+      - name: Run Unit Tests
+        run: bun run test:unit
+
+      - name: Run E2E Tests
+        run: bun run test:e2e
         env:
           DATABASE_URL: "postgresql://postgres:password@localhost:5432/dcbuilder_dev"
           NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
