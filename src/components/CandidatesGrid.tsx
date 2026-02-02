@@ -377,29 +377,27 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 					</div>
 
 					{/* Role Type Filter */}
-					{allRoleTypes.length > 0 && (
-						<div className="flex items-center gap-2">
-							<label
-								htmlFor="role-filter"
-								className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
-							>
-								Looking For:
-							</label>
-							<CustomSelect
-								id="role-filter"
-								value={roleFilter}
-								onChange={(value) => setRoleFilter(value as "all" | RoleType)}
-								options={[
-									{ value: "all", label: "All Roles" },
-									...allRoleTypes.map((role) => ({
-										value: role,
-										label: roleTypeLabels[role],
-									})),
-								]}
-								className="flex-1 sm:flex-none sm:min-w-[160px]"
-							/>
-						</div>
-					)}
+					<div className="flex items-center gap-2">
+						<label
+							htmlFor="role-filter"
+							className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
+						>
+							Looking For:
+						</label>
+						<CustomSelect
+							id="role-filter"
+							value={roleFilter}
+							onChange={(value) => setRoleFilter(value as "all" | RoleType)}
+							options={[
+								{ value: "all", label: "All Roles" },
+								...allRoleTypes.map((role) => ({
+									value: role,
+									label: roleTypeLabels[role],
+								})),
+							]}
+							className="flex-1 sm:flex-none sm:min-w-[160px]"
+						/>
+					</div>
 				</div>
 
 				{/* Row 2: Search */}
