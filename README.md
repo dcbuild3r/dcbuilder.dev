@@ -18,11 +18,31 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 
 - **Home**: Hero with focus areas and featured content
 - **About**: Bio, affiliations, and social links
-- **Blog**: MDX posts with syntax highlighting and OG images
-- **Portfolio**: Investment cards with tiers and status
-- **Jobs**: Filterable job board with "hot" and "new" tags
-- **Candidates**: Candidate directory with modal profiles
+- **Blog**: MDX posts with syntax highlighting and dynamic OG images
+- **Portfolio**: Investment cards with tiers, status, and category filtering
+- **Jobs**: Filterable job board with HOT/TOP/NEW badges, modal details, and shareable URLs
+- **Candidates**: Candidate directory with modal profiles, skill tags, and availability status
 - **News**: Curated links and portfolio announcements
+
+### OpenGraph & Social Sharing
+
+- **Dynamic OG Images**: Auto-generated preview images for jobs, candidates, and blog posts
+- **Individual OG Images**: Each job/candidate has a unique OG image with:
+  - Company logo or candidate photo
+  - Title, skills/tags (ordered by relevance)
+  - HOT/TOP/NEW badges in top-right corner
+  - Branded dcbuilder.eth header
+- **Modal URL Support**: Shareable URLs for modals (`/jobs?job=xxx`, `/candidates?candidate=xxx`)
+- **Copy Link Button**: One-click sharing from job/candidate modals
+
+### UI/UX Features
+
+- **HOT Badge**: Orange gradient badge for high-demand items (analytics-driven or manual)
+- **TOP Badge**: Purple gradient badge for featured/premium items
+- **NEW Badge**: Blue badge for items created within 14 days
+- **Responsive Modals**: Full-screen on mobile, centered dialog on desktop
+- **Smart Truncation**: Long titles/names automatically truncate with ellipsis
+- **Keyboard Navigation**: Escape to close, focus trapping in modals
 
 ### Admin Dashboard (`/admin`)
 
@@ -36,15 +56,17 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 
 #### Admin Features
 
-- **Colorful UI**: Section-specific color themes (blue for jobs, green for candidates, etc.)
+- **Colorful UI**: Section-specific color themes (blue for jobs, green for candidates, amber for investments, etc.)
 - **Skeleton Loading**: Smooth table loading with animated placeholders
 - **Column Filters**: Text search and multi-select for enumerable fields
 - **Sortable Columns**: Click-to-sort with visual indicators
+- **Drag-to-Reorder**: Skills/tags ordered by relevance (reflected in OG images)
 - **Pill-style Actions**: Colorful Edit/Delete buttons matching section colors
 - **Quick Actions**: Color-coded shortcuts on dashboard
-- **Image Upload**: R2 integration with live preview
+- **Image Upload**: R2 integration with live preview and validation
 - **Analytics**: Real-time PostHog data with skeleton loading
 - **Pulsing Tags**: Animated HOT/TOP badges for featured items
+- **Batch Operations**: Multi-select for bulk updates
 
 ## Architecture
 
@@ -81,7 +103,11 @@ src/
 │   └── index.ts         # DB client export
 ├── hooks/               # Custom React hooks (useHotCandidates, etc.)
 ├── services/            # Business logic & External clients (R2, PostHog, Auth)
-└── lib/                 # Shared utilities and helpers (cn, skill-colors, etc.)
+└── lib/                 # Shared utilities and helpers
+    ├── data.ts          # Shared data fetching (getJobById, getCandidateById, getBaseUrl)
+    ├── shuffle.ts       # Deterministic shuffling and date utilities (isNew, isWithinDays)
+    ├── utils.ts         # General utilities (cn for classnames)
+    └── *-colors.ts      # Color mappings for skills, sources, tiers
 
 tests/                   # E2E tests (Playwright)
 
