@@ -124,7 +124,7 @@ function ExpandedJobView({
 
 	return (
 		<div
-			className={`fixed inset-0 z-50 flex sm:items-center sm:justify-center backdrop-blur-sm transition-all duration-300 ${
+			className={`fixed inset-0 z-50 min-h-screen flex sm:items-center sm:justify-center backdrop-blur-sm transition-all duration-300 ${
 				isClosing ? "bg-black/0" : isOpen ? "bg-black/50" : "bg-black/0"
 			}`}
 			onClick={handleClose}
