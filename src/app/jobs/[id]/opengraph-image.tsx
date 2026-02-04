@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getJobById } from "@/lib/data";
+import { isNew } from "@/lib/shuffle";
 
 export const runtime = "nodejs";
 
@@ -9,15 +10,6 @@ export const size = {
 	height: 630,
 };
 export const contentType = "image/png";
-
-// Check if created within last 14 days
-function isNew(createdAt: Date | string | null | undefined): boolean {
-	if (!createdAt) return false;
-	const date = new Date(createdAt);
-	const now = new Date();
-	const diffDays = (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
-	return diffDays <= 14;
-}
 
 interface Props {
 	params: Promise<{ id: string }>;
@@ -34,12 +26,12 @@ export default async function Image({ params }: Props) {
 	const salary = job?.salary || "";
 	const logo = job?.companyLogo;
 	const allTags = job?.tags || [];
-	const isHot = allTags.includes("hot");
-	const isTop = allTags.includes("top");
+	const isHot = allTags.some(t => t.toLowerCase() === "hot");
+	const isTop = allTags.some(t => t.toLowerCase() === "top");
 	const isNewJob = isNew(job?.createdAt);
 	// Filter out hot/top (shown as badges) and take first 4 tags as ordered in DB
 	const tags = allTags
-		.filter(tag => tag !== "hot" && tag !== "top")
+		.filter(tag => tag.toLowerCase() !== "hot" && tag.toLowerCase() !== "top")
 		.slice(0, 4);
 
 	const locationText = [location, remote].filter(Boolean).join(" • ");
