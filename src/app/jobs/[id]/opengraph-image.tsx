@@ -12,9 +12,8 @@ export const contentType = "image/png";
 
 // Tag priority for OG images - lower index = higher priority
 // Most relevant/recognizable tags should appear first
+// Note: "hot" and "top" are filtered out before display
 const tagPriority: string[] = [
-	// Special tags
-	"hot", "top",
 	// Technical domains
 	"ai", "ml", "zkp", "cryptography", "mev", "defi", "protocol",
 	// Core skills
@@ -56,7 +55,7 @@ export default async function Image({ params }: Props) {
 	const remote = job?.remote || "";
 	const salary = job?.salary || "";
 	const logo = job?.companyLogo;
-	const rawTags = job?.tags || [];
+	const rawTags = (job?.tags || []).filter(tag => tag !== "hot" && tag !== "top");
 	const tags = sortTagsByRelevance(rawTags).slice(0, 4);
 
 	const locationText = [location, remote].filter(Boolean).join(" • ");
@@ -122,7 +121,7 @@ export default async function Image({ params }: Props) {
 								display: "flex",
 								border: "3px solid #333",
 								flexShrink: 0,
-								backgroundColor: "#1a1a2e",
+								backgroundColor: "#ffffff",
 							}}
 						>
 							<img
@@ -130,7 +129,7 @@ export default async function Image({ params }: Props) {
 								alt={company}
 								width={200}
 								height={200}
-								style={{ objectFit: "cover" }}
+								style={{ objectFit: "contain" }}
 							/>
 						</div>
 					) : (
