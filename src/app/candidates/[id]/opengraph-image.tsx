@@ -10,43 +10,6 @@ export const size = {
 };
 export const contentType = "image/png";
 
-// Skill priority for OG images - lower index = higher priority
-// Most relevant/recognizable skills should appear first
-// Note: "hot" and "top" are shown as special badges, not regular skills
-const skillPriority: string[] = [
-	// Core blockchain languages
-	"Solidity", "Rust", "Cairo", "Move",
-	// Blockchain-specific
-	"EVM", "ZKP", "Protocol", "DeFi", "MEV", "Cryptography",
-	// Core programming languages
-	"TypeScript", "Python", "JavaScript", "Go", "Java", "C", "C++",
-	// Technical domains
-	"AI", "ML", "Security", "Research", "Infrastructure",
-	// Development roles
-	"Full Stack", "Frontend", "Backend", "Mobile",
-	// Frameworks & tools
-	"React", "Node.js", "Reth", "Alloy", "Anchor",
-];
-
-function sortSkillsByRelevance(skills: string[]): string[] {
-	return [...skills].sort((a, b) => {
-		const aIndex = skillPriority.findIndex(
-			(s) => s.toLowerCase() === a.toLowerCase()
-		);
-		const bIndex = skillPriority.findIndex(
-			(s) => s.toLowerCase() === b.toLowerCase()
-		);
-		// If both are in priority list, sort by priority
-		if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-		// If only a is in priority list, a comes first
-		if (aIndex !== -1) return -1;
-		// If only b is in priority list, b comes first
-		if (bIndex !== -1) return 1;
-		// If neither is in priority list, maintain original order
-		return 0;
-	});
-}
-
 // Check if created within last 14 days
 function isNew(createdAt: Date | string | null | undefined): boolean {
 	if (!createdAt) return false;
@@ -70,8 +33,10 @@ export default async function Image({ params }: Props) {
 	const isHot = allSkills.some(s => s.toLowerCase() === "hot");
 	const isTop = allSkills.some(s => s.toLowerCase() === "top");
 	const isNewCandidate = isNew(candidate?.createdAt);
-	const rawSkills = allSkills.filter(s => s.toLowerCase() !== "hot" && s.toLowerCase() !== "top");
-	const skills = sortSkillsByRelevance(rawSkills).slice(0, 5);
+	// Filter out hot/top (shown as badges) and take first 5 skills as ordered in DB
+	const skills = allSkills
+		.filter(s => s.toLowerCase() !== "hot" && s.toLowerCase() !== "top")
+		.slice(0, 5);
 	const image = candidate?.image;
 
 	return new ImageResponse(

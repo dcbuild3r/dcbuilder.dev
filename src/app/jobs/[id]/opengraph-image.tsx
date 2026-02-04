@@ -10,37 +10,6 @@ export const size = {
 };
 export const contentType = "image/png";
 
-// Tag priority for OG images - lower index = higher priority
-// Most relevant/recognizable tags should appear first
-// Note: "hot" and "top" are shown as special badges, not regular tags
-const tagPriority: string[] = [
-	// Technical domains
-	"ai", "ml", "zkp", "cryptography", "mev", "defi", "protocol",
-	// Core skills
-	"rust", "solidity", "fullstack", "frontend", "backend",
-	// Infrastructure
-	"infra", "security", "research",
-	// Ecosystems
-	"solana", "monad-ecosystem", "berachain-ecosystem",
-	// Other technical
-	"trading", "gaming", "privacy", "account-abstraction",
-];
-
-function sortTagsByRelevance(tags: string[]): string[] {
-	return [...tags].sort((a, b) => {
-		const aIndex = tagPriority.indexOf(a.toLowerCase());
-		const bIndex = tagPriority.indexOf(b.toLowerCase());
-		// If both are in priority list, sort by priority
-		if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-		// If only a is in priority list, a comes first
-		if (aIndex !== -1) return -1;
-		// If only b is in priority list, b comes first
-		if (bIndex !== -1) return 1;
-		// If neither is in priority list, maintain original order
-		return 0;
-	});
-}
-
 // Check if created within last 14 days
 function isNew(createdAt: Date | string | null | undefined): boolean {
 	if (!createdAt) return false;
@@ -68,8 +37,10 @@ export default async function Image({ params }: Props) {
 	const isHot = allTags.includes("hot");
 	const isTop = allTags.includes("top");
 	const isNewJob = isNew(job?.createdAt);
-	const rawTags = allTags.filter(tag => tag !== "hot" && tag !== "top");
-	const tags = sortTagsByRelevance(rawTags).slice(0, 4);
+	// Filter out hot/top (shown as badges) and take first 4 tags as ordered in DB
+	const tags = allTags
+		.filter(tag => tag !== "hot" && tag !== "top")
+		.slice(0, 4);
 
 	const locationText = [location, remote].filter(Boolean).join(" • ");
 
