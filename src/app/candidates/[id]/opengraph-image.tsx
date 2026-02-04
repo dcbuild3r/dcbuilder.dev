@@ -67,11 +67,11 @@ export default async function Image({ params }: Props) {
 				}}
 			>
 				{/* Top: Site branding */}
-				<div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+				<div style={{ display: "flex", alignItems: "center", gap: 24 }}>
 					<div
 						style={{
-							width: 48,
-							height: 48,
+							width: 88,
+							height: 88,
 							borderRadius: "50%",
 							overflow: "hidden",
 							display: "flex",
@@ -80,16 +80,16 @@ export default async function Image({ params }: Props) {
 						<img
 							src="https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/dcbuilder.png"
 							alt="dcbuilder"
-							width={48}
-							height={48}
+							width={88}
+							height={88}
 							style={{ objectFit: "cover" }}
 						/>
 					</div>
 					<div style={{ display: "flex", flexDirection: "column" }}>
-						<span style={{ color: "#ffffff", fontSize: 20, fontWeight: 600 }}>
+						<span style={{ color: "#ffffff", fontSize: 42, fontWeight: 600 }}>
 							dcbuilder.eth
 						</span>
-						<span style={{ color: "#666", fontSize: 16 }}>Candidates</span>
+						<span style={{ color: "#ccc", fontSize: 34 }}>Candidates</span>
 					</div>
 				</div>
 
@@ -98,15 +98,15 @@ export default async function Image({ params }: Props) {
 					style={{
 						display: "flex",
 						alignItems: "center",
-						gap: 40,
+						gap: 48,
 					}}
 				>
 					{/* Candidate image */}
 					{image ? (
 						<div
 							style={{
-								width: 180,
-								height: 180,
+								width: 240,
+								height: 240,
 								borderRadius: "50%",
 								overflow: "hidden",
 								display: "flex",
@@ -117,22 +117,22 @@ export default async function Image({ params }: Props) {
 							<img
 								src={image}
 								alt={name}
-								width={180}
-								height={180}
+								width={240}
+								height={240}
 								style={{ objectFit: "cover" }}
 							/>
 						</div>
 					) : (
 						<div
 							style={{
-								width: 180,
-								height: 180,
+								width: 240,
+								height: 240,
 								borderRadius: "50%",
 								backgroundColor: "#1a1a2e",
 								display: "flex",
 								alignItems: "center",
 								justifyContent: "center",
-								fontSize: 72,
+								fontSize: 96,
 								flexShrink: 0,
 							}}
 						>
@@ -145,12 +145,12 @@ export default async function Image({ params }: Props) {
 						style={{
 							display: "flex",
 							flexDirection: "column",
-							gap: 12,
+							gap: 16,
 						}}
 					>
 						<div
 							style={{
-								fontSize: name.length > 20 ? 48 : 56,
+								fontSize: name.length > 20 ? 62 : 74,
 								fontWeight: 700,
 								color: "#ffffff",
 								lineHeight: 1.1,
@@ -161,8 +161,8 @@ export default async function Image({ params }: Props) {
 						{title && (
 							<div
 								style={{
-									fontSize: 28,
-									color: "#a855f7",
+									fontSize: 42,
+									color: "#c084fc",
 									lineHeight: 1.2,
 									maxWidth: 700,
 								}}
@@ -174,16 +174,16 @@ export default async function Image({ params }: Props) {
 				</div>
 
 				{/* Bottom: Skills */}
-				<div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+				<div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
 					{skills.map((skill) => (
 						<div
 							key={skill}
 							style={{
-								padding: "8px 20px",
-								borderRadius: 20,
+								padding: "16px 36px",
+								borderRadius: 32,
 								backgroundColor: "#1a1a2e",
-								color: "#888",
-								fontSize: 18,
+								color: "#ddd",
+								fontSize: 36,
 							}}
 						>
 							{skill}

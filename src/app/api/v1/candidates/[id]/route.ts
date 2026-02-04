@@ -5,6 +5,25 @@ import { requireAuth } from "@/services/auth";
 
 type Params = { params: Promise<{ id: string }> };
 
+// Resolve candidate ID, checking redirects if not found directly
+async function resolveId(id: string): Promise<string> {
+  const [exists] = await db
+    .select({ id: candidates.id })
+    .from(candidates)
+    .where(eq(candidates.id, id))
+    .limit(1);
+
+  if (exists) return id;
+
+  const [redirect] = await db
+    .select()
+    .from(candidateRedirects)
+    .where(eq(candidateRedirects.oldId, id))
+    .limit(1);
+
+  return redirect?.newId ?? id;
+}
+
 // GET /api/v1/candidates/:id - Get a single candidate
 export async function GET(_request: NextRequest, { params }: Params) {
   const { id } = await params;
@@ -53,6 +72,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
+  const resolvedId = await resolveId(id);
 
   try {
     const body = (await request.json()) as Partial<NewCandidate>;
@@ -66,7 +86,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     const [updated] = await db
       .update(candidates)
       .set({ ...updateData, updatedAt: new Date() } as Partial<NewCandidate>)
-      .where(eq(candidates.id, id))
+      .where(eq(candidates.id, resolvedId))
       .returning();
 
     if (!updated) {
@@ -75,7 +95,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
     return Response.json({ data: updated });
   } catch (error) {
-    console.error("[api/candidates] PUT failed:", { id, error });
+    console.error("[api/candidates] PUT failed:", { id, resolvedId, error });
 
     if (error instanceof Error && error.message.includes("duplicate key")) {
       return Response.json(
@@ -97,11 +117,12 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   if (auth instanceof Response) return auth;
 
   const { id } = await params;
+  const resolvedId = await resolveId(id);
 
   try {
     const [deleted] = await db
       .delete(candidates)
-      .where(eq(candidates.id, id))
+      .where(eq(candidates.id, resolvedId))
       .returning({ id: candidates.id });
 
     if (!deleted) {
@@ -110,7 +131,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 
     return Response.json({ data: { deleted: true, id: deleted.id } });
   } catch (error) {
-    console.error("[api/candidates] DELETE failed:", { id, error });
+    console.error("[api/candidates] DELETE failed:", { id, resolvedId, error });
 
     if (error instanceof Error && error.message.includes("foreign key")) {
       return Response.json(

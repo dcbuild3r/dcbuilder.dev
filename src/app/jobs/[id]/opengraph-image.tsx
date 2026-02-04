@@ -49,11 +49,11 @@ export default async function Image({ params }: Props) {
 				}}
 			>
 				{/* Top: Site branding */}
-				<div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+				<div style={{ display: "flex", alignItems: "center", gap: 24 }}>
 					<div
 						style={{
-							width: 48,
-							height: 48,
+							width: 88,
+							height: 88,
 							borderRadius: "50%",
 							overflow: "hidden",
 							display: "flex",
@@ -62,16 +62,16 @@ export default async function Image({ params }: Props) {
 						<img
 							src="https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/dcbuilder.png"
 							alt="dcbuilder"
-							width={48}
-							height={48}
+							width={88}
+							height={88}
 							style={{ objectFit: "cover" }}
 						/>
 					</div>
 					<div style={{ display: "flex", flexDirection: "column" }}>
-						<span style={{ color: "#ffffff", fontSize: 20, fontWeight: 600 }}>
+						<span style={{ color: "#ffffff", fontSize: 42, fontWeight: 600 }}>
 							dcbuilder.eth
 						</span>
-						<span style={{ color: "#666", fontSize: 16 }}>Jobs</span>
+						<span style={{ color: "#ccc", fontSize: 34 }}>Jobs</span>
 					</div>
 				</div>
 
@@ -80,16 +80,16 @@ export default async function Image({ params }: Props) {
 					style={{
 						display: "flex",
 						alignItems: "center",
-						gap: 40,
+						gap: 48,
 					}}
 				>
 					{/* Company logo */}
 					{logo ? (
 						<div
 							style={{
-								width: 140,
-								height: 140,
-								borderRadius: 20,
+								width: 200,
+								height: 200,
+								borderRadius: 28,
 								overflow: "hidden",
 								display: "flex",
 								border: "3px solid #333",
@@ -100,22 +100,22 @@ export default async function Image({ params }: Props) {
 							<img
 								src={logo}
 								alt={company}
-								width={140}
-								height={140}
+								width={200}
+								height={200}
 								style={{ objectFit: "cover" }}
 							/>
 						</div>
 					) : (
 						<div
 							style={{
-								width: 140,
-								height: 140,
-								borderRadius: 20,
+								width: 200,
+								height: 200,
+								borderRadius: 28,
 								backgroundColor: "#1a1a2e",
 								display: "flex",
 								alignItems: "center",
 								justifyContent: "center",
-								fontSize: 56,
+								fontSize: 80,
 								flexShrink: 0,
 							}}
 						>
@@ -128,12 +128,12 @@ export default async function Image({ params }: Props) {
 						style={{
 							display: "flex",
 							flexDirection: "column",
-							gap: 12,
+							gap: 14,
 						}}
 					>
 						<div
 							style={{
-								fontSize: title.length > 30 ? 40 : 48,
+								fontSize: title.length > 30 ? 54 : 62,
 								fontWeight: 700,
 								color: "#ffffff",
 								lineHeight: 1.1,
@@ -145,22 +145,22 @@ export default async function Image({ params }: Props) {
 						{company && (
 							<div
 								style={{
-									fontSize: 32,
-									color: "#22c55e",
+									fontSize: 46,
+									color: "#4ade80",
 									lineHeight: 1.2,
 								}}
 							>
 								{company}
 							</div>
 						)}
-						<div style={{ display: "flex", gap: 24, marginTop: 8 }}>
+						<div style={{ display: "flex", gap: 36, marginTop: 8 }}>
 							{locationText && (
-								<div style={{ fontSize: 22, color: "#888" }}>
+								<div style={{ fontSize: 38, color: "#ddd" }}>
 									📍 {locationText}
 								</div>
 							)}
 							{salary && (
-								<div style={{ fontSize: 22, color: "#888" }}>
+								<div style={{ fontSize: 38, color: "#ddd" }}>
 									💰 {salary}
 								</div>
 							)}
@@ -169,16 +169,16 @@ export default async function Image({ params }: Props) {
 				</div>
 
 				{/* Bottom: Tags */}
-				<div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+				<div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
 					{tags.map((tag) => (
 						<div
 							key={tag}
 							style={{
-								padding: "8px 20px",
-								borderRadius: 20,
+								padding: "16px 36px",
+								borderRadius: 32,
 								backgroundColor: "#1a2e1a",
-								color: "#22c55e",
-								fontSize: 18,
+								color: "#86efac",
+								fontSize: 36,
 							}}
 						>
 							{tag}
