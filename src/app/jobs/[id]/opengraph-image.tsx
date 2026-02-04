@@ -10,6 +10,38 @@ export const size = {
 };
 export const contentType = "image/png";
 
+// Tag priority for OG images - lower index = higher priority
+// Most relevant/recognizable tags should appear first
+const tagPriority: string[] = [
+	// Special tags
+	"hot", "top",
+	// Technical domains
+	"ai", "ml", "zkp", "cryptography", "mev", "defi", "protocol",
+	// Core skills
+	"rust", "solidity", "fullstack", "frontend", "backend",
+	// Infrastructure
+	"infra", "security", "research",
+	// Ecosystems
+	"solana", "monad-ecosystem", "berachain-ecosystem",
+	// Other technical
+	"trading", "gaming", "privacy", "account-abstraction",
+];
+
+function sortTagsByRelevance(tags: string[]): string[] {
+	return [...tags].sort((a, b) => {
+		const aIndex = tagPriority.indexOf(a.toLowerCase());
+		const bIndex = tagPriority.indexOf(b.toLowerCase());
+		// If both are in priority list, sort by priority
+		if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+		// If only a is in priority list, a comes first
+		if (aIndex !== -1) return -1;
+		// If only b is in priority list, b comes first
+		if (bIndex !== -1) return 1;
+		// If neither is in priority list, maintain original order
+		return 0;
+	});
+}
+
 interface Props {
 	params: Promise<{ id: string }>;
 }
@@ -24,7 +56,8 @@ export default async function Image({ params }: Props) {
 	const remote = job?.remote || "";
 	const salary = job?.salary || "";
 	const logo = job?.companyLogo;
-	const tags = job?.tags?.slice(0, 4) || [];
+	const rawTags = job?.tags || [];
+	const tags = sortTagsByRelevance(rawTags).slice(0, 4);
 
 	const locationText = [location, remote].filter(Boolean).join(" • ");
 
