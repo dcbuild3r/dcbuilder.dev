@@ -12,7 +12,7 @@ export const contentType = "image/png";
 
 // Tag priority for OG images - lower index = higher priority
 // Most relevant/recognizable tags should appear first
-// Note: "hot" and "top" are filtered out before display
+// Note: "hot" and "top" are shown as special badges, not regular tags
 const tagPriority: string[] = [
 	// Technical domains
 	"ai", "ml", "zkp", "cryptography", "mev", "defi", "protocol",
@@ -41,6 +41,15 @@ function sortTagsByRelevance(tags: string[]): string[] {
 	});
 }
 
+// Check if created within last 14 days
+function isNew(createdAt: Date | string | null | undefined): boolean {
+	if (!createdAt) return false;
+	const date = new Date(createdAt);
+	const now = new Date();
+	const diffDays = (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
+	return diffDays <= 14;
+}
+
 interface Props {
 	params: Promise<{ id: string }>;
 }
@@ -55,7 +64,11 @@ export default async function Image({ params }: Props) {
 	const remote = job?.remote || "";
 	const salary = job?.salary || "";
 	const logo = job?.companyLogo;
-	const rawTags = (job?.tags || []).filter(tag => tag !== "hot" && tag !== "top");
+	const allTags = job?.tags || [];
+	const isHot = allTags.includes("hot");
+	const isTop = allTags.includes("top");
+	const isNewJob = isNew(job?.createdAt);
+	const rawTags = allTags.filter(tag => tag !== "hot" && tag !== "top");
 	const tags = sortTagsByRelevance(rawTags).slice(0, 4);
 
 	const locationText = [location, remote].filter(Boolean).join(" • ");
@@ -158,16 +171,67 @@ export default async function Image({ params }: Props) {
 							gap: 14,
 						}}
 					>
-						<div
-							style={{
-								fontSize: title.length > 30 ? 54 : 62,
-								fontWeight: 700,
-								color: "#ffffff",
-								lineHeight: 1.1,
-								maxWidth: 800,
-							}}
-						>
-							{title}
+						{/* Title with badges */}
+						<div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+							<div
+								style={{
+									fontSize: title.length > 30 ? 54 : 62,
+									fontWeight: 700,
+									color: "#ffffff",
+									lineHeight: 1.1,
+									maxWidth: 650,
+								}}
+							>
+								{title}
+							</div>
+							{/* HOT badge */}
+							{isHot && (
+								<div
+									style={{
+										display: "flex",
+										padding: "8px 20px",
+										borderRadius: 24,
+										background: "linear-gradient(to right, #f97316, #f59e0b)",
+										color: "#ffffff",
+										fontSize: 28,
+										fontWeight: 700,
+									}}
+								>
+									<span>🔥 HOT</span>
+								</div>
+							)}
+							{/* TOP badge */}
+							{isTop && (
+								<div
+									style={{
+										display: "flex",
+										padding: "8px 20px",
+										borderRadius: 24,
+										background: "linear-gradient(to right, #8b5cf6, #a855f7)",
+										color: "#ffffff",
+										fontSize: 28,
+										fontWeight: 700,
+									}}
+								>
+									<span>⭐ TOP</span>
+								</div>
+							)}
+							{/* NEW badge */}
+							{isNewJob && (
+								<div
+									style={{
+										display: "flex",
+										padding: "8px 20px",
+										borderRadius: 24,
+										backgroundColor: "#e0f2fe",
+										color: "#0369a1",
+										fontSize: 28,
+										fontWeight: 700,
+									}}
+								>
+									<span>NEW</span>
+								</div>
+							)}
 						</div>
 						{company && (
 							<div

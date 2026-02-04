@@ -12,9 +12,8 @@ export const contentType = "image/png";
 
 // Skill priority for OG images - lower index = higher priority
 // Most relevant/recognizable skills should appear first
+// Note: "hot" and "top" are shown as special badges, not regular skills
 const skillPriority: string[] = [
-	// Special tags
-	"hot", "top",
 	// Core blockchain languages
 	"Solidity", "Rust", "Cairo", "Move",
 	// Blockchain-specific
@@ -48,6 +47,15 @@ function sortSkillsByRelevance(skills: string[]): string[] {
 	});
 }
 
+// Check if created within last 14 days
+function isNew(createdAt: Date | string | null | undefined): boolean {
+	if (!createdAt) return false;
+	const date = new Date(createdAt);
+	const now = new Date();
+	const diffDays = (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
+	return diffDays <= 14;
+}
+
 interface Props {
 	params: Promise<{ id: string }>;
 }
@@ -58,7 +66,11 @@ export default async function Image({ params }: Props) {
 
 	const name = candidate?.name || "Candidate";
 	const title = candidate?.title || "";
-	const rawSkills = candidate?.skills || [];
+	const allSkills = candidate?.skills || [];
+	const isHot = allSkills.some(s => s.toLowerCase() === "hot");
+	const isTop = allSkills.some(s => s.toLowerCase() === "top");
+	const isNewCandidate = isNew(candidate?.createdAt);
+	const rawSkills = allSkills.filter(s => s.toLowerCase() !== "hot" && s.toLowerCase() !== "top");
 	const skills = sortSkillsByRelevance(rawSkills).slice(0, 5);
 	const image = candidate?.image;
 
@@ -159,15 +171,66 @@ export default async function Image({ params }: Props) {
 							gap: 16,
 						}}
 					>
-						<div
-							style={{
-								fontSize: name.length > 20 ? 62 : 74,
-								fontWeight: 700,
-								color: "#ffffff",
-								lineHeight: 1.1,
-							}}
-						>
-							{name}
+						{/* Name with badges */}
+						<div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+							<div
+								style={{
+									fontSize: name.length > 20 ? 62 : 74,
+									fontWeight: 700,
+									color: "#ffffff",
+									lineHeight: 1.1,
+								}}
+							>
+								{name}
+							</div>
+							{/* HOT badge */}
+							{isHot && (
+								<div
+									style={{
+										display: "flex",
+										padding: "8px 20px",
+										borderRadius: 24,
+										background: "linear-gradient(to right, #f97316, #f59e0b)",
+										color: "#ffffff",
+										fontSize: 28,
+										fontWeight: 700,
+									}}
+								>
+									<span>🔥 HOT</span>
+								</div>
+							)}
+							{/* TOP badge */}
+							{isTop && (
+								<div
+									style={{
+										display: "flex",
+										padding: "8px 20px",
+										borderRadius: 24,
+										background: "linear-gradient(to right, #8b5cf6, #a855f7)",
+										color: "#ffffff",
+										fontSize: 28,
+										fontWeight: 700,
+									}}
+								>
+									<span>⭐ TOP</span>
+								</div>
+							)}
+							{/* NEW badge */}
+							{isNewCandidate && (
+								<div
+									style={{
+										display: "flex",
+										padding: "8px 20px",
+										borderRadius: 24,
+										backgroundColor: "#e0f2fe",
+										color: "#0369a1",
+										fontSize: 28,
+										fontWeight: 700,
+									}}
+								>
+									<span>NEW</span>
+								</div>
+							)}
 						</div>
 						{title && (
 							<div
