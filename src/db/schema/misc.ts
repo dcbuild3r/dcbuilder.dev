@@ -43,3 +43,17 @@ export type NewAffiliation = typeof affiliations.$inferInsert;
 
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type NewApiKey = typeof apiKeys.$inferInsert;
+
+// Candidate ID redirects (old ID -> new ID mappings)
+export const candidateRedirects = pgTable(
+  "candidate_redirects",
+  {
+    oldId: text("old_id").primaryKey(),
+    newId: text("new_id").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [index("candidate_redirects_new_id_idx").on(table.newId)]
+);
+
+export type CandidateRedirect = typeof candidateRedirects.$inferSelect;
+export type NewCandidateRedirect = typeof candidateRedirects.$inferInsert;

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { db, candidates, NewCandidate } from "@/db";
+import { db, candidates, candidateRedirects, NewCandidate } from "@/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "@/services/auth";
 
@@ -10,11 +10,28 @@ export async function GET(_request: NextRequest, { params }: Params) {
   const { id } = await params;
 
   try {
-    const [candidate] = await db
+    let [candidate] = await db
       .select()
       .from(candidates)
       .where(eq(candidates.id, id))
       .limit(1);
+
+    // If not found, check for redirect
+    if (!candidate) {
+      const [redirect] = await db
+        .select()
+        .from(candidateRedirects)
+        .where(eq(candidateRedirects.oldId, id))
+        .limit(1);
+
+      if (redirect) {
+        [candidate] = await db
+          .select()
+          .from(candidates)
+          .where(eq(candidates.id, redirect.newId))
+          .limit(1);
+      }
+    }
 
     if (!candidate) {
       return Response.json({ error: "Candidate not found", code: "NOT_FOUND" }, { status: 404 });

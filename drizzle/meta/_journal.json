@@ -22,6 +22,13 @@
       "when": 1769898563430,
       "tag": "0002_small_red_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770201446093,
+      "tag": "0003_breezy_silverclaw",
+      "breakpoints": true
     }
   ]
 }
