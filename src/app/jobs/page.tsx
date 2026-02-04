@@ -24,13 +24,20 @@ async function getJob(id: string) {
 	return job;
 }
 
+function getBaseUrl() {
+	if (process.env.VERCEL_URL) {
+		return `https://${process.env.VERCEL_URL}`;
+	}
+	return process.env.NEXT_PUBLIC_BASE_URL || "https://dcbuilder.dev";
+}
+
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
 	const { job: jobId } = await searchParams;
 
 	if (jobId) {
 		const job = await getJob(jobId);
 		if (job) {
-			const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://dcbuilder.dev";
+			const baseUrl = getBaseUrl();
 			const description = job.description || `${job.title} position at ${job.company}`;
 			return {
 				title: `${job.title} at ${job.company} | Jobs`,

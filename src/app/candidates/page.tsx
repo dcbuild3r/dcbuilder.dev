@@ -38,13 +38,20 @@ async function getCandidate(id: string) {
 	return candidate;
 }
 
+function getBaseUrl() {
+	if (process.env.VERCEL_URL) {
+		return `https://${process.env.VERCEL_URL}`;
+	}
+	return process.env.NEXT_PUBLIC_BASE_URL || "https://dcbuilder.dev";
+}
+
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
 	const { candidate: candidateId } = await searchParams;
 
 	if (candidateId) {
 		const candidate = await getCandidate(candidateId);
 		if (candidate) {
-			const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://dcbuilder.dev";
+			const baseUrl = getBaseUrl();
 			return {
 				title: `${candidate.name} | Candidates`,
 				description: candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`,
