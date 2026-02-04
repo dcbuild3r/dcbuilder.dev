@@ -183,13 +183,13 @@ export default async function Image({ params }: Props) {
 						)}
 						<div style={{ display: "flex", gap: 36, marginTop: 8 }}>
 							{locationText && (
-								<div style={{ fontSize: 38, color: "#ddd" }}>
-									📍 {locationText}
+								<div style={{ display: "flex", fontSize: 38, color: "#ddd" }}>
+									<span>📍 {locationText}</span>
 								</div>
 							)}
 							{salary && (
-								<div style={{ fontSize: 38, color: "#ddd" }}>
-									💰 {salary}
+								<div style={{ display: "flex", fontSize: 38, color: "#ddd" }}>
+									<span>💰 {salary}</span>
 								</div>
 							)}
 						</div>
