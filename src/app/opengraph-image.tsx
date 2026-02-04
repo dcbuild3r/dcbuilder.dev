@@ -28,20 +28,20 @@ export default async function Image() {
 				{/* Profile Image Circle */}
 				<div
 					style={{
-						width: 200,
-						height: 200,
+						width: 240,
+						height: 240,
 						borderRadius: "50%",
 						overflow: "hidden",
 						border: "4px solid #333",
-						marginBottom: 32,
+						marginBottom: 36,
 						display: "flex",
 					}}
 				>
 					<img
 						src="https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/dcbuilder.png"
 						alt="dcbuilder"
-						width={200}
-						height={200}
+						width={240}
+						height={240}
 						style={{ objectFit: "cover" }}
 					/>
 				</div>
@@ -49,10 +49,10 @@ export default async function Image() {
 				{/* Title */}
 				<div
 					style={{
-						fontSize: 64,
+						fontSize: 84,
 						fontWeight: 700,
 						color: "#ffffff",
-						marginBottom: 16,
+						marginBottom: 20,
 					}}
 				>
 					dcbuilder.eth
@@ -61,10 +61,10 @@ export default async function Image() {
 				{/* Subtitle */}
 				<div
 					style={{
-						fontSize: 28,
-						color: "#a0a0a0",
+						fontSize: 38,
+						color: "#ddd",
 						textAlign: "center",
-						maxWidth: 800,
+						maxWidth: 900,
 					}}
 				>
 					Research • Engineering • Angel Investing
@@ -74,19 +74,19 @@ export default async function Image() {
 				<div
 					style={{
 						display: "flex",
-						gap: 16,
-						marginTop: 32,
+						gap: 18,
+						marginTop: 36,
 					}}
 				>
 					{["Cryptography", "Distributed Systems", "AI"].map((topic) => (
 						<div
 							key={topic}
 							style={{
-								padding: "8px 20px",
-								borderRadius: 20,
+								padding: "16px 36px",
+								borderRadius: 32,
 								backgroundColor: "#1a1a2e",
-								color: "#888",
-								fontSize: 18,
+								color: "#ddd",
+								fontSize: 32,
 							}}
 						>
 							{topic}
