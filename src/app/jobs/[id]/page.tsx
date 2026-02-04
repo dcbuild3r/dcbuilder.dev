@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getJobById } from "@/lib/data";
+import { getJobById, getBaseUrl } from "@/lib/data";
 
 interface Props {
 	params: Promise<{ id: string }>;
@@ -13,9 +13,23 @@ export async function generateMetadata({ params }: Props) {
 		return { title: "Job Not Found" };
 	}
 
+	const baseUrl = getBaseUrl();
+	const description = job.description || `${job.title} position at ${job.company}`;
+
 	return {
 		title: `${job.title} at ${job.company} | Jobs`,
-		description: job.description || `${job.title} position at ${job.company}`,
+		description,
+		openGraph: {
+			title: `${job.title} at ${job.company} | Jobs`,
+			description,
+			images: [`${baseUrl}/jobs/${job.id}/opengraph-image`],
+		},
+		twitter: {
+			card: "summary_large_image",
+			title: `${job.title} at ${job.company} | Jobs`,
+			description,
+			images: [`${baseUrl}/jobs/${job.id}/opengraph-image`],
+		},
 	};
 }
 

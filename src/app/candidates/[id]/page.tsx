@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCandidateById } from "@/lib/data";
+import { getCandidateById, getBaseUrl } from "@/lib/data";
 
 interface Props {
 	params: Promise<{ id: string }>;
@@ -13,9 +13,23 @@ export async function generateMetadata({ params }: Props) {
 		return { title: "Candidate Not Found" };
 	}
 
+	const baseUrl = getBaseUrl();
+	const description = candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`;
+
 	return {
 		title: `${candidate.name} | Candidates`,
-		description: candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`,
+		description,
+		openGraph: {
+			title: `${candidate.name} | Candidates`,
+			description,
+			images: [`${baseUrl}/candidates/${candidate.id}/opengraph-image`],
+		},
+		twitter: {
+			card: "summary_large_image",
+			title: `${candidate.name} | Candidates`,
+			description,
+			images: [`${baseUrl}/candidates/${candidate.id}/opengraph-image`],
+		},
 	};
 }
 
