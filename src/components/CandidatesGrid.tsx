@@ -627,9 +627,9 @@ const CandidateCard = memo(function CandidateCard({
 					/>
 				</div>
 
-				<div>
+				<div className="w-full min-w-0">
 					<h3 className="font-semibold flex items-center justify-center gap-1">
-						<span>{displayName}</span>
+						<span className="truncate">{displayName}</span>
 						<span className="flex-shrink-0 flex items-center gap-0.5">
 							{candidate.featured && (
 								<span className="text-xs text-amber-600 dark:text-amber-400">
