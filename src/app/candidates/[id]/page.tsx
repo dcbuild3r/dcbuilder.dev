@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { db, candidates, candidateRedirects } from "@/db";
-import { eq } from "drizzle-orm";
+import { getCandidateById, getBaseUrl } from "@/lib/data";
 
 interface Props {
 	params: Promise<{ id: string }>;
@@ -8,48 +7,35 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
 	const { id } = await params;
-	const candidate = await getCandidate(id);
+	const candidate = await getCandidateById(id);
 
 	if (!candidate) {
 		return { title: "Candidate Not Found" };
 	}
 
+	const baseUrl = getBaseUrl();
+	const description = candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`;
+
 	return {
 		title: `${candidate.name} | Candidates`,
-		description: candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`,
+		description,
+		openGraph: {
+			title: `${candidate.name} | Candidates`,
+			description,
+			images: [`${baseUrl}/candidates/${candidate.id}/opengraph-image`],
+		},
+		twitter: {
+			card: "summary_large_image",
+			title: `${candidate.name} | Candidates`,
+			description,
+			images: [`${baseUrl}/candidates/${candidate.id}/opengraph-image`],
+		},
 	};
-}
-
-async function getCandidate(id: string) {
-	let [candidate] = await db
-		.select()
-		.from(candidates)
-		.where(eq(candidates.id, id))
-		.limit(1);
-
-	// Check for redirect if not found
-	if (!candidate) {
-		const [redirectEntry] = await db
-			.select()
-			.from(candidateRedirects)
-			.where(eq(candidateRedirects.oldId, id))
-			.limit(1);
-
-		if (redirectEntry) {
-			[candidate] = await db
-				.select()
-				.from(candidates)
-				.where(eq(candidates.id, redirectEntry.newId))
-				.limit(1);
-		}
-	}
-
-	return candidate;
 }
 
 export default async function CandidatePage({ params }: Props) {
 	const { id } = await params;
-	const candidate = await getCandidate(id);
+	const candidate = await getCandidateById(id);
 
 	if (!candidate) {
 		redirect("/candidates");

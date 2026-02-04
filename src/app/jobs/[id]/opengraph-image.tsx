@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
-import { db, jobs } from "@/db";
-import { eq } from "drizzle-orm";
+import { getJobById } from "@/lib/data";
+import { isNew } from "@/lib/shuffle";
 
 export const runtime = "nodejs";
 
@@ -17,11 +17,7 @@ interface Props {
 
 export default async function Image({ params }: Props) {
 	const { id } = await params;
-	const [job] = await db
-		.select()
-		.from(jobs)
-		.where(eq(jobs.id, id))
-		.limit(1);
+	const job = await getJobById(id);
 
 	const title = job?.title || "Job Opening";
 	const company = job?.company || "";
@@ -29,7 +25,14 @@ export default async function Image({ params }: Props) {
 	const remote = job?.remote || "";
 	const salary = job?.salary || "";
 	const logo = job?.companyLogo;
-	const tags = job?.tags?.slice(0, 4) || [];
+	const allTags = job?.tags || [];
+	const isHot = allTags.some(t => t.toLowerCase() === "hot");
+	const isTop = allTags.some(t => t.toLowerCase() === "top");
+	const isNewJob = isNew(job?.createdAt);
+	// Filter out hot/top (shown as badges) and take first 4 tags as ordered in DB
+	const tags = allTags
+		.filter(tag => tag.toLowerCase() !== "hot" && tag.toLowerCase() !== "top")
+		.slice(0, 4);
 
 	const locationText = [location, remote].filter(Boolean).join(" • ");
 
@@ -48,31 +51,84 @@ export default async function Image({ params }: Props) {
 					padding: 60,
 				}}
 			>
-				{/* Top: Site branding */}
-				<div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-					<div
-						style={{
-							width: 48,
-							height: 48,
-							borderRadius: "50%",
-							overflow: "hidden",
-							display: "flex",
-						}}
-					>
-						<img
-							src="https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/dcbuilder.png"
-							alt="dcbuilder"
-							width={48}
-							height={48}
-							style={{ objectFit: "cover" }}
-						/>
+				{/* Top: Site branding + Badges */}
+				<div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+					{/* Left: Branding */}
+					<div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+						<div
+							style={{
+								width: 88,
+								height: 88,
+								borderRadius: "50%",
+								overflow: "hidden",
+								display: "flex",
+							}}
+						>
+							<img
+								src="https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/dcbuilder.png"
+								alt="dcbuilder"
+								width={88}
+								height={88}
+								style={{ objectFit: "cover" }}
+							/>
+						</div>
+						<div style={{ display: "flex", flexDirection: "column" }}>
+							<span style={{ color: "#ffffff", fontSize: 42, fontWeight: 600 }}>
+								dcbuilder.eth
+							</span>
+							<span style={{ color: "#ccc", fontSize: 34 }}>Jobs</span>
+						</div>
 					</div>
-					<div style={{ display: "flex", flexDirection: "column" }}>
-						<span style={{ color: "#ffffff", fontSize: 20, fontWeight: 600 }}>
-							dcbuilder.eth
-						</span>
-						<span style={{ color: "#666", fontSize: 16 }}>Jobs</span>
-					</div>
+					{/* Right: Badges */}
+					{(isHot || isTop || isNewJob) && (
+						<div style={{ display: "flex", gap: 12 }}>
+							{isHot && (
+								<div
+									style={{
+										display: "flex",
+										padding: "12px 24px",
+										borderRadius: 28,
+										background: "linear-gradient(to right, #f97316, #f59e0b)",
+										color: "#ffffff",
+										fontSize: 32,
+										fontWeight: 700,
+									}}
+								>
+									<span>🔥 HOT</span>
+								</div>
+							)}
+							{isTop && (
+								<div
+									style={{
+										display: "flex",
+										padding: "12px 24px",
+										borderRadius: 28,
+										background: "linear-gradient(to right, #8b5cf6, #a855f7)",
+										color: "#ffffff",
+										fontSize: 32,
+										fontWeight: 700,
+									}}
+								>
+									<span>⭐ TOP</span>
+								</div>
+							)}
+							{isNewJob && (
+								<div
+									style={{
+										display: "flex",
+										padding: "12px 24px",
+										borderRadius: 28,
+										backgroundColor: "#e0f2fe",
+										color: "#0369a1",
+										fontSize: 32,
+										fontWeight: 700,
+									}}
+								>
+									<span>NEW</span>
+								</div>
+							)}
+						</div>
+					)}
 				</div>
 
 				{/* Middle: Job info */}
@@ -80,42 +136,42 @@ export default async function Image({ params }: Props) {
 					style={{
 						display: "flex",
 						alignItems: "center",
-						gap: 40,
+						gap: 48,
 					}}
 				>
 					{/* Company logo */}
 					{logo ? (
 						<div
 							style={{
-								width: 140,
-								height: 140,
-								borderRadius: 20,
+								width: 200,
+								height: 200,
+								borderRadius: 28,
 								overflow: "hidden",
 								display: "flex",
 								border: "3px solid #333",
 								flexShrink: 0,
-								backgroundColor: "#1a1a2e",
+								backgroundColor: "#ffffff",
 							}}
 						>
 							<img
 								src={logo}
 								alt={company}
-								width={140}
-								height={140}
-								style={{ objectFit: "cover" }}
+								width={200}
+								height={200}
+								style={{ objectFit: "contain" }}
 							/>
 						</div>
 					) : (
 						<div
 							style={{
-								width: 140,
-								height: 140,
-								borderRadius: 20,
+								width: 200,
+								height: 200,
+								borderRadius: 28,
 								backgroundColor: "#1a1a2e",
 								display: "flex",
 								alignItems: "center",
 								justifyContent: "center",
-								fontSize: 56,
+								fontSize: 80,
 								flexShrink: 0,
 							}}
 						>
@@ -128,12 +184,12 @@ export default async function Image({ params }: Props) {
 						style={{
 							display: "flex",
 							flexDirection: "column",
-							gap: 12,
+							gap: 14,
 						}}
 					>
 						<div
 							style={{
-								fontSize: title.length > 30 ? 40 : 48,
+								fontSize: title.length > 30 ? 54 : 62,
 								fontWeight: 700,
 								color: "#ffffff",
 								lineHeight: 1.1,
@@ -145,23 +201,23 @@ export default async function Image({ params }: Props) {
 						{company && (
 							<div
 								style={{
-									fontSize: 32,
-									color: "#22c55e",
+									fontSize: 46,
+									color: "#4ade80",
 									lineHeight: 1.2,
 								}}
 							>
 								{company}
 							</div>
 						)}
-						<div style={{ display: "flex", gap: 24, marginTop: 8 }}>
+						<div style={{ display: "flex", gap: 36, marginTop: 8 }}>
 							{locationText && (
-								<div style={{ fontSize: 22, color: "#888" }}>
-									📍 {locationText}
+								<div style={{ display: "flex", fontSize: 38, color: "#ddd" }}>
+									<span>📍 {locationText}</span>
 								</div>
 							)}
 							{salary && (
-								<div style={{ fontSize: 22, color: "#888" }}>
-									💰 {salary}
+								<div style={{ display: "flex", fontSize: 38, color: "#ddd" }}>
+									<span>💰 {salary}</span>
 								</div>
 							)}
 						</div>
@@ -169,16 +225,16 @@ export default async function Image({ params }: Props) {
 				</div>
 
 				{/* Bottom: Tags */}
-				<div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+				<div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
 					{tags.map((tag) => (
 						<div
 							key={tag}
 							style={{
-								padding: "8px 20px",
-								borderRadius: 20,
+								padding: "16px 36px",
+								borderRadius: 32,
 								backgroundColor: "#1a2e1a",
-								color: "#22c55e",
-								fontSize: 18,
+								color: "#86efac",
+								fontSize: 36,
 							}}
 						>
 							{tag}

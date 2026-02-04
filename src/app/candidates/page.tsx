@@ -1,14 +1,45 @@
+import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { CandidatesGrid } from "@/components/CandidatesGrid";
-import { getCandidatesFromDB } from "@/lib/data";
-
-export const metadata = {
-	title: "Candidates",
-	description: "Talented builders looking for new opportunities",
-};
+import { getCandidatesFromDB, getCandidateById, getBaseUrl } from "@/lib/data";
 
 // Force dynamic rendering (uses useSearchParams in CandidatesGrid)
 export const dynamic = "force-dynamic";
+
+interface Props {
+	searchParams: Promise<{ candidate?: string }>;
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+	const { candidate: candidateId } = await searchParams;
+
+	if (candidateId) {
+		const candidate = await getCandidateById(candidateId);
+		if (candidate) {
+			const baseUrl = getBaseUrl();
+			return {
+				title: `${candidate.name} | Candidates`,
+				description: candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`,
+				openGraph: {
+					title: `${candidate.name} | Candidates`,
+					description: candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`,
+					images: [`${baseUrl}/candidates/${candidate.id}/opengraph-image`],
+				},
+				twitter: {
+					card: "summary_large_image",
+					title: `${candidate.name} | Candidates`,
+					description: candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`,
+					images: [`${baseUrl}/candidates/${candidate.id}/opengraph-image`],
+				},
+			};
+		}
+	}
+
+	return {
+		title: "Candidates",
+		description: "Talented builders looking for new opportunities",
+	};
+}
 
 export default async function Candidates() {
 	const candidates = await getCandidatesFromDB();

@@ -1,19 +1,51 @@
 import { Suspense } from "react";
+import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { JobsGrid } from "@/components/JobsGrid";
-import { getJobsFromDB } from "@/lib/data";
+import { getJobsFromDB, getJobById, getBaseUrl } from "@/lib/data";
 import { db, jobTags, jobRoles } from "@/db";
 import { asc } from "drizzle-orm";
 import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { JOBS_PAGE } from "@/data/page-content";
 
-export const metadata = {
-	title: "Jobs",
-	description: "Job opportunities at companies in my network",
-};
-
 // Force dynamic rendering since we need database access
 export const dynamic = "force-dynamic";
+
+interface Props {
+	searchParams: Promise<{ job?: string }>;
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+	const { job: jobId } = await searchParams;
+
+	if (jobId) {
+		const job = await getJobById(jobId);
+		if (job) {
+			const baseUrl = getBaseUrl();
+			const description = job.description || `${job.title} position at ${job.company}`;
+			return {
+				title: `${job.title} at ${job.company} | Jobs`,
+				description,
+				openGraph: {
+					title: `${job.title} at ${job.company} | Jobs`,
+					description,
+					images: [`${baseUrl}/jobs/${job.id}/opengraph-image`],
+				},
+				twitter: {
+					card: "summary_large_image",
+					title: `${job.title} at ${job.company} | Jobs`,
+					description,
+					images: [`${baseUrl}/jobs/${job.id}/opengraph-image`],
+				},
+			};
+		}
+	}
+
+	return {
+		title: "Jobs",
+		description: "Job opportunities at companies in my network",
+	};
+}
 
 function JobsGridFallback() {
 	return (

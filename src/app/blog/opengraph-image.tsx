@@ -28,8 +28,8 @@ export default async function Image() {
 				{/* Icon */}
 				<div
 					style={{
-						fontSize: 80,
-						marginBottom: 24,
+						fontSize: 100,
+						marginBottom: 32,
 					}}
 				>
 					📝
@@ -38,10 +38,10 @@ export default async function Image() {
 				{/* Title */}
 				<div
 					style={{
-						fontSize: 72,
+						fontSize: 84,
 						fontWeight: 700,
 						color: "#ffffff",
-						marginBottom: 16,
+						marginBottom: 20,
 					}}
 				>
 					Blog | dcbuilder.eth
@@ -50,11 +50,11 @@ export default async function Image() {
 				{/* Description */}
 				<div
 					style={{
-						fontSize: 24,
-						color: "#666",
-						marginTop: 32,
+						fontSize: 36,
+						color: "#ddd",
+						marginTop: 36,
 						textAlign: "center",
-						maxWidth: 700,
+						maxWidth: 800,
 					}}
 				>
 					Thoughts on cryptography, distributed systems, and building the future

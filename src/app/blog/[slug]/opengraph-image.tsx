@@ -37,11 +37,11 @@ export default async function Image({ params }: Props) {
 				}}
 			>
 				{/* Top: Author info */}
-				<div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+				<div style={{ display: "flex", alignItems: "center", gap: 24 }}>
 					<div
 						style={{
-							width: 56,
-							height: 56,
+							width: 88,
+							height: 88,
 							borderRadius: "50%",
 							overflow: "hidden",
 							display: "flex",
@@ -50,16 +50,16 @@ export default async function Image({ params }: Props) {
 					<img
 							src="https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/dcbuilder.png"
 							alt="dcbuilder"
-							width={56}
-							height={56}
+							width={88}
+							height={88}
 							style={{ objectFit: "cover" }}
 						/>
 					</div>
 					<div style={{ display: "flex", flexDirection: "column" }}>
-						<span style={{ color: "#ffffff", fontSize: 24, fontWeight: 600 }}>
+						<span style={{ color: "#ffffff", fontSize: 42, fontWeight: 600 }}>
 							dcbuilder.eth
 						</span>
-						<span style={{ color: "#666", fontSize: 18 }}>dcbuilder.dev</span>
+						<span style={{ color: "#ccc", fontSize: 34 }}>dcbuilder.dev</span>
 					</div>
 				</div>
 
@@ -68,12 +68,12 @@ export default async function Image({ params }: Props) {
 					style={{
 						display: "flex",
 						flexDirection: "column",
-						gap: 16,
+						gap: 20,
 					}}
 				>
 					<div
 						style={{
-							fontSize: title.length > 50 ? 48 : 56,
+							fontSize: title.length > 50 ? 62 : 74,
 							fontWeight: 700,
 							color: "#ffffff",
 							lineHeight: 1.2,
@@ -83,7 +83,7 @@ export default async function Image({ params }: Props) {
 						{title}
 					</div>
 					{date && (
-						<div style={{ fontSize: 24, color: "#666" }}>
+						<div style={{ fontSize: 36, color: "#ddd" }}>
 							{date}
 						</div>
 					)}
@@ -93,11 +93,11 @@ export default async function Image({ params }: Props) {
 				<div style={{ display: "flex" }}>
 					<div
 						style={{
-							padding: "10px 24px",
-							borderRadius: 24,
+							padding: "16px 36px",
+							borderRadius: 32,
 							backgroundColor: "#1a1a2e",
-							color: "#888",
-							fontSize: 20,
+							color: "#ddd",
+							fontSize: 36,
 						}}
 					>
 						Blog

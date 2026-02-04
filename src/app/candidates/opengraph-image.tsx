@@ -25,24 +25,24 @@ export default async function Image() {
 						"radial-gradient(circle at 50% 100%, #2e1a2e 0%, #0a0a0a 50%)",
 				}}
 			>
-				<div style={{ fontSize: 80, marginBottom: 24 }}>🧑‍💻</div>
+				<div style={{ fontSize: 100, marginBottom: 32 }}>🧑‍💻</div>
 				<div
 					style={{
-						fontSize: 72,
+						fontSize: 84,
 						fontWeight: 700,
 						color: "#ffffff",
-						marginBottom: 16,
+						marginBottom: 20,
 					}}
 				>
 					Candidates | dcbuilder.eth
 				</div>
 				<div
 					style={{
-						fontSize: 24,
-						color: "#666",
-						marginTop: 32,
+						fontSize: 36,
+						color: "#ddd",
+						marginTop: 36,
 						textAlign: "center",
-						maxWidth: 700,
+						maxWidth: 800,
 					}}
 				>
 					Talented builders looking for new opportunities
