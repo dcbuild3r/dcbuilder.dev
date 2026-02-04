@@ -2,9 +2,9 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { JobsGrid } from "@/components/JobsGrid";
-import { getJobsFromDB } from "@/lib/data";
-import { db, jobTags, jobRoles, jobs } from "@/db";
-import { asc, eq } from "drizzle-orm";
+import { getJobsFromDB, getJobById, getBaseUrl } from "@/lib/data";
+import { db, jobTags, jobRoles } from "@/db";
+import { asc } from "drizzle-orm";
 import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { JOBS_PAGE } from "@/data/page-content";
 
@@ -15,27 +15,11 @@ interface Props {
 	searchParams: Promise<{ job?: string }>;
 }
 
-async function getJob(id: string) {
-	const [job] = await db
-		.select()
-		.from(jobs)
-		.where(eq(jobs.id, id))
-		.limit(1);
-	return job;
-}
-
-function getBaseUrl() {
-	if (process.env.VERCEL_URL) {
-		return `https://${process.env.VERCEL_URL}`;
-	}
-	return process.env.NEXT_PUBLIC_BASE_URL || "https://dcbuilder.dev";
-}
-
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
 	const { job: jobId } = await searchParams;
 
 	if (jobId) {
-		const job = await getJob(jobId);
+		const job = await getJobById(jobId);
 		if (job) {
 			const baseUrl = getBaseUrl();
 			const description = job.description || `${job.title} position at ${job.company}`;

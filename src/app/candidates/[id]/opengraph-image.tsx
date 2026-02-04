@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
-import { db, candidates, candidateRedirects } from "@/db";
-import { eq } from "drizzle-orm";
+import { getCandidateById } from "@/lib/data";
 
 export const runtime = "nodejs";
 
@@ -15,36 +14,9 @@ interface Props {
 	params: Promise<{ id: string }>;
 }
 
-async function getCandidate(id: string) {
-	let [candidate] = await db
-		.select()
-		.from(candidates)
-		.where(eq(candidates.id, id))
-		.limit(1);
-
-	// Check for redirect if not found
-	if (!candidate) {
-		const [redirectEntry] = await db
-			.select()
-			.from(candidateRedirects)
-			.where(eq(candidateRedirects.oldId, id))
-			.limit(1);
-
-		if (redirectEntry) {
-			[candidate] = await db
-				.select()
-				.from(candidates)
-				.where(eq(candidates.id, redirectEntry.newId))
-				.limit(1);
-		}
-	}
-
-	return candidate;
-}
-
 export default async function Image({ params }: Props) {
 	const { id } = await params;
-	const candidate = await getCandidate(id);
+	const candidate = await getCandidateById(id);
 
 	const name = candidate?.name || "Candidate";
 	const title = candidate?.title || "";

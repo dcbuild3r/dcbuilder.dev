@@ -1,9 +1,7 @@
 import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { CandidatesGrid } from "@/components/CandidatesGrid";
-import { getCandidatesFromDB } from "@/lib/data";
-import { db, candidates, candidateRedirects } from "@/db";
-import { eq } from "drizzle-orm";
+import { getCandidatesFromDB, getCandidateById, getBaseUrl } from "@/lib/data";
 
 // Force dynamic rendering (uses useSearchParams in CandidatesGrid)
 export const dynamic = "force-dynamic";
@@ -12,44 +10,11 @@ interface Props {
 	searchParams: Promise<{ candidate?: string }>;
 }
 
-async function getCandidate(id: string) {
-	let [candidate] = await db
-		.select()
-		.from(candidates)
-		.where(eq(candidates.id, id))
-		.limit(1);
-
-	if (!candidate) {
-		const [redirect] = await db
-			.select()
-			.from(candidateRedirects)
-			.where(eq(candidateRedirects.oldId, id))
-			.limit(1);
-
-		if (redirect) {
-			[candidate] = await db
-				.select()
-				.from(candidates)
-				.where(eq(candidates.id, redirect.newId))
-				.limit(1);
-		}
-	}
-
-	return candidate;
-}
-
-function getBaseUrl() {
-	if (process.env.VERCEL_URL) {
-		return `https://${process.env.VERCEL_URL}`;
-	}
-	return process.env.NEXT_PUBLIC_BASE_URL || "https://dcbuilder.dev";
-}
-
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
 	const { candidate: candidateId } = await searchParams;
 
 	if (candidateId) {
-		const candidate = await getCandidate(candidateId);
+		const candidate = await getCandidateById(candidateId);
 		if (candidate) {
 			const baseUrl = getBaseUrl();
 			return {

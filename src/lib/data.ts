@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { jobs as jobsTable, candidates as candidatesTable, curatedLinks as curatedLinksTable } from "@/db/schema";
-import { desc } from "drizzle-orm";
+import { jobs as jobsTable, candidates as candidatesTable, curatedLinks as curatedLinksTable, candidateRedirects } from "@/db/schema";
+import { desc, eq } from "drizzle-orm";
 import type { Job, Company, RelationshipCategory, JobTag, JobTier } from "@/data/jobs";
 import type {
   Candidate,
@@ -94,4 +94,50 @@ export async function getCuratedLinksFromDB(): Promise<CuratedLink[]> {
     category: link.category as CuratedLink["category"],
     featured: link.featured || false,
   }));
+}
+
+// Get a single candidate by ID, with redirect support for old IDs
+export async function getCandidateById(id: string) {
+  let [candidate] = await db
+    .select()
+    .from(candidatesTable)
+    .where(eq(candidatesTable.id, id))
+    .limit(1);
+
+  // Check for redirect if not found
+  if (!candidate) {
+    const [redirect] = await db
+      .select()
+      .from(candidateRedirects)
+      .where(eq(candidateRedirects.oldId, id))
+      .limit(1);
+
+    if (redirect) {
+      [candidate] = await db
+        .select()
+        .from(candidatesTable)
+        .where(eq(candidatesTable.id, redirect.newId))
+        .limit(1);
+    }
+  }
+
+  return candidate;
+}
+
+// Get a single job by ID
+export async function getJobById(id: string) {
+  const [job] = await db
+    .select()
+    .from(jobsTable)
+    .where(eq(jobsTable.id, id))
+    .limit(1);
+  return job;
+}
+
+// Get the base URL for the current environment (handles Vercel preview deployments)
+export function getBaseUrl() {
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return process.env.NEXT_PUBLIC_BASE_URL || "https://dcbuilder.dev";
 }
