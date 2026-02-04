@@ -1,14 +1,73 @@
+import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { CandidatesGrid } from "@/components/CandidatesGrid";
 import { getCandidatesFromDB } from "@/lib/data";
-
-export const metadata = {
-	title: "Candidates",
-	description: "Talented builders looking for new opportunities",
-};
+import { db, candidates, candidateRedirects } from "@/db";
+import { eq } from "drizzle-orm";
 
 // Force dynamic rendering (uses useSearchParams in CandidatesGrid)
 export const dynamic = "force-dynamic";
+
+interface Props {
+	searchParams: Promise<{ candidate?: string }>;
+}
+
+async function getCandidate(id: string) {
+	let [candidate] = await db
+		.select()
+		.from(candidates)
+		.where(eq(candidates.id, id))
+		.limit(1);
+
+	if (!candidate) {
+		const [redirect] = await db
+			.select()
+			.from(candidateRedirects)
+			.where(eq(candidateRedirects.oldId, id))
+			.limit(1);
+
+		if (redirect) {
+			[candidate] = await db
+				.select()
+				.from(candidates)
+				.where(eq(candidates.id, redirect.newId))
+				.limit(1);
+		}
+	}
+
+	return candidate;
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+	const { candidate: candidateId } = await searchParams;
+
+	if (candidateId) {
+		const candidate = await getCandidate(candidateId);
+		if (candidate) {
+			const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://dcbuilder.dev";
+			return {
+				title: `${candidate.name} | Candidates`,
+				description: candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`,
+				openGraph: {
+					title: `${candidate.name} | Candidates`,
+					description: candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`,
+					images: [`${baseUrl}/candidates/${candidate.id}/opengraph-image`],
+				},
+				twitter: {
+					card: "summary_large_image",
+					title: `${candidate.name} | Candidates`,
+					description: candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`,
+					images: [`${baseUrl}/candidates/${candidate.id}/opengraph-image`],
+				},
+			};
+		}
+	}
+
+	return {
+		title: "Candidates",
+		description: "Talented builders looking for new opportunities",
+	};
+}
 
 export default async function Candidates() {
 	const candidates = await getCandidatesFromDB();
