@@ -89,31 +89,84 @@ export default async function Image({ params }: Props) {
 					padding: 60,
 				}}
 			>
-				{/* Top: Site branding */}
-				<div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-					<div
-						style={{
-							width: 88,
-							height: 88,
-							borderRadius: "50%",
-							overflow: "hidden",
-							display: "flex",
-						}}
-					>
-						<img
-							src="https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/dcbuilder.png"
-							alt="dcbuilder"
-							width={88}
-							height={88}
-							style={{ objectFit: "cover" }}
-						/>
+				{/* Top: Site branding + Badges */}
+				<div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+					{/* Left: Branding */}
+					<div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+						<div
+							style={{
+								width: 88,
+								height: 88,
+								borderRadius: "50%",
+								overflow: "hidden",
+								display: "flex",
+							}}
+						>
+							<img
+								src="https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/dcbuilder.png"
+								alt="dcbuilder"
+								width={88}
+								height={88}
+								style={{ objectFit: "cover" }}
+							/>
+						</div>
+						<div style={{ display: "flex", flexDirection: "column" }}>
+							<span style={{ color: "#ffffff", fontSize: 42, fontWeight: 600 }}>
+								dcbuilder.eth
+							</span>
+							<span style={{ color: "#ccc", fontSize: 34 }}>Candidates</span>
+						</div>
 					</div>
-					<div style={{ display: "flex", flexDirection: "column" }}>
-						<span style={{ color: "#ffffff", fontSize: 42, fontWeight: 600 }}>
-							dcbuilder.eth
-						</span>
-						<span style={{ color: "#ccc", fontSize: 34 }}>Candidates</span>
-					</div>
+					{/* Right: Badges */}
+					{(isHot || isTop || isNewCandidate) && (
+						<div style={{ display: "flex", gap: 12 }}>
+							{isHot && (
+								<div
+									style={{
+										display: "flex",
+										padding: "12px 24px",
+										borderRadius: 28,
+										background: "linear-gradient(to right, #f97316, #f59e0b)",
+										color: "#ffffff",
+										fontSize: 32,
+										fontWeight: 700,
+									}}
+								>
+									<span>🔥 HOT</span>
+								</div>
+							)}
+							{isTop && (
+								<div
+									style={{
+										display: "flex",
+										padding: "12px 24px",
+										borderRadius: 28,
+										background: "linear-gradient(to right, #8b5cf6, #a855f7)",
+										color: "#ffffff",
+										fontSize: 32,
+										fontWeight: 700,
+									}}
+								>
+									<span>⭐ TOP</span>
+								</div>
+							)}
+							{isNewCandidate && (
+								<div
+									style={{
+										display: "flex",
+										padding: "12px 24px",
+										borderRadius: 28,
+										backgroundColor: "#e0f2fe",
+										color: "#0369a1",
+										fontSize: 32,
+										fontWeight: 700,
+									}}
+								>
+									<span>NEW</span>
+								</div>
+							)}
+						</div>
+					)}
 				</div>
 
 				{/* Middle: Candidate info */}
@@ -171,66 +224,17 @@ export default async function Image({ params }: Props) {
 							gap: 16,
 						}}
 					>
-						{/* Name with badges */}
-						<div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-							<div
-								style={{
-									fontSize: name.length > 20 ? 62 : 74,
-									fontWeight: 700,
-									color: "#ffffff",
-									lineHeight: 1.1,
-								}}
-							>
-								{name}
-							</div>
-							{/* HOT badge */}
-							{isHot && (
-								<div
-									style={{
-										display: "flex",
-										padding: "8px 20px",
-										borderRadius: 24,
-										background: "linear-gradient(to right, #f97316, #f59e0b)",
-										color: "#ffffff",
-										fontSize: 28,
-										fontWeight: 700,
-									}}
-								>
-									<span>🔥 HOT</span>
-								</div>
-							)}
-							{/* TOP badge */}
-							{isTop && (
-								<div
-									style={{
-										display: "flex",
-										padding: "8px 20px",
-										borderRadius: 24,
-										background: "linear-gradient(to right, #8b5cf6, #a855f7)",
-										color: "#ffffff",
-										fontSize: 28,
-										fontWeight: 700,
-									}}
-								>
-									<span>⭐ TOP</span>
-								</div>
-							)}
-							{/* NEW badge */}
-							{isNewCandidate && (
-								<div
-									style={{
-										display: "flex",
-										padding: "8px 20px",
-										borderRadius: 24,
-										backgroundColor: "#e0f2fe",
-										color: "#0369a1",
-										fontSize: 28,
-										fontWeight: 700,
-									}}
-								>
-									<span>NEW</span>
-								</div>
-							)}
+						{/* Name */}
+						<div
+							style={{
+								fontSize: name.length > 25 ? 54 : name.length > 20 ? 62 : 74,
+								fontWeight: 700,
+								color: "#ffffff",
+								lineHeight: 1.1,
+								maxWidth: 700,
+							}}
+						>
+							{name}
 						</div>
 						{title && (
 							<div
