@@ -11,6 +11,7 @@ export const curatedLinks = pgTable(
     title: text("title").notNull(),
     url: text("url").notNull(),
     source: text("source").notNull(), // e.g., "Vitalik Buterin", "Paradigm"
+    sourceImage: text("source_image"), // Profile image URL for the source
     date: timestamp("date").notNull(),
     description: text("description"),
     category: text("category").notNull(), // crypto, ai, infrastructure, etc.
