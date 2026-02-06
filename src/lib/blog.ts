@@ -10,6 +10,7 @@ export interface BlogPostView {
   date: string;
   description: string;
   content: string;
+  isFresh: boolean;
   source?: string;
   sourceUrl?: string;
   readingTime: number;
@@ -21,6 +22,7 @@ export interface BlogPostMeta {
   title: string;
   date: string;
   description: string;
+  isFresh: boolean;
   source?: string;
   sourceUrl?: string;
   readingTime: number;
@@ -73,6 +75,7 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
       title: post.title,
       date: formatDateString(post.date, post.slug),
       description: post.description || "",
+      isFresh: post.isFresh,
       source: post.source || undefined,
       sourceUrl: post.sourceUrl || undefined,
       readingTime: calculateReadingTime(post.content),
@@ -100,6 +103,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
       date: formatDateString(post.date, post.slug),
       description: post.description || "",
       content: post.content,
+      isFresh: post.isFresh,
       source: post.source || undefined,
       sourceUrl: post.sourceUrl || undefined,
       readingTime: calculateReadingTime(post.content),

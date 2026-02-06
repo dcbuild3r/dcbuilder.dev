@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, blogPosts } from "@/db";
 import { desc, eq } from "drizzle-orm";
 import { requireAuth, validateApiKey } from "@/services/auth";
+import { shouldBeFresh } from "@/services/news-freshness";
 
 function isValidDate(dateStr: string): boolean {
   const parsed = new Date(dateStr);
@@ -28,6 +29,7 @@ export async function GET(request: NextRequest) {
       source: post.source,
       sourceUrl: post.sourceUrl,
       image: post.image,
+      isFresh: post.isFresh,
       published: post.published,
       wordCount: post.content.trim().split(/\s+/).length,
       createdAt: post.createdAt,
@@ -115,12 +117,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert into database
+    const publishDate = date ? new Date(date) : new Date();
+
     await db.insert(blogPosts).values({
       slug,
       title,
       description: description || null,
       content,
-      date: date ? new Date(date) : new Date(),
+      date: publishDate,
+      isFresh: shouldBeFresh(publishDate),
       source: source || null,
       sourceUrl: sourceUrl || null,
       image: image || null,

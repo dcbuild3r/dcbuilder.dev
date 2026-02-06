@@ -16,21 +16,6 @@ const typeLabels: Record<NewsType, string> = {
 	announcement: "Announcements",
 };
 
-// Check if item is fresh based on platform
-// X posts: 5 days, everything else: 2 weeks
-const isFreshItem = (dateString: string | Date | undefined, platform?: string): boolean => {
-	if (!dateString) return false;
-	const date = new Date(dateString);
-	const now = new Date();
-	const cutoff = new Date();
-
-	// X posts are fresh for 5 days, others for 2 weeks
-	const daysThreshold = platform === "x" ? 5 : 14;
-	cutoff.setDate(now.getDate() - daysThreshold);
-
-	return date > cutoff;
-};
-
 interface NewsGridProps {
 	news: AggregatedNewsItem[];
 }
@@ -296,7 +281,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 									{/* Title */}
 									<h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors flex items-center gap-2">
 										<span className="truncate">{item.title}</span>
-										{isFreshItem(item.date, item.platform) && (
+										{item.isFresh && (
 											<span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
 												✨ FRESH
 											</span>

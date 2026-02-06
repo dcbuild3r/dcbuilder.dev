@@ -160,6 +160,9 @@ bunx drizzle-kit studio
 # Run Playwright tests
 bunx playwright install  # first time only
 bun run test
+
+# Reconcile /news FRESH tags (<7 days fresh, >=7 days stale)
+bun run news:freshness:reconcile
 ```
 
 ## Environment Variables
@@ -181,6 +184,9 @@ R2_PUBLIC_URL="https://pub-xxx.r2.dev"
 NEXT_PUBLIC_POSTHOG_KEY="phc_..."
 POSTHOG_PERSONAL_API_KEY="phx_..."
 POSTHOG_PROJECT_ID="..."
+
+# Cron authorization (used by /api/cron/news-freshness)
+CRON_SECRET="..."
 ```
 
 ## Content Management

@@ -12,7 +12,8 @@
     "test": "playwright test",
     "test:unit": "bun test tests/*.test.ts",
     "test:e2e": "playwright test",
-    "test:all": "bun run test:unit && bun run test:e2e"
+    "test:all": "bun run test:unit && bun run test:e2e",
+    "news:freshness:reconcile": "bun run scripts/reconcile-news-freshness.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

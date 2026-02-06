@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { db, announcements } from "@/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "@/services/auth";
+import { shouldBeFresh } from "@/services/news-freshness";
 
 // GET /api/v1/news/announcements/[id] - Get an announcement by ID
 export async function GET(
@@ -54,7 +55,11 @@ export async function PUT(
     if (body.company !== undefined) updateData.company = body.company;
     if (body.companyLogo !== undefined) updateData.companyLogo = body.companyLogo;
     if (body.platform !== undefined) updateData.platform = body.platform;
-    if (body.date !== undefined) updateData.date = new Date(body.date);
+    if (body.date !== undefined) {
+      const parsedDate = new Date(body.date);
+      updateData.date = parsedDate;
+      updateData.isFresh = shouldBeFresh(parsedDate);
+    }
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;
     if (body.featured !== undefined) updateData.featured = body.featured;

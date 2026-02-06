@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { db, curatedLinks } from "@/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "@/services/auth";
+import { shouldBeFresh } from "@/services/news-freshness";
 
 // GET /api/v1/news/curated/[id] - Get a curated link by ID
 export async function GET(
@@ -52,7 +53,11 @@ export async function PUT(
     if (body.title !== undefined) updateData.title = body.title;
     if (body.url !== undefined) updateData.url = body.url;
     if (body.source !== undefined) updateData.source = body.source;
-    if (body.date !== undefined) updateData.date = new Date(body.date);
+    if (body.date !== undefined) {
+      const parsedDate = new Date(body.date);
+      updateData.date = parsedDate;
+      updateData.isFresh = shouldBeFresh(parsedDate);
+    }
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;
     if (body.featured !== undefined) updateData.featured = body.featured;

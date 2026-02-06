@@ -13,6 +13,7 @@ export interface AggregatedNewsItem {
   description?: string;
   category: NewsCategory;
   featured?: boolean;
+  isFresh: boolean;
   // Type-specific fields
   source?: string; // For curated links
   company?: string; // For announcements
@@ -39,6 +40,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     date: post.date,
     description: post.description,
     category: "general" as NewsCategory,
+    isFresh: post.isFresh,
     readingTime: `${post.readingTime} min read`,
     image: post.image,
   }));
@@ -53,6 +55,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     description: link.description || undefined,
     category: link.category as NewsCategory,
     featured: link.featured || false,
+    isFresh: link.isFresh,
     source: link.source,
   }));
 
@@ -66,6 +69,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     description: ann.description || undefined,
     category: ann.category as NewsCategory,
     featured: ann.featured || false,
+    isFresh: ann.isFresh,
     company: ann.company,
     companyLogo: ann.companyLogo || undefined,
     platform: ann.platform,

@@ -13,6 +13,7 @@ export const blogPosts = pgTable(
     sourceUrl: text("source_url"), // Original URL if republished
     image: text("image"), // Featured image URL
     published: boolean("published").default(true),
+    isFresh: boolean("is_fresh").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

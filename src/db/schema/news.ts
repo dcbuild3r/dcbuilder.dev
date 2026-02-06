@@ -13,6 +13,7 @@ export const curatedLinks = pgTable(
     source: text("source").notNull(), // e.g., "Vitalik Buterin", "Paradigm"
     sourceImage: text("source_image"), // Profile image URL for the source
     date: timestamp("date").notNull(),
+    isFresh: boolean("is_fresh").default(false).notNull(),
     description: text("description"),
     category: text("category").notNull(), // crypto, ai, infrastructure, etc.
     featured: boolean("featured").default(false),
@@ -38,6 +39,7 @@ export const announcements = pgTable(
     companyLogo: text("company_logo"),
     platform: text("platform").notNull(), // x, blog, discord, github, other
     date: timestamp("date").notNull(),
+    isFresh: boolean("is_fresh").default(false).notNull(),
     description: text("description"),
     category: text("category").notNull(),
     featured: boolean("featured").default(false),

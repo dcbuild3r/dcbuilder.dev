@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, blogPosts } from "@/db";
 import { eq } from "drizzle-orm";
 import { requireAuth, validateApiKey } from "@/services/auth";
+import { shouldBeFresh } from "@/services/news-freshness";
 
 function isValidDate(dateStr: string): boolean {
   const parsed = new Date(dateStr);
@@ -43,6 +44,7 @@ export async function GET(
         source: post.source,
         sourceUrl: post.sourceUrl,
         image: post.image,
+        isFresh: post.isFresh,
         content: post.content,
         published: post.published,
         createdAt: post.createdAt,
@@ -130,6 +132,8 @@ export async function PUT(
   }
 
   try {
+    const effectiveDate = date ? new Date(date) : existingPost.date;
+
     // Handle slug rename
     if (newSlug && newSlug !== slug) {
       // Validate new slug format
@@ -162,7 +166,8 @@ export async function PUT(
           title,
           description: description || null,
           content,
-          date: date ? new Date(date) : existingPost.date,
+          date: effectiveDate,
+          isFresh: shouldBeFresh(effectiveDate),
           source: source || null,
           sourceUrl: sourceUrl || null,
           image: image || null,
@@ -185,7 +190,8 @@ export async function PUT(
         title,
         description: description || null,
         content,
-        date: date ? new Date(date) : undefined,
+        date: date ? effectiveDate : undefined,
+        isFresh: shouldBeFresh(effectiveDate),
         source: source || null,
         sourceUrl: sourceUrl || null,
         image: image || null,

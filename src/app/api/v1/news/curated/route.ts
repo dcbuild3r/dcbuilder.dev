@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { db, curatedLinks, NewCuratedLink } from "@/db";
 import { eq, desc, and, SQL } from "drizzle-orm";
 import { requireAuth, parsePaginationParams } from "@/services/auth";
+import { shouldBeFresh } from "@/services/news-freshness";
 
 // GET /api/v1/news/curated - List curated links
 export async function GET(request: NextRequest) {
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
       .values({
         ...body,
         date: new Date(body.date),
+        isFresh: shouldBeFresh(new Date(body.date)),
       })
       .returning();
 
