@@ -138,9 +138,10 @@ export function NewsGrid({ news }: NewsGridProps) {
 						<Image
 							src={`https://unavatar.io/twitter/${handle}`}
 							alt={handle}
-							width={48}
-							height={48}
-							className="rounded-full"
+							width={56}
+							height={56}
+							sizes="56px"
+							className="rounded-full w-14 h-14 object-cover"
 							onError={() => markImageFailed(imageKey)}
 						/>
 						<XLogo />
@@ -160,9 +161,10 @@ export function NewsGrid({ news }: NewsGridProps) {
 						<Image
 							src={item.image.trim()}
 							alt={item.title}
-							width={48}
-							height={48}
-							className="rounded object-cover w-12 h-12 group-hover:scale-[1.08] transition-transform duration-150"
+							width={56}
+							height={56}
+							sizes="56px"
+							className="rounded object-cover w-14 h-14 group-hover:scale-[1.08] transition-transform duration-150"
 							onError={() => markImageFailed(imageKey)}
 						/>
 					);
@@ -180,9 +182,10 @@ export function NewsGrid({ news }: NewsGridProps) {
 						<Image
 							src={item.companyLogo.trim()}
 							alt={item.company || "Company"}
-							width={48}
-							height={48}
-							className="rounded group-hover:scale-[1.08] transition-transform duration-150"
+							width={56}
+							height={56}
+							sizes="56px"
+							className="rounded w-14 h-14 object-cover group-hover:scale-[1.08] transition-transform duration-150"
 							onError={() => markImageFailed(imageKey)}
 						/>
 					);
@@ -319,7 +322,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 						>
 							<div className="flex items-center gap-4">
 								{/* Icon */}
-								<div className="flex-shrink-0 w-12 h-12 flex items-center justify-center">
+								<div className="flex-shrink-0 w-14 h-14 flex items-center justify-center">
 									{getTypeIcon(item)}
 								</div>
 
