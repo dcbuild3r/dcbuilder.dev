@@ -16,6 +16,11 @@ const typeLabels: Record<NewsType, string> = {
 	announcement: "Announcements",
 };
 
+const NEWS_THUMBNAIL_SIZE = 56;
+const NEWS_THUMBNAIL_REQUEST_SIZE = "112px";
+const NEWS_THUMBNAIL_QUALITY = 90;
+const BLOG_IMAGE_CACHE_VERSION = "20260206";
+
 // Check if item is fresh based on platform
 // X posts: 5 days, everything else: 2 weeks
 const isFreshItem = (dateString: string | Date | undefined, platform?: string): boolean => {
@@ -114,6 +119,15 @@ export function NewsGrid({ news }: NewsGridProps) {
 		setFailedImageKeys((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
 	}, []);
 
+	const getBlogImageUrl = useCallback((rawUrl: string) => {
+		const url = rawUrl.trim();
+		if (!url.includes(".r2.dev/blog/images/")) {
+			return url;
+		}
+		const separator = url.includes("?") ? "&" : "?";
+		return `${url}${separator}v=${BLOG_IMAGE_CACHE_VERSION}`;
+	}, []);
+
 	// X logo SVG for overlay
 	const XLogo = () => (
 		<div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full flex items-center justify-center border-2 border-white dark:border-neutral-900">
@@ -138,9 +152,10 @@ export function NewsGrid({ news }: NewsGridProps) {
 						<Image
 							src={`https://unavatar.io/twitter/${handle}`}
 							alt={handle}
-							width={56}
-							height={56}
-							sizes="56px"
+							width={NEWS_THUMBNAIL_SIZE}
+							height={NEWS_THUMBNAIL_SIZE}
+							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+							quality={NEWS_THUMBNAIL_QUALITY}
 							className="rounded-full w-14 h-14 object-cover"
 							onError={() => markImageFailed(imageKey)}
 						/>
@@ -159,11 +174,12 @@ export function NewsGrid({ news }: NewsGridProps) {
 					}
 					return (
 						<Image
-							src={item.image.trim()}
+							src={getBlogImageUrl(item.image)}
 							alt={item.title}
-							width={56}
-							height={56}
-							sizes="56px"
+							width={NEWS_THUMBNAIL_SIZE}
+							height={NEWS_THUMBNAIL_SIZE}
+							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+							quality={NEWS_THUMBNAIL_QUALITY}
 							className="rounded object-cover w-14 h-14 group-hover:scale-[1.08] transition-transform duration-150"
 							onError={() => markImageFailed(imageKey)}
 						/>
@@ -182,9 +198,10 @@ export function NewsGrid({ news }: NewsGridProps) {
 						<Image
 							src={item.companyLogo.trim()}
 							alt={item.company || "Company"}
-							width={56}
-							height={56}
-							sizes="56px"
+							width={NEWS_THUMBNAIL_SIZE}
+							height={NEWS_THUMBNAIL_SIZE}
+							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+							quality={NEWS_THUMBNAIL_QUALITY}
 							className="rounded w-14 h-14 object-cover group-hover:scale-[1.08] transition-transform duration-150"
 							onError={() => markImageFailed(imageKey)}
 						/>
