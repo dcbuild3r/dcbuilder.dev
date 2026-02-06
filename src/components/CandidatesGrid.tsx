@@ -395,14 +395,15 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 
 				{/* Row 2: Search */}
 				<div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-					<div className="flex-1 relative">
-						<input
-							type="text"
-							placeholder="Search candidates..."
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-						/>
+						<div className="flex-1 relative">
+							<input
+								type="text"
+								aria-label="Search candidates"
+								placeholder="Search candidates..."
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+							/>
 						{searchQuery && (
 							<button
 								type="button"
@@ -475,7 +476,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 								<button
 									key={tag}
 									onClick={() => toggleTag(tag)}
-									className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all ${
+									className={`px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
 										tag === "hot"
 											? selectedTags.includes(tag)
 												? "bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold shadow-[0_0_15px_rgba(251,146,60,0.6)]"
@@ -608,7 +609,7 @@ const CandidateCard = memo(function CandidateCard({
 
 	return (
 		<div
-			className={cn("p-4 rounded-xl border transition-all overflow-hidden", cardStyle)}
+			className={cn("p-4 rounded-xl border transition-[border-color,box-shadow,background-color] overflow-hidden", cardStyle)}
 		>
 			{/* Header */}
 			<div className="flex flex-col items-center gap-3 text-center">
@@ -717,7 +718,7 @@ const CandidateCard = memo(function CandidateCard({
 						event.stopPropagation();
 						onExpand();
 					}}
-					className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500 transition-all"
+					className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500 transition-colors"
 				>
 					<span>View Details</span>
 					<ChevronRightIcon />
@@ -842,7 +843,7 @@ function ExpandedCandidateView({
 
 	return (
 		<div
-			className={`fixed inset-0 z-50 min-h-screen flex sm:items-center sm:justify-center backdrop-blur-sm transition-all duration-300 ${
+			className={`fixed inset-0 z-50 min-h-screen flex sm:items-center sm:justify-center backdrop-blur-sm transition-colors duration-300 ${
 				isClosing ? "bg-black/0" : isOpen ? "bg-black/50" : "bg-black/0"
 			}`}
 			onClick={handleClose}
@@ -855,7 +856,7 @@ function ExpandedCandidateView({
 				aria-describedby={descriptionId}
 				tabIndex={-1}
 				onKeyDown={handleDialogKeyDown}
-				className={`fixed inset-0 sm:relative sm:inset-auto w-full h-[100dvh] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl transition-all duration-300 ${
+				className={`fixed inset-0 sm:relative sm:inset-auto w-full h-[100dvh] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl transition-[transform,opacity] duration-300 ${
 					isClosing
 						? "translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0 ease-out"
 						: isOpen
@@ -875,7 +876,7 @@ function ExpandedCandidateView({
 					{/* Copy Link Button */}
 					<button
 						onClick={handleCopyLink}
-						className={`p-2 rounded-full transition-all active:scale-90 ${
+						className={`p-2 rounded-full transition-colors active:scale-90 ${
 							copySuccess
 								? "bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400"
 								: "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400"
@@ -914,7 +915,7 @@ function ExpandedCandidateView({
 					{/* Close Button */}
 					<button
 						onClick={handleClose}
-						className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-all active:scale-90"
+						className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors active:scale-90"
 						aria-label="Close profile"
 					>
 						<svg
@@ -946,7 +947,7 @@ function ExpandedCandidateView({
 					<div className="sm:hidden flex items-center justify-end gap-2 mb-4 -mt-2">
 						<button
 							onClick={handleCopyLink}
-							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-all active:scale-90"
+							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors active:scale-90"
 							aria-label={copySuccess ? "Link copied!" : "Copy link"}
 						>
 							{copySuccess ? (
@@ -963,7 +964,7 @@ function ExpandedCandidateView({
 						<button
 							ref={closeButtonRef}
 							onClick={handleClose}
-							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-all active:scale-90"
+							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors active:scale-90"
 							aria-label="Close"
 						>
 							<svg

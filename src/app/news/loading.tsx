@@ -6,7 +6,7 @@ export default function NewsLoading() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-6">
+      <main id="main-content" className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto py-8 sm:py-12">
           {/* Header - Static content */}
           <div className="text-center mb-8 sm:mb-12">

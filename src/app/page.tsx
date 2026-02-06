@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-[7.5vw]">
+      <main id="main-content" className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-[7.5vw]">
         <div className="flex flex-col-reverse lg:flex-row items-center gap-6 sm:gap-8 py-8 sm:py-12">
           {/* Image */}
           <div className="w-full lg:w-[65%]">

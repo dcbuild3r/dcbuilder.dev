@@ -165,43 +165,30 @@ export function CustomMultiSelect({
 				aria-haspopup="listbox"
 				aria-expanded={isOpen}
 				aria-controls={id ? `${id}-listbox` : undefined}
-				className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+				className="w-full flex items-center justify-between gap-2 px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
 			>
 				<span className="truncate">{displayText}</span>
-				<div className="flex items-center gap-1.5">
-					{values.length > 0 && (
-						<span
-							role="button"
-							tabIndex={0}
-							onClick={(e) => {
-								e.stopPropagation();
-								onChange([]);
-							}}
-							onKeyDown={(e) => {
-								if (e.key === "Enter" || e.key === " ") {
-									e.preventDefault();
-									e.stopPropagation();
-									onChange([]);
-								}
-							}}
-							className="p-0.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 cursor-pointer"
-							aria-label="Clear selection"
-						>
-							<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-							</svg>
-						</span>
-					)}
-					<svg
-						className={`w-4 h-4 flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-					</svg>
-				</div>
+				<svg
+					className={`w-4 h-4 flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+				>
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+				</svg>
 			</button>
+			{values.length > 0 && (
+				<button
+					type="button"
+					onClick={() => onChange([])}
+					className="absolute right-7 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 cursor-pointer"
+					aria-label="Clear selection"
+				>
+					<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			)}
 
 			{/* Dropdown */}
 			{isOpen && (
