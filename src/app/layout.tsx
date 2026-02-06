@@ -58,6 +58,9 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body className={`${inter.variable} ${jetbrainsMono.variable} ${lora.variable} antialiased`}>
+				<a href="#main-content" className="skip-link">
+					Skip to main content
+				</a>
 				<PostHogProvider>
 					<ThemeProvider>{children}</ThemeProvider>
 				</PostHogProvider>

@@ -6,7 +6,7 @@ export default function PortfolioLoading() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-6">
+      <main id="main-content" className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto py-8 sm:py-12 space-y-10 sm:space-y-16">
           {/* Disclaimer - Static content */}
           <section className="text-center space-y-6">
@@ -19,7 +19,7 @@ export default function PortfolioLoading() {
           {/* Investments */}
           <section className="space-y-8">
             <h2 className="text-4xl font-bold text-center">{PORTFOLIO_PAGE.investments.title}</h2>
-            <div className="space-y-6" data-testid="portfolio-grid">
+            <div className="space-y-6">
               {/* Static filters - render immediately */}
               <PortfolioFiltersStatic />
 

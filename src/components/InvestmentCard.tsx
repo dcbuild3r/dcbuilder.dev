@@ -18,25 +18,9 @@ export function InvestmentCard({
   const isDefunct = investment.status === "defunct";
 
   return (
-    <div
-      onClick={(e) => {
-        // Don't navigate if clicking on nested links
-        if ((e.target as HTMLElement).closest("a")) return;
-        if (investment.website)
-          window.open(investment.website, "_blank", "noopener,noreferrer");
-      }}
-      role="link"
-      tabIndex={0}
-      aria-label={`View ${investment.title} website`}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          if (investment.website)
-            window.open(investment.website, "_blank", "noopener,noreferrer");
-        }
-      }}
+    <article
       data-testid="investment-card"
-      className={`group relative p-6 pb-8 rounded-xl border transition-colors flex flex-col items-center text-center cursor-pointer ${
+      className={`group relative p-6 pb-8 rounded-xl border transition-colors flex flex-col items-center text-center ${
         isDefunct
           ? "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
           : investment.tier === 1
@@ -64,7 +48,18 @@ export function InvestmentCard({
         )}
       </div>
       <h3 className="font-semibold mb-2">
-        {investment.title}
+        {investment.website ? (
+          <a
+            href={investment.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
+          >
+            {investment.title}
+          </a>
+        ) : (
+          investment.title
+        )}
         {investment.featured && (
           <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
             ★
@@ -154,7 +149,7 @@ export function InvestmentCard({
       {jobCount > 0 && jobsUrl && (
         <a
           href={jobsUrl}
-          className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm hover:bg-black dark:hover:bg-neutral-100 hover:shadow-md hover:scale-105 active:scale-100 transition-all duration-150"
+          className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm hover:bg-black dark:hover:bg-neutral-100 hover:shadow-md hover:scale-105 active:scale-100 transition-[transform,box-shadow,background-color] duration-150"
           aria-label={`View ${jobCount} job openings at ${investment.title}`}
         >
           <span className="relative flex h-2 w-2">
@@ -167,6 +162,6 @@ export function InvestmentCard({
           </span>
         </a>
       )}
-    </div>
+    </article>
   );
 }

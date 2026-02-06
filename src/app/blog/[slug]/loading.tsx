@@ -4,7 +4,7 @@ export default function Loading() {
 	return (
 		<>
 			<Navbar />
-			<main className="min-h-screen pt-24 px-[7.5vw]">
+			<main id="main-content" className="min-h-screen pt-24 px-[7.5vw]">
 				<div className="max-w-3xl mx-auto py-12 animate-pulse space-y-4">
 					<div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-24" />
 					<div className="h-10 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4" />

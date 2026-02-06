@@ -16,7 +16,7 @@ export default async function BlogPage() {
 	return (
 		<>
 			<Navbar />
-			<main className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-6">
+			<main id="main-content" className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-6">
 				<div className="max-w-3xl mx-auto py-8 sm:py-12">
 					<h1 className="text-4xl font-bold mb-8">Blog</h1>
 

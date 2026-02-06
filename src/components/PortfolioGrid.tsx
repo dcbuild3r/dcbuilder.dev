@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { InvestmentCard } from "./InvestmentCard";
+import { R2_PUBLIC_URL } from "@/services/r2";
 import {
   Investment,
   InvestmentCategory,
@@ -287,13 +288,12 @@ export function PortfolioGrid({
       {defunctInvestments.length > 0 && (
         <div className="flex justify-center py-4">
           <Image
-            src="https://i.pinimg.com/originals/bc/c7/ab/bcc7abc844aa8be1abc46a9f5d3c22c5.gif"
+            src={`${R2_PUBLIC_URL}/site/portfolio-separator.gif`}
             alt="Separator"
             width={512}
             height={512}
             sizes="(min-width: 640px) 512px, 320px"
             unoptimized
-            loader={({ src }) => src}
             className="w-[512px] h-[512px] object-contain"
           />
         </div>

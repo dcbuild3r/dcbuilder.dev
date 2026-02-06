@@ -5,7 +5,7 @@ export default function NotFound() {
 	return (
 		<>
 			<Navbar />
-			<main className="min-h-screen pt-24 px-6 flex items-center justify-center">
+			<main id="main-content" className="min-h-screen pt-24 px-6 flex items-center justify-center">
 				<div className="text-center space-y-4">
 					<h1 className="text-6xl font-bold">404</h1>
 					<h2 className="text-2xl font-semibold">Page not found</h2>

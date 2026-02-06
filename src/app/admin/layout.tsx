@@ -163,7 +163,7 @@ export default function AdminLayout({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       pathname === item.href
                         ? `${item.bgActive} text-white`
                         : `${item.bg} ${item.text} ${item.bgHover}`
@@ -194,7 +194,7 @@ export default function AdminLayout({
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">{children}</main>
+      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 py-8">{children}</main>
     </div>
   );
 }
