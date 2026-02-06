@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   const company = searchParams.get("company");
   const category = searchParams.get("category");
   const featured = searchParams.get("featured");
+  const includeTerminated = searchParams.get("includeTerminated");
   const { limit, offset } = parsePaginationParams(searchParams);
 
   try {
@@ -22,6 +23,9 @@ export async function GET(request: NextRequest) {
     }
     if (featured === "true") {
       conditions.push(eq(jobs.featured, true));
+    }
+    if (includeTerminated !== "true") {
+      conditions.push(eq(jobs.terminated, false));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -46,6 +50,13 @@ export async function GET(request: NextRequest) {
           companyWebsite: jobs.companyWebsite,
           companyX: jobs.companyX,
           companyGithub: jobs.companyGithub,
+          sourceBoard: jobs.sourceBoard,
+          sourceUrl: jobs.sourceUrl,
+          sourceExternalId: jobs.sourceExternalId,
+          lastCheckedAt: jobs.lastCheckedAt,
+          terminated: jobs.terminated,
+          terminatedAt: jobs.terminatedAt,
+          terminationReason: jobs.terminationReason,
           createdAt: jobs.createdAt,
           updatedAt: jobs.updatedAt,
         })

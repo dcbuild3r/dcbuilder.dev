@@ -15,7 +15,11 @@ import type { CuratedLink } from "@/data/news";
 
 // Fetch all jobs from database and transform to component format
 export async function getJobsFromDB(): Promise<Job[]> {
-  const dbJobs = await db.select().from(jobsTable).orderBy(desc(jobsTable.createdAt));
+  const dbJobs = await db
+    .select()
+    .from(jobsTable)
+    .where(eq(jobsTable.terminated, false))
+    .orderBy(desc(jobsTable.createdAt));
 
   return dbJobs.map((job) => {
     const company: Company = {

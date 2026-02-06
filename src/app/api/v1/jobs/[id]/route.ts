@@ -29,6 +29,13 @@ export async function GET(_request: NextRequest, { params }: Params) {
         companyWebsite: jobs.companyWebsite,
         companyX: jobs.companyX,
         companyGithub: jobs.companyGithub,
+        sourceBoard: jobs.sourceBoard,
+        sourceUrl: jobs.sourceUrl,
+        sourceExternalId: jobs.sourceExternalId,
+        lastCheckedAt: jobs.lastCheckedAt,
+        terminated: jobs.terminated,
+        terminatedAt: jobs.terminatedAt,
+        terminationReason: jobs.terminationReason,
         createdAt: jobs.createdAt,
         updatedAt: jobs.updatedAt,
       })
