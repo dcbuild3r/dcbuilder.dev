@@ -163,7 +163,7 @@ export default function AdminLayout({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       pathname === item.href
                         ? `${item.bgActive} text-white`
                         : `${item.bg} ${item.text} ${item.bgHover}`

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useDeferredValue } from "react";
 import Image from "next/image";
 import { AggregatedNewsItem } from "@/lib/news";
 import { NewsCategory, categoryLabels } from "@/data/news";
@@ -39,6 +39,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 	const [typeFilter, setTypeFilter] = useState<NewsType>("all");
 	const [categoryFilter, setCategoryFilter] = useState<"all" | NewsCategory>("all");
 	const [searchQuery, setSearchQuery] = useState("");
+	const deferredSearchQuery = useDeferredValue(searchQuery);
 	const dateFormatter = useMemo(
 		() =>
 			new Intl.DateTimeFormat("en-US", {
@@ -57,6 +58,20 @@ export function NewsGrid({ news }: NewsGridProps) {
 		return Array.from(categories).sort();
 	}, [news]);
 
+	const newsSearchIndex = useMemo(() => {
+		const index = new Map<string, string>();
+		news.forEach((item) => {
+			index.set(
+				item.id,
+				[item.title, item.description, item.source, item.company]
+					.filter(Boolean)
+					.join(" ")
+					.toLowerCase(),
+			);
+		});
+		return index;
+	}, [news]);
+
 	const filteredNews = useMemo(() => {
 		return news.filter((item) => {
 			// Type filter
@@ -70,25 +85,17 @@ export function NewsGrid({ news }: NewsGridProps) {
 			}
 
 			// Search filter
-			if (searchQuery) {
-				const query = searchQuery.toLowerCase();
-				const searchableText = [
-					item.title,
-					item.description,
-					item.source,
-					item.company,
-				]
-					.filter(Boolean)
-					.join(" ")
-					.toLowerCase();
-				if (!searchableText.includes(query)) {
-					return false;
+				if (deferredSearchQuery) {
+					const query = deferredSearchQuery.toLowerCase();
+					const searchableText = newsSearchIndex.get(item.id) || "";
+					if (!searchableText.includes(query)) {
+						return false;
+					}
 				}
-			}
 
 			return true;
 		});
-	}, [news, typeFilter, categoryFilter, searchQuery]);
+		}, [news, typeFilter, categoryFilter, deferredSearchQuery, newsSearchIndex]);
 
 	// Format date for display
 	const formatDate = (dateString: string) => {
