@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useDeferredValue } from "react";
+import { useState, useMemo, useDeferredValue, useCallback } from "react";
 import Image from "next/image";
 import { AggregatedNewsItem } from "@/lib/news";
 import { NewsCategory, categoryLabels } from "@/data/news";
@@ -39,6 +39,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 	const [typeFilter, setTypeFilter] = useState<NewsType>("all");
 	const [categoryFilter, setCategoryFilter] = useState<"all" | NewsCategory>("all");
 	const [searchQuery, setSearchQuery] = useState("");
+	const [failedImageKeys, setFailedImageKeys] = useState<Record<string, true>>({});
 	const deferredSearchQuery = useDeferredValue(searchQuery);
 	const dateFormatter = useMemo(
 		() =>
@@ -109,6 +110,10 @@ export function NewsGrid({ news }: NewsGridProps) {
 		return match ? match[1] : null;
 	};
 
+	const markImageFailed = useCallback((key: string) => {
+		setFailedImageKeys((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+	}, []);
+
 	// X logo SVG for overlay
 	const XLogo = () => (
 		<div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full flex items-center justify-center border-2 border-white dark:border-neutral-900">
@@ -123,7 +128,11 @@ export function NewsGrid({ news }: NewsGridProps) {
 		// Check if it's an X post (url contains x.com)
 		if (item.url.includes("x.com/")) {
 			const handle = getXHandle(item.url);
+			const imageKey = `${item.id}:x`;
 			if (handle) {
+				if (failedImageKeys[imageKey]) {
+					return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">𝕏</span>;
+				}
 				return (
 					<div className="relative group-hover:scale-[1.08] transition-transform duration-150">
 						<Image
@@ -132,6 +141,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 							width={48}
 							height={48}
 							className="rounded-full"
+							onError={() => markImageFailed(imageKey)}
 						/>
 						<XLogo />
 					</div>
@@ -141,14 +151,19 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 		switch (item.type) {
 			case "blog":
-				if (item.image) {
+				if (item.image?.trim()) {
+					const imageKey = `${item.id}:blog`;
+					if (failedImageKeys[imageKey]) {
+						return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">📝</span>;
+					}
 					return (
 						<Image
-							src={item.image}
+							src={item.image.trim()}
 							alt={item.title}
 							width={48}
 							height={48}
 							className="rounded object-cover w-12 h-12 group-hover:scale-[1.08] transition-transform duration-150"
+							onError={() => markImageFailed(imageKey)}
 						/>
 					);
 				}
@@ -156,14 +171,19 @@ export function NewsGrid({ news }: NewsGridProps) {
 			case "curated":
 				return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">🔗</span>;
 			case "announcement":
-				if (item.companyLogo) {
+				if (item.companyLogo?.trim()) {
+					const imageKey = `${item.id}:announcement`;
+					if (failedImageKeys[imageKey]) {
+						return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">📢</span>;
+					}
 					return (
 						<Image
-							src={item.companyLogo}
+							src={item.companyLogo.trim()}
 							alt={item.company || "Company"}
 							width={48}
 							height={48}
 							className="rounded group-hover:scale-[1.08] transition-transform duration-150"
+							onError={() => markImageFailed(imageKey)}
 						/>
 					);
 				}
