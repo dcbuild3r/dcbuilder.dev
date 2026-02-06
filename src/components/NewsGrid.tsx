@@ -202,6 +202,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 							height={NEWS_THUMBNAIL_SIZE}
 							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
 							quality={NEWS_THUMBNAIL_QUALITY}
+							unoptimized
 							className="rounded w-14 h-14 object-cover group-hover:scale-[1.08] transition-transform duration-150"
 							onError={() => markImageFailed(imageKey)}
 						/>

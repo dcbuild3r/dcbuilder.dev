@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useState, useMemo, useEffect, useRef, useCallback, memo, useDeferredValue } from "react";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
 	Candidate,
 	AvailabilityStatus,
@@ -46,8 +46,6 @@ interface CandidatesGridProps {
 }
 
 export function CandidatesGrid({ candidates }: CandidatesGridProps) {
-	const router = useRouter();
-	const pathname = usePathname();
 	const searchParams = useSearchParams();
 	const [availabilityFilter, setAvailabilityFilter] = useState<
 		"all" | AvailabilityStatus
@@ -73,13 +71,14 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const { isHotCandidate, hasTopTag, showTopCardStyle } = useHotCandidates();
 
 	const replaceSearchParams = useCallback((nextParams: URLSearchParams) => {
+		const currentUrl = new URL(window.location.href);
 		const queryString = nextParams.toString();
-		if (queryString === searchParams.toString()) return;
-		router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
-	}, [pathname, router, searchParams]);
+		if (queryString === currentUrl.searchParams.toString()) return;
+		window.history.replaceState(null, "", queryString ? `${currentUrl.pathname}?${queryString}` : currentUrl.pathname);
+	}, []);
 
 	const updateUrlParams = useCallback((updates: Record<string, string | null>) => {
-		const nextParams = new URLSearchParams(searchParams.toString());
+		const nextParams = new URLSearchParams(window.location.search);
 		Object.entries(updates).forEach(([key, value]) => {
 			if (value === null || value === "") {
 				nextParams.delete(key);
@@ -88,7 +87,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 			}
 		});
 		replaceSearchParams(nextParams);
-	}, [replaceSearchParams, searchParams]);
+	}, [replaceSearchParams]);
 
 	// Helper to build candidate event properties for analytics
 	const getCandidateEventProps = useCallback((candidate: Candidate) => ({

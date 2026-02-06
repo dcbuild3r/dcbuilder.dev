@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useState, useMemo, useEffect, useCallback, useDeferredValue } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Job, JobTag, RelationshipCategory, tagLabels as defaultTagLabels } from "@/data/jobs";
 import { CustomSelect } from "./CustomSelect";
@@ -93,8 +93,6 @@ interface JobsGridProps {
 const JOBS_PAGE_SIZE = 60;
 
 export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: JobsGridProps) {
-  const router = useRouter();
-  const pathname = usePathname();
   // Build tag labels from definitions (with fallback to hardcoded)
   const tagLabels = useMemo(() => {
     const labels: Record<string, string> = { ...defaultTagLabels };
@@ -176,13 +174,14 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
   }), []);
 
   const replaceSearchParams = useCallback((nextParams: URLSearchParams) => {
+    const currentUrl = new URL(window.location.href);
     const queryString = nextParams.toString();
-    if (queryString === searchParams.toString()) return;
-    router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
-  }, [pathname, router, searchParams]);
+    if (queryString === currentUrl.searchParams.toString()) return;
+    window.history.replaceState(null, "", queryString ? `${currentUrl.pathname}?${queryString}` : currentUrl.pathname);
+  }, []);
 
   const updateUrlParams = useCallback((updates: Record<string, string | null>) => {
-    const nextParams = new URLSearchParams(searchParams.toString());
+    const nextParams = new URLSearchParams(window.location.search);
     Object.entries(updates).forEach(([key, value]) => {
       if (value === null || value === "" || value === "all") {
         nextParams.delete(key);
@@ -191,7 +190,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
       }
     });
     replaceSearchParams(nextParams);
-  }, [replaceSearchParams, searchParams]);
+  }, [replaceSearchParams]);
 
   // Sync URL with modal state
   const openJob = useCallback((job: Job) => {
@@ -213,13 +212,13 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
 
   const handleCompanyChange = useCallback((values: string[]) => {
     setSelectedCompanies(values.length === 0 ? ["all"] : values);
-    const nextParams = new URLSearchParams(searchParams.toString());
+    const nextParams = new URLSearchParams(window.location.search);
     nextParams.delete("company");
     if (values.length > 0) {
       values.forEach((v) => nextParams.append("company", v));
     }
     replaceSearchParams(nextParams);
-  }, [replaceSearchParams, searchParams]);
+  }, [replaceSearchParams]);
 
   const handleLocationChange = useCallback((value: string) => {
     setSelectedLocation(value);
@@ -262,7 +261,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
     setSearchQuery("");
     setSelectedTags([]);
     setShowFeaturedOnly(false);
-    const nextParams = new URLSearchParams(searchParams.toString());
+    const nextParams = new URLSearchParams(window.location.search);
     nextParams.delete("type");
     nextParams.delete("company");
     nextParams.delete("role");
@@ -271,7 +270,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
     nextParams.delete("tags");
     nextParams.delete("featured");
     replaceSearchParams(nextParams);
-  }, [replaceSearchParams, searchParams]);
+  }, [replaceSearchParams]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
