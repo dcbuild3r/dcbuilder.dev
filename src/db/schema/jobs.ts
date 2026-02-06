@@ -27,6 +27,13 @@ export const jobs = pgTable(
     companyWebsite: text("company_website"),
     companyX: text("company_x"),
     companyGithub: text("company_github"),
+    sourceBoard: text("source_board"),
+    sourceUrl: text("source_url"),
+    sourceExternalId: text("source_external_id"),
+    lastCheckedAt: timestamp("last_checked_at"),
+    terminated: boolean("terminated").default(false).notNull(),
+    terminatedAt: timestamp("terminated_at"),
+    terminationReason: text("termination_reason"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -34,6 +41,8 @@ export const jobs = pgTable(
     index("jobs_company_idx").on(table.company),
     index("jobs_category_idx").on(table.category),
     index("jobs_featured_idx").on(table.featured),
+    index("jobs_source_board_idx").on(table.sourceBoard),
+    index("jobs_terminated_idx").on(table.terminated),
   ]
 );
 

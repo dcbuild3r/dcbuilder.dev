@@ -1,0 +1,14 @@
+[
+  {
+    "name": "example-board",
+    "url": "https://example.com/careers",
+    "company": "Example Company",
+    "category": "network",
+    "listSelector": "a[href*='/jobs/']",
+    "jobLinkPattern": "/jobs/",
+    "closedMarkers": [
+      "position has been filled",
+      "job is no longer available"
+    ]
+  }
+]

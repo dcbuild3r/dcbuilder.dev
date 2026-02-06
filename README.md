@@ -21,6 +21,7 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 - **Blog**: MDX posts with syntax highlighting and dynamic OG images
 - **Portfolio**: Investment cards with tiers, status, and category filtering
 - **Jobs**: Filterable job board with HOT/TOP/NEW badges, modal details, and shareable URLs
+- **Job Board Automation**: Config-driven ingestion from external boards with automatic termination detection
 - **Candidates**: Candidate directory with modal profiles, skill tags, and availability status
 - **News**: Curated links and portfolio announcements
 
@@ -160,6 +161,9 @@ bunx drizzle-kit studio
 # Run Playwright tests
 bunx playwright install  # first time only
 bun run test
+
+# Sync jobs from configured job boards
+bun run jobs:sync --dry-run
 ```
 
 ## Environment Variables
