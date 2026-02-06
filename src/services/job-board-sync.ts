@@ -1,6 +1,6 @@
 import { readFile } from "fs/promises";
 import { resolve } from "path";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db, jobs } from "@/db";
 import { JobBoardSource, detectTermination, extractJobLinksFromHtml } from "@/lib/job-board-sync";
 
@@ -119,11 +119,30 @@ async function processSource(source: JobBoardSource, dryRun: boolean): Promise<S
     const parsedLinks = extractJobLinksFromHtml(source, html);
     summary.discovered = parsedLinks.length;
 
+    const discoveredLinks = parsedLinks.map((item) => item.link);
+    const globalMatches = discoveredLinks.length > 0
+      ? await db
+        .select({
+          id: jobs.id,
+          link: jobs.link,
+          terminated: jobs.terminated,
+          sourceBoard: jobs.sourceBoard,
+          company: jobs.company,
+          title: jobs.title,
+        })
+        .from(jobs)
+        .where(inArray(jobs.link, discoveredLinks))
+      : [];
+    const globalByLink = new Map(globalMatches.map((job) => [job.link, job]));
+
     const existingJobs = await db
       .select({
         id: jobs.id,
         link: jobs.link,
         terminated: jobs.terminated,
+        sourceBoard: jobs.sourceBoard,
+        company: jobs.company,
+        title: jobs.title,
       })
       .from(jobs)
       .where(eq(jobs.sourceBoard, source.name));
@@ -133,11 +152,51 @@ async function processSource(source: JobBoardSource, dryRun: boolean): Promise<S
 
     for (const parsedJob of parsedLinks) {
       seenLinks.add(parsedJob.link);
-      const existing = existingByLink.get(parsedJob.link);
+      const globalExisting = globalByLink.get(parsedJob.link);
+      const existing = globalExisting || existingByLink.get(parsedJob.link);
       const company = source.company || new URL(source.url).hostname.replace(/^www\./, "");
       const category = source.category || "network";
 
       if (!existing) {
+        // Fallback dedupe when URL changed but logical job tuple is unchanged.
+        const [fallbackMatch] = await db
+          .select({
+            id: jobs.id,
+            link: jobs.link,
+            terminated: jobs.terminated,
+            sourceBoard: jobs.sourceBoard,
+            company: jobs.company,
+            title: jobs.title,
+          })
+          .from(jobs)
+          .where(and(eq(jobs.company, company), eq(jobs.title, parsedJob.title)))
+          .limit(1);
+
+        if (fallbackMatch) {
+          summary.updated += 1;
+          if (fallbackMatch.terminated) {
+            summary.reactivated += 1;
+          }
+          if (!dryRun) {
+            await db
+              .update(jobs)
+              .set({
+                link: parsedJob.link,
+                category,
+                sourceBoard: source.name,
+                sourceUrl: source.url,
+                sourceExternalId: parsedJob.link,
+                terminated: false,
+                terminatedAt: null,
+                terminationReason: null,
+                lastCheckedAt: now,
+                updatedAt: now,
+              })
+              .where(eq(jobs.id, fallbackMatch.id));
+          }
+          continue;
+        }
+
         summary.inserted += 1;
         if (!dryRun) {
           await db.insert(jobs).values({
