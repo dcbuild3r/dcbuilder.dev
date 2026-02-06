@@ -4,3 +4,4 @@ export * from "./news";
 export * from "./investments";
 export * from "./blog";
 export * from "./misc";
+export * from "./newsletter";

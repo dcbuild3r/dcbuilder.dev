@@ -26,6 +26,16 @@ export function isPostHogConfigured(): boolean {
   return Boolean(POSTHOG_API_KEY && POSTHOG_PROJECT_ID);
 }
 
+function sanitizeWindow(days: number, fallback: number): number {
+  if (!Number.isInteger(days) || days <= 0) return fallback;
+  return Math.min(days, 90);
+}
+
+function sanitizeOffset(days: number): number {
+  if (!Number.isInteger(days) || days < 0) return 0;
+  return Math.min(days, 365);
+}
+
 // Use the new Query API (HogQL)
 async function runHogQLQuery(query: string): Promise<{ results: unknown[][] } | null> {
   if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
@@ -66,10 +76,18 @@ async function runHogQLQuery(query: string): Promise<{ results: unknown[][] } | 
 }
 
 // Job analytics - count job_apply_click events by job_id
-export async function getJobApplyClicksLast7Days(): Promise<PostHogResult<ClickCount[]>> {
+export async function getJobApplyClicksForWindow(
+  days: number = 7,
+  offsetDays: number = 0
+): Promise<PostHogResult<ClickCount[]>> {
   if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
     return { success: false, error: "PostHog not configured", configured: false };
   }
+
+  const safeDays = sanitizeWindow(days, 7);
+  const safeOffsetDays = sanitizeOffset(offsetDays);
+  const upperBoundClause =
+    safeOffsetDays > 0 ? `AND timestamp <= now() - INTERVAL ${safeOffsetDays} DAY` : "";
 
   const query = `
     SELECT
@@ -77,7 +95,8 @@ export async function getJobApplyClicksLast7Days(): Promise<PostHogResult<ClickC
       count() as count
     FROM events
     WHERE event = 'job_apply_click'
-      AND timestamp > now() - INTERVAL 7 DAY
+      AND timestamp > now() - INTERVAL ${safeDays + safeOffsetDays} DAY
+      ${upperBoundClause}
       AND properties.job_id IS NOT NULL
     GROUP BY properties.job_id
     ORDER BY count DESC
@@ -96,6 +115,10 @@ export async function getJobApplyClicksLast7Days(): Promise<PostHogResult<ClickC
   return { success: true, data: result };
 }
 
+export async function getJobApplyClicksLast7Days(): Promise<PostHogResult<ClickCount[]>> {
+  return getJobApplyClicksForWindow(7, 0);
+}
+
 export function determineHotJobs(
   clicks: ClickCount[],
   topPercentage: number = 5
@@ -112,10 +135,18 @@ export function determineHotJobs(
 }
 
 // Candidate analytics - count candidate_view events by candidate_id
-export async function getCandidateViewsLast7Days(): Promise<PostHogResult<ClickCount[]>> {
+export async function getCandidateViewsForWindow(
+  days: number = 7,
+  offsetDays: number = 0
+): Promise<PostHogResult<ClickCount[]>> {
   if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
     return { success: false, error: "PostHog not configured", configured: false };
   }
+
+  const safeDays = sanitizeWindow(days, 7);
+  const safeOffsetDays = sanitizeOffset(offsetDays);
+  const upperBoundClause =
+    safeOffsetDays > 0 ? `AND timestamp <= now() - INTERVAL ${safeOffsetDays} DAY` : "";
 
   const query = `
     SELECT
@@ -123,7 +154,8 @@ export async function getCandidateViewsLast7Days(): Promise<PostHogResult<ClickC
       count() as count
     FROM events
     WHERE event = 'candidate_view'
-      AND timestamp > now() - INTERVAL 7 DAY
+      AND timestamp > now() - INTERVAL ${safeDays + safeOffsetDays} DAY
+      ${upperBoundClause}
       AND properties.candidate_id IS NOT NULL
     GROUP BY properties.candidate_id
     ORDER BY count DESC
@@ -140,6 +172,10 @@ export async function getCandidateViewsLast7Days(): Promise<PostHogResult<ClickC
   }));
 
   return { success: true, data: result };
+}
+
+export async function getCandidateViewsLast7Days(): Promise<PostHogResult<ClickCount[]>> {
+  return getCandidateViewsForWindow(7, 0);
 }
 
 export function determineHotCandidates(

@@ -23,6 +23,7 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 - **Jobs**: Filterable job board with HOT/TOP/NEW badges, modal details, and shareable URLs
 - **Candidates**: Candidate directory with modal profiles, skill tags, and availability status
 - **News**: Curated links and portfolio announcements
+- **Newsletter**: Double opt-in subscriptions, segmented campaigns (`news`/`jobs`/`candidates`), and scheduled sends
 
 ### OpenGraph & Social Sharing
 
@@ -181,6 +182,14 @@ R2_PUBLIC_URL="https://pub-xxx.r2.dev"
 NEXT_PUBLIC_POSTHOG_KEY="phc_..."
 POSTHOG_PERSONAL_API_KEY="phx_..."
 POSTHOG_PROJECT_ID="..."
+
+# Newsletter delivery (Resend)
+RESEND_API_KEY="re_..."
+NEWSLETTER_FROM_EMAIL="newsletter@yourdomain.com"
+NEWSLETTER_REPLY_TO="hello@yourdomain.com"
+
+# Cron auth for /api/cron/* endpoints
+CRON_SECRET="..."
 ```
 
 ## Content Management
