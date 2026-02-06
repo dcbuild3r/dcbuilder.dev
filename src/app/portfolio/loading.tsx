@@ -19,7 +19,7 @@ export default function PortfolioLoading() {
           {/* Investments */}
           <section className="space-y-8">
             <h2 className="text-4xl font-bold text-center">{PORTFOLIO_PAGE.investments.title}</h2>
-            <div className="space-y-6" data-testid="portfolio-grid">
+            <div className="space-y-6">
               {/* Static filters - render immediately */}
               <PortfolioFiltersStatic />
 

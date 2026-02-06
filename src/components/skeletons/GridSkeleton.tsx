@@ -260,7 +260,7 @@ export function PortfolioFiltersStatic() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <label className="text-sm text-neutral-600 dark:text-neutral-400">
-            Sort by:
+            Sorting:
           </label>
           <select
             disabled

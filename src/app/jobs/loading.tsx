@@ -30,7 +30,7 @@ export default function JobsLoading() {
           </section>
 
           {/* Jobs Grid */}
-          <div className="space-y-6" data-testid="jobs-grid">
+          <div className="space-y-6">
             {/* Static filters - render immediately */}
             <JobsFiltersStatic />
 
