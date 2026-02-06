@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
 import { NewsGrid } from "@/components/NewsGrid";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { getAllNews } from "@/lib/news";
 
 export const metadata = {
@@ -27,6 +28,10 @@ export default async function NewsPage() {
               Curated articles, my blog posts, and announcements from portfolio
               companies.
             </p>
+          </div>
+
+          <div className="mb-8 sm:mb-10">
+            <NewsletterSignup />
           </div>
 
           {/* News Grid */}
