@@ -699,6 +699,7 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
   if (recipients.length === 0) {
     return { ok: false as const, status: 409, error: "No active recipients for this campaign type" };
   }
+  const activeRecipientIds = new Set(recipients.map((recipient) => recipient.id));
 
   const now = new Date();
   await db
@@ -735,6 +736,21 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
   let skippedCount = 0;
 
   for (const recipient of campaignRecipients) {
+    if (!activeRecipientIds.has(recipient.subscriberId)) {
+      skippedCount += 1;
+      if (recipient.status !== "skipped") {
+        await db
+          .update(newsletterCampaignRecipients)
+          .set({
+            status: "skipped",
+            errorMessage: "Recipient no longer eligible (unsubscribed or preference disabled)",
+            updatedAt: new Date(),
+          })
+          .where(eq(newsletterCampaignRecipients.id, recipient.id));
+      }
+      continue;
+    }
+
     if (recipient.status === "sent") {
       skippedCount += 1;
       continue;

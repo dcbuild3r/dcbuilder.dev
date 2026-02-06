@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX "newsletter_campaign_recipients_campaign_subscriber_uidx" ON "newsletter_campaign_recipients" USING btree ("campaign_id","subscriber_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "newsletter_preferences_subscriber_type_uidx" ON "newsletter_preferences" USING btree ("subscriber_id","newsletter_type");

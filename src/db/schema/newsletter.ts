@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { boolean, index, integer, text, timestamp, pgTable } from "drizzle-orm/pg-core";
+import { boolean, index, integer, text, timestamp, pgTable, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const newsletterSubscribers = pgTable(
   "newsletter_subscribers",
@@ -33,6 +33,10 @@ export const newsletterPreferences = pgTable(
   (table) => [
     index("newsletter_preferences_subscriber_idx").on(table.subscriberId),
     index("newsletter_preferences_type_idx").on(table.newsletterType),
+    uniqueIndex("newsletter_preferences_subscriber_type_uidx").on(
+      table.subscriberId,
+      table.newsletterType
+    ),
   ]
 );
 
@@ -79,6 +83,10 @@ export const newsletterCampaignRecipients = pgTable(
   (table) => [
     index("newsletter_campaign_recipients_campaign_idx").on(table.campaignId),
     index("newsletter_campaign_recipients_subscriber_idx").on(table.subscriberId),
+    uniqueIndex("newsletter_campaign_recipients_campaign_subscriber_uidx").on(
+      table.campaignId,
+      table.subscriberId
+    ),
   ]
 );
 
