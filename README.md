@@ -152,11 +152,16 @@ bun run start
 # Lint
 bun run lint
 
-# Run database migrations
-bunx drizzle-kit push
+# Generate SQL migrations from schema changes
+bun run db:generate
+
+# Apply migration files (explicit target required)
+bun run db:migrate:dev
+bun run db:migrate:staging
+ALLOW_PROD_MIGRATION=true bun run db:migrate:prod
 
 # Open Drizzle Studio (DB GUI)
-bunx drizzle-kit studio
+bun run db:studio
 
 # Run Playwright tests
 bunx playwright install  # first time only
@@ -168,8 +173,13 @@ bun run test
 See [.env.example](./.env.example) for all configuration options.
 
 ```bash
-# Required
+# Runtime database URL (set per environment in your hosting platform)
 DATABASE_URL="postgresql://..."
+
+# Explicit migration targets (local + CI)
+DATABASE_URL_DEV="postgresql://..."
+DATABASE_URL_STAGING="postgresql://..."
+DATABASE_URL_PROD="postgresql://..."
 
 # Cloudflare R2 (image storage)
 R2_ENDPOINT="https://ACCOUNT_ID.r2.cloudflarestorage.com"
@@ -191,6 +201,34 @@ NEWSLETTER_REPLY_TO="hello@yourdomain.com"
 # Cron auth for /api/cron/* endpoints
 CRON_SECRET="..."
 ```
+
+### Weekly Newsletter Issue Automation
+
+The workflow `.github/workflows/newsletter-issue-create.yml` runs every Monday at `14:00 UTC` and calls:
+
+- `POST /api/cron/newsletter-issue-create`
+
+Required GitHub environment secrets (recommended in `production` environment):
+
+- `CRON_SECRET` (required)
+- `CRON_BASE_URL` (optional, defaults to `https://dcbuilder.dev`)
+
+## Database Environments (Supabase + Drizzle)
+
+This repo now uses explicit environment targets for migrations:
+
+1. `dev` (local development Supabase project)
+2. `staging` (staging Supabase project)
+3. `prod` (production Supabase project)
+
+Promotion flow:
+
+1. Generate and commit migration files in PRs (`bun run db:generate`)
+2. Merge to `master` and run staging migration workflow
+3. Verify staging
+4. Run production migration workflow (manual + backup artifact + explicit confirmation)
+
+Setup details are in `docs/database-environments.md`.
 
 ## Content Management
 

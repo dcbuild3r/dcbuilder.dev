@@ -8,6 +8,7 @@ import { getSkillColor } from "@/lib/skill-colors";
 import { TableSkeleton } from "@/components/admin/TableSkeleton";
 import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
 import { EditButton, DeleteButton, ErrorAlert } from "@/components/admin/ActionButtons";
+import { NewsletterStudio } from "@/components/admin/NewsletterStudio";
 import { ADMIN_THEMES } from "@/lib/admin-themes";
 
 interface CuratedLink {
@@ -56,7 +57,7 @@ const emptyAnnouncement: Partial<Announcement> = {
   featured: false,
 };
 
-type TabType = "curated" | "announcements";
+type TabType = "curated" | "announcements" | "newsletter";
 
 export default function AdminNews() {
   const searchParams = useSearchParams();
@@ -429,53 +430,56 @@ export default function AdminNews() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">News</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setEditingItem(emptyCuratedLink);
-              setIsNew(true);
-              setActiveTab("curated");
-            }}
-            className={`px-4 py-2 ${curatedTheme.addButtonBg} text-white rounded-lg font-medium`}
-          >
-            Add Curated Link
-          </button>
-          <button
-            onClick={() => {
-              setEditingItem(emptyAnnouncement);
-              setIsNew(true);
-              setActiveTab("announcements");
-            }}
-            className={`px-4 py-2 ${announcementsTheme.addButtonBg} text-white rounded-lg font-medium`}
-          >
-            Add Announcement
-          </button>
-        </div>
+        {activeTab !== "newsletter" && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setEditingItem(emptyCuratedLink);
+                setIsNew(true);
+                setActiveTab("curated");
+              }}
+              className={`px-4 py-2 ${curatedTheme.addButtonBg} text-white rounded-lg font-medium`}
+            >
+              Add Curated Link
+            </button>
+            <button
+              onClick={() => {
+                setEditingItem(emptyAnnouncement);
+                setIsNew(true);
+                setActiveTab("announcements");
+              }}
+              className={`px-4 py-2 ${announcementsTheme.addButtonBg} text-white rounded-lg font-medium`}
+            >
+              Add Announcement
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Error Alert */}
       {error && <ErrorAlert message={error} onRetry={() => { setError(null); fetchData(); }} />}
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <input
-          type="text"
-          placeholder="Search news..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        )}
-      </div>
+      {activeTab !== "newsletter" && (
+        <div className="relative max-w-md">
+          <input
+            type="text"
+            placeholder="Search news..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-neutral-200 dark:border-neutral-800">
@@ -499,10 +503,22 @@ export default function AdminNews() {
         >
           Announcements ({announcements.length})
         </button>
+        <button
+          onClick={() => setActiveTab("newsletter")}
+          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+            activeTab === "newsletter"
+              ? "border-indigo-600 text-indigo-600"
+              : "border-transparent text-neutral-500 hover:text-neutral-700"
+          }`}
+        >
+          Newsletter Studio
+        </button>
       </div>
 
       {/* Content */}
-      {loading ? (
+      {activeTab === "newsletter" ? (
+        <NewsletterStudio />
+      ) : loading ? (
         <TableSkeleton
           headers={
             activeTab === "curated"

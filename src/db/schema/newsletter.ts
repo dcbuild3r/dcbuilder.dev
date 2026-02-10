@@ -65,6 +65,24 @@ export const newsletterCampaigns = pgTable(
   ]
 );
 
+export const newsletterTemplates = pgTable(
+  "newsletter_templates",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    newsletterType: text("newsletter_type").notNull().unique(), // news | jobs | candidates
+    subjectTemplate: text("subject_template").notNull(),
+    htmlTemplate: text("html_template").notNull(),
+    textTemplate: text("text_template").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("newsletter_templates_type_idx").on(table.newsletterType),
+  ]
+);
+
 export const newsletterCampaignRecipients = pgTable(
   "newsletter_campaign_recipients",
   {
@@ -138,6 +156,9 @@ export type NewNewsletterPreference = typeof newsletterPreferences.$inferInsert;
 
 export type NewsletterCampaign = typeof newsletterCampaigns.$inferSelect;
 export type NewNewsletterCampaign = typeof newsletterCampaigns.$inferInsert;
+
+export type NewsletterTemplate = typeof newsletterTemplates.$inferSelect;
+export type NewNewsletterTemplate = typeof newsletterTemplates.$inferInsert;
 
 export type NewsletterCampaignRecipient = typeof newsletterCampaignRecipients.$inferSelect;
 export type NewNewsletterCampaignRecipient = typeof newsletterCampaignRecipients.$inferInsert;
