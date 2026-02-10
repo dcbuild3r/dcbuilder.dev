@@ -815,6 +815,7 @@ export async function upsertNewsletterTemplate(input: {
 export async function renderNewsletterTemplatePreview(input: {
   newsletterType: string;
   periodDays?: number;
+  campaignSubject?: string;
   subjectTemplate?: string;
   htmlTemplate?: string;
   textTemplate?: string;
@@ -839,7 +840,9 @@ export async function renderNewsletterTemplatePreview(input: {
 
   const rendered = renderTemplateContent({
     template,
-    campaignSubject: `Preview: ${digest.heading}`,
+    campaignSubject: input.campaignSubject?.trim()
+      ? input.campaignSubject.trim()
+      : `Preview: ${digest.heading}`,
     campaignType: newsletterType,
     periodDays,
     digest,
