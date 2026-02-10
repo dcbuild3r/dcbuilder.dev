@@ -29,6 +29,27 @@
       "when": 1770201446093,
       "tag": "0003_breezy_silverclaw",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770378778068,
+      "tag": "0004_fast_hiroim",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1770380635475,
+      "tag": "0005_tearful_robbie_robertson",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770392464228,
+      "tag": "0006_next_mystique",
+      "breakpoints": true
     }
   ]
 }
