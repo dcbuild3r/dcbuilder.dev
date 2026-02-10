@@ -151,6 +151,7 @@ bun run start
 
 # Lint
 bun run lint
+# Note: Next.js v16 no longer ships a `next lint` command; use ESLint directly.
 
 # Generate SQL migrations from schema changes
 bun run db:generate
