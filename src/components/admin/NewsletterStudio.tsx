@@ -211,6 +211,7 @@ export function NewsletterStudio() {
   const subjectTemplateRef = useRef<HTMLInputElement | null>(null);
   const htmlTemplateRef = useRef<HTMLTextAreaElement | null>(null);
   const textTemplateRef = useRef<HTMLTextAreaElement | null>(null);
+  const statusMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [composePreview, setComposePreview] = useState<TemplatePreview | null>(null);
   const [composePreviewTab, setComposePreviewTab] = useState<PreviewTab>("html");
@@ -280,8 +281,22 @@ export function NewsletterStudio() {
 
   const setStatusMessage = (value: string) => {
     setMessage(value);
-    setTimeout(() => setMessage(null), 4000);
+    if (statusMessageTimerRef.current) {
+      clearTimeout(statusMessageTimerRef.current);
+    }
+    statusMessageTimerRef.current = setTimeout(() => {
+      setMessage(null);
+      statusMessageTimerRef.current = null;
+    }, 4000);
   };
+
+  useEffect(() => {
+    return () => {
+      if (statusMessageTimerRef.current) {
+        clearTimeout(statusMessageTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleTemplateTypeChange = (nextType: NewsletterType) => {
     setActiveTemplateType(nextType);
