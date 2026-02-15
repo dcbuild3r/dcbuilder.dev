@@ -12,7 +12,15 @@
     "test": "playwright test",
     "test:unit": "bun test tests/*.test.ts",
     "test:e2e": "playwright test",
-    "test:all": "bun run test:unit && bun run test:e2e"
+    "test:all": "bun run test:unit && bun run test:e2e",
+    "newsletter:send-due": "bun run scripts/send-due-newsletters.ts",
+    "db:generate": "bunx drizzle-kit generate --config drizzle.config.ts",
+    "db:studio": "bunx drizzle-kit studio --config drizzle.config.ts",
+    "db:migrate": "bun run scripts/db/migrate.ts",
+    "db:migrate:dev": "bun run scripts/db/migrate.ts --env=dev",
+    "db:migrate:staging": "bun run scripts/db/migrate.ts --env=staging",
+    "db:migrate:prod": "bun run scripts/db/migrate.ts --env=prod",
+    "db:check:migrations": "bun run scripts/db/check-schema-migration-sync.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
