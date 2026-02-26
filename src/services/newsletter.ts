@@ -18,6 +18,7 @@ import {
   getNewsClicksLast7Days,
 } from "@/services/posthog";
 import { getAllNews } from "@/lib/news";
+import { categoryLabels, type NewsCategory } from "@/data/news";
 import {
   NEWSLETTER_TYPES,
   type NewsletterType,
@@ -33,7 +34,14 @@ type DigestItem = {
   url?: string;
   currentViews?: number;
   delta?: number;
+  category?: string;
 };
+
+interface DigestGroup {
+  category: string;
+  label: string;
+  items: DigestItem[];
+}
 
 interface CampaignDigest {
   heading: string;
@@ -42,6 +50,7 @@ interface CampaignDigest {
   totalViews?: number;
   deltaViews?: number;
   items: DigestItem[];
+  groups?: DigestGroup[];
 }
 
 const DEFAULT_CAMPAIGN_PERIOD_DAYS = 7;
@@ -570,21 +579,35 @@ async function buildNewsDigest(periodDays: number): Promise<CampaignDigest> {
   const [allNews, clicksResult] = await Promise.all([getAllNews(), getNewsClicksLast7Days()]);
   const clickMap = new Map((clicksResult.success ? clicksResult.data : []).map((row) => [row.id, row.count]));
 
-  const items: DigestItem[] = allNews
-    .filter((item) => new Date(item.date) > cutoff)
-    .slice(0, 10)
-    .map((item) => ({
-      title: item.title,
-      subtitle: item.source || item.company || item.type,
-      url: item.url,
-      currentViews: clickMap.get(item.id) || 0,
-    }));
+  const filtered = allNews.filter((item) => new Date(item.date) > cutoff);
+
+  const items: DigestItem[] = filtered.slice(0, 20).map((item) => ({
+    title: item.title,
+    subtitle: item.source || item.company || item.type,
+    url: item.url,
+    currentViews: clickMap.get(item.id) || 0,
+    category: item.category,
+  }));
+
+  const groupMap = new Map<string, DigestItem[]>();
+  for (const item of items) {
+    const cat = item.category || "general";
+    if (!groupMap.has(cat)) groupMap.set(cat, []);
+    groupMap.get(cat)!.push(item);
+  }
+
+  const groups: DigestGroup[] = Array.from(groupMap.entries()).map(([cat, catItems]) => ({
+    category: cat,
+    label: categoryLabels[cat as NewsCategory] || cat,
+    items: catItems,
+  }));
 
   return {
     heading: "News digest",
     summary: `Recent highlights from the last ${periodDays} days.`,
     periodDays,
     items,
+    groups,
   };
 }
 
