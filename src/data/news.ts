@@ -7,12 +7,18 @@ export type NewsSource = "curated" | "blog" | "announcement";
 
 export type NewsCategory =
 	| "crypto"
+	| "ethereum"
+	| "cryptography"
 	| "ai"
+	| "health"
 	| "infrastructure"
 	| "defi"
 	| "research"
 	| "product"
+	| "cool_product"
+	| "developer_tooling"
 	| "funding"
+	| "world"
 	| "general"
 	| "x_post";
 
@@ -22,6 +28,7 @@ export interface CuratedLink {
 	title: string;
 	url: string;
 	source: string;
+	sourceImage?: string;
 	date: string;
 	description?: string;
 	category: NewsCategory;
@@ -58,12 +65,18 @@ export type NewsItem =
 
 export const categoryLabels: Record<NewsCategory, string> = {
 	crypto: "Crypto",
+	ethereum: "Ethereum",
+	cryptography: "Cryptography",
 	ai: "AI",
+	health: "Health",
 	infrastructure: "Infrastructure",
 	defi: "DeFi",
 	research: "Research",
 	product: "Product",
+	cool_product: "Cool Product",
+	developer_tooling: "Developer Tooling",
 	funding: "Funding",
+	world: "World",
 	general: "General",
 	x_post: "X Post",
 };

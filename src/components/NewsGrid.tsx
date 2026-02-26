@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useDeferredValue, useCallback } from "react";
 import Image from "next/image";
 import { AggregatedNewsItem } from "@/lib/news";
 import { NewsCategory, categoryLabels } from "@/data/news";
@@ -15,6 +15,11 @@ const typeLabels: Record<NewsType, string> = {
 	curated: "Curated Links",
 	announcement: "Announcements",
 };
+
+const NEWS_THUMBNAIL_SIZE = 56;
+const NEWS_THUMBNAIL_REQUEST_SIZE = "112px";
+const NEWS_THUMBNAIL_QUALITY = 90;
+const BLOG_IMAGE_CACHE_VERSION = "20260206";
 
 // Check if item is fresh based on platform
 // X posts: 5 days, everything else: 2 weeks
@@ -39,12 +44,38 @@ export function NewsGrid({ news }: NewsGridProps) {
 	const [typeFilter, setTypeFilter] = useState<NewsType>("all");
 	const [categoryFilter, setCategoryFilter] = useState<"all" | NewsCategory>("all");
 	const [searchQuery, setSearchQuery] = useState("");
+	const [failedImageKeys, setFailedImageKeys] = useState<Record<string, true>>({});
+	const deferredSearchQuery = useDeferredValue(searchQuery);
+	const dateFormatter = useMemo(
+		() =>
+			new Intl.DateTimeFormat("en-US", {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+				timeZone: "UTC",
+			}),
+		[],
+	);
 
 	// Get all unique categories from news items
 	const allCategories = useMemo(() => {
 		const categories = new Set<NewsCategory>();
 		news.forEach((item) => categories.add(item.category));
 		return Array.from(categories).sort();
+	}, [news]);
+
+	const newsSearchIndex = useMemo(() => {
+		const index = new Map<string, string>();
+		news.forEach((item) => {
+			index.set(
+				item.id,
+				[item.title, item.description, item.source, item.company]
+					.filter(Boolean)
+					.join(" ")
+					.toLowerCase(),
+			);
+		});
+		return index;
 	}, [news]);
 
 	const filteredNews = useMemo(() => {
@@ -60,33 +91,36 @@ export function NewsGrid({ news }: NewsGridProps) {
 			}
 
 			// Search filter
-			if (searchQuery) {
-				const query = searchQuery.toLowerCase();
-				const searchableText = [
-					item.title,
-					item.description,
-					item.source,
-					item.company,
-				]
-					.filter(Boolean)
-					.join(" ")
-					.toLowerCase();
-				if (!searchableText.includes(query)) {
-					return false;
+				if (deferredSearchQuery) {
+					const query = deferredSearchQuery.toLowerCase();
+					const searchableText = newsSearchIndex.get(item.id) || "";
+					if (!searchableText.includes(query)) {
+						return false;
+					}
 				}
-			}
 
 			return true;
 		});
-	}, [news, typeFilter, categoryFilter, searchQuery]);
+		}, [news, typeFilter, categoryFilter, deferredSearchQuery, newsSearchIndex]);
 
 	// Format date for display
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
-		return date.toLocaleDateString("en-US", {
-			year: "numeric",
-			month: "short",
-			day: "numeric",
+		return dateFormatter.format(date);
+	};
+
+	const renderCommaSeparatedTokens = (value: string | undefined, keyPrefix: string) => {
+		if (!value?.trim()) return null;
+		const tokens = value
+			.split(",")
+			.map((s) => s.trim())
+			.filter(Boolean);
+
+		return tokens.flatMap((token, idx) => {
+			const parts: React.ReactNode[] = [];
+			if (idx > 0) parts.push(<span key={`${keyPrefix}:sep:${idx}`}> - </span>);
+			parts.push(<span key={`${keyPrefix}:${idx}`}>{token}</span>);
+			return parts;
 		});
 	};
 
@@ -95,6 +129,19 @@ export function NewsGrid({ news }: NewsGridProps) {
 		const match = url.match(/x\.com\/([^/]+)/);
 		return match ? match[1] : null;
 	};
+
+	const markImageFailed = useCallback((key: string) => {
+		setFailedImageKeys((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+	}, []);
+
+	const getBlogImageUrl = useCallback((rawUrl: string) => {
+		const url = rawUrl.trim();
+		if (!url.includes(".r2.dev/blog/images/")) {
+			return url;
+		}
+		const separator = url.includes("?") ? "&" : "?";
+		return `${url}${separator}v=${BLOG_IMAGE_CACHE_VERSION}`;
+	}, []);
 
 	// X logo SVG for overlay
 	const XLogo = () => (
@@ -109,50 +156,105 @@ export function NewsGrid({ news }: NewsGridProps) {
 	const getTypeIcon = (item: AggregatedNewsItem) => {
 		// Check if it's an X post (url contains x.com)
 		if (item.url.includes("x.com/")) {
-			const handle = getXHandle(item.url);
-			if (handle) {
+			const imageKey = `${item.id}:x`;
+			const sourceImage = item.sourceImage?.trim();
+			if (sourceImage && !failedImageKeys[imageKey]) {
 				return (
 					<div className="relative group-hover:scale-[1.08] transition-transform duration-150">
 						<Image
-							src={`https://unavatar.io/twitter/${handle}`}
-							alt={handle}
-							width={48}
-							height={48}
-							className="rounded-full"
-							unoptimized
+							src={sourceImage}
+							alt={item.source || "X source"}
+							width={NEWS_THUMBNAIL_SIZE}
+							height={NEWS_THUMBNAIL_SIZE}
+							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+							quality={NEWS_THUMBNAIL_QUALITY}
+							className="rounded-full w-14 h-14 object-cover"
+							onError={() => markImageFailed(imageKey)}
 						/>
 						<XLogo />
 					</div>
 				);
 			}
+
+			const handle = getXHandle(item.url);
+			if (handle && !failedImageKeys[imageKey]) {
+				return (
+					<div className="relative group-hover:scale-[1.08] transition-transform duration-150">
+						<Image
+							src={`https://unavatar.io/twitter/${handle}`}
+							alt={handle}
+							width={NEWS_THUMBNAIL_SIZE}
+							height={NEWS_THUMBNAIL_SIZE}
+							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+							quality={NEWS_THUMBNAIL_QUALITY}
+							className="rounded-full w-14 h-14 object-cover"
+							onError={() => markImageFailed(imageKey)}
+						/>
+						<XLogo />
+					</div>
+				);
+			}
+			return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">𝕏</span>;
 		}
 
 		switch (item.type) {
 			case "blog":
-				if (item.image) {
+				if (item.image?.trim()) {
+					const imageKey = `${item.id}:blog`;
+					if (failedImageKeys[imageKey]) {
+						return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">📝</span>;
+					}
 					return (
 						<Image
-							src={item.image}
+							src={getBlogImageUrl(item.image)}
 							alt={item.title}
-							width={48}
-							height={48}
-							className="rounded object-cover w-12 h-12 group-hover:scale-[1.08] transition-transform duration-150"
-							unoptimized
+							width={NEWS_THUMBNAIL_SIZE}
+							height={NEWS_THUMBNAIL_SIZE}
+							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+							quality={NEWS_THUMBNAIL_QUALITY}
+							className="rounded object-cover w-14 h-14 group-hover:scale-[1.08] transition-transform duration-150"
+							onError={() => markImageFailed(imageKey)}
 						/>
 					);
 				}
 				return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">📝</span>;
 			case "curated":
-				return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">🔗</span>;
-			case "announcement":
-				if (item.companyLogo) {
+				if (item.sourceImage?.trim()) {
+					const imageKey = `${item.id}:curated`;
+					if (failedImageKeys[imageKey]) {
+						return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">🔗</span>;
+					}
 					return (
 						<Image
-							src={item.companyLogo}
+							src={item.sourceImage.trim()}
+							alt={item.source || item.title}
+							width={NEWS_THUMBNAIL_SIZE}
+							height={NEWS_THUMBNAIL_SIZE}
+							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+							quality={NEWS_THUMBNAIL_QUALITY}
+							className="rounded-full w-14 h-14 object-cover group-hover:scale-[1.08] transition-transform duration-150"
+							onError={() => markImageFailed(imageKey)}
+						/>
+					);
+				}
+				return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">🔗</span>;
+			case "announcement":
+				if (item.companyLogo?.trim()) {
+					const imageKey = `${item.id}:announcement`;
+					if (failedImageKeys[imageKey]) {
+						return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">📢</span>;
+					}
+					return (
+						<Image
+							src={item.companyLogo.trim()}
 							alt={item.company || "Company"}
-							width={48}
-							height={48}
-							className="rounded group-hover:scale-[1.08] transition-transform duration-150"
+							width={NEWS_THUMBNAIL_SIZE}
+							height={NEWS_THUMBNAIL_SIZE}
+							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+							quality={NEWS_THUMBNAIL_QUALITY}
+							unoptimized
+							className="rounded w-14 h-14 object-cover group-hover:scale-[1.08] transition-transform duration-150"
+							onError={() => markImageFailed(imageKey)}
 						/>
 					);
 				}
@@ -232,14 +334,15 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 				{/* Row 2: Search */}
 				<div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-					<div className="flex-1 relative">
-						<input
-							type="text"
-							placeholder="Search news..."
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-						/>
+						<div className="flex-1 relative">
+							<input
+								type="text"
+								aria-label="Search news"
+								placeholder="Search news..."
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+							/>
 						{searchQuery && (
 							<button
 								type="button"
@@ -283,11 +386,11 @@ export function NewsGrid({ news }: NewsGridProps) {
 							target={isExternalLink(item) ? "_blank" : undefined}
 							rel={isExternalLink(item) ? "noopener noreferrer" : undefined}
 							onClick={() => handleNewsClick(item)}
-							className="group block p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all"
+							className="group block p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
 						>
 							<div className="flex items-center gap-4">
 								{/* Icon */}
-								<div className="flex-shrink-0 w-12 h-12 flex items-center justify-center">
+								<div className="flex-shrink-0 w-14 h-14 flex items-center justify-center">
 									{getTypeIcon(item)}
 								</div>
 
@@ -328,7 +431,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 									{/* Meta info */}
 									<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
 										<span>{formatDate(item.date)}</span>
-										{item.source && <span>{item.source}</span>}
+										{renderCommaSeparatedTokens(item.source, `${item.id}:source`)}
 										{item.company && <span>{item.company}</span>}
 										{item.readingTime && <span>{item.readingTime}</span>}
 										<span

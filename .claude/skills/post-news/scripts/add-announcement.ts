@@ -15,7 +15,7 @@
  * - featured (optional): boolean
  */
 
-import { db, announcements } from "../../../src/db";
+import { db, announcements } from "../../../../src/db";
 
 const jsonData = process.argv[2];
 
