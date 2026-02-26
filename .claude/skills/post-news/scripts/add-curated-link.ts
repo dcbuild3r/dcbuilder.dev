@@ -7,13 +7,14 @@
  * - title (required): Link title
  * - url (required): Link URL
  * - source (required): Source name (e.g., "Vitalik Buterin", "Paradigm")
+ * - sourceImage (optional): Source image URL (R2 or external)
  * - date (required): Date string (YYYY-MM-DD)
  * - category (required): x_post | crypto | ai | infrastructure | defi | research | product | funding | general
  * - description (optional): Description text
  * - featured (optional): boolean
  */
 
-import { db, curatedLinks } from "../../../src/db";
+import { db, curatedLinks } from "../../../../src/db";
 
 const jsonData = process.argv[2];
 
@@ -37,6 +38,7 @@ try {
     title: data.title,
     url: data.url,
     source: data.source,
+    sourceImage: data.sourceImage,
     date: new Date(data.date),
     description: data.description,
     category: data.category,

@@ -22,6 +22,7 @@ export interface CuratedLink {
 	title: string;
 	url: string;
 	source: string;
+	sourceImage?: string;
 	date: string;
 	description?: string;
 	category: NewsCategory;

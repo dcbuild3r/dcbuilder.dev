@@ -15,6 +15,7 @@ export interface AggregatedNewsItem {
   featured?: boolean;
   // Type-specific fields
   source?: string; // For curated links
+  sourceImage?: string; // For curated links
   company?: string; // For announcements
   companyLogo?: string; // For announcements
   platform?: string; // For announcements
@@ -54,6 +55,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     category: link.category as NewsCategory,
     featured: link.featured || false,
     source: link.source,
+    sourceImage: link.sourceImage || undefined,
   }));
 
   // Map announcements
