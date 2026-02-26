@@ -85,8 +85,8 @@ const DEFAULT_NEWSLETTER_TEMPLATES: Record<NewsletterType, NewsletterTemplatePay
   news: {
     newsletterType: "news",
     subjectTemplate: "{{campaign_subject}}",
-    htmlTemplate: "{{default_html_body}}<hr /><h3>Recent News</h3>{{recent_news_html}}",
-    textTemplate: "{{default_text_body}}\n\nRecent News:\n{{recent_news_text}}",
+    htmlTemplate: "{{default_html_body}}",
+    textTemplate: "{{default_text_body}}",
   },
   jobs: {
     newsletterType: "jobs",
