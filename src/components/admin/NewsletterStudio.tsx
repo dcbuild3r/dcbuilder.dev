@@ -874,39 +874,41 @@ export function NewsletterStudio() {
 
             {composePreview && (
               <div className="mt-4 space-y-3">
-                <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                <details className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+                  <summary className="cursor-pointer px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Digest context
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-neutral-900 dark:text-neutral-50">
-                    {composePreview.context.digest.heading}
-                  </div>
-                  <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                    {composePreview.context.digest.summary}
-                  </div>
-                  {composePreview.context.digest.groups && composePreview.context.digest.groups.length > 0 ? (
-                    <div className="mt-3 space-y-2">
-                      {composePreview.context.digest.groups.map((group) => (
-                        <div key={group.category}>
-                          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                            {group.label} ({group.items.length})
-                          </div>
-                          <ul className="mt-1 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
-                            {group.items.map((item, i) => (
-                              <li key={i}>{item.title}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
+                  </summary>
+                  <div className="px-4 pb-4">
+                    <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                      {composePreview.context.digest.heading}
                     </div>
-                  ) : composePreview.context.digest.items.length > 0 ? (
-                    <ul className="mt-3 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
-                      {composePreview.context.digest.items.map((item, i) => (
-                        <li key={i}>{item.title}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
+                    <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                      {composePreview.context.digest.summary}
+                    </div>
+                    {composePreview.context.digest.groups && composePreview.context.digest.groups.length > 0 ? (
+                      <div className="mt-3 space-y-2">
+                        {composePreview.context.digest.groups.map((group) => (
+                          <div key={group.category}>
+                            <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                              {group.label} ({group.items.length})
+                            </div>
+                            <ul className="mt-1 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
+                              {group.items.map((item, i) => (
+                                <li key={i}>{item.title}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    ) : composePreview.context.digest.items.length > 0 ? (
+                      <ul className="mt-3 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
+                        {composePreview.context.digest.items.map((item, i) => (
+                          <li key={i}>{item.title}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                </details>
 
                 {composePreviewTab === "subject" && (
                   <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
@@ -1245,39 +1247,41 @@ export function NewsletterStudio() {
 
             {templatePreview && (
               <div className="mt-4 space-y-3">
-                <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                <details className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+                  <summary className="cursor-pointer px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Context
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-neutral-900 dark:text-neutral-50">
-                    {templatePreview.context.digest.heading}
-                  </div>
-                  <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                    {templatePreview.context.digest.summary}
-                  </div>
-                  {templatePreview.context.digest.groups && templatePreview.context.digest.groups.length > 0 ? (
-                    <div className="mt-3 space-y-2">
-                      {templatePreview.context.digest.groups.map((group) => (
-                        <div key={group.category}>
-                          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                            {group.label} ({group.items.length})
-                          </div>
-                          <ul className="mt-1 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
-                            {group.items.map((item, i) => (
-                              <li key={i}>{item.title}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
+                  </summary>
+                  <div className="px-4 pb-4">
+                    <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                      {templatePreview.context.digest.heading}
                     </div>
-                  ) : templatePreview.context.digest.items.length > 0 ? (
-                    <ul className="mt-3 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
-                      {templatePreview.context.digest.items.map((item, i) => (
-                        <li key={i}>{item.title}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
+                    <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                      {templatePreview.context.digest.summary}
+                    </div>
+                    {templatePreview.context.digest.groups && templatePreview.context.digest.groups.length > 0 ? (
+                      <div className="mt-3 space-y-2">
+                        {templatePreview.context.digest.groups.map((group) => (
+                          <div key={group.category}>
+                            <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                              {group.label} ({group.items.length})
+                            </div>
+                            <ul className="mt-1 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
+                              {group.items.map((item, i) => (
+                                <li key={i}>{item.title}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    ) : templatePreview.context.digest.items.length > 0 ? (
+                      <ul className="mt-3 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
+                        {templatePreview.context.digest.items.map((item, i) => (
+                          <li key={i}>{item.title}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                </details>
 
                 {templatePreviewTab === "subject" && (
                   <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
