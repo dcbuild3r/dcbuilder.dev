@@ -85,7 +85,7 @@ const DEFAULT_NEWSLETTER_TEMPLATES: Record<NewsletterType, NewsletterTemplatePay
   news: {
     newsletterType: "news",
     subjectTemplate: "{{campaign_subject}}",
-    htmlTemplate: "{{default_html_body}}<hr /><h3>Recent News</h3><ul>{{recent_news_html}}</ul>",
+    htmlTemplate: "{{default_html_body}}<hr /><h3>Recent News</h3>{{recent_news_html}}",
     textTemplate: "{{default_text_body}}\n\nRecent News:\n{{recent_news_text}}",
   },
   jobs: {
@@ -622,6 +622,23 @@ async function buildDigest(newsletterType: NewsletterType, periodDays: number): 
 }
 
 function renderDigestItemsHtml(digest: CampaignDigest) {
+  if (digest.groups && digest.groups.length > 0) {
+    return digest.groups.map((group) => {
+      const itemsHtml = group.items.map((item) => {
+        const metric = item.currentViews !== undefined
+          ? `${item.currentViews} views${item.delta !== undefined ? ` (${item.delta >= 0 ? "+" : ""}${item.delta})` : ""}`
+          : "";
+        const line = [
+          `<strong>${escapeHtml(item.title)}</strong>`,
+          item.subtitle ? `<span>${escapeHtml(item.subtitle)}</span>` : "",
+          metric ? `<span>${escapeHtml(metric)}</span>` : "",
+        ].filter(Boolean).join(" · ");
+        return item.url ? `<li><a href="${item.url}">${line}</a></li>` : `<li>${line}</li>`;
+      }).join("");
+      return `<h4>${escapeHtml(group.label)}</h4><ul>${itemsHtml}</ul>`;
+    }).join("");
+  }
+
   return digest.items.length
     ? digest.items.map((item) => {
       const metric = item.currentViews !== undefined
@@ -631,18 +648,28 @@ function renderDigestItemsHtml(digest: CampaignDigest) {
         `<strong>${escapeHtml(item.title)}</strong>`,
         item.subtitle ? `<span>${escapeHtml(item.subtitle)}</span>` : "",
         metric ? `<span>${escapeHtml(metric)}</span>` : "",
-      ]
-        .filter(Boolean)
-        .join(" · ");
-      if (item.url) {
-        return `<li><a href="${item.url}">${line}</a></li>`;
-      }
+      ].filter(Boolean).join(" · ");
+      if (item.url) return `<li><a href="${item.url}">${line}</a></li>`;
       return `<li>${line}</li>`;
     }).join("")
     : "<li>No items available for this period.</li>";
 }
 
 function renderDigestItemsText(digest: CampaignDigest) {
+  if (digest.groups && digest.groups.length > 0) {
+    return digest.groups.map((group) => {
+      const header = `\n## ${group.label}`;
+      const items = group.items.map((item) => {
+        const metric = item.currentViews !== undefined
+          ? `${item.currentViews} views${item.delta !== undefined ? ` (${item.delta >= 0 ? "+" : ""}${item.delta})` : ""}`
+          : "";
+        const parts = [item.title, item.subtitle, metric, item.url].filter(Boolean);
+        return `- ${parts.join(" | ")}`;
+      }).join("\n");
+      return `${header}\n${items}`;
+    }).join("\n");
+  }
+
   return digest.items.length > 0
     ? digest.items.map((item) => {
       const metric = item.currentViews !== undefined
@@ -660,11 +687,15 @@ function renderDigestHtml(digest: CampaignDigest, links: { unsubscribe: string; 
     ? `<p><strong>Total views:</strong> ${digest.totalViews}${digest.deltaViews !== undefined ? ` (${digest.deltaViews >= 0 ? "+" : ""}${digest.deltaViews} vs previous period)` : ""}</p>`
     : "";
 
+  const body = digest.groups && digest.groups.length > 0
+    ? itemsHtml
+    : `<ul>${itemsHtml}</ul>`;
+
   return `
     <h2>${escapeHtml(digest.heading)}</h2>
     <p>${escapeHtml(digest.summary)}</p>
     ${totals}
-    <ul>${itemsHtml}</ul>
+    ${body}
     <hr />
     <p><a href="${links.preferences}">Manage preferences</a> · <a href="${links.unsubscribe}">Unsubscribe</a></p>
   `;
@@ -690,21 +721,45 @@ async function getRecentNewsSnapshot(limit: number = 8) {
     date: item.date,
     type: item.type,
     source: item.source || item.company || item.type,
+    category: item.category,
   }));
 }
 
 function renderRecentNewsHtml(recentNews: Awaited<ReturnType<typeof getRecentNewsSnapshot>>) {
-  return recentNews.length > 0
-    ? recentNews.map((item) => (
+  if (recentNews.length === 0) return "<li>No recent news available.</li>";
+
+  const groupMap = new Map<string, typeof recentNews>();
+  for (const item of recentNews) {
+    const cat = item.category || "general";
+    if (!groupMap.has(cat)) groupMap.set(cat, []);
+    groupMap.get(cat)!.push(item);
+  }
+
+  return Array.from(groupMap.entries()).map(([cat, items]) => {
+    const label = categoryLabels[cat as NewsCategory] || cat;
+    const itemsHtml = items.map((item) =>
       `<li><a href="${item.url}"><strong>${escapeHtml(item.title)}</strong></a> · ${escapeHtml(item.source)} · ${escapeHtml(item.date)}</li>`
-    )).join("")
-    : "<li>No recent news available.</li>";
+    ).join("");
+    return `<h4>${escapeHtml(label)}</h4><ul>${itemsHtml}</ul>`;
+  }).join("");
 }
 
 function renderRecentNewsText(recentNews: Awaited<ReturnType<typeof getRecentNewsSnapshot>>) {
-  return recentNews.length > 0
-    ? recentNews.map((item) => `- ${item.title} | ${item.source} | ${item.date} | ${item.url}`).join("\n")
-    : "- No recent news available.";
+  if (recentNews.length === 0) return "- No recent news available.";
+
+  const groupMap = new Map<string, typeof recentNews>();
+  for (const item of recentNews) {
+    const cat = item.category || "general";
+    if (!groupMap.has(cat)) groupMap.set(cat, []);
+    groupMap.get(cat)!.push(item);
+  }
+
+  return Array.from(groupMap.entries()).map(([cat, items]) => {
+    const label = categoryLabels[cat as NewsCategory] || cat;
+    const header = `\n## ${label}`;
+    const lines = items.map((item) => `- ${item.title} | ${item.source} | ${item.date} | ${item.url}`).join("\n");
+    return `${header}\n${lines}`;
+  }).join("\n");
 }
 
 async function getNewsletterTemplatePayload(newsletterType: NewsletterType): Promise<NewsletterTemplatePayload> {
