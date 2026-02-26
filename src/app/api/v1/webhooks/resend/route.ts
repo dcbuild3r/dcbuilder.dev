@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from "crypto";
 import { db, newsletterSendEvents } from "@/db";
 
 interface ResendWebhookPayload {
@@ -20,17 +21,41 @@ interface ResendWebhookPayload {
 
 const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;
 
+function verifySvixSignature(secret: string, msgId: string, timestamp: string, body: string, signatures: string): boolean {
+  const toSign = `${msgId}.${timestamp}.${body}`;
+  // Svix secrets are base64-encoded with "whsec_" prefix
+  const secretBytes = Buffer.from(secret.startsWith("whsec_") ? secret.slice(6) : secret, "base64");
+  const expected = createHmac("sha256", secretBytes).update(toSign).digest("base64");
+  // signatures is space-separated list of "v1,<base64>" entries
+  return signatures.split(" ").some((sig) => {
+    const parts = sig.split(",");
+    if (parts.length < 2 || parts[0] !== "v1") return false;
+    try {
+      return timingSafeEqual(Buffer.from(expected), Buffer.from(parts[1]));
+    } catch {
+      return false;
+    }
+  });
+}
+
 export async function POST(request: NextRequest) {
+  const body = await request.text();
+
   if (RESEND_WEBHOOK_SECRET) {
-    const signature = request.headers.get("svix-signature");
-    if (!signature) {
-      return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+    const svixId = request.headers.get("svix-id");
+    const svixTimestamp = request.headers.get("svix-timestamp");
+    const svixSignature = request.headers.get("svix-signature");
+    if (!svixId || !svixTimestamp || !svixSignature) {
+      return NextResponse.json({ error: "Missing signature headers" }, { status: 401 });
+    }
+    if (!verifySvixSignature(RESEND_WEBHOOK_SECRET, svixId, svixTimestamp, body, svixSignature)) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
   }
 
   let payload: ResendWebhookPayload;
   try {
-    payload = await request.json();
+    payload = JSON.parse(body);
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
