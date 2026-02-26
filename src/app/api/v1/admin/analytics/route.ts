@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { requireAuth } from "@/services/auth";
+import { db, jobs } from "@/db";
 import {
   getJobApplyClicksLast7Days,
   getCandidateViewsLast7Days,
@@ -7,6 +8,22 @@ import {
   getSiteStats,
   isPostHogConfigured,
 } from "@/services/posthog";
+import { inArray } from "drizzle-orm";
+
+async function filterJobClicksToExistingJobs(jobClicks: Record<string, number>) {
+  const ids = Object.keys(jobClicks);
+  if (ids.length === 0) return jobClicks;
+
+  // PostHog can contain stale job IDs (e.g. deleted jobs). Filter to current DB rows.
+  const existing = await db.select({ id: jobs.id }).from(jobs).where(inArray(jobs.id, ids));
+  const existingSet = new Set(existing.map((r) => r.id));
+
+  const filtered: Record<string, number> = {};
+  for (const [id, count] of Object.entries(jobClicks)) {
+    if (existingSet.has(id)) filtered[id] = count;
+  }
+  return filtered;
+}
 
 // GET /api/v1/admin/analytics - Get analytics data for admin
 export async function GET(request: NextRequest) {
@@ -33,7 +50,8 @@ export async function GET(request: NextRequest) {
       result.data.forEach(({ id, count }) => {
         jobClicks[id] = count;
       });
-      return Response.json({ data: jobClicks, configured });
+      const filtered = await filterJobClicksToExistingJobs(jobClicks);
+      return Response.json({ data: filtered, configured });
     }
 
     if (type === "candidates") {
@@ -87,6 +105,7 @@ export async function GET(request: NextRequest) {
         jobClicksMap[id] = count;
       });
     }
+    const filteredJobClicksMap = await filterJobClicksToExistingJobs(jobClicksMap);
 
     const candidateViewsMap: Record<string, number> = {};
     if (candidateResult.success) {
@@ -104,7 +123,7 @@ export async function GET(request: NextRequest) {
 
     return Response.json({
       data: {
-        jobClicks: jobClicksMap,
+        jobClicks: filteredJobClicksMap,
         candidateViews: candidateViewsMap,
         blogViews: blogViewsMap,
         siteStats,
