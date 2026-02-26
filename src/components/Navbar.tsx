@@ -70,7 +70,7 @@ export function Navbar() {
 				{/* Logo */}
 				<Link
 					href="/"
-					className="text-xl font-bold hover:opacity-70 transition-opacity cursor-pointer"
+					className="text-xl font-bold hover:opacity-70 transition-opacity cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
 				>
 					dcbuilder.eth
 				</Link>
@@ -81,7 +81,7 @@ export function Navbar() {
 						href="https://x.com/dcbuilder"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="p-2 hover:scale-110 transition-transform cursor-pointer"
+						className="p-2 hover:scale-110 transition-transform cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
 						aria-label="X (Twitter)"
 					>
 						<svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -92,7 +92,7 @@ export function Navbar() {
 						href="https://github.com/dcbuild3r"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="p-2 hover:scale-110 transition-transform cursor-pointer"
+						className="p-2 hover:scale-110 transition-transform cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
 						aria-label="GitHub"
 					>
 						<svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -102,17 +102,18 @@ export function Navbar() {
 				</div>
 
 				{/* Desktop: Right - Navigation & Theme */}
-				<div className="hidden md:flex items-center gap-6">
-					{navLinks.map((link) => (
-						<Link
-							key={link.href}
-							href={link.href}
-							className={`hover:opacity-70 transition-opacity cursor-pointer ${
-								pathname === link.href
-									? "font-medium"
-									: "text-neutral-600 dark:text-neutral-400"
-							}`}
-						>
+					<div className="hidden md:flex items-center gap-6">
+						{navLinks.map((link) => (
+							<Link
+								key={link.href}
+								href={link.href}
+								aria-current={pathname === link.href ? "page" : undefined}
+								className={`hover:opacity-70 transition-opacity cursor-pointer ${
+									pathname === link.href
+										? "font-medium"
+										: "text-neutral-600 dark:text-neutral-400"
+								} rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900`}
+							>
 							{link.label}
 						</Link>
 					))}
@@ -131,7 +132,7 @@ export function Navbar() {
 								openMenu();
 							}
 						}}
-						className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+						className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
 						aria-label={isMenuOpen ? "Close menu" : "Open menu"}
 						aria-expanded={isMenuOpen}
 						aria-controls="mobile-menu"
@@ -165,17 +166,18 @@ export function Navbar() {
 					<div className="flex flex-col items-center p-6 space-y-6">
 						{/* Nav Links - centered for easy thumb reach */}
 						<div className="flex flex-col items-center space-y-4">
-							{navLinks.map((link, index) => (
-								<Link
-									key={link.href}
-									ref={index === 0 ? firstFocusableRef : undefined}
-									href={link.href}
+								{navLinks.map((link, index) => (
+									<Link
+										key={link.href}
+										ref={index === 0 ? firstFocusableRef : undefined}
+										href={link.href}
+										aria-current={pathname === link.href ? "page" : undefined}
 									onClick={closeMenu}
 									className={`text-xl py-2 ${
 										pathname === link.href
 											? "font-semibold"
 											: "text-neutral-600 dark:text-neutral-400"
-									}`}
+									} rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900`}
 								>
 									{link.label}
 								</Link>
@@ -191,7 +193,7 @@ export function Navbar() {
 								href="https://x.com/dcbuilder"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+								className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
 								aria-label="X (Twitter)"
 							>
 								<svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -202,7 +204,7 @@ export function Navbar() {
 								href="https://github.com/dcbuild3r"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+								className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
 								aria-label="GitHub"
 								ref={lastFocusableRef}
 							>

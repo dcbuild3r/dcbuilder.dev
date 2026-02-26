@@ -37,7 +37,7 @@ export default async function BlogPostPage({ params }: Props) {
 	return (
 		<>
 			<Navbar />
-			<main className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-[7.5vw] overflow-x-hidden">
+			<main id="main-content" className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-[7.5vw] overflow-x-hidden">
 				<article className="max-w-3xl mx-auto py-12">
 					<Link
 						href="/blog"

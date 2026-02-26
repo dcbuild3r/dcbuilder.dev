@@ -18,7 +18,7 @@ export default function BlogPostError({
 	return (
 		<>
 			<Navbar />
-			<main className="min-h-screen pt-24 px-6 flex items-center justify-center">
+			<main id="main-content" className="min-h-screen pt-24 px-6 flex items-center justify-center">
 				<div className="text-center space-y-4 max-w-md">
 					<h1 className="text-2xl font-bold">Unable to load article</h1>
 					<p className="text-neutral-600 dark:text-neutral-400">
