@@ -28,7 +28,7 @@ import {
 
 type SendResult = { success: true; messageId: string } | { success: false; error: string };
 
-type DigestItem = {
+export type DigestItem = {
   title: string;
   subtitle?: string;
   url?: string;
@@ -37,7 +37,7 @@ type DigestItem = {
   category?: string;
 };
 
-interface DigestGroup {
+export interface DigestGroup {
   category: string;
   label: string;
   items: DigestItem[];

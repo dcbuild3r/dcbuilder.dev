@@ -31,6 +31,13 @@ interface TemplatePreviewContextDigestItem {
   url?: string;
   currentViews?: number;
   delta?: number;
+  category?: string;
+}
+
+interface TemplatePreviewContextDigestGroup {
+  category: string;
+  label: string;
+  items: TemplatePreviewContextDigestItem[];
 }
 
 interface TemplatePreviewContext {
@@ -41,6 +48,7 @@ interface TemplatePreviewContext {
     totalViews?: number;
     deltaViews?: number;
     items: TemplatePreviewContextDigestItem[];
+    groups?: TemplatePreviewContextDigestGroup[];
   };
   recentNews: Array<{
     title: string;
@@ -874,6 +882,28 @@ export function NewsletterStudio() {
                   <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
                     {composePreview.context.digest.summary}
                   </div>
+                  {composePreview.context.digest.groups && composePreview.context.digest.groups.length > 0 ? (
+                    <div className="mt-3 space-y-2">
+                      {composePreview.context.digest.groups.map((group) => (
+                        <div key={group.category}>
+                          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                            {group.label} ({group.items.length})
+                          </div>
+                          <ul className="mt-1 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
+                            {group.items.map((item, i) => (
+                              <li key={i}>{item.title}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  ) : composePreview.context.digest.items.length > 0 ? (
+                    <ul className="mt-3 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
+                      {composePreview.context.digest.items.map((item, i) => (
+                        <li key={i}>{item.title}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
 
                 {composePreviewTab === "subject" && (
@@ -1223,6 +1253,28 @@ export function NewsletterStudio() {
                   <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
                     {templatePreview.context.digest.summary}
                   </div>
+                  {templatePreview.context.digest.groups && templatePreview.context.digest.groups.length > 0 ? (
+                    <div className="mt-3 space-y-2">
+                      {templatePreview.context.digest.groups.map((group) => (
+                        <div key={group.category}>
+                          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                            {group.label} ({group.items.length})
+                          </div>
+                          <ul className="mt-1 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
+                            {group.items.map((item, i) => (
+                              <li key={i}>{item.title}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  ) : templatePreview.context.digest.items.length > 0 ? (
+                    <ul className="mt-3 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
+                      {templatePreview.context.digest.items.map((item, i) => (
+                        <li key={i}>{item.title}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
 
                 {templatePreviewTab === "subject" && (
