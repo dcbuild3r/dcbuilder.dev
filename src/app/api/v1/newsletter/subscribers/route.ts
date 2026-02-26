@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { requireAuth } from "@/services/auth";
 import { db, newsletterSubscribers, newsletterPreferences } from "@/db";
 import { count, desc, eq, inArray } from "drizzle-orm";
+import { getEmailClicksLast7Days } from "@/services/posthog";
 
 export async function GET(request: NextRequest) {
   const auth = await requireAuth(request, "admin:read");
@@ -42,6 +43,9 @@ export async function GET(request: NextRequest) {
           .where(inArray(newsletterPreferences.subscriberId, subscriberIds))
       : [];
 
+  // Fetch click analytics from PostHog
+  const clickResult = await getEmailClicksLast7Days();
+
   // Group preferences by subscriber ID
   const preferencesBySubscriber = new Map<string, typeof preferences>();
   for (const pref of preferences) {
@@ -53,11 +57,27 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Merge subscribers with their preferences
-  const data = subscribers.map((subscriber) => ({
-    ...subscriber,
-    preferences: preferencesBySubscriber.get(subscriber.id) || [],
-  }));
+  // Build click data map keyed by email
+  const clicksByEmail = new Map<string, { clicks7d: number; lastClickedLink: string }>();
+  if (clickResult.success) {
+    for (const row of clickResult.data) {
+      clicksByEmail.set(row.email, {
+        clicks7d: row.count,
+        lastClickedLink: row.lastClickedLink,
+      });
+    }
+  }
+
+  // Merge subscribers with their preferences and click analytics
+  const data = subscribers.map((subscriber) => {
+    const clickData = clicksByEmail.get(subscriber.email);
+    return {
+      ...subscriber,
+      preferences: preferencesBySubscriber.get(subscriber.id) || [],
+      clicks7d: clickData?.clicks7d ?? 0,
+      lastClickedLink: clickData?.lastClickedLink ?? null,
+    };
+  });
 
   return Response.json({
     data,

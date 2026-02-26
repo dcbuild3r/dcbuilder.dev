@@ -269,6 +269,45 @@ export function determineHotNews(
     .map((c) => c.id);
 }
 
+// Email click analytics - count email_link_clicked events by distinct_id (email)
+export type EmailClickRow = {
+  email: string;
+  count: number;
+  lastClickedLink: string;
+};
+
+export async function getEmailClicksLast7Days(): Promise<PostHogResult<EmailClickRow[]>> {
+  if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
+    return { success: false, error: "PostHog not configured", configured: false };
+  }
+
+  const query = `
+    SELECT
+      distinct_id as email,
+      count() as count,
+      argMax(properties.$current_url, timestamp) as lastClickedLink
+    FROM events
+    WHERE event = 'email_link_clicked'
+      AND timestamp > now() - INTERVAL 7 DAY
+    GROUP BY distinct_id
+    ORDER BY count DESC
+    LIMIT 100
+  `;
+
+  const data = await runHogQLQuery(query);
+  if (!data) {
+    return { success: false, error: "Failed to query PostHog", configured: true };
+  }
+
+  const result: EmailClickRow[] = data.results.map((row) => ({
+    email: String(row[0]),
+    count: Number(row[1]),
+    lastClickedLink: String(row[2] ?? ""),
+  }));
+
+  return { success: true, data: result };
+}
+
 // Site-wide analytics
 export async function getSiteStats(): Promise<SiteStats> {
   if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {

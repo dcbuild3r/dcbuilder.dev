@@ -79,6 +79,8 @@ interface SubscriberRow {
   unsubscribedAt: string | null;
   createdAt: string;
   preferences: Array<{ type: string; enabled: boolean }>;
+  clicks7d?: number;
+  lastClickedLink?: string | null;
 }
 
 const NEWSLETTER_TYPES = ["news", "jobs", "candidates"] as const;
@@ -1346,12 +1348,14 @@ export function NewsletterStudio() {
             </div>
           ) : (
             <div className="mt-5 overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-800">
-              <table className="w-full min-w-[820px] text-sm">
+              <table className="w-full min-w-[1060px] text-sm">
                 <thead className="bg-neutral-50 dark:bg-neutral-950">
                   <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Preferences</th>
+                    <th className="px-4 py-3">Clicks (7d)</th>
+                    <th className="px-4 py-3">Last Clicked</th>
                     <th className="px-4 py-3">Subscribed</th>
                     <th className="px-4 py-3">Source</th>
                   </tr>
@@ -1392,6 +1396,32 @@ export function NewsletterStudio() {
                             <span className="text-xs text-neutral-400 dark:text-neutral-500">None</span>
                           )}
                         </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {sub.clicks7d && sub.clicks7d > 0 ? (
+                          <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-200">
+                            {sub.clicks7d}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-neutral-400 dark:text-neutral-500">0</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-neutral-700 dark:text-neutral-200">
+                        {sub.lastClickedLink ? (
+                          <a
+                            href={sub.lastClickedLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={sub.lastClickedLink}
+                            className="text-xs text-blue-600 underline decoration-blue-300 underline-offset-2 hover:text-blue-800 dark:text-blue-400 dark:decoration-blue-600 dark:hover:text-blue-300"
+                          >
+                            {sub.lastClickedLink.length > 40
+                              ? sub.lastClickedLink.slice(0, 40) + "\u2026"
+                              : sub.lastClickedLink}
+                          </a>
+                        ) : (
+                          <span className="text-xs text-neutral-400 dark:text-neutral-500">--</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-neutral-700 dark:text-neutral-200">
                         {new Date(sub.createdAt).toLocaleDateString()}
