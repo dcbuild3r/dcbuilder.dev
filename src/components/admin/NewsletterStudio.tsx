@@ -62,10 +62,21 @@ interface TemplatePreview {
   context: TemplatePreviewContext;
 }
 
+interface SubscriberRow {
+  id: string;
+  email: string;
+  status: string;
+  source: string;
+  confirmedAt: string | null;
+  unsubscribedAt: string | null;
+  createdAt: string;
+  preferences: Array<{ type: string; enabled: boolean }>;
+}
+
 const NEWSLETTER_TYPES = ["news", "jobs", "candidates"] as const;
 type NewsletterType = (typeof NEWSLETTER_TYPES)[number];
 
-type Mode = "compose" | "queue" | "templates";
+type Mode = "compose" | "queue" | "templates" | "subscribers";
 
 type PreviewTab = "html" | "text" | "subject";
 type TemplateFieldKey = "subjectTemplate" | "htmlTemplate" | "textTemplate";
@@ -216,6 +227,10 @@ export function NewsletterStudio() {
   const [composePreviewTab, setComposePreviewTab] = useState<PreviewTab>("html");
   const [composePreviewLoading, setComposePreviewLoading] = useState(false);
 
+  const [subscribers, setSubscribers] = useState<SubscriberRow[]>([]);
+  const [subscriberTotal, setSubscriberTotal] = useState(0);
+  const [subscriberLoading, setSubscriberLoading] = useState(false);
+
   const refreshData = useCallback(async () => {
     setError(null);
 
@@ -253,6 +268,28 @@ export function NewsletterStudio() {
 
     load();
   }, [refreshData]);
+
+  async function loadSubscribers() {
+    setSubscriberLoading(true);
+    try {
+      const res = await fetch("/api/v1/newsletter/subscribers?limit=200", {
+        headers: { "x-api-key": getAdminApiKey() },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setSubscribers(json.data);
+        setSubscriberTotal(json.total);
+      }
+    } finally {
+      setSubscriberLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (mode === "subscribers") {
+      loadSubscribers();
+    }
+  }, [mode]);
 
   const sortedCampaigns = useMemo(() => {
     return [...campaigns].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -613,6 +650,7 @@ export function NewsletterStudio() {
                 { value: "compose", label: "Compose", hint: "Create new campaign drafts" },
                 { value: "queue", label: "Queue", hint: "Schedule and send campaigns" },
                 { value: "templates", label: "Templates", hint: "Edit templates and preview rendering" },
+                { value: "subscribers", label: "Subscribers", hint: "View and manage subscribers" },
               ]}
             />
 
@@ -678,6 +716,17 @@ export function NewsletterStudio() {
                     Preview
                   </button>
                 </>
+              )}
+
+              {mode === "subscribers" && (
+                <button
+                  type="button"
+                  onClick={() => void loadSubscribers()}
+                  disabled={subscriberLoading}
+                  className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:hover:bg-neutral-900"
+                >
+                  Refresh
+                </button>
               )}
             </div>
           </div>
@@ -1198,6 +1247,113 @@ export function NewsletterStudio() {
             )}
           </section>
         </div>
+      )}
+
+      {mode === "subscribers" && (
+        <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
+                Subscribers{" "}
+                {subscriberTotal > 0 && (
+                  <span className="ml-1 text-sm font-normal text-neutral-500 dark:text-neutral-400">
+                    ({subscriberTotal} total)
+                  </span>
+                )}
+              </h2>
+              <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                View subscriber status, preferences, and history.
+              </p>
+            </div>
+
+            {subscribers.length > 0 && (
+              <div className="flex items-center gap-3 text-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                  {subscribers.filter((s) => s.status === "active").length} active
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                  {subscribers.filter((s) => s.status === "pending").length} pending
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
+                  {subscribers.filter((s) => s.status === "unsubscribed").length} unsubscribed
+                </span>
+              </div>
+            )}
+          </div>
+
+          {subscriberLoading ? (
+            <div className="mt-5 flex items-center justify-center py-12">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-600 dark:border-t-neutral-100" />
+            </div>
+          ) : subscribers.length === 0 ? (
+            <div className="mt-5 rounded-2xl border border-neutral-200 bg-neutral-50 p-8 text-center dark:border-neutral-800 dark:bg-neutral-950">
+              <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">No subscribers found.</div>
+              <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                Subscribers will appear here once people sign up for newsletters.
+              </div>
+            </div>
+          ) : (
+            <div className="mt-5 overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-800">
+              <table className="w-full min-w-[820px] text-sm">
+                <thead className="bg-neutral-50 dark:bg-neutral-950">
+                  <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                    <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Preferences</th>
+                    <th className="px-4 py-3">Subscribed</th>
+                    <th className="px-4 py-3">Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscribers.map((sub) => (
+                    <tr key={sub.id} className="border-t border-neutral-200 align-top dark:border-neutral-800">
+                      <td className="px-4 py-3">
+                        <span className="font-semibold text-neutral-900 dark:text-neutral-50">{sub.email}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={cx(
+                            "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold",
+                            sub.status === "active"
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : sub.status === "pending"
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                : "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400"
+                          )}
+                        >
+                          {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {sub.preferences
+                            .filter((p) => p.enabled)
+                            .map((p) => (
+                              <span
+                                key={p.type}
+                                className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200"
+                              >
+                                {p.type}
+                              </span>
+                            ))}
+                          {sub.preferences.filter((p) => p.enabled).length === 0 && (
+                            <span className="text-xs text-neutral-400 dark:text-neutral-500">None</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-neutral-700 dark:text-neutral-200">
+                        {new Date(sub.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3 text-neutral-700 dark:text-neutral-200">
+                        {sub.source || <span className="text-neutral-400 dark:text-neutral-500">--</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       )}
     </div>
   );
