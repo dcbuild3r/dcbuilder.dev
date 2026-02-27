@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
 import { NewsGrid } from "@/components/NewsGrid";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { Recommendations } from "@/components/Recommendations";
 import { getAllNews } from "@/lib/news";
 
 export const metadata = {
@@ -30,8 +31,9 @@ export default async function NewsPage() {
             </p>
           </div>
 
-          <div className="mb-8 sm:mb-10">
+          <div className="mb-8 sm:mb-10 space-y-4">
             <NewsletterSignup />
+            <Recommendations />
           </div>
 
           {/* News Grid */}

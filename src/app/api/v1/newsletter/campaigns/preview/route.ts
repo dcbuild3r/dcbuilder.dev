@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { requireAuth } from "@/services/auth";
-import { renderNewsletterTemplatePreview } from "@/services/newsletter";
+import { previewNewsletterCampaignDraft } from "@/services/newsletter";
 
 export async function POST(request: NextRequest) {
   const auth = await requireAuth(request, "admin:read");
@@ -8,12 +8,12 @@ export async function POST(request: NextRequest) {
 
   let body: {
     newsletterType?: string;
+    subject?: string;
     periodDays?: number;
-    campaignSubject?: string;
-    subjectTemplate?: string;
-    htmlTemplate?: string;
-    textTemplate?: string;
-    markdownTemplate?: string;
+    contentMode?: string;
+    markdownContent?: string | null;
+    manualHtml?: string | null;
+    manualText?: string | null;
   };
 
   try {
@@ -22,14 +22,14 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const result = await renderNewsletterTemplatePreview({
+  const result = await previewNewsletterCampaignDraft({
     newsletterType: body.newsletterType || "",
+    subject: body.subject || "",
     periodDays: body.periodDays,
-    campaignSubject: body.campaignSubject,
-    subjectTemplate: body.subjectTemplate,
-    htmlTemplate: body.htmlTemplate,
-    textTemplate: body.textTemplate,
-    markdownTemplate: body.markdownTemplate,
+    contentMode: body.contentMode,
+    markdownContent: body.markdownContent,
+    manualHtml: body.manualHtml,
+    manualText: body.manualText,
   });
 
   if (!result.ok) {
@@ -38,3 +38,4 @@ export async function POST(request: NextRequest) {
 
   return Response.json({ data: result.data });
 }
+

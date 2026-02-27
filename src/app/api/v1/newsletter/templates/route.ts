@@ -19,6 +19,7 @@ export async function PUT(request: NextRequest) {
     subjectTemplate?: string;
     htmlTemplate?: string;
     textTemplate?: string;
+    markdownTemplate?: string;
   };
 
   try {
@@ -32,6 +33,7 @@ export async function PUT(request: NextRequest) {
     subjectTemplate: body.subjectTemplate || "",
     htmlTemplate: body.htmlTemplate || "",
     textTemplate: body.textTemplate || "",
+    markdownTemplate: body.markdownTemplate || "",
   });
 
   if (!result.ok) {

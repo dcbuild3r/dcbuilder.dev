@@ -193,10 +193,18 @@ export function determineHotCandidates(
 }
 
 // News analytics - count news_click events by news_id
-export async function getNewsClicksLast7Days(): Promise<PostHogResult<ClickCount[]>> {
+export async function getNewsClicksForWindow(
+  days: number = 7,
+  offsetDays: number = 0
+): Promise<PostHogResult<ClickCount[]>> {
   if (!POSTHOG_API_KEY || !POSTHOG_PROJECT_ID) {
     return { success: false, error: "PostHog not configured", configured: false };
   }
+
+  const safeDays = sanitizeWindow(days, 7);
+  const safeOffsetDays = sanitizeOffset(offsetDays);
+  const upperBoundClause =
+    safeOffsetDays > 0 ? `AND timestamp <= now() - INTERVAL ${safeOffsetDays} DAY` : "";
 
   const query = `
     SELECT
@@ -204,7 +212,8 @@ export async function getNewsClicksLast7Days(): Promise<PostHogResult<ClickCount
       count() as count
     FROM events
     WHERE event = 'news_click'
-      AND timestamp > now() - INTERVAL 7 DAY
+      AND timestamp > now() - INTERVAL ${safeDays + safeOffsetDays} DAY
+      ${upperBoundClause}
       AND properties.news_id IS NOT NULL
     GROUP BY properties.news_id
     ORDER BY count DESC
@@ -221,6 +230,10 @@ export async function getNewsClicksLast7Days(): Promise<PostHogResult<ClickCount
   }));
 
   return { success: true, data: result };
+}
+
+export async function getNewsClicksLast7Days(): Promise<PostHogResult<ClickCount[]>> {
+  return getNewsClicksForWindow(7, 0);
 }
 
 // Blog analytics - count pageviews on /blog/* paths

@@ -23,6 +23,10 @@ export async function POST(request: NextRequest) {
     periodDays?: number;
     scheduledAt?: string;
     createdBy?: string;
+    contentMode?: string;
+    markdownContent?: string;
+    manualHtml?: string;
+    manualText?: string;
   };
   try {
     body = await request.json();
@@ -37,6 +41,10 @@ export async function POST(request: NextRequest) {
     periodDays: body.periodDays,
     scheduledAt: body.scheduledAt,
     createdBy: body.createdBy,
+    contentMode: body.contentMode,
+    markdownContent: body.markdownContent,
+    manualHtml: body.manualHtml,
+    manualText: body.manualText,
   });
 
   if (!result.ok) {

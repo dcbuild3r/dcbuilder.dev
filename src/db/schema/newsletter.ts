@@ -49,6 +49,10 @@ export const newsletterCampaigns = pgTable(
     newsletterType: text("newsletter_type").notNull(), // news | jobs | candidates
     subject: text("subject").notNull(),
     previewText: text("preview_text"),
+    contentMode: text("content_mode").notNull().default("template"), // template | markdown | manual
+    markdownContent: text("markdown_content"),
+    manualHtml: text("manual_html"),
+    manualText: text("manual_text"),
     status: text("status").notNull().default("draft"), // draft | scheduled | sending | sent | failed
     periodDays: integer("period_days").notNull().default(7),
     scheduledAt: timestamp("scheduled_at"),
@@ -75,6 +79,7 @@ export const newsletterTemplates = pgTable(
     subjectTemplate: text("subject_template").notNull(),
     htmlTemplate: text("html_template").notNull(),
     textTemplate: text("text_template").notNull(),
+    markdownTemplate: text("markdown_template").notNull().default("{{default_markdown_body}}"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

@@ -1,54 +1,36 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { adminFetch, getAdminApiKey } from "@/lib/admin-utils";
+import ReactMarkdown from "react-markdown";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { ErrorAlert } from "@/components/admin/ActionButtons";
+import { adminFetch, getAdminApiKey } from "@/lib/admin-utils";
 
-interface NewsletterCampaign {
-  id: string;
-  newsletterType: "news" | "jobs" | "candidates";
-  subject: string;
-  previewText: string | null;
-  periodDays: number;
-  status: "draft" | "scheduled" | "sending" | "sent" | "failed";
-  scheduledAt: string | null;
-  sentAt: string | null;
-  failureReason: string | null;
-  createdBy: string | null;
-  createdAt: string;
-}
+type NewsletterType = "news" | "jobs" | "candidates";
+type NewsletterContentMode = "template" | "markdown" | "manual";
+type CampaignStatus = "draft" | "scheduled" | "sending" | "sent" | "failed";
+type WorkspaceView = "editor" | "split" | "preview";
 
-interface NewsletterTemplate {
-  newsletterType: "news" | "jobs" | "candidates";
-  subjectTemplate: string;
-  htmlTemplate: string;
-  textTemplate: string;
-}
+type Mode = "compose" | "queue" | "templates";
+type PreviewTab = "subject" | "html" | "text" | "starter";
+type TemplateFieldKey = "subjectTemplate" | "htmlTemplate" | "textTemplate" | "markdownTemplate";
+type ComposeFieldKey = "markdownContent" | "manualHtml" | "manualText";
 
-interface TemplatePreviewContextDigestItem {
+type DigestItem = {
   title: string;
   subtitle?: string;
   url?: string;
   currentViews?: number;
   delta?: number;
-  category?: string;
-}
+};
 
-interface TemplatePreviewContextDigestGroup {
-  category: string;
-  label: string;
-  items: TemplatePreviewContextDigestItem[];
-}
-
-interface TemplatePreviewContext {
+type PreviewContext = {
   digest: {
     heading: string;
     summary: string;
     periodDays: number;
     totalViews?: number;
     deltaViews?: number;
-    items: TemplatePreviewContextDigestItem[];
-    groups?: TemplatePreviewContextDigestGroup[];
+    items: DigestItem[];
   };
   recentNews: Array<{
     title: string;
@@ -57,59 +39,213 @@ interface TemplatePreviewContext {
     type: string;
     source: string;
   }>;
-}
+};
 
-interface TemplatePreview {
+type RenderedPayload = {
+  subject: string;
+  html: string;
+  text: string;
+};
+
+type CampaignPreviewResult = {
+  rendered: RenderedPayload;
+  starter: { markdown: string };
   placeholders: string[];
+  context: PreviewContext;
+};
+
+type TemplatePreviewResult = CampaignPreviewResult & {
   template: NewsletterTemplate;
-  rendered: {
-    subject: string;
-    html: string;
-    text: string;
-  };
-  context: TemplatePreviewContext;
-}
+};
 
-interface SubscriberRow {
+interface NewsletterCampaign {
   id: string;
-  email: string;
-  status: string;
-  source: string;
-  confirmedAt: string | null;
-  unsubscribedAt: string | null;
+  newsletterType: NewsletterType;
+  subject: string;
+  previewText: string | null;
+  contentMode: NewsletterContentMode;
+  markdownContent: string | null;
+  manualHtml: string | null;
+  manualText: string | null;
+  periodDays: number;
+  status: CampaignStatus;
+  scheduledAt: string | null;
+  sentAt: string | null;
+  failureReason: string | null;
+  createdBy: string | null;
   createdAt: string;
-  preferences: Array<{ type: string; enabled: boolean }>;
-  clicks7d?: number;
-  lastClickedLink?: string | null;
 }
 
-const NEWSLETTER_TYPES = ["news", "jobs", "candidates"] as const;
-type NewsletterType = (typeof NEWSLETTER_TYPES)[number];
+interface NewsletterTemplate {
+  newsletterType: NewsletterType;
+  subjectTemplate: string;
+  htmlTemplate: string;
+  textTemplate: string;
+  markdownTemplate: string;
+}
 
-type Mode = "compose" | "queue" | "templates" | "subscribers";
+type CampaignDraft = {
+  newsletterType: NewsletterType;
+  subject: string;
+  previewText: string;
+  contentMode: NewsletterContentMode;
+  markdownContent: string;
+  manualHtml: string;
+  manualText: string;
+  periodDays: number;
+  scheduledAtLocal: string;
+};
 
-type PreviewTab = "html" | "text" | "subject";
-type TemplateFieldKey = "subjectTemplate" | "htmlTemplate" | "textTemplate";
+const NEWSLETTER_TYPES: NewsletterType[] = ["news", "jobs", "candidates"];
+const MUTABLE_STATUSES = new Set<CampaignStatus>(["draft", "scheduled"]);
+type MarkdownFormatKind = "h2" | "bold" | "italic" | "link" | "list" | "quote" | "code" | "divider";
+
+const MARKDOWN_TOOLBAR_ACTIONS: Array<{ id: MarkdownFormatKind; label: string }> = [
+  { id: "h2", label: "H2" },
+  { id: "bold", label: "Bold" },
+  { id: "italic", label: "Italic" },
+  { id: "link", label: "Link" },
+  { id: "list", label: "List" },
+  { id: "quote", label: "Quote" },
+  { id: "code", label: "Code" },
+  { id: "divider", label: "Divider" },
+];
+
+const SUBSTACK_SANS_FONT_STACK = "'SF Pro Display', -apple-system, system-ui, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'";
+
+const FALLBACK_PLACEHOLDERS = [
+  "campaign_subject",
+  "campaign_type",
+  "period_days",
+  "digest_heading",
+  "digest_summary",
+  "total_views",
+  "delta_views",
+  "digest_items_text",
+  "digest_items_markdown",
+  "recent_news_text",
+  "recent_news_markdown",
+  "unsubscribe_url",
+  "preferences_url",
+  "default_text_body",
+  "default_markdown_body",
+  "generated_at_iso",
+] as const;
+
+const PLACEHOLDER_ORDER = [
+  "campaign_subject",
+  "digest_heading",
+  "digest_summary",
+  "digest_items_markdown",
+  "recent_news_markdown",
+  "total_views",
+  "delta_views",
+  "campaign_type",
+  "period_days",
+  "digest_items_text",
+  "recent_news_text",
+  "default_markdown_body",
+  "default_text_body",
+  "preferences_url",
+  "unsubscribe_url",
+  "generated_at_iso",
+] as const;
+
+const MINIMAL_WRITING_PLACEHOLDERS = new Set([
+  "campaign_subject",
+  "campaign_type",
+  "period_days",
+  "digest_heading",
+  "digest_summary",
+  "total_views",
+  "delta_views",
+  "preferences_url",
+  "unsubscribe_url",
+  "generated_at_iso",
+]);
+
+const MARKDOWN_WRITING_PLACEHOLDERS = new Set([
+  ...MINIMAL_WRITING_PLACEHOLDERS,
+  "digest_items_markdown",
+  "recent_news_markdown",
+  "default_markdown_body",
+]);
+
+const TEXT_WRITING_PLACEHOLDERS = new Set([
+  ...MINIMAL_WRITING_PLACEHOLDERS,
+  "digest_items_text",
+  "recent_news_text",
+  "default_text_body",
+]);
+
+const SUBJECT_WRITING_PLACEHOLDERS = new Set([
+  "campaign_subject",
+  "campaign_type",
+  "period_days",
+  "digest_heading",
+  "generated_at_iso",
+]);
+
+function isHtmlPlaceholderToken(placeholder: string) {
+  return placeholder.endsWith("_html") || placeholder === "default_html_body";
+}
+
+function orderPlaceholders(placeholders: string[]): string[] {
+  const indexByName = new Map<string, number>(PLACEHOLDER_ORDER.map((name, index) => [name, index]));
+  return [...new Set(placeholders)].sort((a, b) => {
+    const aIdx = indexByName.get(a);
+    const bIdx = indexByName.get(b);
+    if (aIdx === undefined && bIdx === undefined) return a.localeCompare(b);
+    if (aIdx === undefined) return 1;
+    if (bIdx === undefined) return -1;
+    return aIdx - bIdx;
+  });
+}
+
+function filterRelevantPlaceholders(placeholders: string[], allowed: ReadonlySet<string>) {
+  const filtered = placeholders.filter((placeholder) => allowed.has(placeholder));
+  return filtered.length > 0 ? filtered : placeholders;
+}
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
 
-function formatStatus(status: NewsletterCampaign["status"]) {
+function serializeCampaignDraft(draft: CampaignDraft | null) {
+  if (!draft) return null;
+  return JSON.stringify(draft);
+}
+
+function formatStatus(status: CampaignStatus) {
   return status === "sending" ? "Sending" : status.charAt(0).toUpperCase() + status.slice(1);
 }
 
-function StatusPill({ status }: { status: NewsletterCampaign["status"] }) {
+function formatLocalInputFromIso(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+}
+
+function StatusPill({ status }: { status: CampaignStatus }) {
   const styles = {
     draft: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200",
-    scheduled: "bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-500/15 dark:text-indigo-200 dark:border-indigo-500/25",
-    sending: "bg-amber-50 text-amber-800 border border-amber-100 dark:bg-amber-500/15 dark:text-amber-200 dark:border-amber-500/25",
-    sent: "bg-emerald-50 text-emerald-800 border border-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-200 dark:border-emerald-500/25",
-    failed: "bg-red-50 text-red-700 border border-red-100 dark:bg-red-500/15 dark:text-red-200 dark:border-red-500/25",
+    scheduled:
+      "border border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/25 dark:bg-indigo-500/15 dark:text-indigo-200",
+    sending:
+      "border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/15 dark:text-amber-200",
+    sent: "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-200",
+    failed: "border border-red-200 bg-red-50 text-red-700 dark:border-red-500/25 dark:bg-red-500/15 dark:text-red-200",
   }[status];
 
   return (
-    <span className={cx("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold", styles)}>
+    <span className={cx("inline-flex rounded-full px-2.5 py-1 text-xs font-semibold", styles)}>
       {formatStatus(status)}
     </span>
   );
@@ -129,13 +265,13 @@ function SegmentedControl<T extends string>(props: {
             key={opt.value}
             type="button"
             onClick={() => props.onChange(opt.value)}
+            title={opt.hint}
             className={cx(
-              "relative rounded-full px-3 py-1.5 text-sm font-semibold transition",
+              "rounded-full px-3 py-1.5 text-sm font-semibold transition",
               active
                 ? "bg-white text-neutral-900 shadow-sm ring-1 ring-neutral-200 dark:bg-neutral-950 dark:text-neutral-50 dark:ring-neutral-800"
                 : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
             )}
-            title={opt.hint}
           >
             {opt.label}
           </button>
@@ -145,7 +281,7 @@ function SegmentedControl<T extends string>(props: {
   );
 }
 
-function HtmlPreviewFrame({ html }: { html: string }) {
+function HtmlPreviewFrame({ html, className }: { html: string; className?: string }) {
   const srcDoc = `<!doctype html>
 <html>
   <head>
@@ -153,16 +289,17 @@ function HtmlPreviewFrame({ html }: { html: string }) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <base target="_blank" />
     <style>
-      :root { color-scheme: light; }
+      :root { color-scheme: only light; }
       body {
         margin: 0;
         padding: 18px;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-        line-height: 1.45;
+        font-family: ${SUBSTACK_SANS_FONT_STACK};
+        line-height: 1.6;
       }
       img { max-width: 100%; height: auto; }
       hr { border: none; border-top: 1px solid #e5e7eb; margin: 18px 0; }
-      a { color: #4338ca; }
+      h1, h2, h3, h4, h5, h6 { font-family: ${SUBSTACK_SANS_FONT_STACK}; color: #111111; }
+      a { color: #111111; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
       pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
     </style>
   </head>
@@ -174,7 +311,10 @@ function HtmlPreviewFrame({ html }: { html: string }) {
       title="Newsletter HTML Preview"
       sandbox="allow-popups allow-popups-to-escape-sandbox"
       referrerPolicy="no-referrer"
-      className="h-[520px] w-full rounded-xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-950"
+      className={cx(
+        "w-full rounded-xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-950",
+        className || "h-[620px]"
+      )}
       srcDoc={srcDoc}
     />
   );
@@ -192,11 +332,68 @@ function isoDay(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
-function suggestedWeeklySubject(type: NewsletterType, periodDays: number) {
+function suggestedSubject(type: NewsletterType, periodDays: number) {
   const now = new Date();
   const { start, end } = computeUtcWindow(periodDays, now);
   const label = type === "news" ? "Weekly News Digest" : `${type[0].toUpperCase()}${type.slice(1)} Digest`;
   return `${label} (${isoDay(start)} to ${isoDay(end)})`;
+}
+
+function withSelectionWrap(
+  ref: HTMLTextAreaElement | null,
+  value: string,
+  before: string,
+  after: string,
+  fallback: string
+) {
+  if (!ref) {
+    return `${value}${before}${fallback}${after}`;
+  }
+
+  const start = ref.selectionStart ?? value.length;
+  const end = ref.selectionEnd ?? start;
+  const selected = value.slice(start, end) || fallback;
+  return `${value.slice(0, start)}${before}${selected}${after}${value.slice(end)}`;
+}
+
+function withSelectionPrefix(ref: HTMLTextAreaElement | null, value: string, prefix: string, fallback: string) {
+  if (!ref) return `${value}\n${prefix}${fallback}`;
+
+  const start = ref.selectionStart ?? value.length;
+  const end = ref.selectionEnd ?? start;
+  const selected = value.slice(start, end) || fallback;
+  const transformed = selected
+    .split("\n")
+    .map((line) => `${prefix}${line}`)
+    .join("\n");
+
+  return `${value.slice(0, start)}${transformed}${value.slice(end)}`;
+}
+
+function countWords(value: string): number {
+  const trimmed = value.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+
+function MarkdownToolbar(props: {
+  onApply: (kind: MarkdownFormatKind) => void;
+  className?: string;
+}) {
+  return (
+    <div className={cx("flex flex-wrap gap-2", props.className)}>
+      {MARKDOWN_TOOLBAR_ACTIONS.map((action) => (
+        <button
+          key={action.id}
+          type="button"
+          onClick={() => props.onApply(action.id)}
+          className="rounded-md border px-2 py-1 text-xs"
+        >
+          {action.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export function NewsletterStudio() {
@@ -210,121 +407,60 @@ export function NewsletterStudio() {
   const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>([]);
   const [templates, setTemplates] = useState<Record<NewsletterType, NewsletterTemplate> | null>(null);
 
-  const [campaignForm, setCampaignForm] = useState({
-    newsletterType: "news" as NewsletterType,
+  const [composeForm, setComposeForm] = useState<CampaignDraft>({
+    newsletterType: "news",
     subject: "",
     previewText: "",
+    contentMode: "template",
+    markdownContent: "",
+    manualHtml: "",
+    manualText: "",
     periodDays: 7,
     scheduledAtLocal: "",
   });
+  const [composePreview, setComposePreview] = useState<CampaignPreviewResult | null>(null);
+  const [composePreviewTab, setComposePreviewTab] = useState<PreviewTab>("html");
+  const [composeWorkspaceView, setComposeWorkspaceView] = useState<WorkspaceView>("split");
+  const [composePreviewLoading, setComposePreviewLoading] = useState(false);
+  const [composeFocusedField, setComposeFocusedField] = useState<ComposeFieldKey | null>(null);
 
-  const [queueFilter, setQueueFilter] = useState<NewsletterCampaign["status"] | "all">("all");
+  const [queueFilter, setQueueFilter] = useState<CampaignStatus | "all">("all");
   const [queueSearch, setQueueSearch] = useState("");
   const [scheduleDrafts, setScheduleDrafts] = useState<Record<string, string>>({});
 
+  const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<CampaignDraft | null>(null);
+  const [editPreview, setEditPreview] = useState<CampaignPreviewResult | null>(null);
+  const [editPreviewTab, setEditPreviewTab] = useState<PreviewTab>("html");
+  const [editPreviewLoading, setEditPreviewLoading] = useState(false);
+  const [editFocusedField, setEditFocusedField] = useState<ComposeFieldKey | null>(null);
+  const [editWorkspaceView, setEditWorkspaceView] = useState<WorkspaceView>("split");
+
   const [activeTemplateType, setActiveTemplateType] = useState<NewsletterType>("news");
   const [templateDraft, setTemplateDraft] = useState<NewsletterTemplate | null>(null);
-  const [templatePreview, setTemplatePreview] = useState<TemplatePreview | null>(null);
+  const [templatePreview, setTemplatePreview] = useState<TemplatePreviewResult | null>(null);
   const [templatePreviewTab, setTemplatePreviewTab] = useState<PreviewTab>("html");
-  const [templatePreviewContext, setTemplatePreviewContext] = useState({ periodDays: 7, campaignSubject: "Weekly News Digest" });
+  const [templatePreviewContext, setTemplatePreviewContext] = useState({
+    periodDays: 7,
+    campaignSubject: "Weekly News Digest",
+  });
   const [focusedTemplateField, setFocusedTemplateField] = useState<TemplateFieldKey | null>(null);
 
-  const subjectTemplateRef = useRef<HTMLInputElement | null>(null);
-  const htmlTemplateRef = useRef<HTMLTextAreaElement | null>(null);
-  const textTemplateRef = useRef<HTMLTextAreaElement | null>(null);
+  const composeMarkdownRef = useRef<HTMLTextAreaElement | null>(null);
+  const composeManualHtmlRef = useRef<HTMLTextAreaElement | null>(null);
+  const composeManualTextRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const templateSubjectRef = useRef<HTMLInputElement | null>(null);
+  const templateHtmlRef = useRef<HTMLTextAreaElement | null>(null);
+  const templateTextRef = useRef<HTMLTextAreaElement | null>(null);
+  const templateMarkdownRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const editMarkdownRef = useRef<HTMLTextAreaElement | null>(null);
+  const editManualHtmlRef = useRef<HTMLTextAreaElement | null>(null);
+  const editManualTextRef = useRef<HTMLTextAreaElement | null>(null);
+  const [editInitialSnapshot, setEditInitialSnapshot] = useState<string | null>(null);
+
   const statusMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const [composePreview, setComposePreview] = useState<TemplatePreview | null>(null);
-  const [composePreviewTab, setComposePreviewTab] = useState<PreviewTab>("html");
-  const [composePreviewLoading, setComposePreviewLoading] = useState(false);
-
-  const [subscribers, setSubscribers] = useState<SubscriberRow[]>([]);
-  const [subscriberTotal, setSubscriberTotal] = useState(0);
-  const [subscriberLoading, setSubscriberLoading] = useState(false);
-
-  const refreshData = useCallback(async () => {
-    setError(null);
-
-    const headers = { "x-api-key": getAdminApiKey() };
-    const [campaignsResult, templatesResult] = await Promise.all([
-      adminFetch<NewsletterCampaign[]>("/api/v1/newsletter/campaigns?limit=100", { headers }),
-      adminFetch<NewsletterTemplate[]>("/api/v1/newsletter/templates", { headers }),
-    ]);
-
-    if (campaignsResult.error) {
-      setError(campaignsResult.error);
-    } else {
-      setCampaigns(campaignsResult.data || []);
-    }
-
-    if (templatesResult.error) {
-      setError((prev) => prev || templatesResult.error);
-    } else {
-      const byType = Object.fromEntries(
-        (templatesResult.data || []).map((item) => [item.newsletterType, item])
-      ) as Record<NewsletterType, NewsletterTemplate>;
-      setTemplates(byType);
-
-      const current = byType[activeTemplateType];
-      setTemplateDraft(current || null);
-    }
-  }, [activeTemplateType]);
-
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      await refreshData();
-      setLoading(false);
-    };
-
-    load();
-  }, [refreshData]);
-
-  async function loadSubscribers() {
-    setSubscriberLoading(true);
-    try {
-      const res = await fetch("/api/v1/newsletter/subscribers?limit=200", {
-        headers: { "x-api-key": getAdminApiKey() },
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setSubscribers(json.data);
-        setSubscriberTotal(json.total);
-      }
-    } finally {
-      setSubscriberLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    if (mode === "subscribers") {
-      loadSubscribers();
-    }
-  }, [mode]);
-
-  const sortedCampaigns = useMemo(() => {
-    return [...campaigns].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [campaigns]);
-
-  const filteredCampaigns = useMemo(() => {
-    const q = queueSearch.trim().toLowerCase();
-    return sortedCampaigns.filter((c) => {
-      if (queueFilter !== "all" && c.status !== queueFilter) return false;
-      if (!q) return true;
-      return c.subject.toLowerCase().includes(q) || c.newsletterType.toLowerCase().includes(q);
-    });
-  }, [queueFilter, queueSearch, sortedCampaigns]);
-
-  const templateIsDirty = useMemo(() => {
-    if (!templateDraft || !templates) return false;
-    const original = templates[templateDraft.newsletterType];
-    if (!original) return true;
-    return (
-      original.subjectTemplate !== templateDraft.subjectTemplate ||
-      original.htmlTemplate !== templateDraft.htmlTemplate ||
-      original.textTemplate !== templateDraft.textTemplate
-    );
-  }, [templateDraft, templates]);
 
   const setStatusMessage = (value: string) => {
     setMessage(value);
@@ -345,25 +481,187 @@ export function NewsletterStudio() {
     };
   }, []);
 
-  const handleTemplateTypeChange = (nextType: NewsletterType) => {
-    setActiveTemplateType(nextType);
-    if (templates) setTemplateDraft(templates[nextType] || null);
-    else setTemplateDraft(null);
-    setTemplatePreview(null);
-    setTemplatePreviewTab("html");
-  };
+  const refreshData = useCallback(async () => {
+    setError(null);
 
-  const setStudioMode = (next: Mode) => {
-    setMode(next);
+    const headers = { "x-api-key": getAdminApiKey() };
+    const [campaignsResult, templatesResult] = await Promise.all([
+      adminFetch<NewsletterCampaign[]>("/api/v1/newsletter/campaigns?limit=100", { headers }),
+      adminFetch<NewsletterTemplate[]>("/api/v1/newsletter/templates", { headers }),
+    ]);
 
-    if (next === "templates") {
-      setTemplatePreview(null);
-      setTemplatePreviewTab("html");
+    if (campaignsResult.error) {
+      setError(campaignsResult.error);
+    } else {
+      setCampaigns(campaignsResult.data || []);
     }
-  };
+
+    if (templatesResult.error) {
+      setError((prev) => prev || templatesResult.error);
+    } else {
+      const byType = Object.fromEntries((templatesResult.data || []).map((x) => [x.newsletterType, x])) as Record<
+        NewsletterType,
+        NewsletterTemplate
+      >;
+      setTemplates(byType);
+      setTemplateDraft(byType[activeTemplateType] || null);
+    }
+  }, [activeTemplateType]);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      await refreshData();
+      setLoading(false);
+    };
+    load();
+  }, [refreshData]);
+
+  const sortedCampaigns = useMemo(() => {
+    return [...campaigns].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [campaigns]);
+
+  const filteredCampaigns = useMemo(() => {
+    const q = queueSearch.trim().toLowerCase();
+    return sortedCampaigns.filter((item) => {
+      if (queueFilter !== "all" && item.status !== queueFilter) return false;
+      if (!q) return true;
+      return item.subject.toLowerCase().includes(q) || item.newsletterType.toLowerCase().includes(q);
+    });
+  }, [queueFilter, queueSearch, sortedCampaigns]);
+
+  const templateIsDirty = useMemo(() => {
+    if (!templateDraft || !templates) return false;
+    const base = templates[templateDraft.newsletterType];
+    if (!base) return true;
+    return (
+      base.subjectTemplate !== templateDraft.subjectTemplate ||
+      base.htmlTemplate !== templateDraft.htmlTemplate ||
+      base.textTemplate !== templateDraft.textTemplate ||
+      base.markdownTemplate !== templateDraft.markdownTemplate
+    );
+  }, [templateDraft, templates]);
+
+  const isEditDirty = useMemo(() => {
+    const currentSnapshot = serializeCampaignDraft(editForm);
+    if (!currentSnapshot || !editInitialSnapshot) return false;
+    return currentSnapshot !== editInitialSnapshot;
+  }, [editForm, editInitialSnapshot]);
+
+  const resolvedPlaceholders = useMemo(() => {
+    const source = composePreview?.placeholders?.length
+      ? composePreview.placeholders
+      : templatePreview?.placeholders?.length
+        ? templatePreview.placeholders
+        : [...FALLBACK_PLACEHOLDERS];
+    return orderPlaceholders(source.filter((placeholder) => !isHtmlPlaceholderToken(placeholder)));
+  }, [composePreview, templatePreview]);
+
+  const composeInsertablePlaceholders = useMemo(() => {
+    if (composeForm.contentMode === "markdown") {
+      return filterRelevantPlaceholders(resolvedPlaceholders, MARKDOWN_WRITING_PLACEHOLDERS);
+    }
+
+    if (composeFocusedField === "manualHtml") {
+      return filterRelevantPlaceholders(resolvedPlaceholders, MINIMAL_WRITING_PLACEHOLDERS);
+    }
+
+    return filterRelevantPlaceholders(resolvedPlaceholders, TEXT_WRITING_PLACEHOLDERS);
+  }, [composeForm.contentMode, composeFocusedField, resolvedPlaceholders]);
+
+  const editInsertablePlaceholders = useMemo(() => {
+    if (!editForm) return resolvedPlaceholders;
+    if (editForm.contentMode === "markdown") {
+      return filterRelevantPlaceholders(resolvedPlaceholders, MARKDOWN_WRITING_PLACEHOLDERS);
+    }
+
+    if (editFocusedField === "manualHtml") {
+      return filterRelevantPlaceholders(resolvedPlaceholders, MINIMAL_WRITING_PLACEHOLDERS);
+    }
+
+    return filterRelevantPlaceholders(resolvedPlaceholders, TEXT_WRITING_PLACEHOLDERS);
+  }, [editForm, editFocusedField, resolvedPlaceholders]);
+
+  const templateInsertablePlaceholders = useMemo(() => {
+    const field = focusedTemplateField || "markdownTemplate";
+    if (field === "subjectTemplate") {
+      return filterRelevantPlaceholders(resolvedPlaceholders, SUBJECT_WRITING_PLACEHOLDERS);
+    }
+    if (field === "markdownTemplate") {
+      return filterRelevantPlaceholders(resolvedPlaceholders, MARKDOWN_WRITING_PLACEHOLDERS);
+    }
+    if (field === "textTemplate") {
+      return filterRelevantPlaceholders(resolvedPlaceholders, TEXT_WRITING_PLACEHOLDERS);
+    }
+    return filterRelevantPlaceholders(resolvedPlaceholders, MINIMAL_WRITING_PLACEHOLDERS);
+  }, [focusedTemplateField, resolvedPlaceholders]);
+
+  const requestCampaignPreview = useCallback(
+    async (draft: CampaignDraft) => {
+      const payload = {
+        newsletterType: draft.newsletterType,
+        subject: draft.subject.trim() || suggestedSubject(draft.newsletterType, draft.periodDays),
+        periodDays: draft.periodDays,
+        contentMode: draft.contentMode,
+        markdownContent: draft.contentMode === "markdown" ? draft.markdownContent : undefined,
+        manualHtml: draft.contentMode === "manual" ? draft.manualHtml : undefined,
+        manualText: draft.contentMode === "manual" ? draft.manualText : undefined,
+      };
+
+      return adminFetch<CampaignPreviewResult>("/api/v1/newsletter/campaigns/preview", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": getAdminApiKey(),
+        },
+        body: JSON.stringify(payload),
+      });
+    },
+    []
+  );
+
+  const renderComposePreview = useCallback(async () => {
+    setComposePreviewLoading(true);
+    const result = await requestCampaignPreview(composeForm);
+    setComposePreviewLoading(false);
+
+    if (result.error || !result.data) {
+      setError(result.error || "Unable to render preview");
+      return;
+    }
+
+    setComposePreview(result.data);
+  }, [composeForm, requestCampaignPreview]);
+
+  useEffect(() => {
+    if (mode !== "compose") return;
+
+    const handle = setTimeout(() => {
+      void renderComposePreview();
+    }, 250);
+
+    return () => clearTimeout(handle);
+  }, [mode, renderComposePreview]);
+
+  const closeEditPanel = useCallback(
+    (force = false) => {
+      if (!force && isEditDirty) {
+        const confirmed = confirm("Discard unsaved campaign edits?");
+        if (!confirmed) return false;
+      }
+
+      setEditingCampaignId(null);
+      setEditForm(null);
+      setEditPreview(null);
+      setEditPreviewLoading(false);
+      setEditInitialSnapshot(null);
+      return true;
+    },
+    [isEditDirty]
+  );
 
   const createCampaign = async () => {
-    if (!campaignForm.subject.trim()) {
+    if (!composeForm.subject.trim()) {
       setError("Subject is required");
       return;
     }
@@ -378,12 +676,16 @@ export function NewsletterStudio() {
         "x-api-key": getAdminApiKey(),
       },
       body: JSON.stringify({
-        newsletterType: campaignForm.newsletterType,
-        subject: campaignForm.subject,
-        previewText: campaignForm.previewText || undefined,
-        periodDays: campaignForm.periodDays,
-        scheduledAt: campaignForm.scheduledAtLocal ? new Date(campaignForm.scheduledAtLocal).toISOString() : undefined,
+        newsletterType: composeForm.newsletterType,
+        subject: composeForm.subject,
+        previewText: composeForm.previewText || undefined,
+        periodDays: composeForm.periodDays,
+        scheduledAt: composeForm.scheduledAtLocal ? new Date(composeForm.scheduledAtLocal).toISOString() : undefined,
         createdBy: "admin-news-studio",
+        contentMode: composeForm.contentMode,
+        markdownContent: composeForm.contentMode === "markdown" ? composeForm.markdownContent : undefined,
+        manualHtml: composeForm.contentMode === "manual" ? composeForm.manualHtml : undefined,
+        manualText: composeForm.contentMode === "manual" ? composeForm.manualText : undefined,
       }),
     });
 
@@ -394,8 +696,17 @@ export function NewsletterStudio() {
       return;
     }
 
-    setCampaignForm((current) => ({ ...current, subject: "", previewText: "", scheduledAtLocal: "" }));
     setStatusMessage("Draft created");
+    setComposeForm((current) => ({
+      ...current,
+      subject: "",
+      previewText: "",
+      scheduledAtLocal: "",
+      markdownContent: current.contentMode === "markdown" ? current.markdownContent : "",
+      manualHtml: current.contentMode === "manual" ? current.manualHtml : "",
+      manualText: current.contentMode === "manual" ? current.manualText : "",
+    }));
+
     await refreshData();
     setMode("queue");
   };
@@ -408,7 +719,6 @@ export function NewsletterStudio() {
       created: boolean;
       periodStart: string;
       periodEnd: string;
-      campaign: NewsletterCampaign;
     }>("/api/v1/newsletter/campaigns/auto-create-weekly", {
       method: "POST",
       headers: {
@@ -433,26 +743,6 @@ export function NewsletterStudio() {
 
     await refreshData();
     setMode("queue");
-  };
-
-  const sendNow = async (campaignId: string) => {
-    setSaving(true);
-    setError(null);
-
-    const { error: sendError } = await adminFetch(`/api/v1/newsletter/campaigns/${campaignId}/send`, {
-      method: "POST",
-      headers: { "x-api-key": getAdminApiKey() },
-    });
-
-    setSaving(false);
-
-    if (sendError) {
-      setError(sendError);
-      return;
-    }
-
-    setStatusMessage("Send started");
-    await refreshData();
   };
 
   const scheduleCampaign = async (campaignId: string) => {
@@ -481,9 +771,160 @@ export function NewsletterStudio() {
       return;
     }
 
-    setStatusMessage("Scheduled");
+    setStatusMessage("Campaign scheduled");
     await refreshData();
   };
+
+  const sendNow = async (campaignId: string) => {
+    setSaving(true);
+    setError(null);
+
+    const { error: sendError } = await adminFetch(`/api/v1/newsletter/campaigns/${campaignId}/send`, {
+      method: "POST",
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+
+    setSaving(false);
+
+    if (sendError) {
+      setError(sendError);
+      return;
+    }
+
+    setStatusMessage("Campaign send started");
+    await refreshData();
+  };
+
+  const deleteCampaign = async (campaign: NewsletterCampaign) => {
+    if (!MUTABLE_STATUSES.has(campaign.status)) return;
+    const ok = confirm(`Delete draft \"${campaign.subject}\"? This cannot be undone.`);
+    if (!ok) return;
+
+    setSaving(true);
+    setError(null);
+
+    const { error: deleteError } = await adminFetch(`/api/v1/newsletter/campaigns/${campaign.id}`, {
+      method: "DELETE",
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+
+    setSaving(false);
+
+    if (deleteError) {
+      setError(deleteError);
+      return;
+    }
+
+    if (editingCampaignId === campaign.id) {
+      closeEditPanel(true);
+    }
+
+    setStatusMessage("Campaign deleted");
+    await refreshData();
+  };
+
+  const openCampaignEditor = async (campaignId: string) => {
+    if (editingCampaignId && isEditDirty) {
+      const confirmed = confirm("You have unsaved campaign edits. Continue and discard them?");
+      if (!confirmed) return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    const result = await adminFetch<NewsletterCampaign>(`/api/v1/newsletter/campaigns/${campaignId}`, {
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+
+    setSaving(false);
+
+    if (result.error || !result.data) {
+      setError(result.error || "Unable to load campaign");
+      return;
+    }
+
+    const campaign = result.data;
+    const draft: CampaignDraft = {
+      newsletterType: campaign.newsletterType,
+      subject: campaign.subject,
+      previewText: campaign.previewText || "",
+      contentMode: campaign.contentMode,
+      markdownContent: campaign.markdownContent || "",
+      manualHtml: campaign.manualHtml || "",
+      manualText: campaign.manualText || "",
+      periodDays: campaign.periodDays,
+      scheduledAtLocal: formatLocalInputFromIso(campaign.scheduledAt),
+    };
+
+    setEditingCampaignId(campaign.id);
+    setEditForm(draft);
+    setEditInitialSnapshot(serializeCampaignDraft(draft));
+    setEditPreview(null);
+    setEditPreviewTab("html");
+  };
+
+  const saveCampaignEdit = async () => {
+    if (!editingCampaignId || !editForm) return;
+
+    setSaving(true);
+    setError(null);
+
+    const { error: updateError } = await adminFetch(`/api/v1/newsletter/campaigns/${editingCampaignId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify({
+        newsletterType: editForm.newsletterType,
+        subject: editForm.subject,
+        previewText: editForm.previewText,
+        periodDays: editForm.periodDays,
+        scheduledAt: editForm.scheduledAtLocal ? new Date(editForm.scheduledAtLocal).toISOString() : null,
+        contentMode: editForm.contentMode,
+        markdownContent: editForm.contentMode === "markdown" ? editForm.markdownContent : null,
+        manualHtml: editForm.contentMode === "manual" ? editForm.manualHtml : null,
+        manualText: editForm.contentMode === "manual" ? editForm.manualText : null,
+      }),
+    });
+
+    setSaving(false);
+
+    if (updateError) {
+      setError(updateError);
+      return;
+    }
+
+    setStatusMessage("Campaign updated");
+    setEditInitialSnapshot(serializeCampaignDraft(editForm));
+    await refreshData();
+  };
+
+  const renderEditPreview = useCallback(async () => {
+    if (!editForm) return;
+    setEditPreviewLoading(true);
+
+    const result = await requestCampaignPreview(editForm);
+
+    setEditPreviewLoading(false);
+
+    if (result.error || !result.data) {
+      setError(result.error || "Unable to render preview");
+      return;
+    }
+
+    setEditPreview(result.data);
+  }, [editForm, requestCampaignPreview]);
+
+  useEffect(() => {
+    if (mode !== "queue" || !editForm) return;
+
+    const handle = setTimeout(() => {
+      void renderEditPreview();
+    }, 250);
+
+    return () => clearTimeout(handle);
+  }, [mode, editForm, renderEditPreview]);
 
   const saveTemplate = async () => {
     if (!templateDraft) return;
@@ -517,7 +958,7 @@ export function NewsletterStudio() {
     setSaving(true);
     setError(null);
 
-    const result = await adminFetch<TemplatePreview>("/api/v1/newsletter/templates/preview", {
+    const result = await adminFetch<TemplatePreviewResult>("/api/v1/newsletter/templates/preview", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -530,90 +971,322 @@ export function NewsletterStudio() {
         subjectTemplate: templateDraft.subjectTemplate,
         htmlTemplate: templateDraft.htmlTemplate,
         textTemplate: templateDraft.textTemplate,
+        markdownTemplate: templateDraft.markdownTemplate,
       }),
     });
 
     setSaving(false);
 
     if (result.error || !result.data) {
-      setError(result.error || "Unable to render preview");
+      setError(result.error || "Unable to render template preview");
       return;
     }
 
     setTemplatePreview(result.data);
   };
 
-  const insertPlaceholderIntoTemplate = (placeholder: string) => {
-    if (!templateDraft) return;
+  const insertComposeToken = (placeholder: string) => {
     const token = `{{${placeholder}}}`;
+    const field = composeFocusedField || (composeForm.contentMode === "manual" ? "manualText" : "markdownContent");
 
-    const field: TemplateFieldKey = focusedTemplateField || "htmlTemplate";
-    const currentValue = templateDraft[field] || "";
-
-    const element: HTMLInputElement | HTMLTextAreaElement | null =
-      field === "subjectTemplate"
-        ? subjectTemplateRef.current
-        : field === "htmlTemplate"
-          ? htmlTemplateRef.current
-          : textTemplateRef.current;
-
-    const start = element?.selectionStart ?? currentValue.length;
-    const end = element?.selectionEnd ?? start;
-
-    const nextValue = currentValue.slice(0, start) + token + currentValue.slice(end);
-    setTemplateDraft({ ...templateDraft, [field]: nextValue });
-
-    requestAnimationFrame(() => {
-      if (!element) return;
-      element.focus();
-      try {
-        element.setSelectionRange(start + token.length, start + token.length);
-      } catch {
-        // ignore
-      }
-    });
-  };
-
-  const renderComposePreview = useCallback(async () => {
-    if (getAdminApiKey() === "") return;
-
-    setComposePreviewLoading(true);
-    const subject = campaignForm.subject.trim()
-      ? campaignForm.subject.trim()
-      : suggestedWeeklySubject(campaignForm.newsletterType, campaignForm.periodDays);
-
-    const result = await adminFetch<TemplatePreview>("/api/v1/newsletter/templates/preview", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": getAdminApiKey(),
-      },
-      body: JSON.stringify({
-        newsletterType: campaignForm.newsletterType,
-        periodDays: campaignForm.periodDays,
-        campaignSubject: subject,
-      }),
-    });
-
-    setComposePreviewLoading(false);
-
-    if (result.error || !result.data) {
-      setError(result.error || "Unable to render preview");
+    if (field === "markdownContent") {
+      const el = composeMarkdownRef.current;
+      const value = composeForm.markdownContent;
+      const start = el?.selectionStart ?? value.length;
+      const end = el?.selectionEnd ?? start;
+      setComposeForm((current) => ({
+        ...current,
+        markdownContent: `${value.slice(0, start)}${token}${value.slice(end)}`,
+      }));
       return;
     }
 
+    if (field === "manualHtml") {
+      const el = composeManualHtmlRef.current;
+      const value = composeForm.manualHtml;
+      const start = el?.selectionStart ?? value.length;
+      const end = el?.selectionEnd ?? start;
+      setComposeForm((current) => ({
+        ...current,
+        manualHtml: `${value.slice(0, start)}${token}${value.slice(end)}`,
+      }));
+      return;
+    }
+
+    const el = composeManualTextRef.current;
+    const value = composeForm.manualText;
+    const start = el?.selectionStart ?? value.length;
+    const end = el?.selectionEnd ?? start;
+    setComposeForm((current) => ({
+      ...current,
+      manualText: `${value.slice(0, start)}${token}${value.slice(end)}`,
+    }));
+  };
+
+  const insertEditToken = (placeholder: string) => {
+    if (!editForm) return;
+
+    const token = `{{${placeholder}}}`;
+    const field = editFocusedField || (editForm.contentMode === "manual" ? "manualText" : "markdownContent");
+
+    if (field === "markdownContent") {
+      const el = editMarkdownRef.current;
+      const value = editForm.markdownContent;
+      const start = el?.selectionStart ?? value.length;
+      const end = el?.selectionEnd ?? start;
+      setEditForm((current) =>
+        current ? { ...current, markdownContent: `${value.slice(0, start)}${token}${value.slice(end)}` } : current
+      );
+      return;
+    }
+
+    if (field === "manualHtml") {
+      const el = editManualHtmlRef.current;
+      const value = editForm.manualHtml;
+      const start = el?.selectionStart ?? value.length;
+      const end = el?.selectionEnd ?? start;
+      setEditForm((current) =>
+        current ? { ...current, manualHtml: `${value.slice(0, start)}${token}${value.slice(end)}` } : current
+      );
+      return;
+    }
+
+    const el = editManualTextRef.current;
+    const value = editForm.manualText;
+    const start = el?.selectionStart ?? value.length;
+    const end = el?.selectionEnd ?? start;
+    setEditForm((current) =>
+      current ? { ...current, manualText: `${value.slice(0, start)}${token}${value.slice(end)}` } : current
+    );
+  };
+
+  const insertTemplateToken = (placeholder: string) => {
+    if (!templateDraft) return;
+    const token = `{{${placeholder}}}`;
+    const field = focusedTemplateField || "markdownTemplate";
+
+    const refs: Record<TemplateFieldKey, HTMLInputElement | HTMLTextAreaElement | null> = {
+      subjectTemplate: templateSubjectRef.current,
+      htmlTemplate: templateHtmlRef.current,
+      textTemplate: templateTextRef.current,
+      markdownTemplate: templateMarkdownRef.current,
+    };
+
+    const ref = refs[field];
+    const value = templateDraft[field];
+    const start = ref?.selectionStart ?? value.length;
+    const end = ref?.selectionEnd ?? start;
+
+    setTemplateDraft({
+      ...templateDraft,
+      [field]: `${value.slice(0, start)}${token}${value.slice(end)}`,
+    });
+  };
+
+  const applyMarkdownFormat = (
+    value: string,
+    ref: HTMLTextAreaElement | null,
+    kind: MarkdownFormatKind
+  ) => {
+    let next = value;
+    if (kind === "h2") next = withSelectionPrefix(ref, value, "## ", "Heading");
+    if (kind === "bold") next = withSelectionWrap(ref, value, "**", "**", "bold text");
+    if (kind === "italic") next = withSelectionWrap(ref, value, "*", "*", "italic text");
+    if (kind === "link") next = withSelectionWrap(ref, value, "[", "](https://)", "link text");
+    if (kind === "list") next = withSelectionPrefix(ref, value, "- ", "List item");
+    if (kind === "quote") next = withSelectionPrefix(ref, value, "> ", "Quote");
+    if (kind === "code") next = withSelectionWrap(ref, value, "```\n", "\n```", "code");
+    if (kind === "divider") next = `${value}\n\n---\n\n`;
+    return next;
+  };
+
+  const handleMarkdownHotkeys = (
+    event: KeyboardEvent<HTMLTextAreaElement>,
+    onApply: (kind: MarkdownFormatKind) => void
+  ) => {
+    if (!(event.metaKey || event.ctrlKey)) return;
+
+    const key = event.key.toLowerCase();
+    if (key === "b") {
+      event.preventDefault();
+      onApply("bold");
+      return;
+    }
+    if (key === "i") {
+      event.preventDefault();
+      onApply("italic");
+      return;
+    }
+    if (key === "k") {
+      event.preventDefault();
+      onApply("link");
+    }
+  };
+
+  const applyComposeMarkdownFormat = (kind: MarkdownFormatKind) => {
+    const ref = composeMarkdownRef.current;
+    const value = composeForm.markdownContent;
+    const next = applyMarkdownFormat(value, ref, kind);
+    setComposeForm((current) => ({ ...current, markdownContent: next }));
+  };
+
+  const applyEditMarkdownFormat = (kind: MarkdownFormatKind) => {
+    if (!editForm) return;
+
+    const ref = editMarkdownRef.current;
+    const value = editForm.markdownContent;
+    const next = applyMarkdownFormat(value, ref, kind);
+
+    setEditForm((current) => (current ? { ...current, markdownContent: next } : current));
+  };
+
+  const autofillComposeMarkdown = async (forceOverride: boolean) => {
+    if (composeForm.contentMode !== "markdown") return;
+
+    if (composeForm.markdownContent.trim()) {
+      const ok = confirm(
+        forceOverride
+          ? "This will overwrite existing markdown content. Continue?"
+          : "Markdown already has content. Replace with template starter?"
+      );
+      if (!ok) return;
+    }
+
+    setSaving(true);
+    setError(null);
+    const result = await requestCampaignPreview({
+      ...composeForm,
+      contentMode: "template",
+      markdownContent: "",
+      manualHtml: "",
+      manualText: "",
+    });
+    setSaving(false);
+
+    if (result.error || !result.data) {
+      setError(result.error || "Unable to generate starter markdown");
+      return;
+    }
+
+    setComposeForm((current) => ({ ...current, markdownContent: result.data!.starter.markdown }));
     setComposePreview(result.data);
-  }, [campaignForm.newsletterType, campaignForm.periodDays, campaignForm.subject]);
+  };
 
-  useEffect(() => {
-    if (mode !== "compose") return;
+  const autofillComposeManual = async (forceOverride: boolean) => {
+    if (composeForm.contentMode !== "manual") return;
 
-    const handle = setTimeout(() => {
-      void renderComposePreview();
-    }, 280);
+    if (composeForm.manualHtml.trim() || composeForm.manualText.trim()) {
+      const ok = confirm(
+        forceOverride
+          ? "This will overwrite existing manual HTML/Text content. Continue?"
+          : "Manual HTML/Text already has content. Replace with template output?"
+      );
+      if (!ok) return;
+    }
 
-    return () => clearTimeout(handle);
-  }, [mode, renderComposePreview]);
+    setSaving(true);
+    setError(null);
+    const result = await requestCampaignPreview({
+      ...composeForm,
+      contentMode: "template",
+      markdownContent: "",
+      manualHtml: "",
+      manualText: "",
+    });
+    setSaving(false);
+
+    if (result.error || !result.data) {
+      setError(result.error || "Unable to generate manual content from template");
+      return;
+    }
+
+    setComposeForm((current) => ({
+      ...current,
+      manualHtml: result.data!.rendered.html,
+      manualText: result.data!.rendered.text,
+    }));
+    setComposePreview(result.data);
+  };
+
+  const autofillEditMarkdown = async (forceOverride: boolean) => {
+    if (!editForm || editForm.contentMode !== "markdown") return;
+
+    if (editForm.markdownContent.trim()) {
+      const ok = confirm(
+        forceOverride
+          ? "This will overwrite existing markdown content in this draft. Continue?"
+          : "Markdown already has content. Replace with template starter?"
+      );
+      if (!ok) return;
+    }
+
+    setSaving(true);
+    setError(null);
+    const result = await requestCampaignPreview({
+      ...editForm,
+      contentMode: "template",
+      markdownContent: "",
+      manualHtml: "",
+      manualText: "",
+    });
+    setSaving(false);
+
+    if (result.error || !result.data) {
+      setError(result.error || "Unable to generate starter markdown");
+      return;
+    }
+
+    setEditForm((current) => (current ? { ...current, markdownContent: result.data!.starter.markdown } : current));
+    setEditPreview(result.data);
+  };
+
+  const autofillEditManual = async (forceOverride: boolean) => {
+    if (!editForm || editForm.contentMode !== "manual") return;
+
+    if (editForm.manualHtml.trim() || editForm.manualText.trim()) {
+      const ok = confirm(
+        forceOverride
+          ? "This will overwrite existing manual HTML/Text content in this draft. Continue?"
+          : "Manual HTML/Text already has content. Replace with template output?"
+      );
+      if (!ok) return;
+    }
+
+    setSaving(true);
+    setError(null);
+    const result = await requestCampaignPreview({
+      ...editForm,
+      contentMode: "template",
+      markdownContent: "",
+      manualHtml: "",
+      manualText: "",
+    });
+    setSaving(false);
+
+    if (result.error || !result.data) {
+      setError(result.error || "Unable to generate manual content from template");
+      return;
+    }
+
+    setEditForm((current) =>
+      current
+        ? {
+          ...current,
+          manualHtml: result.data!.rendered.html,
+          manualText: result.data!.rendered.text,
+        }
+        : current
+    );
+    setEditPreview(result.data);
+  };
+
+  const setComposeContentMode = (next: NewsletterContentMode) => {
+    setComposeForm((current) => ({ ...current, contentMode: next }));
+  };
+
+  const setEditContentMode = (next: NewsletterContentMode) => {
+    setEditForm((current) => (current ? { ...current, contentMode: next } : current));
+  };
 
   if (loading) {
     return (
@@ -622,9 +1295,6 @@ export function NewsletterStudio() {
       </div>
     );
   }
-
-  const studioChromeBg =
-    "bg-[radial-gradient(900px_circle_at_10%_-30%,rgba(79,70,229,0.12),transparent_45%),radial-gradient(800px_circle_at_90%_-20%,rgba(16,185,129,0.10),transparent_50%)]";
 
   return (
     <div className="space-y-4">
@@ -644,145 +1314,69 @@ export function NewsletterStudio() {
         </div>
       )}
 
-      <section className={cx("rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900", studioChromeBg)}>
+      <section className="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-900 text-white shadow-sm dark:bg-neutral-50 dark:text-neutral-900">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path
-                  d="M4 6.5C4 5.11929 5.11929 4 6.5 4H18.5C19.8807 4 21 5.11929 21 6.5V17.5C21 18.8807 19.8807 20 18.5 20H6.5C5.11929 20 4 18.8807 4 17.5V6.5Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-                <path d="M7 8H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                <path d="M7 12H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                <path d="M7 16H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </div>
-            <div>
-              <div className="text-base font-semibold text-neutral-900 dark:text-neutral-50">Studio</div>
-              <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                Compose drafts, manage the queue, and evolve templates.
-              </div>
+          <div>
+            <div className="text-base font-semibold text-neutral-900 dark:text-neutral-50">Newsletter Studio</div>
+            <div className="text-sm text-neutral-600 dark:text-neutral-300">
+              Full campaign authoring, queue operations, and template controls.
             </div>
           </div>
-
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
-            <SegmentedControl<Mode>
-              value={mode}
-              onChange={(next) => setStudioMode(next)}
-              options={[
-                { value: "compose", label: "Compose", hint: "Create new campaign drafts" },
-                { value: "queue", label: "Queue", hint: "Schedule and send campaigns" },
-                { value: "templates", label: "Templates", hint: "Edit templates and preview rendering" },
-                { value: "subscribers", label: "Subscribers", hint: "View and manage subscribers" },
-              ]}
-            />
-
+          <div className="flex flex-col gap-2 md:items-end">
             <div className="flex items-center gap-2">
+              <SegmentedControl<Mode>
+                value={mode}
+                onChange={(next) => setMode(next)}
+                options={[
+                  { value: "compose", label: "Compose" },
+                  { value: "queue", label: "Queue" },
+                  { value: "templates", label: "Templates" },
+                ]}
+              />
+
               {mode === "compose" && (
-                <>
-                  <button
-                    type="button"
-                    onClick={autoCreateWeekly}
-                    disabled={saving || campaignForm.newsletterType !== "news"}
-                    className={cx(
-                      "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition shadow-sm",
-                      campaignForm.newsletterType === "news"
-                        ? "bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-                        : "bg-neutral-200 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 cursor-not-allowed"
-                    )}
-                    title={campaignForm.newsletterType === "news" ? "Auto-create weekly news draft" : "Auto-create currently supports only the news newsletter"}
-                  >
-                    Generate weekly draft
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void renderComposePreview()}
-                    disabled={composePreviewLoading || saving}
-                    className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:hover:bg-neutral-900"
-                  >
-                    Refresh preview
-                  </button>
-                </>
-              )}
-
-              {mode === "queue" && (
                 <button
                   type="button"
-                  onClick={refreshData}
-                  disabled={saving}
-                  className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:hover:bg-neutral-900"
+                  onClick={autoCreateWeekly}
+                  disabled={saving || composeForm.newsletterType !== "news"}
+                  className="rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
                 >
-                  Refresh
-                </button>
-              )}
-
-              {mode === "templates" && (
-                <>
-                  <button
-                    type="button"
-                    onClick={saveTemplate}
-                    disabled={saving || !templateDraft}
-                    className={cx(
-                      "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition shadow-sm disabled:opacity-50",
-                      templateIsDirty ? "bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-white" : "bg-neutral-200 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
-                    )}
-                    title={templateIsDirty ? "Save template changes" : "No unsaved changes"}
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    onClick={renderTemplatePreview}
-                    disabled={saving || !templateDraft}
-                    className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:hover:bg-neutral-900"
-                  >
-                    Preview
-                  </button>
-                </>
-              )}
-
-              {mode === "subscribers" && (
-                <button
-                  type="button"
-                  onClick={() => void loadSubscribers()}
-                  disabled={subscriberLoading}
-                  className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:hover:bg-neutral-900"
-                >
-                  Refresh
+                  Generate weekly draft
                 </button>
               )}
             </div>
+
           </div>
         </div>
       </section>
 
       {mode === "compose" && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="space-y-4">
           <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">Draft composer</h2>
+                <h2 className="text-lg font-semibold">Compose draft</h2>
                 <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                  Creates a campaign record. Content is rendered from the saved template at send time.
+                  Configure campaign metadata and delivery settings.
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setCampaignForm((c) => ({ ...c, subject: suggestedWeeklySubject(c.newsletterType, c.periodDays) }))}
-                className="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:hover:bg-neutral-900"
+                onClick={() => setComposeForm((c) => ({ ...c, subject: suggestedSubject(c.newsletterType, c.periodDays) }))}
+                className="rounded-xl border px-3 py-2 text-sm font-semibold"
               >
                 Use suggested subject
               </button>
             </div>
 
-            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <label className="space-y-1">
-                <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Newsletter type</span>
+                <span className="text-sm font-semibold">Newsletter type</span>
                 <select
-                  value={campaignForm.newsletterType}
-                  onChange={(event) => setCampaignForm((current) => ({ ...current, newsletterType: event.target.value as NewsletterType }))}
+                  value={composeForm.newsletterType}
+                  onChange={(event) =>
+                    setComposeForm((current) => ({ ...current, newsletterType: event.target.value as NewsletterType }))
+                  }
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 >
                   {NEWSLETTER_TYPES.map((type) => (
@@ -794,171 +1388,304 @@ export function NewsletterStudio() {
               </label>
 
               <label className="space-y-1">
-                <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Period (days)</span>
+                <span className="text-sm font-semibold">Period (days)</span>
                 <input
                   type="number"
                   min={1}
                   max={30}
-                  value={campaignForm.periodDays}
-                  onChange={(event) => setCampaignForm((current) => ({ ...current, periodDays: Number(event.target.value) || 7 }))}
+                  value={composeForm.periodDays}
+                  onChange={(event) =>
+                    setComposeForm((current) => ({ ...current, periodDays: Number(event.target.value) || 7 }))
+                  }
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 />
               </label>
 
               <label className="space-y-1 md:col-span-2">
-                <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Subject</span>
+                <span className="text-sm font-semibold">Subject</span>
                 <input
                   type="text"
-                  value={campaignForm.subject}
-                  onChange={(event) => setCampaignForm((current) => ({ ...current, subject: event.target.value }))}
-                  placeholder={suggestedWeeklySubject(campaignForm.newsletterType, campaignForm.periodDays)}
+                  value={composeForm.subject}
+                  onChange={(event) => setComposeForm((current) => ({ ...current, subject: event.target.value }))}
+                  placeholder={suggestedSubject(composeForm.newsletterType, composeForm.periodDays)}
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 />
               </label>
 
               <label className="space-y-1 md:col-span-2">
-                <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Preview text (optional)</span>
+                <span className="text-sm font-semibold">Preview text (optional)</span>
                 <input
                   type="text"
-                  value={campaignForm.previewText}
-                  onChange={(event) => setCampaignForm((current) => ({ ...current, previewText: event.target.value }))}
+                  value={composeForm.previewText}
+                  onChange={(event) => setComposeForm((current) => ({ ...current, previewText: event.target.value }))}
                   placeholder="Top updates from the last week"
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 />
               </label>
 
               <label className="space-y-1 md:col-span-2">
-                <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Schedule (optional)</span>
+                <span className="text-sm font-semibold">Schedule (optional)</span>
                 <input
                   type="datetime-local"
-                  value={campaignForm.scheduledAtLocal}
-                  onChange={(event) => setCampaignForm((current) => ({ ...current, scheduledAtLocal: event.target.value }))}
+                  value={composeForm.scheduledAtLocal}
+                  onChange={(event) =>
+                    setComposeForm((current) => ({ ...current, scheduledAtLocal: event.target.value }))
+                  }
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 />
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Stored as UTC when scheduled.
-                </p>
               </label>
             </div>
 
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-5">
               <button
                 type="button"
                 onClick={createCampaign}
                 disabled={saving}
-                className="inline-flex items-center justify-center rounded-xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-white"
+                className="rounded-xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-white"
               >
                 Create draft
               </button>
-              <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                Tip: edit templates in the Templates tab, then come back to Compose.
-              </div>
             </div>
           </section>
 
           <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">Live preview</h2>
+                <h2 className="text-lg font-semibold">Content Workspace</h2>
                 <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                  Uses the saved template for <span className="font-semibold">{campaignForm.newsletterType}</span> and the latest digest snapshot.
+                  Switch between editor, preview, or split view.
                 </p>
               </div>
-              <SegmentedControl<PreviewTab>
-                value={composePreviewTab}
-                onChange={(v) => setComposePreviewTab(v)}
+              <div className="flex flex-col gap-2 sm:items-end">
+                <SegmentedControl<WorkspaceView>
+                  value={composeWorkspaceView}
+                  onChange={setComposeWorkspaceView}
+                  options={[
+                    { value: "editor", label: "Editor" },
+                    { value: "split", label: "Split" },
+                    { value: "preview", label: "Preview" },
+                  ]}
+                />
+                <SegmentedControl<PreviewTab>
+                  value={composePreviewTab}
+                  onChange={setComposePreviewTab}
+                  options={[
+                    { value: "subject", label: "Subject" },
+                    { value: "html", label: "HTML" },
+                    { value: "text", label: "Text" },
+                    { value: "starter", label: "Starter" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 mb-3 flex flex-wrap items-center gap-3">
+              <span className="text-sm font-semibold">Content mode</span>
+              <SegmentedControl<NewsletterContentMode>
+                value={composeForm.contentMode}
+                onChange={setComposeContentMode}
                 options={[
-                  { value: "html", label: "HTML" },
-                  { value: "text", label: "Text" },
-                  { value: "subject", label: "Subject" },
+                  { value: "template", label: "Template" },
+                  { value: "markdown", label: "Markdown" },
+                  { value: "manual", label: "Manual" },
                 ]}
               />
             </div>
 
-            {composePreviewLoading && (
-              <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
-                Rendering preview...
-              </div>
-            )}
-
-            {!composePreviewLoading && !composePreview && (
-              <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
-                Preview will appear here.
-              </div>
-            )}
-
-            {composePreview && (
-              <div className="mt-4 space-y-3">
-                <details className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-                  <summary className="cursor-pointer px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                    Digest context
-                  </summary>
-                  <div className="px-4 pb-4">
-                    <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
-                      {composePreview.context.digest.heading}
-                    </div>
-                    <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                      {composePreview.context.digest.summary}
-                    </div>
-                    {composePreview.context.digest.groups && composePreview.context.digest.groups.length > 0 ? (
-                      <div className="mt-3 space-y-2">
-                        {composePreview.context.digest.groups.map((group) => (
-                          <div key={group.category}>
-                            <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                              {group.label} ({group.items.length})
-                            </div>
-                            <ul className="mt-1 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
-                              {group.items.map((item, i) => (
-                                <li key={i}>{item.title}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </div>
-                    ) : composePreview.context.digest.items.length > 0 ? (
-                      <ul className="mt-3 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
-                        {composePreview.context.digest.items.map((item, i) => (
-                          <li key={i}>{item.title}</li>
-                        ))}
-                      </ul>
-                    ) : null}
+            <div className={cx("mt-4 grid grid-cols-1 gap-4", composeWorkspaceView === "split" && "lg:grid-cols-2")}>
+              {composeWorkspaceView !== "preview" && (
+              <div className={cx("min-h-[72vh] rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950", composeWorkspaceView === "editor" && "min-h-[78vh]")}>
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-sm font-semibold">Editor</div>
+                  <div className="text-xs uppercase tracking-wide text-neutral-500">
+                    mode: {composeForm.contentMode}
                   </div>
-                </details>
+                </div>
 
-                {composePreviewTab === "subject" && (
-                  <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                      Rendered subject
+                {composeForm.contentMode === "template" && (
+                  <div className="rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
+                    Template mode has no direct body editor. Switch to Markdown or Manual to edit content directly.
+                  </div>
+                )}
+
+                {composeForm.contentMode === "markdown" && (
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      <MarkdownToolbar onApply={applyComposeMarkdownFormat} />
+                      <button
+                        type="button"
+                        onClick={() => void autofillComposeMarkdown(false)}
+                        className="rounded-md border px-2 py-1 text-xs"
+                      >
+                        Autofill from template
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void autofillComposeMarkdown(true)}
+                        className="rounded-md border px-2 py-1 text-xs"
+                      >
+                        Regenerate starter
+                      </button>
                     </div>
-                    <div className="mt-2 text-base font-semibold text-neutral-900 dark:text-neutral-50">
-                      {composePreview.rendered.subject}
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                      <span>Shortcuts: Cmd/Ctrl+B (bold), I (italic), K (link)</span>
+                      <span>{countWords(composeForm.markdownContent)} words · {composeForm.markdownContent.length} chars</span>
                     </div>
-                    {campaignForm.previewText.trim() && (
-                      <div className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-                        <span className="font-semibold">Preview text:</span> {campaignForm.previewText.trim()}
+                    <textarea
+                      ref={composeMarkdownRef}
+                      rows={composeWorkspaceView === "split" ? 22 : 30}
+                      value={composeForm.markdownContent}
+                      onFocus={() => setComposeFocusedField("markdownContent")}
+                      onKeyDown={(event) => handleMarkdownHotkeys(event, applyComposeMarkdownFormat)}
+                      onChange={(event) =>
+                        setComposeForm((current) => ({ ...current, markdownContent: event.target.value }))
+                      }
+                      className="min-h-[56vh] w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 font-mono text-sm leading-6 dark:border-neutral-700 dark:bg-neutral-950"
+                      placeholder="Write markdown newsletter content..."
+                    />
+
+                    <div className="flex flex-wrap gap-2">
+                      {composeInsertablePlaceholders.map((placeholder) => (
+                        <button
+                          key={placeholder}
+                          type="button"
+                          onClick={() => insertComposeToken(placeholder)}
+                          className="rounded-full border px-3 py-1 text-xs"
+                        >
+                          {`{{${placeholder}}}`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {composeForm.contentMode === "manual" && (
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void autofillComposeManual(false)}
+                        className="rounded-md border px-2 py-1 text-xs"
+                      >
+                        Autofill from template
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void autofillComposeManual(true)}
+                        className="rounded-md border px-2 py-1 text-xs"
+                      >
+                        Regenerate starter
+                      </button>
+                    </div>
+
+                    <label className="space-y-1">
+                      <span className="text-sm font-semibold">Manual HTML</span>
+                      <textarea
+                        ref={composeManualHtmlRef}
+                        rows={composeWorkspaceView === "split" ? 12 : 16}
+                        value={composeForm.manualHtml}
+                        onFocus={() => setComposeFocusedField("manualHtml")}
+                        onChange={(event) =>
+                          setComposeForm((current) => ({ ...current, manualHtml: event.target.value }))
+                        }
+                        className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 font-mono text-sm leading-6 dark:border-neutral-700 dark:bg-neutral-950"
+                      />
+                    </label>
+
+                    <label className="space-y-1">
+                      <span className="text-sm font-semibold">Manual text</span>
+                      <textarea
+                        ref={composeManualTextRef}
+                        rows={composeWorkspaceView === "split" ? 12 : 16}
+                        value={composeForm.manualText}
+                        onFocus={() => setComposeFocusedField("manualText")}
+                        onChange={(event) =>
+                          setComposeForm((current) => ({ ...current, manualText: event.target.value }))
+                        }
+                        className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 font-mono text-sm leading-6 dark:border-neutral-700 dark:bg-neutral-950"
+                      />
+                    </label>
+
+                    <div className="flex flex-wrap gap-2">
+                      {composeInsertablePlaceholders.map((placeholder) => (
+                        <button
+                          key={placeholder}
+                          type="button"
+                          onClick={() => insertComposeToken(placeholder)}
+                          className="rounded-full border px-3 py-1 text-xs"
+                        >
+                          {`{{${placeholder}}}`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              )}
+
+              {composeWorkspaceView !== "editor" && (
+              <div className={cx("min-h-[72vh] rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950", composeWorkspaceView === "preview" && "min-h-[78vh]")}>
+                <div className="mb-3 text-sm font-semibold">Live preview</div>
+
+                {composePreviewLoading && (
+                  <div className="rounded-xl border border-neutral-200 bg-white p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+                    Rendering preview...
+                  </div>
+                )}
+
+                {!composePreviewLoading && !composePreview && (
+                  <div className="rounded-xl border border-neutral-200 bg-white p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+                    Preview will appear here.
+                  </div>
+                )}
+
+                {composePreview && (
+                  <div className="space-y-3">
+                    <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Digest context</div>
+                      <div className="mt-1 text-sm font-semibold">{composePreview.context.digest.heading}</div>
+                      <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">{composePreview.context.digest.summary}</div>
+                    </div>
+
+                    {composePreviewTab === "subject" && (
+                      <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Rendered subject</div>
+                        <div className="mt-2 text-base font-semibold">{composePreview.rendered.subject}</div>
+                      </div>
+                    )}
+
+                    {composePreviewTab === "html" && (
+                      <HtmlPreviewFrame
+                        html={composePreview.rendered.html}
+                        className={composeWorkspaceView === "preview" ? "h-[78vh]" : "h-[70vh]"}
+                      />
+                    )}
+
+                    {composePreviewTab === "text" && (
+                      <pre className={cx(
+                        "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-900",
+                        composeWorkspaceView === "preview" ? "max-h-[78vh]" : "max-h-[70vh]"
+                      )}>
+                        {composePreview.rendered.text}
+                      </pre>
+                    )}
+
+                    {composePreviewTab === "starter" && (
+                      <div className="grid grid-cols-1 gap-3">
+                        <pre className={cx(
+                          "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-900",
+                          composeWorkspaceView === "preview" ? "max-h-[78vh]" : "max-h-[70vh]"
+                        )}>
+                          {composePreview.starter.markdown}
+                        </pre>
                       </div>
                     )}
                   </div>
                 )}
-
-                {composePreviewTab === "html" && (
-                  <div className="space-y-2">
-                    {campaignForm.previewText.trim() && (
-                      <div className="rounded-xl border border-neutral-200 bg-white p-3 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200">
-                        <span className="font-semibold">Preview text:</span> {campaignForm.previewText.trim()}
-                      </div>
-                    )}
-                    <HtmlPreviewFrame html={composePreview.rendered.html} />
-                  </div>
-                )}
-
-                {composePreviewTab === "text" && (
-                  <pre className="max-h-[520px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs text-neutral-800 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200">
-                    {composePreview.rendered.text}
-                  </pre>
-                )}
               </div>
-            )}
+              )}
+            </div>
           </section>
         </div>
       )}
@@ -967,30 +1694,28 @@ export function NewsletterStudio() {
         <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">Campaign queue</h2>
+              <h2 className="text-lg font-semibold">Campaign queue</h2>
               <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                Schedule drafts, kick off sends, and monitor failures.
+                Edit, schedule, send, and delete unsent campaigns.
               </p>
             </div>
-            <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center">
-              <div className="flex items-center gap-2">
-                <SegmentedControl<typeof queueFilter>
-                  value={queueFilter}
-                  onChange={(v) => setQueueFilter(v)}
-                  options={[
-                    { value: "all", label: "All" },
-                    { value: "draft", label: "Draft" },
-                    { value: "scheduled", label: "Scheduled" },
-                    { value: "sending", label: "Sending" },
-                    { value: "sent", label: "Sent" },
-                    { value: "failed", label: "Failed" },
-                  ]}
-                />
-              </div>
+            <div className="flex flex-col gap-2 md:flex-row md:items-center">
+              <SegmentedControl<CampaignStatus | "all">
+                value={queueFilter}
+                onChange={setQueueFilter}
+                options={[
+                  { value: "all", label: "All" },
+                  { value: "draft", label: "Draft" },
+                  { value: "scheduled", label: "Scheduled" },
+                  { value: "sending", label: "Sending" },
+                  { value: "sent", label: "Sent" },
+                  { value: "failed", label: "Failed" },
+                ]}
+              />
               <input
                 type="text"
                 value={queueSearch}
-                onChange={(e) => setQueueSearch(e.target.value)}
+                onChange={(event) => setQueueSearch(event.target.value)}
                 placeholder="Search subject..."
                 className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950 md:w-72"
               />
@@ -998,24 +1723,14 @@ export function NewsletterStudio() {
           </div>
 
           {filteredCampaigns.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-neutral-200 bg-neutral-50 p-8 text-center dark:border-neutral-800 dark:bg-neutral-950">
-              <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">No campaigns match this view.</div>
-              <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                Create a draft in Compose, then come back here to schedule or send.
-              </div>
-              <button
-                type="button"
-                onClick={() => setMode("compose")}
-                className="mt-4 inline-flex items-center justify-center rounded-xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-white"
-              >
-                Go to Compose
-              </button>
+            <div className="mt-5 rounded-xl border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
+              No campaigns match this view.
             </div>
           ) : (
-            <div className="mt-5 overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-800">
-              <table className="w-full min-w-[980px] text-sm">
+            <div className="mt-5 overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800">
+              <table className="w-full min-w-[1050px] text-sm">
                 <thead className="bg-neutral-50 dark:bg-neutral-950">
-                  <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                  <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Type</th>
                     <th className="px-4 py-3">Subject</th>
@@ -1025,66 +1740,407 @@ export function NewsletterStudio() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCampaigns.map((campaign) => (
-                    <tr key={campaign.id} className="border-t border-neutral-200 align-top dark:border-neutral-800">
-                      <td className="px-4 py-3">
-                        <StatusPill status={campaign.status} />
-                        {campaign.failureReason && (
-                          <div className="mt-2 text-xs text-red-700 dark:text-red-300">
-                            {campaign.failureReason}
+                  {filteredCampaigns.map((campaign) => {
+                    const mutable = MUTABLE_STATUSES.has(campaign.status);
+                    return (
+                      <tr key={campaign.id} className="border-t border-neutral-200 align-top dark:border-neutral-800">
+                        <td className="px-4 py-3">
+                          <StatusPill status={campaign.status} />
+                          {campaign.failureReason && (
+                            <div className="mt-2 text-xs text-red-700 dark:text-red-300">{campaign.failureReason}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 capitalize">{campaign.newsletterType}</td>
+                        <td className="px-4 py-3">
+                          <div className="font-semibold">{campaign.subject}</div>
+                          {campaign.previewText && <div className="mt-1 text-xs text-neutral-500">{campaign.previewText}</div>}
+                          <div className="mt-1 text-xs text-neutral-500">mode: {campaign.contentMode}</div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">{new Date(campaign.createdAt).toLocaleString()}</td>
+                        <td className="px-4 py-3 min-w-80">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="datetime-local"
+                              value={scheduleDrafts[campaign.id] || ""}
+                              onChange={(event) =>
+                                setScheduleDrafts((current) => ({ ...current, [campaign.id]: event.target.value }))
+                              }
+                              className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => scheduleCampaign(campaign.id)}
+                              disabled={saving || !mutable}
+                              className="rounded-xl border px-3 py-2 text-sm font-semibold disabled:opacity-50"
+                            >
+                              Set
+                            </button>
                           </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 capitalize text-neutral-700 dark:text-neutral-200">{campaign.newsletterType}</td>
-                      <td className="px-4 py-3">
-                        <div className="font-semibold text-neutral-900 dark:text-neutral-50">{campaign.subject}</div>
-                        {campaign.previewText && <div className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{campaign.previewText}</div>}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-neutral-700 dark:text-neutral-200">
-                        {new Date(campaign.createdAt).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3 min-w-80">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="datetime-local"
-                            value={scheduleDrafts[campaign.id] || ""}
-                            onChange={(event) => setScheduleDrafts((current) => ({ ...current, [campaign.id]: event.target.value }))}
-                            className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => scheduleCampaign(campaign.id)}
-                            disabled={saving}
-                            className="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:hover:bg-neutral-900"
-                          >
-                            Set
-                          </button>
-                        </div>
-                        {campaign.scheduledAt && (
-                          <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
-                            Current: {new Date(campaign.scheduledAt).toLocaleString()}
+                          {campaign.scheduledAt && (
+                            <div className="mt-2 text-xs text-neutral-500">Current: {new Date(campaign.scheduledAt).toLocaleString()}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => openCampaignEditor(campaign.id)}
+                              disabled={saving || !mutable}
+                              className="rounded-xl border px-3 py-2 text-xs font-semibold disabled:opacity-50"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteCampaign(campaign)}
+                              disabled={saving || !mutable}
+                              className="rounded-xl border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 disabled:opacity-50 dark:border-red-500/30 dark:text-red-300"
+                            >
+                              Delete
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => sendNow(campaign.id)}
+                              disabled={saving || campaign.status === "sent" || campaign.status === "sending"}
+                              className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                            >
+                              Send now
+                            </button>
                           </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => sendNow(campaign.id)}
-                          disabled={saving || campaign.status === "sent" || campaign.status === "sending"}
-                          className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-                        >
-                          Send now
-                        </button>
-                        {campaign.sentAt && (
-                          <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
-                            Sent: {new Date(campaign.sentAt).toLocaleString()}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {editingCampaignId && editForm && (
+            <div className="mt-6 space-y-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-semibold">Edit Campaign</h3>
+                  {isEditDirty && (
+                    <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                      Unsaved
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <SegmentedControl<WorkspaceView>
+                    value={editWorkspaceView}
+                    onChange={setEditWorkspaceView}
+                    options={[
+                      { value: "editor", label: "Editor" },
+                      { value: "split", label: "Split" },
+                      { value: "preview", label: "Preview" },
+                    ]}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => closeEditPanel()}
+                    className="rounded-lg border px-3 py-1.5 text-sm"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+
+              <div className={cx("grid grid-cols-1 gap-4", editWorkspaceView === "split" && "xl:grid-cols-2")}>
+                {editWorkspaceView !== "preview" && (
+                  <div className={cx("space-y-3", editWorkspaceView === "editor" && "min-h-[68vh]")}>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <label className="space-y-1">
+                      <span className="text-sm font-semibold">Type</span>
+                      <select
+                        value={editForm.newsletterType}
+                        onChange={(event) =>
+                          setEditForm((current) =>
+                            current ? { ...current, newsletterType: event.target.value as NewsletterType } : current
+                          )
+                        }
+                        className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                      >
+                        {NEWSLETTER_TYPES.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="space-y-1">
+                      <span className="text-sm font-semibold">Period (days)</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={30}
+                        value={editForm.periodDays}
+                        onChange={(event) =>
+                          setEditForm((current) =>
+                            current ? { ...current, periodDays: Number(event.target.value) || 7 } : current
+                          )
+                        }
+                        className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                      />
+                    </label>
+                  </div>
+
+                  <label className="space-y-1">
+                    <span className="text-sm font-semibold">Subject</span>
+                    <input
+                      type="text"
+                      value={editForm.subject}
+                      onChange={(event) =>
+                        setEditForm((current) => (current ? { ...current, subject: event.target.value } : current))
+                      }
+                      className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                    />
+                  </label>
+
+                  <label className="space-y-1">
+                    <span className="text-sm font-semibold">Preview text</span>
+                    <input
+                      type="text"
+                      value={editForm.previewText}
+                      onChange={(event) =>
+                        setEditForm((current) => (current ? { ...current, previewText: event.target.value } : current))
+                      }
+                      className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                    />
+                  </label>
+
+                  <label className="space-y-1">
+                    <span className="text-sm font-semibold">Schedule</span>
+                    <input
+                      type="datetime-local"
+                      value={editForm.scheduledAtLocal}
+                      onChange={(event) =>
+                        setEditForm((current) =>
+                          current ? { ...current, scheduledAtLocal: event.target.value } : current
+                        )
+                      }
+                      className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                    />
+                  </label>
+
+                  <div className="space-y-2">
+                    <div className="text-sm font-semibold">Content mode</div>
+                    <SegmentedControl<NewsletterContentMode>
+                      value={editForm.contentMode}
+                      onChange={setEditContentMode}
+                      options={[
+                        { value: "template", label: "Template" },
+                        { value: "markdown", label: "Markdown" },
+                        { value: "manual", label: "Manual" },
+                      ]}
+                    />
+                  </div>
+
+                  {editForm.contentMode === "markdown" && (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        <MarkdownToolbar onApply={applyEditMarkdownFormat} />
+                        <button
+                          type="button"
+                          onClick={() => void autofillEditMarkdown(false)}
+                          className="rounded-md border px-2 py-1 text-xs"
+                        >
+                          Autofill from template
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void autofillEditMarkdown(true)}
+                          className="rounded-md border px-2 py-1 text-xs"
+                        >
+                          Regenerate starter
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                          <span>Shortcuts: Cmd/Ctrl+B (bold), I (italic), K (link)</span>
+                          <span>{countWords(editForm.markdownContent)} words · {editForm.markdownContent.length} chars</span>
+                        </div>
+                        <textarea
+                          ref={editMarkdownRef}
+                          rows={editWorkspaceView === "split" ? 16 : 24}
+                          value={editForm.markdownContent}
+                          onFocus={() => setEditFocusedField("markdownContent")}
+                          onKeyDown={(event) => handleMarkdownHotkeys(event, applyEditMarkdownFormat)}
+                          onChange={(event) =>
+                            setEditForm((current) =>
+                              current ? { ...current, markdownContent: event.target.value } : current
+                            )
+                          }
+                          className="min-h-[46vh] w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 font-mono text-sm leading-6 dark:border-neutral-700 dark:bg-neutral-950"
+                        />
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {editInsertablePlaceholders.map((placeholder) => (
+                          <button
+                            key={placeholder}
+                            type="button"
+                            onClick={() => insertEditToken(placeholder)}
+                            className="rounded-full border px-3 py-1 text-xs"
+                          >
+                            {`{{${placeholder}}}`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {editForm.contentMode === "manual" && (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void autofillEditManual(false)}
+                          className="rounded-md border px-2 py-1 text-xs"
+                        >
+                          Autofill from template
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void autofillEditManual(true)}
+                          className="rounded-md border px-2 py-1 text-xs"
+                        >
+                          Regenerate starter
+                        </button>
+                      </div>
+                      <textarea
+                        ref={editManualHtmlRef}
+                        rows={editWorkspaceView === "split" ? 9 : 14}
+                        value={editForm.manualHtml}
+                        onFocus={() => setEditFocusedField("manualHtml")}
+                        onChange={(event) =>
+                          setEditForm((current) => (current ? { ...current, manualHtml: event.target.value } : current))
+                        }
+                        className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 font-mono text-sm leading-6 dark:border-neutral-700 dark:bg-neutral-950"
+                        placeholder="Manual HTML"
+                      />
+                      <textarea
+                        ref={editManualTextRef}
+                        rows={editWorkspaceView === "split" ? 9 : 14}
+                        value={editForm.manualText}
+                        onFocus={() => setEditFocusedField("manualText")}
+                        onChange={(event) =>
+                          setEditForm((current) => (current ? { ...current, manualText: event.target.value } : current))
+                        }
+                        className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 font-mono text-sm leading-6 dark:border-neutral-700 dark:bg-neutral-950"
+                        placeholder="Manual text"
+                      />
+
+                      <div className="flex flex-wrap gap-2">
+                        {editInsertablePlaceholders.map((placeholder) => (
+                          <button
+                            key={placeholder}
+                            type="button"
+                            onClick={() => insertEditToken(placeholder)}
+                            className="rounded-full border px-3 py-1 text-xs"
+                          >
+                            {`{{${placeholder}}}`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {editForm.contentMode === "template" && (
+                    <div className="rounded-xl border border-neutral-200 bg-white p-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+                      Campaign uses saved templates only.
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={saveCampaignEdit}
+                      disabled={saving}
+                      className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-neutral-50 dark:text-neutral-900"
+                    >
+                      Save changes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={renderEditPreview}
+                      disabled={saving || editPreviewLoading}
+                      className="rounded-xl border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                    >
+                      {editPreviewLoading ? "Rendering..." : "Preview"}
+                    </button>
+                  </div>
+                  </div>
+                )}
+
+                {editWorkspaceView !== "editor" && (
+                  <div className={cx("space-y-3", editWorkspaceView === "preview" && "min-h-[68vh]")}>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-semibold">Edit preview</div>
+                    <SegmentedControl<PreviewTab>
+                      value={editPreviewTab}
+                      onChange={setEditPreviewTab}
+                      options={[
+                        { value: "subject", label: "Subject" },
+                        { value: "html", label: "HTML" },
+                        { value: "text", label: "Text" },
+                        { value: "starter", label: "Starter" },
+                      ]}
+                    />
+                  </div>
+
+                  {editPreviewLoading && (
+                    <div className="rounded-xl border border-neutral-200 bg-white p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+                      Rendering preview...
+                    </div>
+                  )}
+
+                  {!editPreviewLoading && !editPreview && (
+                    <div className="rounded-xl border border-neutral-200 bg-white p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+                      Live preview will appear as you edit.
+                    </div>
+                  )}
+
+                  {editPreview && editPreviewTab === "subject" && (
+                    <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+                      <div className="text-sm font-semibold">{editPreview.rendered.subject}</div>
+                    </div>
+                  )}
+
+                  {editPreview && editPreviewTab === "html" && (
+                    <HtmlPreviewFrame
+                      html={editPreview.rendered.html}
+                      className={editWorkspaceView === "preview" ? "h-[74vh]" : "h-[560px]"}
+                    />
+                  )}
+
+                  {editPreview && editPreviewTab === "text" && (
+                    <pre
+                      className={cx(
+                        "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-900",
+                        editWorkspaceView === "preview" ? "max-h-[72vh]" : "max-h-[480px]"
+                      )}
+                    >
+                      {editPreview.rendered.text}
+                    </pre>
+                  )}
+
+                  {editPreview && editPreviewTab === "starter" && (
+                    <pre
+                      className={cx(
+                        "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-900",
+                        editWorkspaceView === "preview" ? "max-h-[72vh]" : "max-h-[480px]"
+                      )}
+                    >
+                      {editPreview.starter.markdown}
+                    </pre>
+                  )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </section>
@@ -1093,24 +2149,22 @@ export function NewsletterStudio() {
       {mode === "templates" && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">Template editor</h2>
-                  {templateIsDirty && (
-                    <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-500/15 dark:text-amber-200">
-                      Unsaved
-                    </span>
-                  )}
-                </div>
+                <h2 className="text-lg font-semibold">Template editor</h2>
                 <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                  Templates render on send. Use placeholders like <code className="rounded bg-neutral-100 px-1 py-0.5 dark:bg-neutral-800">{`{{digest_heading}}`}</code>.
+                  Subject, html, text, and markdown starter templates.
                 </p>
               </div>
-
               <select
                 value={activeTemplateType}
-                onChange={(event) => handleTemplateTypeChange(event.target.value as NewsletterType)}
+                onChange={(event) => {
+                  const next = event.target.value as NewsletterType;
+                  setActiveTemplateType(next);
+                  if (templates) setTemplateDraft(templates[next] || null);
+                  else setTemplateDraft(null);
+                  setTemplatePreview(null);
+                }}
                 className="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold dark:border-neutral-700 dark:bg-neutral-950"
               >
                 {NEWSLETTER_TYPES.map((type) => (
@@ -1121,340 +2175,174 @@ export function NewsletterStudio() {
               </select>
             </div>
 
-            {!templateDraft ? (
-              <div className="mt-5 rounded-2xl border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
-                No template loaded for <span className="font-semibold">{activeTemplateType}</span>.
+            {templateDraft && (
+              <div className="mt-4 space-y-3">
+                <label className="space-y-1">
+                  <span className="text-sm font-semibold">Subject template</span>
+                  <input
+                    ref={templateSubjectRef}
+                    value={templateDraft.subjectTemplate}
+                    onFocus={() => setFocusedTemplateField("subjectTemplate")}
+                    onChange={(event) =>
+                      setTemplateDraft((current) => (current ? { ...current, subjectTemplate: event.target.value } : current))
+                    }
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                  />
+                </label>
+
+                <label className="space-y-1">
+                  <span className="text-sm font-semibold">HTML template</span>
+                  <textarea
+                    ref={templateHtmlRef}
+                    rows={7}
+                    value={templateDraft.htmlTemplate}
+                    onFocus={() => setFocusedTemplateField("htmlTemplate")}
+                    onChange={(event) =>
+                      setTemplateDraft((current) => (current ? { ...current, htmlTemplate: event.target.value } : current))
+                    }
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 font-mono text-xs dark:border-neutral-700 dark:bg-neutral-950"
+                  />
+                </label>
+
+                <label className="space-y-1">
+                  <span className="text-sm font-semibold">Text template</span>
+                  <textarea
+                    ref={templateTextRef}
+                    rows={7}
+                    value={templateDraft.textTemplate}
+                    onFocus={() => setFocusedTemplateField("textTemplate")}
+                    onChange={(event) =>
+                      setTemplateDraft((current) => (current ? { ...current, textTemplate: event.target.value } : current))
+                    }
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 font-mono text-xs dark:border-neutral-700 dark:bg-neutral-950"
+                  />
+                </label>
+
+                <label className="space-y-1">
+                  <span className="text-sm font-semibold">Markdown template</span>
+                  <textarea
+                    ref={templateMarkdownRef}
+                    rows={10}
+                    value={templateDraft.markdownTemplate}
+                    onFocus={() => setFocusedTemplateField("markdownTemplate")}
+                    onChange={(event) =>
+                      setTemplateDraft((current) => (current ? { ...current, markdownTemplate: event.target.value } : current))
+                    }
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 font-mono text-xs dark:border-neutral-700 dark:bg-neutral-950"
+                  />
+                </label>
+
+                <div className="flex flex-wrap gap-2">
+                  {templateInsertablePlaceholders.map((placeholder) => (
+                    <button
+                      key={placeholder}
+                      type="button"
+                      onClick={() => insertTemplateToken(placeholder)}
+                      className="rounded-full border px-3 py-1 text-xs"
+                    >
+                      {`{{${placeholder}}}`}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={saveTemplate}
+                    disabled={saving || !templateIsDirty}
+                    className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-neutral-50 dark:text-neutral-900"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={renderTemplatePreview}
+                    disabled={saving}
+                    className="rounded-xl border px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                  >
+                    Preview
+                  </button>
+                </div>
               </div>
-            ) : (
-              <>
-                <div className="mt-5 grid grid-cols-1 gap-4">
-                  <label className="space-y-1">
-                    <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Subject template</span>
-                    <input
-                      ref={subjectTemplateRef}
-                      type="text"
-                      value={templateDraft.subjectTemplate}
-                      onFocus={() => setFocusedTemplateField("subjectTemplate")}
-                      onChange={(event) => setTemplateDraft((current) => (current ? { ...current, subjectTemplate: event.target.value } : current))}
-                      className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
-                    />
-                  </label>
-
-                  <label className="space-y-1">
-                    <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">HTML template</span>
-                    <textarea
-                      ref={htmlTemplateRef}
-                      rows={10}
-                      value={templateDraft.htmlTemplate}
-                      onFocus={() => setFocusedTemplateField("htmlTemplate")}
-                      onChange={(event) => setTemplateDraft((current) => (current ? { ...current, htmlTemplate: event.target.value } : current))}
-                      className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 font-mono text-xs dark:border-neutral-700 dark:bg-neutral-950"
-                    />
-                  </label>
-
-                  <label className="space-y-1">
-                    <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Text template</span>
-                    <textarea
-                      ref={textTemplateRef}
-                      rows={10}
-                      value={templateDraft.textTemplate}
-                      onFocus={() => setFocusedTemplateField("textTemplate")}
-                      onChange={(event) => setTemplateDraft((current) => (current ? { ...current, textTemplate: event.target.value } : current))}
-                      className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 font-mono text-xs dark:border-neutral-700 dark:bg-neutral-950"
-                    />
-                  </label>
-                </div>
-
-                <div className="mt-5 rounded-2xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">Placeholders</div>
-                      <div className="mt-1 text-xs text-neutral-600 dark:text-neutral-300">
-                        Click to insert into the focused field.
-                      </div>
-                    </div>
-                    <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                      Focus: <span className="font-semibold">{focusedTemplateField || "htmlTemplate"}</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {(templatePreview?.placeholders || [
-                      "campaign_subject",
-                      "campaign_type",
-                      "period_days",
-                      "digest_heading",
-                      "digest_summary",
-                      "total_views",
-                      "delta_views",
-                      "digest_items_html",
-                      "digest_items_text",
-                      "recent_news_html",
-                      "recent_news_text",
-                      "unsubscribe_url",
-                      "preferences_url",
-                      "default_html_body",
-                      "default_text_body",
-                      "generated_at_iso",
-                    ]).map((ph) => (
-                      <button
-                        key={ph}
-                        type="button"
-                        onClick={() => insertPlaceholderIntoTemplate(ph)}
-                        className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 transition hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900"
-                      >
-                        {`{{${ph}}}`}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
             )}
           </section>
 
           <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">Preview</h2>
-                <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                  Render the current draft template with a real digest snapshot.
-                </p>
-              </div>
-              <SegmentedControl<PreviewTab>
-                value={templatePreviewTab}
-                onChange={(v) => setTemplatePreviewTab(v)}
-                options={[
-                  { value: "html", label: "HTML" },
-                  { value: "text", label: "Text" },
-                  { value: "subject", label: "Subject" },
-                ]}
-              />
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className="space-y-1">
-                <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Preview subject</span>
-                <input
-                  type="text"
-                  value={templatePreviewContext.campaignSubject}
-                  onChange={(e) => setTemplatePreviewContext((c) => ({ ...c, campaignSubject: e.target.value }))}
-                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Template preview</h2>
+                <SegmentedControl<PreviewTab>
+                  value={templatePreviewTab}
+                  onChange={setTemplatePreviewTab}
+                  options={[
+                    { value: "subject", label: "Subject" },
+                    { value: "html", label: "HTML" },
+                    { value: "text", label: "Text" },
+                    { value: "starter", label: "Starter" },
+                  ]}
                 />
-              </label>
-              <label className="space-y-1">
-                <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Period (days)</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={30}
-                  value={templatePreviewContext.periodDays}
-                  onChange={(e) => setTemplatePreviewContext((c) => ({ ...c, periodDays: Number(e.target.value) || 7 }))}
-                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
-                />
-              </label>
-            </div>
-
-            {!templatePreview && (
-              <div className="mt-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
-                Click <span className="font-semibold">Preview</span> in the top bar to render.
               </div>
-            )}
 
-            {templatePreview && (
-              <div className="mt-4 space-y-3">
-                <details className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-                  <summary className="cursor-pointer px-4 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                    Context
-                  </summary>
-                  <div className="px-4 pb-4">
-                    <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
-                      {templatePreview.context.digest.heading}
-                    </div>
-                    <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                      {templatePreview.context.digest.summary}
-                    </div>
-                    {templatePreview.context.digest.groups && templatePreview.context.digest.groups.length > 0 ? (
-                      <div className="mt-3 space-y-2">
-                        {templatePreview.context.digest.groups.map((group) => (
-                          <div key={group.category}>
-                            <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                              {group.label} ({group.items.length})
-                            </div>
-                            <ul className="mt-1 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
-                              {group.items.map((item, i) => (
-                                <li key={i}>{item.title}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </div>
-                    ) : templatePreview.context.digest.items.length > 0 ? (
-                      <ul className="mt-3 list-inside list-disc text-xs text-neutral-600 dark:text-neutral-300">
-                        {templatePreview.context.digest.items.map((item, i) => (
-                          <li key={i}>{item.title}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </div>
-                </details>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="space-y-1">
+                  <span className="text-sm font-semibold">Preview subject</span>
+                  <input
+                    type="text"
+                    value={templatePreviewContext.campaignSubject}
+                    onChange={(event) =>
+                      setTemplatePreviewContext((current) => ({ ...current, campaignSubject: event.target.value }))
+                    }
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-sm font-semibold">Period (days)</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={templatePreviewContext.periodDays}
+                    onChange={(event) =>
+                      setTemplatePreviewContext((current) => ({ ...current, periodDays: Number(event.target.value) || 7 }))
+                    }
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                  />
+                </label>
+              </div>
 
-                {templatePreviewTab === "subject" && (
-                  <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                      Rendered subject
-                    </div>
-                    <div className="mt-2 text-base font-semibold text-neutral-900 dark:text-neutral-50">
-                      {templatePreview.rendered.subject}
-                    </div>
-                  </div>
-                )}
+              {!templatePreview && (
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm dark:border-neutral-800 dark:bg-neutral-950">
+                  Render a preview to inspect template output.
+                </div>
+              )}
 
-                {templatePreviewTab === "html" && <HtmlPreviewFrame html={templatePreview.rendered.html} />}
+              {templatePreview && templatePreviewTab === "subject" && (
+                <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+                  <div className="text-sm font-semibold">{templatePreview.rendered.subject}</div>
+                </div>
+              )}
 
-                {templatePreviewTab === "text" && (
-                  <pre className="max-h-[520px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs text-neutral-800 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200">
-                    {templatePreview.rendered.text}
+              {templatePreview && templatePreviewTab === "html" && <HtmlPreviewFrame html={templatePreview.rendered.html} />}
+
+              {templatePreview && templatePreviewTab === "text" && (
+                <pre className="max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-950">
+                  {templatePreview.rendered.text}
+                </pre>
+              )}
+
+              {templatePreview && templatePreviewTab === "starter" && (
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                  <pre className="max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-950">
+                    {templatePreview.starter.markdown}
                   </pre>
-                )}
-              </div>
-            )}
+                  <div className="prose prose-sm max-w-none rounded-xl border border-neutral-200 bg-white p-4 dark:prose-invert dark:border-neutral-800 dark:bg-neutral-950">
+                    <ReactMarkdown>{templatePreview.starter.markdown}</ReactMarkdown>
+                  </div>
+                </div>
+              )}
+            </div>
           </section>
         </div>
-      )}
-
-      {mode === "subscribers" && (
-        <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
-                Subscribers{" "}
-                {subscriberTotal > 0 && (
-                  <span className="ml-1 text-sm font-normal text-neutral-500 dark:text-neutral-400">
-                    ({subscriberTotal} total)
-                  </span>
-                )}
-              </h2>
-              <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                View subscriber status, preferences, and history.
-              </p>
-            </div>
-
-            {subscribers.length > 0 && (
-              <div className="flex items-center gap-3 text-sm">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                  {subscribers.filter((s) => s.status === "active").length} active
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                  {subscribers.filter((s) => s.status === "pending").length} pending
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
-                  {subscribers.filter((s) => s.status === "unsubscribed").length} unsubscribed
-                </span>
-              </div>
-            )}
-          </div>
-
-          {subscriberLoading ? (
-            <div className="mt-5 flex items-center justify-center py-12">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-600 dark:border-t-neutral-100" />
-            </div>
-          ) : subscribers.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-neutral-200 bg-neutral-50 p-8 text-center dark:border-neutral-800 dark:bg-neutral-950">
-              <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">No subscribers found.</div>
-              <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                Subscribers will appear here once people sign up for newsletters.
-              </div>
-            </div>
-          ) : (
-            <div className="mt-5 overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-800">
-              <table className="w-full min-w-[1060px] text-sm">
-                <thead className="bg-neutral-50 dark:bg-neutral-950">
-                  <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                    <th className="px-4 py-3">Email</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Preferences</th>
-                    <th className="px-4 py-3">Clicks (7d)</th>
-                    <th className="px-4 py-3">Last Clicked</th>
-                    <th className="px-4 py-3">Subscribed</th>
-                    <th className="px-4 py-3">Source</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subscribers.map((sub) => (
-                    <tr key={sub.id} className="border-t border-neutral-200 align-top dark:border-neutral-800">
-                      <td className="px-4 py-3">
-                        <span className="font-semibold text-neutral-900 dark:text-neutral-50">{sub.email}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={cx(
-                            "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold",
-                            sub.status === "active"
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                              : sub.status === "pending"
-                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                                : "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-400"
-                          )}
-                        >
-                          {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-1">
-                          {sub.preferences
-                            .filter((p) => p.enabled)
-                            .map((p) => (
-                              <span
-                                key={p.type}
-                                className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200"
-                              >
-                                {p.type}
-                              </span>
-                            ))}
-                          {sub.preferences.filter((p) => p.enabled).length === 0 && (
-                            <span className="text-xs text-neutral-400 dark:text-neutral-500">None</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {sub.clicks7d && sub.clicks7d > 0 ? (
-                          <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-200">
-                            {sub.clicks7d}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-neutral-400 dark:text-neutral-500">0</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-neutral-700 dark:text-neutral-200">
-                        {sub.lastClickedLink ? (
-                          <a
-                            href={sub.lastClickedLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={sub.lastClickedLink}
-                            className="text-xs text-blue-600 underline decoration-blue-300 underline-offset-2 hover:text-blue-800 dark:text-blue-400 dark:decoration-blue-600 dark:hover:text-blue-300"
-                          >
-                            {sub.lastClickedLink.length > 40
-                              ? sub.lastClickedLink.slice(0, 40) + "\u2026"
-                              : sub.lastClickedLink}
-                          </a>
-                        ) : (
-                          <span className="text-xs text-neutral-400 dark:text-neutral-500">--</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-neutral-700 dark:text-neutral-200">
-                        {new Date(sub.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3 text-neutral-700 dark:text-neutral-200">
-                        {sub.source || <span className="text-neutral-400 dark:text-neutral-500">--</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
       )}
     </div>
   );
