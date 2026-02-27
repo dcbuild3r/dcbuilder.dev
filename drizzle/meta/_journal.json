@@ -57,6 +57,13 @@
       "when": 1771190114848,
       "tag": "0007_brave_boomer",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1772201420401,
+      "tag": "0008_bitter_mulholland_black",
+      "breakpoints": true
     }
   ]
 }

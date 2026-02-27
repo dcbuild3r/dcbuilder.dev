@@ -2067,6 +2067,39 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
     getNewsletterTemplatePayload(campaignType),
     getRecentNewsSnapshot(8),
   ]);
+
+  // Render a canonical archive version (generic links, no per-user tokens)
+  const archiveLinks = {
+    unsubscribe: `${getBaseUrl()}/newsletters`,
+    preferences: `${getBaseUrl()}/newsletters`,
+  };
+  const archiveRendered = resolveCampaignRenderContent({
+    campaign: {
+      campaignSubject: sendingCampaign.subject,
+      contentMode: sendingContentMode,
+      markdownContent: sendingCampaign.markdownContent,
+      manualHtml: sendingCampaign.manualHtml,
+      manualText: sendingCampaign.manualText,
+    },
+    template: templatePayload,
+    campaignType,
+    periodDays,
+    digest,
+    links: archiveLinks,
+    recentNews,
+    now: new Date(),
+  });
+  if (archiveRendered.ok) {
+    await db
+      .update(newsletterCampaigns)
+      .set({
+        renderedHtml: archiveRendered.data.html,
+        renderedText: archiveRendered.data.text,
+        updatedAt: new Date(),
+      })
+      .where(eq(newsletterCampaigns.id, sendingCampaign.id));
+  }
+
   let sentCount = 0;
   let failedCount = 0;
   let skippedCount = 0;
@@ -2239,4 +2272,49 @@ export async function sendDueNewsletterCampaigns() {
       results,
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Public archive queries
+// ---------------------------------------------------------------------------
+
+export async function listSentNewsletterCampaigns(limit: number = 50) {
+  return db
+    .select({
+      id: newsletterCampaigns.id,
+      subject: newsletterCampaigns.subject,
+      previewText: newsletterCampaigns.previewText,
+      newsletterType: newsletterCampaigns.newsletterType,
+      sentAt: newsletterCampaigns.sentAt,
+    })
+    .from(newsletterCampaigns)
+    .where(eq(newsletterCampaigns.status, "sent"))
+    .orderBy(desc(newsletterCampaigns.sentAt))
+    .limit(limit);
+}
+
+export async function getSentNewsletterCampaignForArchive(id: string) {
+  const [campaign] = await db
+    .select({
+      id: newsletterCampaigns.id,
+      subject: newsletterCampaigns.subject,
+      previewText: newsletterCampaigns.previewText,
+      newsletterType: newsletterCampaigns.newsletterType,
+      sentAt: newsletterCampaigns.sentAt,
+      renderedHtml: newsletterCampaigns.renderedHtml,
+    })
+    .from(newsletterCampaigns)
+    .where(
+      and(
+        eq(newsletterCampaigns.id, id),
+        eq(newsletterCampaigns.status, "sent")
+      )
+    )
+    .limit(1);
+
+  if (!campaign || !campaign.renderedHtml) {
+    return null;
+  }
+
+  return campaign;
 }

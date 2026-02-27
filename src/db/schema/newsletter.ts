@@ -53,6 +53,8 @@ export const newsletterCampaigns = pgTable(
     markdownContent: text("markdown_content"),
     manualHtml: text("manual_html"),
     manualText: text("manual_text"),
+    renderedHtml: text("rendered_html"),
+    renderedText: text("rendered_text"),
     status: text("status").notNull().default("draft"), // draft | scheduled | sending | sent | failed
     periodDays: integer("period_days").notNull().default(7),
     scheduledAt: timestamp("scheduled_at"),

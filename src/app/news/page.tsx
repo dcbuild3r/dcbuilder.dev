@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
 import { NewsGrid } from "@/components/NewsGrid";
+import { NewsletterArchivePreview } from "@/components/NewsletterArchivePreview";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { Recommendations } from "@/components/Recommendations";
 import { getAllNews } from "@/lib/news";
@@ -33,6 +34,7 @@ export default async function NewsPage() {
 
           <div className="mb-8 sm:mb-10 space-y-4">
             <NewsletterSignup />
+            <NewsletterArchivePreview />
             <Recommendations />
           </div>
 
