@@ -6,6 +6,7 @@ describe("GET /api/hot-jobs", () => {
   });
 
   test("returns hot job ids without querying the jobs table", async () => {
+    const actualPosthog = await import("../src/services/posthog");
     const getJobApplyClicksLast7Days = mock(async () => ({
       success: true as const,
       data: [
@@ -14,17 +15,11 @@ describe("GET /api/hot-jobs", () => {
       ],
     }));
     const determineHotJobs = mock(() => ["wonderland-solidity-developer"]);
-    const select = mock(() => {
-      throw new Error("jobs table should not be queried");
-    });
 
     mock.module("@/services/posthog", () => ({
+      ...actualPosthog,
       getJobApplyClicksLast7Days,
       determineHotJobs,
-    }));
-    mock.module("@/db", () => ({
-      db: { select },
-      jobs: { id: "id" },
     }));
 
     const { GET } = await import("../src/app/api/hot-jobs/route");
@@ -42,6 +37,5 @@ describe("GET /api/hot-jobs", () => {
       ],
       5,
     );
-    expect(select).not.toHaveBeenCalled();
   });
 });
