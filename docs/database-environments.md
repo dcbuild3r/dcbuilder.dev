@@ -15,21 +15,23 @@ Create three Supabase projects and copy each connection string:
 - `DATABASE_URL_PROD`
 
 Use direct Postgres URLs for migrations. Keep these values private.
+For local app runtime against Supabase, use a reachable transaction pooler / IPv4-safe URL for `DATABASE_URL`.
 
 ## 2. Local Environment Variables
 
 Set these in your local `.env.local` (or shell):
 
 ```bash
-DATABASE_URL=postgresql://...          # runtime URL for local app
-DATABASE_URL_DEV=postgresql://...      # drizzle migrations target for dev
-DATABASE_URL_STAGING=postgresql://...  # optional locally
-DATABASE_URL_PROD=postgresql://...     # optional locally
+DATABASE_URL=postgresql://...          # runtime URL for local app (Supabase: prefer pooler/pgbouncer URL)
+DATABASE_URL_DEV=postgresql://...      # drizzle migrations target for dev (Supabase: direct connection)
+DATABASE_URL_STAGING=postgresql://...  # optional locally (direct connection for migrations)
+DATABASE_URL_PROD=postgresql://...     # optional locally (direct connection for migrations)
 ```
 
 Notes:
 
 - `DATABASE_URL` is used by app runtime (`src/db/index.ts`).
+- The admin dashboard authenticates against the `api_keys` table, so local admin login depends on the runtime database being reachable.
 - Migration scripts require explicit target (`--env=dev|staging|prod`).
 
 ## 3. Migration Workflow (Developer)

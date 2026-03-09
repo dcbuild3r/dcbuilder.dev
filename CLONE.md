@@ -26,8 +26,8 @@ bun install
 cp .env.example .env.local
 # Edit .env.local with your values
 
-# 4. Push database schema
-bunx drizzle-kit push
+# 4. Apply committed migrations to your dev database
+bun run db:migrate:dev
 
 # 5. Start development server
 bun dev
@@ -66,11 +66,11 @@ Get your connection string from your provider's dashboard.
 #### Initialize Schema
 
 ```bash
-# Push schema to database
-bunx drizzle-kit push
+# Apply committed migration files to your dev database
+bun run db:migrate:dev
 
 # (Optional) Open Drizzle Studio to view/edit data
-bunx drizzle-kit studio
+bun run db:studio
 ```
 
 ### 2. Cloudflare R2 Setup (Image Storage)
@@ -124,8 +124,13 @@ Create `.env.local` with all required variables:
 # REQUIRED
 # ===================
 
-# Database - PostgreSQL connection string
-DATABASE_URL="postgresql://user:password@host:5432/database"
+# Runtime database URL used by the local app.
+# If you use Supabase, prefer the transaction pooler / IPv4-safe URL here.
+DATABASE_URL="postgresql://user:password@host:6543/database?pgbouncer=true"
+
+# Explicit migration target for your development database.
+# If you use Supabase, keep this as the direct connection string.
+DATABASE_URL_DEV="postgresql://user:password@host:5432/database"
 
 # ===================
 # OPTIONAL (but recommended)
@@ -158,7 +163,7 @@ The admin dashboard uses API key authentication stored in the database.
 
 ```bash
 # Open Drizzle Studio
-bunx drizzle-kit studio
+bun run db:studio
 ```
 
 In Drizzle Studio:
@@ -195,7 +200,8 @@ The database schema supports:
 
 To add/modify fields, edit `src/db/schema/*.ts` and run:
 ```bash
-bunx drizzle-kit push
+bun run db:generate
+bun run db:migrate:dev
 ```
 
 ### Features to Enable/Disable
@@ -255,6 +261,7 @@ Works with any platform supporting Next.js:
 │   └── lib/                   # Utilities
 │       ├── r2.ts              # Cloudflare R2 helpers
 │       ├── posthog-api.ts     # PostHog server API
+│       ├── recommendations.ts # Shared recommendation data for /news + newsletters
 │       └── ...                # Other utilities
 ├── content/
 │   └── blog/                  # MDX blog posts
@@ -268,6 +275,7 @@ Works with any platform supporting Next.js:
 - Verify `DATABASE_URL` format: `postgresql://user:pass@host:port/dbname`
 - Check if database is accessible from your network
 - For SSL: append `?sslmode=require` to connection string
+- For Supabase local runtime, use the transaction pooler URL for `DATABASE_URL`; keep direct URLs for `DATABASE_URL_DEV` migrations
 
 ### R2 Upload Failures
 - Verify bucket exists and is public
@@ -282,6 +290,7 @@ Works with any platform supporting Next.js:
 ### Admin Login Issues
 - Verify API key exists in `api_keys` table
 - Check key has `admin:read` permission
+- Ensure the database behind `DATABASE_URL` is reachable; admin auth reads keys from the database, not from an env fallback
 - Clear browser localStorage and try again
 
 ## Commands Reference
@@ -293,12 +302,14 @@ bun run build               # Production build
 bun run start               # Start production server
 
 # Database
-bunx drizzle-kit push       # Push schema changes
-bunx drizzle-kit studio     # Open database GUI
-bunx drizzle-kit generate   # Generate migration files
+bun run db:generate         # Generate migration files
+bun run db:migrate:dev      # Apply migrations to dev database
+bun run db:studio           # Open database GUI
 
 # Testing
+bun run test:unit           # Run Bun unit tests
 bun run test                # Run Playwright tests
+bun run test:all            # Run unit + e2e coverage
 bunx playwright install     # Install browser binaries
 
 # Utilities

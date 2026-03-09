@@ -13,7 +13,8 @@
 ## Information Architecture
 - **Compose**
   - Create campaign drafts (and optional schedule at creation).
-  - Live preview rendered from the saved template for the selected type.
+  - Content modes: Template, Markdown, Manual.
+  - Live preview rendered server-side for the selected type and current content mode.
   - Quick action: auto-create weekly "news" draft (deduped server-side).
 - **Queue**
   - Operational view of existing campaigns.
@@ -32,14 +33,18 @@
   - Subject
   - Preview text (optional)
   - Schedule (optional)
+  - Content mode selector (Template / Markdown / Manual)
 - Actions
   - Create draft (POST campaign)
   - Generate weekly draft (POST auto-create weekly; only valid for `news`)
   - Refresh preview (POST template preview)
+  - Autofill Markdown starter from the current template
 - Preview
-  - Tabs: HTML, Text, Subject
+  - Tabs: HTML, Text, Subject, Starter
   - Uses server rendering, not client interpolation.
   - Displays digest context (heading/summary) to explain why output changed.
+  - Markdown preview should render through the same newsletter shell as Template mode, including avatar/header, digest cards, recommendation block, and footer links.
+  - Auto-preview should only fire when the current mode has enough content to render valid output.
 
 ### Queue
 - Filters
@@ -70,7 +75,11 @@
 - HTML preview should be shown in an `iframe` with `sandbox` enabled.
 - Preview links should open in a new tab (via `<base target="_blank">` in the iframe doc).
 
+## News Page Notes
+- The public `/news` page now uses a compact "News Tools" deck instead of three stacked cards.
+- Desktop keeps archive, subscribe, and recommendations inside a tabbed panel.
+- Mobile keeps the tools collapsed behind a toggle so the news list stays visible higher on the page.
+
 ## Copy/UX Notes
 - Primary CTAs use clear verbs: "Create draft", "Generate weekly draft", "Save", "Preview".
 - Templates show an "Unsaved" indicator when draft differs from persisted data.
-

@@ -22,7 +22,7 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 - **Portfolio**: Investment cards with tiers, status, and category filtering
 - **Jobs**: Filterable job board with HOT/TOP/NEW badges, modal details, and shareable URLs
 - **Candidates**: Candidate directory with modal profiles, skill tags, and availability status
-- **News**: Curated links and portfolio announcements
+- **News**: Curated links, portfolio announcements, and a compact tools deck for the latest issue, subscriptions, and recommendations
 - **Newsletter**: Double opt-in subscriptions, segmented campaigns (`news`/`jobs`/`candidates`), and scheduled sends
 
 ### OpenGraph & Social Sharing
@@ -53,6 +53,7 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 - **Candidates Management**: Profile editor with skills
 - **Investments Management**: Tier and status tracking
 - **News Management**: Curated links and announcements
+- **Newsletter Studio**: Compose, queue, and templates workflow with template, markdown, and manual content modes
 - **Affiliations Management**: About page affiliations
 
 #### Admin Features
@@ -68,6 +69,7 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 - **Analytics**: Real-time PostHog data with skeleton loading
 - **Pulsing Tags**: Animated HOT/TOP badges for featured items
 - **Batch Operations**: Multi-select for bulk updates
+- **Template-Parity Preview**: Markdown newsletter previews render through the same shell and recommendation blocks as template mode
 
 ## Architecture
 
@@ -106,14 +108,17 @@ src/
 ├── services/            # Business logic & External clients (R2, PostHog, Auth)
 └── lib/                 # Shared utilities and helpers
     ├── data.ts          # Shared data fetching (getJobById, getCandidateById, getBaseUrl)
+    ├── recommendations.ts # Shared recommendation data for /news and newsletter content
     ├── shuffle.ts       # Deterministic shuffling and date utilities (isNew, isWithinDays)
     ├── utils.ts         # General utilities (cn for classnames)
     └── *-colors.ts      # Color mappings for skills, sources, tiers
 
-tests/                   # E2E tests (Playwright)
+tests/                   # Bun unit tests and Playwright end-to-end coverage
 
 docs/
 ├── API.md               # API documentation
+├── database-environments.md # Runtime vs migration DB environment guidance
+├── newsletter-studio-ui.md  # Newsletter Studio UX/spec notes
 └── openapi.yaml         # OpenAPI specification
 ```
 
@@ -164,9 +169,15 @@ ALLOW_PROD_MIGRATION=true bun run db:migrate:prod
 # Open Drizzle Studio (DB GUI)
 bun run db:studio
 
+# Run unit tests
+bun run test:unit
+
 # Run Playwright tests
 bunx playwright install  # first time only
 bun run test
+
+# Run all tests
+bun run test:all
 ```
 
 ## Environment Variables
@@ -175,9 +186,11 @@ See [.env.example](./.env.example) for all configuration options.
 
 ```bash
 # Runtime database URL (set per environment in your hosting platform)
+# For Supabase app runtime, prefer the transaction pooler / IPv4-safe URL.
 DATABASE_URL="postgresql://..."
 
 # Explicit migration targets (local + CI)
+# For Supabase migrations, use direct connection strings.
 DATABASE_URL_DEV="postgresql://..."
 DATABASE_URL_STAGING="postgresql://..."
 DATABASE_URL_PROD="postgresql://..."

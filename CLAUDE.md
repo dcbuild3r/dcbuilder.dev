@@ -33,10 +33,10 @@ Never use npm, npx, yarn, or pnpm.
 - `src/components/ui/` - Reusable UI primitives (Badge, Icons, SocialLinks)
 - `src/db/` - Database schema and client (Drizzle)
 - `src/hooks/` - Custom React hooks (useHotCandidates, etc.)
-- `src/lib/` - Utilities (utils, skill-colors, source-colors, r2, posthog-api)
+- `src/lib/` - Utilities (utils, skill-colors, source-colors, r2, posthog-api, recommendations, news-tools)
 - `content/blog/` - MDX blog posts
 - `scripts/` - Utility scripts for data management
-- `tests/` - E2E tests (Playwright)
+- `tests/` - Bun unit tests and Playwright end-to-end coverage
 
 ## Code Style
 
