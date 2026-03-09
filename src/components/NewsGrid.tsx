@@ -6,6 +6,7 @@ import { AggregatedNewsItem } from "@/lib/news";
 import { NewsCategory, categoryLabels } from "@/data/news";
 import { CustomSelect } from "./CustomSelect";
 import { trackNewsClick } from "@/lib/posthog";
+import { useNewsClicks } from "@/hooks/useNewsClicks";
 
 type NewsType = "all" | "blog" | "curated" | "announcement";
 
@@ -45,6 +46,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 	const [categoryFilter, setCategoryFilter] = useState<"all" | NewsCategory>("all");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [failedImageKeys, setFailedImageKeys] = useState<Record<string, true>>({});
+	const { getClickCount, isPopular, loaded: clicksLoaded } = useNewsClicks();
 	const deferredSearchQuery = useDeferredValue(searchQuery);
 	const dateFormatter = useMemo(
 		() =>
@@ -404,6 +406,11 @@ export function NewsGrid({ news }: NewsGridProps) {
 												✨ FRESH
 											</span>
 										)}
+										{clicksLoaded && isPopular(item.id) && (
+											<span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+												🔥 POPULAR
+											</span>
+										)}
 										{isExternalLink(item) && (
 											<svg
 												className="w-4 h-4 flex-shrink-0 text-neutral-400"
@@ -431,6 +438,9 @@ export function NewsGrid({ news }: NewsGridProps) {
 									{/* Meta info */}
 									<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
 										<span>{formatDate(item.date)}</span>
+										{clicksLoaded && getClickCount(item.id) > 0 && (
+											<span>{getClickCount(item.id)} clicks</span>
+										)}
 										{renderCommaSeparatedTokens(item.source, `${item.id}:source`)}
 										{item.company && <span>{item.company}</span>}
 										{item.readingTime && <span>{item.readingTime}</span>}

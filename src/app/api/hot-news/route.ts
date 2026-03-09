@@ -16,9 +16,15 @@ export async function GET() {
   }
 
   const hotNewsIds = determineHotNews(result.data, 5); // Top 5 by clicks
+  const clickCounts: Record<string, number> = {};
+
+  for (const item of result.data) {
+    clickCounts[item.id] = item.count;
+  }
 
   return NextResponse.json({
     hotNewsIds,
+    clickCounts,
     updatedAt: new Date().toISOString(),
   });
 }
