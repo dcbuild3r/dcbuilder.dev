@@ -520,6 +520,60 @@ export async function updatePreferencesByToken(token: string, newsletterTypes: s
   return { ok: true as const };
 }
 
+export async function adminUpdateSubscriberPreferences(subscriberId: string, newsletterTypes: string[]) {
+  const [subscriber] = await db
+    .select()
+    .from(newsletterSubscribers)
+    .where(eq(newsletterSubscribers.id, subscriberId))
+    .limit(1);
+
+  if (!subscriber) {
+    return { ok: false as const, status: 404, error: "Subscriber not found" };
+  }
+
+  const selected = dedupeNewsletterTypes(newsletterTypes);
+  await upsertPreferences(subscriberId, selected);
+
+  const now = new Date();
+  const nextStatus =
+    subscriber.status === "pending"
+      ? "pending"
+      : selected.length > 0
+        ? "active"
+        : "unsubscribed";
+  const nextUnsubscribedAt =
+    subscriber.status === "pending"
+      ? subscriber.unsubscribedAt
+      : selected.length > 0
+        ? null
+        : now;
+
+  await db
+    .update(newsletterSubscribers)
+    .set({
+      status: nextStatus,
+      unsubscribedAt: nextUnsubscribedAt,
+      updatedAt: now,
+    })
+    .where(eq(newsletterSubscribers.id, subscriberId));
+
+  return {
+    ok: true as const,
+    data: {
+      subscriber: {
+        ...subscriber,
+        status: nextStatus,
+        unsubscribedAt: nextUnsubscribedAt,
+        updatedAt: now,
+      },
+      preferences: NEWSLETTER_TYPES.map((newsletterType) => ({
+        newsletterType,
+        enabled: selected.includes(newsletterType),
+      })),
+    },
+  };
+}
+
 export async function unsubscribeByToken(token: string) {
   const record = await getValidToken(token, "unsubscribe");
   if (!record) {

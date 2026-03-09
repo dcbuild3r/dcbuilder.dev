@@ -4,6 +4,15 @@ import ReactMarkdown from "react-markdown";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { ErrorAlert } from "@/components/admin/ActionButtons";
 import { adminFetch, getAdminApiKey } from "@/lib/admin-utils";
+import {
+  buildNewsletterTypes,
+  isPreferenceRowDirty,
+  toPreferenceFlags,
+  toSubscriberDraftRow,
+  type NewsletterSubscriberApiRow,
+  type NewsletterSubscriberPreference,
+  type NewsletterSubscriberRowDraft,
+} from "@/lib/newsletter-subscribers";
 import { canAutoRenderComposePreview } from "@/lib/newsletter-studio";
 
 type NewsletterType = "news" | "jobs" | "candidates";
@@ -11,7 +20,7 @@ type NewsletterContentMode = "template" | "markdown" | "manual";
 type CampaignStatus = "draft" | "scheduled" | "sending" | "sent" | "failed";
 type WorkspaceView = "editor" | "split" | "preview";
 
-type Mode = "compose" | "queue" | "templates";
+type Mode = "compose" | "queue" | "subscribers" | "templates";
 type PreviewTab = "subject" | "html" | "text" | "starter";
 type TemplateFieldKey = "subjectTemplate" | "htmlTemplate" | "textTemplate" | "markdownTemplate";
 type ComposeFieldKey = "markdownContent" | "manualHtml" | "manualText";
@@ -83,6 +92,15 @@ interface NewsletterTemplate {
   htmlTemplate: string;
   textTemplate: string;
   markdownTemplate: string;
+}
+
+interface SubscriberUpdateResult {
+  subscriber: {
+    id: string;
+    email: string;
+    status: string;
+  };
+  preferences: NewsletterSubscriberPreference[];
 }
 
 type CampaignDraft = {
@@ -252,6 +270,43 @@ function StatusPill({ status }: { status: CampaignStatus }) {
   );
 }
 
+function SubscriberStatusPill({ status }: { status: string }) {
+  const styles = {
+    active:
+      "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-200",
+    pending:
+      "border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/15 dark:text-amber-200",
+    unsubscribed:
+      "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200",
+  }[status] || "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200";
+
+  return (
+    <span className={cx("inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize", styles)}>
+      {status}
+    </span>
+  );
+}
+
+function SubscriberPreferenceToggle(props: {
+  checked: boolean;
+  disabled?: boolean;
+  label: string;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="inline-flex cursor-pointer items-center justify-center">
+      <input
+        type="checkbox"
+        aria-label={props.label}
+        checked={props.checked}
+        disabled={props.disabled}
+        onChange={(event) => props.onChange(event.target.checked)}
+        className="h-4 w-4 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-neutral-600 dark:bg-neutral-950"
+      />
+    </label>
+  );
+}
+
 function SegmentedControl<T extends string>(props: {
   value: T;
   onChange: (value: T) => void;
@@ -407,6 +462,9 @@ export function NewsletterStudio() {
 
   const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>([]);
   const [templates, setTemplates] = useState<Record<NewsletterType, NewsletterTemplate> | null>(null);
+  const [subscribers, setSubscribers] = useState<NewsletterSubscriberRowDraft[]>([]);
+  const [subscribersLoading, setSubscribersLoading] = useState(false);
+  const [subscribersLoaded, setSubscribersLoaded] = useState(false);
 
   const [composeForm, setComposeForm] = useState<CampaignDraft>({
     newsletterType: "news",
@@ -509,6 +567,25 @@ export function NewsletterStudio() {
     }
   }, [activeTemplateType]);
 
+  const refreshSubscribers = useCallback(async () => {
+    setSubscribersLoading(true);
+    setError(null);
+
+    const result = await adminFetch<NewsletterSubscriberApiRow[]>("/api/v1/newsletter/subscribers?limit=200", {
+      headers: { "x-api-key": getAdminApiKey() },
+    });
+
+    setSubscribersLoading(false);
+
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+
+    setSubscribers((result.data || []).map((subscriber) => toSubscriberDraftRow(subscriber)));
+    setSubscribersLoaded(true);
+  }, []);
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -517,6 +594,11 @@ export function NewsletterStudio() {
     };
     load();
   }, [refreshData]);
+
+  useEffect(() => {
+    if (mode !== "subscribers" || subscribersLoaded || subscribersLoading) return;
+    void refreshSubscribers();
+  }, [mode, refreshSubscribers, subscribersLoaded, subscribersLoading]);
 
   const sortedCampaigns = useMemo(() => {
     return [...campaigns].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -1289,6 +1371,92 @@ export function NewsletterStudio() {
     setEditForm((current) => (current ? { ...current, contentMode: next } : current));
   };
 
+  const setSubscriberDraftFlag = (subscriberId: string, newsletterType: NewsletterType, enabled: boolean) => {
+    setSubscribers((current) =>
+      current.map((subscriber) =>
+        subscriber.id === subscriberId
+          ? {
+            ...subscriber,
+            draft: { ...subscriber.draft, [newsletterType]: enabled },
+            error: null,
+          }
+          : subscriber
+      )
+    );
+  };
+
+  const resetSubscriberDraft = (subscriberId: string) => {
+    setSubscribers((current) =>
+      current.map((subscriber) =>
+        subscriber.id === subscriberId
+          ? {
+            ...subscriber,
+            draft: { ...subscriber.current },
+            error: null,
+          }
+          : subscriber
+      )
+    );
+  };
+
+  const saveSubscriberDraft = async (subscriberId: string) => {
+    const subscriber = subscribers.find((row) => row.id === subscriberId);
+    if (!subscriber) return;
+
+    setSubscribers((current) =>
+      current.map((row) =>
+        row.id === subscriberId
+          ? {
+            ...row,
+            saving: true,
+            error: null,
+          }
+          : row
+      )
+    );
+
+    const result = await adminFetch<SubscriberUpdateResult>(`/api/v1/newsletter/subscribers/${subscriberId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": getAdminApiKey(),
+      },
+      body: JSON.stringify({ newsletterTypes: buildNewsletterTypes(subscriber.draft) }),
+    });
+
+    if (result.error || !result.data) {
+      setSubscribers((current) =>
+        current.map((row) =>
+          row.id === subscriberId
+            ? {
+              ...row,
+              saving: false,
+              error: result.error || "Unable to update subscriber preferences",
+            }
+            : row
+        )
+      );
+      return;
+    }
+
+    const nextCurrent = toPreferenceFlags(result.data.preferences);
+    setSubscribers((current) =>
+      current.map((row) =>
+        row.id === subscriberId
+          ? {
+            ...row,
+            status: result.data!.subscriber.status,
+            current: nextCurrent,
+            draft: { ...nextCurrent },
+            saving: false,
+            error: null,
+          }
+          : row
+      )
+    );
+    setStatusMessage(`Updated subscriptions for ${subscriber.email}`);
+  };
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
@@ -1304,7 +1472,11 @@ export function NewsletterStudio() {
           message={error}
           onRetry={() => {
             setError(null);
-            refreshData();
+            if (mode === "subscribers") {
+              void refreshSubscribers();
+              return;
+            }
+            void refreshData();
           }}
         />
       )}
@@ -1331,6 +1503,7 @@ export function NewsletterStudio() {
                 options={[
                   { value: "compose", label: "Compose" },
                   { value: "queue", label: "Queue" },
+                  { value: "subscribers", label: "Subscribers" },
                   { value: "templates", label: "Templates" },
                 ]}
               />
@@ -1689,6 +1862,129 @@ export function NewsletterStudio() {
             </div>
           </section>
         </div>
+      )}
+
+      {mode === "subscribers" && (
+        <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Subscribers</h2>
+              <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                One row per subscriber with local toggle drafts for News, Jobs, and Candidates.
+              </p>
+            </div>
+            <div className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-semibold text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
+              {subscribers.length} loaded
+            </div>
+          </div>
+
+          {subscribersLoading && subscribers.length === 0 && (
+            <div className="mt-5 rounded-xl border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
+              Loading subscribers...
+            </div>
+          )}
+
+          {!subscribersLoading && subscribers.length === 0 && (
+            <div className="mt-5 rounded-xl border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
+              No subscribers found.
+            </div>
+          )}
+
+          {subscribers.length > 0 && (
+            <div className="mt-5 overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800">
+              <table className="w-full min-w-[1180px] text-sm">
+                <thead className="bg-neutral-50 dark:bg-neutral-950">
+                  <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                    <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-center">News</th>
+                    <th className="px-4 py-3 text-center">Jobs</th>
+                    <th className="px-4 py-3 text-center">Candidates</th>
+                    <th className="px-4 py-3">Clicks 7d</th>
+                    <th className="px-4 py-3">Last clicked</th>
+                    <th className="px-4 py-3">Created</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscribers.map((subscriber) => {
+                    const isDirty = isPreferenceRowDirty(subscriber.current, subscriber.draft);
+
+                    return (
+                      <tr key={subscriber.id} className="border-t border-neutral-200 align-top dark:border-neutral-800">
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-neutral-900 dark:text-neutral-50">{subscriber.email}</div>
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
+                            {isDirty && (
+                              <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                                Unsaved
+                              </span>
+                            )}
+                            {subscriber.saving && (
+                              <span className="text-xs text-neutral-500 dark:text-neutral-400">Saving...</span>
+                            )}
+                          </div>
+                          {subscriber.error && (
+                            <div className="mt-2 text-xs text-red-700 dark:text-red-300">{subscriber.error}</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <SubscriberStatusPill status={subscriber.status} />
+                        </td>
+                        {NEWSLETTER_TYPES.map((newsletterType) => (
+                          <td key={newsletterType} className="px-4 py-3 text-center">
+                            <SubscriberPreferenceToggle
+                              checked={subscriber.draft[newsletterType]}
+                              disabled={subscriber.saving}
+                              label={`${subscriber.email} ${newsletterType} subscription`}
+                              onChange={(enabled) => setSubscriberDraftFlag(subscriber.id, newsletterType, enabled)}
+                            />
+                          </td>
+                        ))}
+                        <td className="px-4 py-3">{subscriber.clicks7d}</td>
+                        <td className="px-4 py-3">
+                          {subscriber.lastClickedLink ? (
+                            <a
+                              href={subscriber.lastClickedLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="line-clamp-2 break-all text-xs text-indigo-700 underline decoration-indigo-300 underline-offset-2 dark:text-indigo-300"
+                            >
+                              {subscriber.lastClickedLink}
+                            </a>
+                          ) : (
+                            <span className="text-neutral-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">{new Date(subscriber.createdAt).toLocaleString()}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => resetSubscriberDraft(subscriber.id)}
+                              disabled={subscriber.saving || !isDirty}
+                              className="rounded-xl border px-3 py-2 text-xs font-semibold disabled:opacity-50"
+                            >
+                              Reset
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void saveSubscriberDraft(subscriber.id)}
+                              disabled={subscriber.saving || !isDirty}
+                              className="rounded-xl bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50 dark:bg-neutral-50 dark:text-neutral-900"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       )}
 
       {mode === "queue" && (

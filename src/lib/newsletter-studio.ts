@@ -1,4 +1,4 @@
-export type NewsletterStudioMode = "compose" | "queue" | "templates";
+export type NewsletterStudioMode = "compose" | "queue" | "subscribers" | "templates";
 
 export function canAutoRenderComposePreview(input: {
   loading: boolean;
