@@ -28,6 +28,7 @@ import {
   computeViewTotals,
   normalizeNewsletterContentMode,
 } from "@/lib/newsletter-utils";
+import { getRecommendedLinks, OTHER_CONTENT_I_LIKE } from "@/lib/recommendations";
 
 type SendResult = { success: true; messageId: string } | { success: false; error: string };
 
@@ -153,22 +154,7 @@ const LEGACY_NEWS_MARKDOWN_TEMPLATE = `## {{digest_heading}}
 
 const SUBSTACK_SANS_FONT_STACK = "'SF Pro Display', -apple-system, system-ui, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'";
 const MONO_FONT_STACK = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
-
-const RECOMMENDED_NEWSLETTERS: Array<{ name: string; url: string; description: string }> = [
-  { name: "TBPN", url: "https://tbpn.substack.com", description: "Technology Business Programming Network — daily live business & tech podcast by @johncoogan & @jordihays" },
-  { name: "SemiAnalysis", url: "https://semianalysis.com", description: "Deep dives on semiconductors, AI infrastructure, and compute" },
-  { name: "Ethereal News", url: "https://etherealnews.substack.com", description: "Ethereum ecosystem news and analysis" },
-  { name: "ZK Mesh", url: "https://zkmesh.substack.com", description: "Monthly zero-knowledge newsletter (zkmesh+ for premium)" },
-  { name: "dcbuilder.dev/news", url: "https://dcbuilder.dev/news", description: "Older curated links and announcements" },
-  { name: "dcbuilder.dev/blog", url: "https://dcbuilder.dev/blog", description: "Long-form thoughts and writeups" },
-  { name: "@dcbuilder on X", url: "https://x.com/dcbuilder", description: "More curated content on X" },
-];
-
-const OTHER_CONTENT_I_LIKE: Array<{ name: string; url: string; description: string }> = [
-  { name: "Zero Knowledge FM", url: "https://zeroknowledge.fm", description: "Podcast on ZK proofs and the decentralized web" },
-  { name: "TBPN Podcast", url: "https://tbpn.substack.com", description: "Daily live video & audio show on business and tech by @johncoogan & @jordihays" },
-  { name: "Hardcore History", url: "https://www.dancarlin.com/hardcore-history-series", description: "Dan Carlin's epic deep-dives into history" },
-];
+const NEWSLETTER_AVATAR_URL = "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/dcbuilder.png";
 
 const FEATURED_CATEGORIES: Array<{ key: string; label: string }> = [
   { key: "ethereum", label: "Ethereum" },
@@ -807,12 +793,12 @@ function renderDigestItemsText(digest: CampaignDigest) {
 
 function renderWantMoreHtml() {
   const baseUrl = getBaseUrl();
-  const newslettersHtml = RECOMMENDED_NEWSLETTERS.map((nl) =>
-    `<li style="padding:6px 0"><a href="${nl.url}" style="color:#171717;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#d4d4d4;font-weight:600;font-size:14px">${escapeHtml(nl.name)} &rarr;</a><span style="color:#a3a3a3;font-size:13px"> ${escapeHtml(nl.description)}</span></li>`
+  const newslettersHtml = getRecommendedLinks({ includeNewsletterExtras: true }).map((nl) =>
+    `<li style="padding:6px 0"><a href="${toAbsoluteUrl(nl.url)}" style="color:#171717;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#d4d4d4;font-weight:600;font-size:14px">${escapeHtml(nl.name)} &rarr;</a><span style="color:#a3a3a3;font-size:13px"> ${escapeHtml(nl.description)}</span></li>`
   ).join("");
 
   const otherContentHtml = OTHER_CONTENT_I_LIKE.map((item) =>
-    `<li style="padding:6px 0"><a href="${item.url}" style="color:#171717;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#d4d4d4;font-weight:600;font-size:14px">${escapeHtml(item.name)} &rarr;</a><span style="color:#a3a3a3;font-size:13px"> ${escapeHtml(item.description)}</span></li>`
+    `<li style="padding:6px 0"><a href="${toAbsoluteUrl(item.url)}" style="color:#171717;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#d4d4d4;font-weight:600;font-size:14px">${escapeHtml(item.name)} &rarr;</a><span style="color:#a3a3a3;font-size:13px"> ${escapeHtml(item.description)}</span></li>`
   ).join("");
 
   const categoriesHtml = FEATURED_CATEGORIES.map((cat) =>
@@ -845,7 +831,7 @@ function renderDigestHtml(digest: CampaignDigest, links: { unsubscribe: string; 
     <div style="max-width:560px;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#171717;line-height:1.6">
       <div style="padding:32px 0 20px">
         <div style="width:64px;height:64px;border-radius:50%;overflow:hidden">
-          <img src="https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/dcbuilder.png" alt="dcbuilder.eth" width="64" height="64" style="display:block;width:64px;height:64px;object-fit:cover" />
+          <img src="${NEWSLETTER_AVATAR_URL}" alt="dcbuilder.eth" width="64" height="64" style="display:block;width:64px;height:64px;object-fit:cover" />
         </div>
       </div>
       <h1 style="font-size:24px;font-weight:800;margin:0 0 6px;color:#171717">${escapeHtml(digest.heading)}</h1>
@@ -862,11 +848,11 @@ function renderDigestHtml(digest: CampaignDigest, links: { unsubscribe: string; 
 }
 
 function renderWantMoreText() {
-  const newslettersText = RECOMMENDED_NEWSLETTERS.map((nl) =>
-    `- ${nl.name} — ${nl.description} (${nl.url})`
+  const newslettersText = getRecommendedLinks({ includeNewsletterExtras: true }).map((nl) =>
+    `- ${nl.name} — ${nl.description} (${toAbsoluteUrl(nl.url)})`
   ).join("\n");
   const otherText = OTHER_CONTENT_I_LIKE.map((item) =>
-    `- ${item.name} — ${item.description} (${item.url})`
+    `- ${item.name} — ${item.description} (${toAbsoluteUrl(item.url)})`
   ).join("\n");
   const categoriesText = FEATURED_CATEGORIES.map((cat) => cat.label).join(" · ");
   return `\n\nWant to read more?\n\nRecommended newsletters & links:\n${newslettersText}\n\nOther content I like:\n${otherText}\n\nBrowse by topic: ${categoriesText}\n${getBaseUrl()}/news`;
@@ -905,11 +891,11 @@ function renderRecentNewsMarkdown(recentNews: Awaited<ReturnType<typeof getRecen
 
 function renderWantMoreMarkdown() {
   const baseUrl = getBaseUrl();
-  const newslettersMd = RECOMMENDED_NEWSLETTERS.map((nl) =>
-    `- **[${nl.name}](${nl.url})** — ${nl.description}`
+  const newslettersMd = getRecommendedLinks({ includeNewsletterExtras: true }).map((nl) =>
+    `- **[${nl.name}](${toAbsoluteUrl(nl.url)})** — ${nl.description}`
   ).join("\n");
   const otherMd = OTHER_CONTENT_I_LIKE.map((item) =>
-    `- **[${item.name}](${item.url})** — ${item.description}`
+    `- **[${item.name}](${toAbsoluteUrl(item.url)})** — ${item.description}`
   ).join("\n");
   const categoriesMd = FEATURED_CATEGORIES.map((cat) =>
     `\`${cat.label}\``
@@ -939,6 +925,75 @@ function interpolateTemplate(template: string, values: Record<string, string>) {
   return template.replace(/{{\s*([a-z0-9_]+)\s*}}/gi, (_, key: string) => values[key] ?? "");
 }
 
+function stripMarkdownBold(value: string): string {
+  const trimmed = value.trim();
+  const match = trimmed.match(/^\*\*(.+)\*\*$/);
+  return match ? match[1] : trimmed;
+}
+
+function parseMarkdownLink(value: string): { label: string; url: string } | null {
+  const match = value.trim().match(/^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/);
+  if (!match) return null;
+  return { label: match[1], url: match[2] };
+}
+
+function isLikelyMetricPiece(value: string): boolean {
+  return /(?:views?|opens?|clicks?|subscribers?|applications?|applies?)(?:\s|$)/i.test(value.trim());
+}
+
+function renderDigestMarkdownListItem(itemContent: string): string {
+  const parts = itemContent.includes(" · ")
+    ? itemContent.split(" · ").map((part) => part.trim()).filter(Boolean)
+    : itemContent.split(" | ").map((part) => part.trim()).filter(Boolean);
+
+  const linkPart = parts.at(-1);
+  const openLink = linkPart ? parseMarkdownLink(linkPart) : null;
+  const itemUrl = openLink?.label.toLowerCase() === "open" ? openLink.url : undefined;
+  const contentParts = itemUrl ? parts.slice(0, -1) : [...parts];
+  const rawTitle = contentParts.shift() || "Untitled";
+  const titleLink = parseMarkdownLink(stripMarkdownBold(rawTitle));
+  const title = titleLink?.label || stripMarkdownBold(rawTitle);
+  const url = titleLink?.url || itemUrl;
+
+  let metric = "";
+  const subtitleParts: string[] = [];
+
+  for (const part of contentParts) {
+    if (!metric && isLikelyMetricPiece(part)) {
+      metric = part;
+      continue;
+    }
+    subtitleParts.push(part);
+  }
+
+  const titleHtml = url
+    ? `<a href="${url}" style="color:#171717;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#d4d4d4;font-weight:600;font-size:15px">${escapeHtml(title)}</a>`
+    : `<strong style="font-size:15px">${escapeHtml(title)}</strong>`;
+  const subtitle = subtitleParts.join(" · ");
+  const subtitleHtml = subtitle
+    ? `<div style="color:#525252;font-size:14px;margin-top:2px">${renderInlineMarkdown(subtitle)}</div>`
+    : "";
+  const metricHtml = metric
+    ? `<div style="color:#a3a3a3;font-size:12px;margin-top:2px">${escapeHtml(metric)}</div>`
+    : "";
+
+  return `<li style="padding:10px 0;border-bottom:1px solid #f5f5f5">${titleHtml}${subtitleHtml}${metricHtml}</li>`;
+}
+
+function renderWantMoreMarkdownListItem(itemContent: string): string {
+  const emphasizedLinkMatch = itemContent.match(/^\*\*\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)\*\*\s+[—-]\s+(.+)$/);
+  if (emphasizedLinkMatch) {
+    const [, label, url, description] = emphasizedLinkMatch;
+    return `<li style="padding:6px 0"><a href="${url}" style="color:#171717;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#d4d4d4;font-weight:600;font-size:14px">${escapeHtml(label)} &rarr;</a><span style="color:#a3a3a3;font-size:13px"> ${renderInlineMarkdown(description)}</span></li>`;
+  }
+
+  return `<li style="padding:6px 0;font-size:14px;line-height:1.7;color:#525252;">${renderInlineMarkdown(itemContent)}</li>`;
+}
+
+function renderNewsletterFooterHtml(value: string): string {
+  return `<p style="margin:0;font-size:12px;color:#a3a3a3">${renderInlineMarkdown(value.replace(/\s+\|\s+/g, " · "))}</p>`;
+}
+
 function renderInlineMarkdown(value: string): string {
   let html = escapeHtml(value);
 
@@ -950,31 +1005,58 @@ function renderInlineMarkdown(value: string): string {
   return html;
 }
 
-function markdownToHtml(markdown: string): string {
+export function markdownToHtml(markdown: string): string {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const output: string[] = [];
   let paragraphLines: string[] = [];
   let listItems: string[] = [];
-  let listLooksLikeDigest = false;
+  let listMode: "plain" | "digest" | "wantMore" = "plain";
   let quoteLines: string[] = [];
   let inCodeBlock = false;
   let codeLines: string[] = [];
+  let sawPrimaryHeading = false;
+  let expectingSummary = false;
+  let inWantMoreCard = false;
+  let footerHtml = "";
+  let pendingDivider = false;
 
   const flushParagraph = () => {
     if (paragraphLines.length === 0) return;
-    output.push(`<p style="margin:0 0 14px;font-size:16px;line-height:1.75;color:#1f1f1f;">${paragraphLines.join("<br />")}</p>`);
+    const html = paragraphLines.join("<br />");
+
+    if (expectingSummary) {
+      output.push(`<p style="margin:0 0 20px;color:#737373;font-size:15px">${html}</p>`);
+      paragraphLines = [];
+      expectingSummary = false;
+      return;
+    }
+
+    const sectionLabel = !html.includes("href=") ? html.match(/^<strong>(.+)<\/strong>$/) : null;
+    if (inWantMoreCard && sectionLabel) {
+      output.push(`<p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#a3a3a3;text-transform:uppercase;letter-spacing:0.05em">${sectionLabel[1]}</p>`);
+      paragraphLines = [];
+      return;
+    }
+
+    output.push(
+      inWantMoreCard
+        ? `<p style="margin:0 0 14px;font-size:14px;line-height:1.7;color:#525252;">${html}</p>`
+        : `<p style="margin:0 0 14px;font-size:16px;line-height:1.75;color:#1f1f1f;">${html}</p>`
+    );
     paragraphLines = [];
   };
 
   const flushList = () => {
     if (listItems.length === 0) return;
     output.push(
-      listLooksLikeDigest
-        ? `<ul style="margin:0 0 18px;padding:0;list-style:none;">${listItems.join("")}</ul>`
-        : `<ul style="margin:0 0 18px;padding:0 0 0 20px;">${listItems.join("")}</ul>`
+      listMode === "digest"
+        ? `<ul style="list-style:none;padding:0;margin:0">${listItems.join("")}</ul>`
+        : listMode === "wantMore"
+          ? `<ul style="list-style:none;padding:0;margin:0 0 20px">${listItems.join("")}</ul>`
+          : `<ul style="margin:0 0 18px;padding:0 0 0 20px;">${listItems.join("")}</ul>`
     );
     listItems = [];
-    listLooksLikeDigest = false;
+    listMode = "plain";
   };
 
   const flushQuote = () => {
@@ -987,6 +1069,13 @@ function markdownToHtml(markdown: string): string {
     flushParagraph();
     flushList();
     flushQuote();
+  };
+
+  const closeWantMoreCard = () => {
+    if (!inWantMoreCard) return;
+    flushAll();
+    output.push("</div>");
+    inWantMoreCard = false;
   };
 
   for (const rawLine of lines) {
@@ -1003,6 +1092,14 @@ function markdownToHtml(markdown: string): string {
       continue;
     }
 
+    if (trimmed && pendingDivider) {
+      const nextIsWantMore = /^#{1,6}\s+want to read more\??$/i.test(trimmed);
+      if (!nextIsWantMore) {
+        output.push("<hr style=\"border:0;border-top:1px solid #e5e5e5;margin:20px 0;\" />");
+      }
+      pendingDivider = false;
+    }
+
     if (trimmed.startsWith("```")) {
       flushAll();
       inCodeBlock = true;
@@ -1016,7 +1113,7 @@ function markdownToHtml(markdown: string): string {
 
     if (/^(---|\*\*\*)$/.test(trimmed)) {
       flushAll();
-      output.push("<hr style=\"border:0;border-top:1px solid #e5e5e5;margin:20px 0;\" />");
+      pendingDivider = true;
       continue;
     }
 
@@ -1024,9 +1121,25 @@ function markdownToHtml(markdown: string): string {
     if (headingMatch) {
       flushAll();
       const level = headingMatch[1].length;
-      const fontSizeByLevel = [0, 34, 30, 24, 20, 18, 16];
+      const headingText = headingMatch[2].trim();
+      if (!sawPrimaryHeading && level <= 2) {
+        output.push(`<h1 style="font-size:24px;font-weight:800;margin:0 0 6px;color:#171717">${renderInlineMarkdown(headingText)}</h1>`);
+        sawPrimaryHeading = true;
+        expectingSummary = true;
+        continue;
+      }
+
+      if (/^want to read more\??$/i.test(headingText)) {
+        closeWantMoreCard();
+        output.push('<div style="margin:32px 0 0;padding:24px;background:#fafafa;border-radius:12px">');
+        output.push(`<h2 style="font-size:18px;font-weight:800;margin:0 0 16px;color:#171717">${renderInlineMarkdown(headingText)}</h2>`);
+        inWantMoreCard = true;
+        continue;
+      }
+
+      const fontSizeByLevel = [0, 34, 24, 18, 16, 15, 14];
       const headingSize = fontSizeByLevel[level] ?? 16;
-      output.push(`<h${level} style="margin:20px 0 10px;font-family:${SUBSTACK_SANS_FONT_STACK};font-size:${headingSize}px;line-height:1.22;font-weight:700;color:#111111;">${renderInlineMarkdown(headingMatch[2])}</h${level}>`);
+      output.push(`<h${level} style="margin:20px 0 10px;font-family:${SUBSTACK_SANS_FONT_STACK};font-size:${headingSize}px;line-height:1.22;font-weight:700;color:#111111;">${renderInlineMarkdown(headingText)}</h${level}>`);
       continue;
     }
 
@@ -1035,14 +1148,13 @@ function markdownToHtml(markdown: string): string {
       flushParagraph();
       flushQuote();
       const itemContent = listMatch[1];
-      const isDigestItem = itemContent.includes(" · ") || itemContent.includes("|");
+      const isDigestItem = !inWantMoreCard && (itemContent.includes(" · ") || itemContent.includes("|"));
       if (isDigestItem) {
-        listLooksLikeDigest = true;
-        listItems.push(
-          `<li style="margin:0 0 10px;padding:14px 16px;border:1px solid #e5e5e5;background:#fafafa;">
-            <div style="font-size:16px;line-height:1.65;color:#1f1f1f;">${renderInlineMarkdown(itemContent)}</div>
-          </li>`
-        );
+        listMode = "digest";
+        listItems.push(renderDigestMarkdownListItem(itemContent));
+      } else if (inWantMoreCard) {
+        listMode = "wantMore";
+        listItems.push(renderWantMoreMarkdownListItem(itemContent));
       } else {
         listItems.push(`<li style="margin:0 0 10px;font-size:16px;line-height:1.75;color:#1f1f1f;">${renderInlineMarkdown(itemContent)}</li>`);
       }
@@ -1057,6 +1169,15 @@ function markdownToHtml(markdown: string): string {
       continue;
     }
 
+    if (trimmed.includes("[Manage preferences](") && trimmed.includes("[Unsubscribe](")) {
+      flushList();
+      flushQuote();
+      flushParagraph();
+      closeWantMoreCard();
+      footerHtml = renderNewsletterFooterHtml(trimmed);
+      continue;
+    }
+
     flushList();
     flushQuote();
     paragraphLines.push(renderInlineMarkdown(trimmed));
@@ -1066,10 +1187,25 @@ function markdownToHtml(markdown: string): string {
     output.push(`<pre style="margin:0 0 18px;padding:12px 14px;border:1px solid #e5e5e5;background:#fafafa;overflow:auto;"><code style="font-family:${MONO_FONT_STACK};font-size:13px;line-height:1.6;color:#171717;">${escapeHtml(codeLines.join("\n"))}</code></pre>`);
   }
 
+  if (pendingDivider) {
+    output.push("<hr style=\"border:0;border-top:1px solid #e5e5e5;margin:20px 0;\" />");
+  }
+
   flushAll();
+  closeWantMoreCard();
   const html = output.join("\n").trim();
   if (!html) return "";
-  return `<div style="font-family:${SUBSTACK_SANS_FONT_STACK};color:#111111;">${html}</div>`;
+  return `
+    <div style="max-width:560px;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#171717;line-height:1.6">
+      <div style="padding:32px 0 20px">
+        <div style="width:64px;height:64px;border-radius:50%;overflow:hidden">
+          <img src="${NEWSLETTER_AVATAR_URL}" alt="dcbuilder.eth" width="64" height="64" style="display:block;width:64px;height:64px;object-fit:cover" />
+        </div>
+      </div>
+      ${html}
+      ${footerHtml ? `<hr style="border:none;border-top:1px solid #e5e5e5;margin:32px 0 16px" />${footerHtml}` : ""}
+    </div>
+  `.trim();
 }
 
 function htmlToText(html: string): string {
@@ -1964,7 +2100,7 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
   if (campaign.status === "sent") {
     return { ok: true as const, data: { campaign, sent: 0, failed: 0, skipped: 0, alreadySent: true } };
   }
-  if (campaign.status === "sending") {
+  if (campaign.status === "sending" && !force) {
     return { ok: false as const, status: 409, error: "Campaign is already being sent" };
   }
   if (!force && campaign.status === "scheduled" && campaign.scheduledAt && campaign.scheduledAt > new Date()) {

@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { ErrorAlert } from "@/components/admin/ActionButtons";
 import { adminFetch, getAdminApiKey } from "@/lib/admin-utils";
+import { canAutoRenderComposePreview } from "@/lib/newsletter-studio";
 
 type NewsletterType = "news" | "jobs" | "candidates";
 type NewsletterContentMode = "template" | "markdown" | "manual";
@@ -634,14 +635,14 @@ export function NewsletterStudio() {
   }, [composeForm, requestCampaignPreview]);
 
   useEffect(() => {
-    if (mode !== "compose") return;
+    if (!canAutoRenderComposePreview({ loading, mode, draft: composeForm })) return;
 
     const handle = setTimeout(() => {
       void renderComposePreview();
     }, 250);
 
     return () => clearTimeout(handle);
-  }, [mode, renderComposePreview]);
+  }, [loading, mode, renderComposePreview]);
 
   const closeEditPanel = useCallback(
     (force = false) => {
@@ -1801,7 +1802,7 @@ export function NewsletterStudio() {
                             <button
                               type="button"
                               onClick={() => sendNow(campaign.id)}
-                              disabled={saving || campaign.status === "sent" || campaign.status === "sending"}
+                              disabled={saving || campaign.status === "sent"}
                               className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
                             >
                               Send now

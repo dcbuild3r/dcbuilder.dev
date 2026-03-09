@@ -1,21 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-const RECOMMENDED_LINKS = [
-  { name: "TBPN", url: "https://tbpn.substack.com", description: "Technology Business Programming Network — daily live business & tech podcast by @johncoogan & @jordihays" },
-  { name: "SemiAnalysis", url: "https://semianalysis.com", description: "Deep dives on semiconductors, AI infrastructure, and compute" },
-  { name: "Ethereal News", url: "https://etherealnews.substack.com", description: "Ethereum ecosystem news and analysis" },
-  { name: "ZK Mesh", url: "https://zkmesh.substack.com", description: "Monthly zero-knowledge newsletter (zkmesh+ for premium)" },
-  { name: "dcbuilder.dev/blog", url: "/blog", description: "Long-form thoughts and writeups" },
-  { name: "@dcbuilder on X", url: "https://x.com/dcbuilder", description: "More curated content on X" },
-] as const;
-
-const OTHER_CONTENT = [
-  { name: "Zero Knowledge FM", url: "https://zeroknowledge.fm", description: "Podcast on ZK proofs and the decentralized web" },
-  { name: "TBPN Podcast", url: "https://tbpn.substack.com", description: "Daily live video & audio show on business and tech by @johncoogan & @jordihays" },
-  { name: "Hardcore History", url: "https://www.dancarlin.com/hardcore-history-series", description: "Dan Carlin's epic deep-dives into history" },
-] as const;
+import { getRecommendedLinks, OTHER_CONTENT_I_LIKE } from "@/lib/recommendations";
 
 function ExternalIcon() {
   return (
@@ -52,6 +38,7 @@ function LinkItem({ item }: { item: { name: string; url: string; description: st
 
 export function Recommendations() {
   const [isOpen, setIsOpen] = useState(false);
+  const recommendedLinks = getRecommendedLinks();
 
   return (
     <section className="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 sm:p-6 bg-neutral-50 dark:bg-neutral-900/40">
@@ -81,7 +68,7 @@ export function Recommendations() {
               Recommended newsletters &amp; links
             </h3>
             <div className="space-y-2">
-              {RECOMMENDED_LINKS.map((item) => (
+              {recommendedLinks.map((item) => (
                 <LinkItem key={item.name} item={item} />
               ))}
             </div>
@@ -92,7 +79,7 @@ export function Recommendations() {
               Other content I like
             </h3>
             <div className="space-y-2">
-              {OTHER_CONTENT.map((item) => (
+              {OTHER_CONTENT_I_LIKE.map((item) => (
                 <LinkItem key={item.name} item={item} />
               ))}
             </div>
