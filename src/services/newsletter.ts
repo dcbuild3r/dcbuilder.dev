@@ -1223,6 +1223,19 @@ function htmlToText(html: string): string {
     .trim();
 }
 
+function markdownToText(markdown: string): string {
+  return markdown
+    .replace(/\r\n/g, "\n")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, "$1 ($2)")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/^>\s?/gm, "")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 async function getRecentNewsSnapshot(limit: number = 8) {
   const allNews = await getAllNews();
   return allNews.slice(0, limit).map((item) => ({
@@ -1471,7 +1484,7 @@ function resolveCampaignRenderContent(params: {
     }
 
     const html = markdownToHtml(renderedMarkdown);
-    const text = htmlToText(html);
+    const text = markdownToText(renderedMarkdown);
     return {
       ok: true as const,
       data: {
@@ -2167,7 +2180,12 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
   if (recipients.length === 0) {
     await db
       .update(newsletterCampaigns)
-      .set({ status: campaign.status, updatedAt: new Date() })
+      .set({
+        status: "failed",
+        sentAt: null,
+        failureReason: "No active recipients for this campaign type",
+        updatedAt: new Date(),
+      })
       .where(eq(newsletterCampaigns.id, sendingCampaign.id));
     return { ok: false as const, status: 409, error: "No active recipients for this campaign type" };
   }
