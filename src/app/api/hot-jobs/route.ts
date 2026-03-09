@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { getJobApplyClicksLast7Days, determineHotJobs } from "@/services/posthog";
-import { db, jobs } from "@/db";
-import { inArray } from "drizzle-orm";
 
 export const revalidate = 3600; // Cache for 1 hour
 
@@ -17,15 +15,7 @@ export async function GET() {
     );
   }
 
-  // PostHog can contain stale job IDs; filter to jobs that still exist.
-  const ids = result.data.map((c) => c.id);
-  const existing = ids.length
-    ? await db.select({ id: jobs.id }).from(jobs).where(inArray(jobs.id, ids))
-    : [];
-  const existingSet = new Set(existing.map((r) => r.id));
-  const filteredClicks = result.data.filter((c) => existingSet.has(c.id));
-
-  const hotJobIds = determineHotJobs(filteredClicks, 5); // Top 5% by clicks
+  const hotJobIds = determineHotJobs(result.data, 5); // Top 5% by clicks
 
   return NextResponse.json({
     hotJobIds,
