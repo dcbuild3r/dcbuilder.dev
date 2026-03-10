@@ -13,7 +13,10 @@ import {
   type NewsletterSubscriberPreference,
   type NewsletterSubscriberRowDraft,
 } from "@/lib/newsletter-subscribers";
-import { canAutoRenderComposePreview } from "@/lib/newsletter-studio";
+import {
+  canAutoRenderComposePreview,
+  shouldLoadSubscribersOnModeChange,
+} from "@/lib/newsletter-studio";
 
 type NewsletterType = "news" | "jobs" | "candidates";
 type NewsletterContentMode = "template" | "markdown" | "manual";
@@ -595,10 +598,18 @@ export function NewsletterStudio() {
     load();
   }, [refreshData]);
 
-  useEffect(() => {
-    if (mode !== "subscribers" || subscribersLoaded || subscribersLoading) return;
-    void refreshSubscribers();
-  }, [mode, refreshSubscribers, subscribersLoaded, subscribersLoading]);
+  const handleModeChange = useCallback((next: Mode) => {
+    setMode(next);
+    if (
+      shouldLoadSubscribersOnModeChange({
+        nextMode: next,
+        subscribersLoaded,
+        subscribersLoading,
+      })
+    ) {
+      void refreshSubscribers();
+    }
+  }, [refreshSubscribers, subscribersLoaded, subscribersLoading]);
 
   const sortedCampaigns = useMemo(() => {
     return [...campaigns].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -724,7 +735,7 @@ export function NewsletterStudio() {
     }, 250);
 
     return () => clearTimeout(handle);
-  }, [loading, mode, renderComposePreview]);
+  }, [composeForm, loading, mode, renderComposePreview]);
 
   const closeEditPanel = useCallback(
     (force = false) => {
@@ -1499,7 +1510,7 @@ export function NewsletterStudio() {
             <div className="flex items-center gap-2">
               <SegmentedControl<Mode>
                 value={mode}
-                onChange={(next) => setMode(next)}
+                onChange={handleModeChange}
                 options={[
                   { value: "compose", label: "Compose" },
                   { value: "queue", label: "Queue" },

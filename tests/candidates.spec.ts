@@ -1,4 +1,7 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
+
+const candidateCards = (page: Page) =>
+  page.locator('[data-testid="candidate-card"]');
 
 test.describe("Candidates Page", () => {
   test.beforeEach(async ({ page }) => {
@@ -114,7 +117,7 @@ test.describe("HOT/TOP Badge Display", () => {
 
   test("should display both HOT and TOP badges when candidate has both tags", async ({ page }) => {
     // Find cards that have both badges
-    const cards = page.locator('.rounded-xl.border');
+    const cards = candidateCards(page);
     const cardCount = await cards.count();
 
     for (let i = 0; i < cardCount; i++) {
@@ -142,7 +145,7 @@ test.describe("HOT/TOP Badge Display", () => {
     });
 
     // Find cards with HOT badge
-    const hotCards = page.locator('.rounded-xl.border:has(span:has-text("🔥 HOT"))');
+    const hotCards = candidateCards(page).filter({ has: page.locator('span:has-text("🔥 HOT")') });
     const count = await hotCards.count();
 
     if (count > 0) {
@@ -169,13 +172,13 @@ test.describe("HOT/TOP Badge Display", () => {
         await page.waitForTimeout(300);
 
         // All visible candidates should have the hot tag badge
-        const candidateCards = page.locator('.rounded-xl.border');
-        const count = await candidateCards.count();
+        const cards = candidateCards(page);
+        const count = await cards.count();
 
         // If there are results, each should have HOT badge
         if (count > 0) {
           for (let i = 0; i < Math.min(count, 3); i++) {
-            const card = candidateCards.nth(i);
+            const card = cards.nth(i);
             await expect(card.locator('span:has-text("🔥 HOT")')).toBeVisible();
           }
         }
@@ -200,13 +203,13 @@ test.describe("HOT/TOP Badge Display", () => {
         await page.waitForTimeout(300);
 
         // All visible candidates should have the top tag badge
-        const candidateCards = page.locator('.rounded-xl.border');
-        const count = await candidateCards.count();
+        const cards = candidateCards(page);
+        const count = await cards.count();
 
         // If there are results, each should have TOP badge
         if (count > 0) {
           for (let i = 0; i < Math.min(count, 3); i++) {
-            const card = candidateCards.nth(i);
+            const card = cards.nth(i);
             await expect(card.locator('span:has-text("✨ TOP")')).toBeVisible();
           }
         }
@@ -252,7 +255,7 @@ test.describe("Candidate Card Expanded View Badges", () => {
 
   test("expanded view header should have correct gradient for HOT candidates", async ({ page }) => {
     // Find a HOT candidate card
-    const hotCard = page.locator('.rounded-xl.border:has(span:has-text("🔥 HOT"))').first();
+    const hotCard = candidateCards(page).filter({ has: page.locator('span:has-text("🔥 HOT")') }).first();
 
     if (await hotCard.isVisible()) {
       // Click View Details
@@ -277,7 +280,7 @@ test.describe("Candidate Card Expanded View Badges", () => {
     ).catch(() => {});
 
     // Find a card that has TOP but not HOT badge
-    const cards = page.locator('.rounded-xl.border');
+    const cards = candidateCards(page);
     const cardCount = await cards.count();
 
     for (let i = 0; i < cardCount; i++) {

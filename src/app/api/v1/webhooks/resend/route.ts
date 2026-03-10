@@ -19,8 +19,6 @@ interface ResendWebhookPayload {
   };
 }
 
-const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;
-
 function verifySvixSignature(secret: string, msgId: string, timestamp: string, body: string, signatures: string): boolean {
   const toSign = `${msgId}.${timestamp}.${body}`;
   // Svix secrets are base64-encoded with "whsec_" prefix
@@ -40,17 +38,23 @@ function verifySvixSignature(secret: string, msgId: string, timestamp: string, b
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
+  const resendWebhookSecret = process.env.RESEND_WEBHOOK_SECRET;
 
-  if (RESEND_WEBHOOK_SECRET) {
-    const svixId = request.headers.get("svix-id");
-    const svixTimestamp = request.headers.get("svix-timestamp");
-    const svixSignature = request.headers.get("svix-signature");
-    if (!svixId || !svixTimestamp || !svixSignature) {
-      return NextResponse.json({ error: "Missing signature headers" }, { status: 401 });
-    }
-    if (!verifySvixSignature(RESEND_WEBHOOK_SECRET, svixId, svixTimestamp, body, svixSignature)) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
+  if (!resendWebhookSecret) {
+    return NextResponse.json(
+      { error: "RESEND_WEBHOOK_SECRET is not configured" },
+      { status: 503 }
+    );
+  }
+
+  const svixId = request.headers.get("svix-id");
+  const svixTimestamp = request.headers.get("svix-timestamp");
+  const svixSignature = request.headers.get("svix-signature");
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    return NextResponse.json({ error: "Missing signature headers" }, { status: 401 });
+  }
+  if (!verifySvixSignature(resendWebhookSecret, svixId, svixTimestamp, body, svixSignature)) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
   let payload: ResendWebhookPayload;

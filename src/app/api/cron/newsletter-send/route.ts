@@ -13,12 +13,43 @@ function isAuthorized(request: Request): boolean {
   return token === configuredSecret;
 }
 
+function getSendFailures(results: Array<{ campaignId: string; result: unknown }>) {
+  return results.flatMap((entry) => {
+    const result = entry.result as
+      | { ok: false; error: string }
+      | { ok: true; data?: { failed?: number } };
+
+    if (!result?.ok) {
+      return `${entry.campaignId}: ${result?.error || "unknown send failure"}`;
+    }
+
+    const failedRecipients = typeof result.data?.failed === "number" ? result.data.failed : 0;
+    if (failedRecipients > 0) {
+      return `${entry.campaignId}: ${failedRecipients} recipient(s) failed`;
+    }
+
+    return [];
+  });
+}
+
 export async function POST(request: Request) {
   if (!isAuthorized(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const result = await sendDueNewsletterCampaigns();
+  const failedCampaigns = getSendFailures(result.data.results);
+  if (failedCampaigns.length > 0) {
+    return Response.json(
+      {
+        error: `Newsletter send failures: ${failedCampaigns.join("; ")}`,
+        ...result.data,
+        failedCampaigns,
+      },
+      { status: 500 }
+    );
+  }
+
   return Response.json(result.data);
 }
 

@@ -97,7 +97,9 @@ describe("sendDueNewsletterCampaigns", () => {
       getAllNews: async () => [],
     }));
 
-    const { sendDueNewsletterCampaigns } = await import("../src/services/newsletter");
+    const { sendDueNewsletterCampaigns } = await import(
+      `../src/services/newsletter?newsletter-send-test=${Date.now()}`
+    );
     const result = await sendDueNewsletterCampaigns();
 
     expect(result.ok).toBe(true);

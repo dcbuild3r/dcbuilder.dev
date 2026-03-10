@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { canAutoRenderComposePreview } from "../src/lib/newsletter-studio";
+import {
+  canAutoRenderComposePreview,
+  shouldLoadSubscribersOnModeChange,
+} from "../src/lib/newsletter-studio";
 
 describe("canAutoRenderComposePreview", () => {
   test("waits for the studio data load to finish before auto-rendering preview", () => {
@@ -68,5 +71,39 @@ describe("canAutoRenderComposePreview", () => {
         draft: { contentMode: "manual", markdownContent: "", manualHtml: "<p>Hello</p>", manualText: "Hello" },
       })
     ).toBe(true);
+  });
+
+  test("loads subscribers only when entering the subscribers mode without cached data", () => {
+    expect(
+      shouldLoadSubscribersOnModeChange({
+        nextMode: "subscribers",
+        subscribersLoaded: false,
+        subscribersLoading: false,
+      })
+    ).toBe(true);
+
+    expect(
+      shouldLoadSubscribersOnModeChange({
+        nextMode: "subscribers",
+        subscribersLoaded: true,
+        subscribersLoading: false,
+      })
+    ).toBe(false);
+
+    expect(
+      shouldLoadSubscribersOnModeChange({
+        nextMode: "subscribers",
+        subscribersLoaded: false,
+        subscribersLoading: true,
+      })
+    ).toBe(false);
+
+    expect(
+      shouldLoadSubscribersOnModeChange({
+        nextMode: "queue",
+        subscribersLoaded: false,
+        subscribersLoading: false,
+      })
+    ).toBe(false);
   });
 });

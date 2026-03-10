@@ -24,3 +24,15 @@ export function canAutoRenderComposePreview(input: {
 
   return input.draft.manualHtml.trim().length > 0 && input.draft.manualText.trim().length > 0;
 }
+
+export function shouldLoadSubscribersOnModeChange(input: {
+  nextMode: NewsletterStudioMode;
+  subscribersLoaded: boolean;
+  subscribersLoading: boolean;
+}) {
+  return (
+    input.nextMode === "subscribers" &&
+    !input.subscribersLoaded &&
+    !input.subscribersLoading
+  );
+}

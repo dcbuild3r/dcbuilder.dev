@@ -209,6 +209,7 @@ POSTHOG_PROJECT_ID="..."
 
 # Newsletter delivery (Resend)
 RESEND_API_KEY="re_..."
+RESEND_WEBHOOK_SECRET="whsec_..."
 NEWSLETTER_FROM_EMAIL="newsletter@yourdomain.com"
 NEWSLETTER_REPLY_TO="hello@yourdomain.com"
 
@@ -226,6 +227,7 @@ Required GitHub environment secrets (recommended in `production` environment):
 
 - `CRON_SECRET` (required)
 - `CRON_BASE_URL` (optional, defaults to `https://dcbuilder.dev`)
+- `RESEND_WEBHOOK_SECRET` (required for `POST /api/v1/webhooks/resend`)
 
 ## Database Environments (Supabase + Drizzle)
 
