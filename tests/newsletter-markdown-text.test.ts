@@ -6,6 +6,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
   });
 
   test("preserves links in rendered text output", async () => {
+    const actualPosthog = await import("../src/services/posthog");
     mock.module("@/db", () => ({
       db: {
         select: () => ({
@@ -27,6 +28,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
       newsletterUnsubTokens: {},
     }));
     mock.module("@/services/posthog", () => ({
+      ...actualPosthog,
       getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
       getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
       getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),

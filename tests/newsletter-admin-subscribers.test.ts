@@ -73,6 +73,7 @@ describe("adminUpdateSubscriberPreferences", () => {
   });
 
   test("updates subscriber status without auto-confirming pending subscribers", async () => {
+    const actualPosthog = await import("../src/services/posthog");
     const state: MockState = {
       subscriber: null,
       preferences: [],
@@ -128,6 +129,7 @@ describe("adminUpdateSubscriberPreferences", () => {
       newsletterUnsubTokens: {},
     }));
     mock.module("@/services/posthog", () => ({
+      ...actualPosthog,
       getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
       getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
       getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),

@@ -22,6 +22,7 @@ describe("sendDueNewsletterCampaigns", () => {
   });
 
   test("marks scheduled campaigns with zero recipients as failed", async () => {
+    const actualPosthog = await import("../src/services/posthog");
     const selectQueue = [
       [{ id: "camp-1" }],
       [{
@@ -89,6 +90,7 @@ describe("sendDueNewsletterCampaigns", () => {
       newsletterUnsubTokens: {},
     }));
     mock.module("@/services/posthog", () => ({
+      ...actualPosthog,
       getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
       getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
       getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
