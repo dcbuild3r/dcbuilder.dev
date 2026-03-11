@@ -22,14 +22,19 @@ describe("newsletter template fallbacks", () => {
     const { listNewsletterTemplates } = await import(
       `../src/services/newsletter?newsletter-templates-fallback=${Date.now()}`
     );
-    const templates = await listNewsletterTemplates();
+    const templates: Awaited<ReturnType<typeof listNewsletterTemplates>> =
+      await listNewsletterTemplates();
 
     expect(templates).toHaveLength(3);
-    expect(templates.map((template) => template.newsletterType)).toEqual([
+    expect(
+      templates.map((template: { newsletterType: string }) => template.newsletterType)
+    ).toEqual([
       "news",
       "jobs",
       "candidates",
     ]);
-    expect(templates.every((template) => template.markdownTemplate.length > 0)).toBe(true);
+    expect(
+      templates.every((template: { markdownTemplate: string }) => template.markdownTemplate.length > 0)
+    ).toBe(true);
   });
 });
