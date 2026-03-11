@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local worktree and generated output directories should not be linted.
+    "worktrees/**",
+    ".worktrees/**",
+    "test-results/**",
+    ".vercel/**",
   ]),
 ]);
 
