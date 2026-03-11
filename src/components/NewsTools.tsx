@@ -1,11 +1,12 @@
-import { listSentNewsletterCampaigns } from "@/services/newsletter";
+import { loadPublicNewsletterArchive } from "@/lib/newsletter-archive";
 import { NewsToolsClient } from "@/components/NewsToolsClient";
 
 export async function NewsTools() {
-  const campaigns = await listSentNewsletterCampaigns(4);
+  const { available, campaigns } = await loadPublicNewsletterArchive(4);
 
   return (
     <NewsToolsClient
+      archiveAvailable={available}
       campaigns={campaigns.map((campaign) => ({
         id: campaign.id,
         subject: campaign.subject,
