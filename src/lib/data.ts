@@ -89,6 +89,7 @@ export async function getCuratedLinksFromDB(): Promise<CuratedLink[]> {
     title: link.title,
     url: link.url,
     source: link.source,
+    sourceImage: link.sourceImage || undefined,
     date: link.date.toISOString().split("T")[0],
     description: link.description || undefined,
     category: link.category as CuratedLink["category"],

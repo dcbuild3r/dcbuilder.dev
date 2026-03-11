@@ -1,0 +1,49 @@
+name: Newsletter Issue Create (Weekly)
+
+on:
+  schedule:
+    # Monday 14:00 UTC
+    - cron: "0 14 * * 1"
+  workflow_dispatch:
+
+jobs:
+  create-weekly-newsletter-issue:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    concurrency:
+      group: newsletter-issue-create
+      cancel-in-progress: false
+
+    steps:
+      - name: Trigger newsletter issue creation cron endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          CRON_BASE_URL: ${{ secrets.CRON_BASE_URL }}
+        run: |
+          if [ -z "${CRON_SECRET:-}" ]; then
+            echo "Missing required secret: CRON_SECRET"
+            exit 1
+          fi
+
+          BASE_URL="${CRON_BASE_URL:-https://dcbuilder.dev}"
+          ENDPOINT="${BASE_URL%/}/api/cron/newsletter-issue-create"
+          RESPONSE_FILE="$(mktemp)"
+
+          STATUS_CODE="$(curl -sS \
+            -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -o "${RESPONSE_FILE}" \
+            -w "%{http_code}" \
+            "${ENDPOINT}")"
+
+          echo "Endpoint: ${ENDPOINT}"
+          echo "Status: ${STATUS_CODE}"
+          cat "${RESPONSE_FILE}"
+
+          if [ "${STATUS_CODE}" -lt 200 ] || [ "${STATUS_CODE}" -ge 300 ]; then
+            echo "Newsletter issue creation failed."
+            exit 1
+          fi

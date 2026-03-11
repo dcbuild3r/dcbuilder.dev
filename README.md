@@ -22,7 +22,8 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 - **Portfolio**: Investment cards with tiers, status, and category filtering
 - **Jobs**: Filterable job board with HOT/TOP/NEW badges, modal details, and shareable URLs
 - **Candidates**: Candidate directory with modal profiles, skill tags, and availability status
-- **News**: Curated links and portfolio announcements
+- **News**: Curated links, portfolio announcements, and a compact tools deck for the latest issue, subscriptions, and recommendations
+- **Newsletter**: Double opt-in subscriptions, segmented campaigns (`news`/`jobs`/`candidates`), and scheduled sends
 
 ### OpenGraph & Social Sharing
 
@@ -52,6 +53,7 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 - **Candidates Management**: Profile editor with skills
 - **Investments Management**: Tier and status tracking
 - **News Management**: Curated links and announcements
+- **Newsletter Studio**: Compose, queue, and templates workflow with template, markdown, and manual content modes
 - **Affiliations Management**: About page affiliations
 
 #### Admin Features
@@ -67,6 +69,7 @@ Personal site built with Next.js (App Router) for dcbuilder.eth. Features a home
 - **Analytics**: Real-time PostHog data with skeleton loading
 - **Pulsing Tags**: Animated HOT/TOP badges for featured items
 - **Batch Operations**: Multi-select for bulk updates
+- **Template-Parity Preview**: Markdown newsletter previews render through the same shell and recommendation blocks as template mode
 
 ## Architecture
 
@@ -105,14 +108,17 @@ src/
 ├── services/            # Business logic & External clients (R2, PostHog, Auth)
 └── lib/                 # Shared utilities and helpers
     ├── data.ts          # Shared data fetching (getJobById, getCandidateById, getBaseUrl)
+    ├── recommendations.ts # Shared recommendation data for /news and newsletter content
     ├── shuffle.ts       # Deterministic shuffling and date utilities (isNew, isWithinDays)
     ├── utils.ts         # General utilities (cn for classnames)
     └── *-colors.ts      # Color mappings for skills, sources, tiers
 
-tests/                   # E2E tests (Playwright)
+tests/                   # Bun unit tests and Playwright end-to-end coverage
 
 docs/
 ├── API.md               # API documentation
+├── database-environments.md # Runtime vs migration DB environment guidance
+├── newsletter-studio-ui.md  # Newsletter Studio UX/spec notes
 └── openapi.yaml         # OpenAPI specification
 ```
 
@@ -150,16 +156,28 @@ bun run start
 
 # Lint
 bun run lint
+# Note: Next.js v16 no longer ships a `next lint` command; use ESLint directly.
 
-# Run database migrations
-bunx drizzle-kit push
+# Generate SQL migrations from schema changes
+bun run db:generate
+
+# Apply migration files (explicit target required)
+bun run db:migrate:dev
+bun run db:migrate:staging
+ALLOW_PROD_MIGRATION=true bun run db:migrate:prod
 
 # Open Drizzle Studio (DB GUI)
-bunx drizzle-kit studio
+bun run db:studio
+
+# Run unit tests
+bun run test:unit
 
 # Run Playwright tests
 bunx playwright install  # first time only
 bun run test
+
+# Run all tests
+bun run test:all
 ```
 
 ## Environment Variables
@@ -167,8 +185,15 @@ bun run test
 See [.env.example](./.env.example) for all configuration options.
 
 ```bash
-# Required
+# Runtime database URL (set per environment in your hosting platform)
+# For Supabase app runtime, prefer the transaction pooler / IPv4-safe URL.
 DATABASE_URL="postgresql://..."
+
+# Explicit migration targets (local + CI)
+# For Supabase migrations, use direct connection strings.
+DATABASE_URL_DEV="postgresql://..."
+DATABASE_URL_STAGING="postgresql://..."
+DATABASE_URL_PROD="postgresql://..."
 
 # Cloudflare R2 (image storage)
 R2_ENDPOINT="https://ACCOUNT_ID.r2.cloudflarestorage.com"
@@ -181,7 +206,45 @@ R2_PUBLIC_URL="https://pub-xxx.r2.dev"
 NEXT_PUBLIC_POSTHOG_KEY="phc_..."
 POSTHOG_PERSONAL_API_KEY="phx_..."
 POSTHOG_PROJECT_ID="..."
+
+# Newsletter delivery (Resend)
+RESEND_API_KEY="re_..."
+RESEND_WEBHOOK_SECRET="whsec_..."
+NEWSLETTER_FROM_EMAIL="newsletter@yourdomain.com"
+NEWSLETTER_REPLY_TO="hello@yourdomain.com"
+
+# Cron auth for /api/cron/* endpoints
+CRON_SECRET="..."
 ```
+
+### Weekly Newsletter Issue Automation
+
+The workflow `.github/workflows/newsletter-issue-create.yml` runs every Monday at `14:00 UTC` and calls:
+
+- `POST /api/cron/newsletter-issue-create`
+
+Required GitHub environment secrets (recommended in `production` environment):
+
+- `CRON_SECRET` (required)
+- `CRON_BASE_URL` (optional, defaults to `https://dcbuilder.dev`)
+- `RESEND_WEBHOOK_SECRET` (required for `POST /api/v1/webhooks/resend`)
+
+## Database Environments (Supabase + Drizzle)
+
+This repo now uses explicit environment targets for migrations:
+
+1. `dev` (local development Supabase project)
+2. `staging` (staging Supabase project)
+3. `prod` (production Supabase project)
+
+Promotion flow:
+
+1. Generate and commit migration files in PRs (`bun run db:generate`)
+2. Merge to `master` and run staging migration workflow
+3. Verify staging
+4. Run production migration workflow (manual + backup artifact + explicit confirmation)
+
+Setup details are in `docs/database-environments.md`.
 
 ## Content Management
 

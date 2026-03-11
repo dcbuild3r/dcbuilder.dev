@@ -624,10 +624,11 @@ const CandidateCard = memo(function CandidateCard({
 			? CARD_STYLES.top
 			: CARD_STYLES.default;
 
-	return (
-		<div
-			className={cn("p-4 rounded-xl border transition-[border-color,box-shadow,background-color] overflow-hidden", cardStyle)}
-		>
+		return (
+			<div
+				data-testid="candidate-card"
+				className={cn("p-4 rounded-xl border transition-[border-color,box-shadow,background-color] overflow-hidden", cardStyle)}
+			>
 			{/* Header */}
 			<div className="flex flex-col items-center gap-3 text-center">
 				{/* Profile Image */}

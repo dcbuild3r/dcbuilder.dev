@@ -1,0 +1,61 @@
+name: Database Migration (Production)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to migrate"
+        required: true
+        default: "master"
+      confirm:
+        description: "Type migrate-prod to confirm"
+        required: true
+
+jobs:
+  migrate-prod:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Validate confirmation input
+        run: |
+          if [ "${{ inputs.confirm }}" != "migrate-prod" ]; then
+            echo "Invalid confirmation. Type 'migrate-prod' to run production migrations."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Backup production database
+        run: |
+          BACKUP_FILE="prod-pre-migration-$(date -u +%Y%m%dT%H%M%SZ).sql.gz"
+          pg_dump --no-owner --no-acl "$DATABASE_URL_PROD" | gzip > "$BACKUP_FILE"
+          echo "BACKUP_FILE=$BACKUP_FILE" >> "$GITHUB_ENV"
+        env:
+          DATABASE_URL_PROD: ${{ secrets.DATABASE_URL_PROD }}
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BACKUP_FILE }}
+          path: ${{ env.BACKUP_FILE }}
+          retention-days: 14
+
+      - name: Apply migrations to production
+        run: bun run db:migrate:prod
+        env:
+          DATABASE_URL_PROD: ${{ secrets.DATABASE_URL_PROD }}
+          ALLOW_PROD_MIGRATION: "true"

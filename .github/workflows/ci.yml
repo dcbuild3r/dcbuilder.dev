@@ -28,6 +28,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
@@ -44,6 +46,18 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+
+      - name: Check schema and migration sync
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+            if [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+              BASE_SHA="$(git rev-list --max-parents=0 HEAD)"
+            fi
+          fi
+          bun run db:check:migrations -- --base="$BASE_SHA" --head="${{ github.sha }}"
 
       - name: Type Check
         run: bun run tsc --noEmit
@@ -67,9 +81,9 @@ jobs:
         run: bunx playwright install-deps
 
       - name: Run Migrations
-        run: bunx drizzle-kit push
+        run: bun run db:migrate:dev
         env:
-          DATABASE_URL: "postgresql://postgres:password@localhost:5432/dcbuilder_dev"
+          DATABASE_URL_DEV: "postgresql://postgres:password@localhost:5432/dcbuilder_dev"
 
       - name: Build
         run: bun run build

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
 import { NewsGrid } from "@/components/NewsGrid";
+import { NewsTools } from "@/components/NewsTools";
 import { getAllNews } from "@/lib/news";
 
 export const metadata = {
@@ -19,14 +20,18 @@ export default async function NewsPage() {
     <>
       <Navbar />
       <main id="main-content" className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto py-8 sm:py-12">
+        <div className="max-w-5xl mx-auto py-8 sm:py-10">
           {/* Header */}
-          <div className="text-center mb-8 sm:mb-12">
+          <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold mb-4">News</h1>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
               Curated articles, my blog posts, and announcements from portfolio
               companies.
             </p>
+          </div>
+
+          <div className="mb-6 sm:mb-8">
+            <NewsTools />
           </div>
 
           {/* News Grid */}

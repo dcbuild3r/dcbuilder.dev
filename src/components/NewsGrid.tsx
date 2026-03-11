@@ -6,6 +6,7 @@ import { AggregatedNewsItem } from "@/lib/news";
 import { NewsCategory, categoryLabels } from "@/data/news";
 import { CustomSelect } from "./CustomSelect";
 import { trackNewsClick } from "@/lib/posthog";
+import { useNewsClicks } from "@/hooks/useNewsClicks";
 
 type NewsType = "all" | "blog" | "curated" | "announcement";
 
@@ -45,6 +46,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 	const [categoryFilter, setCategoryFilter] = useState<"all" | NewsCategory>("all");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [failedImageKeys, setFailedImageKeys] = useState<Record<string, true>>({});
+	const { getClickCount, isPopular, loaded: clicksLoaded } = useNewsClicks();
 	const deferredSearchQuery = useDeferredValue(searchQuery);
 	const dateFormatter = useMemo(
 		() =>
@@ -109,6 +111,21 @@ export function NewsGrid({ news }: NewsGridProps) {
 		return dateFormatter.format(date);
 	};
 
+	const renderCommaSeparatedTokens = (value: string | undefined, keyPrefix: string) => {
+		if (!value?.trim()) return null;
+		const tokens = value
+			.split(",")
+			.map((s) => s.trim())
+			.filter(Boolean);
+
+		return tokens.flatMap((token, idx) => {
+			const parts: React.ReactNode[] = [];
+			if (idx > 0) parts.push(<span key={`${keyPrefix}:sep:${idx}`}> - </span>);
+			parts.push(<span key={`${keyPrefix}:${idx}`}>{token}</span>);
+			return parts;
+		});
+	};
+
 	// Extract X/Twitter handle from URL
 	const getXHandle = (url: string): string | null => {
 		const match = url.match(/x\.com\/([^/]+)/);
@@ -141,12 +158,28 @@ export function NewsGrid({ news }: NewsGridProps) {
 	const getTypeIcon = (item: AggregatedNewsItem) => {
 		// Check if it's an X post (url contains x.com)
 		if (item.url.includes("x.com/")) {
-			const handle = getXHandle(item.url);
 			const imageKey = `${item.id}:x`;
-			if (handle) {
-				if (failedImageKeys[imageKey]) {
-					return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">𝕏</span>;
-				}
+			const sourceImage = item.sourceImage?.trim();
+			if (sourceImage && !failedImageKeys[imageKey]) {
+				return (
+					<div className="relative group-hover:scale-[1.08] transition-transform duration-150">
+						<Image
+							src={sourceImage}
+							alt={item.source || "X source"}
+							width={NEWS_THUMBNAIL_SIZE}
+							height={NEWS_THUMBNAIL_SIZE}
+							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+							quality={NEWS_THUMBNAIL_QUALITY}
+							className="rounded-full w-14 h-14 object-cover"
+							onError={() => markImageFailed(imageKey)}
+						/>
+						<XLogo />
+					</div>
+				);
+			}
+
+			const handle = getXHandle(item.url);
+			if (handle && !failedImageKeys[imageKey]) {
 				return (
 					<div className="relative group-hover:scale-[1.08] transition-transform duration-150">
 						<Image
@@ -163,6 +196,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 					</div>
 				);
 			}
+			return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">𝕏</span>;
 		}
 
 		switch (item.type) {
@@ -187,6 +221,24 @@ export function NewsGrid({ news }: NewsGridProps) {
 				}
 				return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">📝</span>;
 			case "curated":
+				if (item.sourceImage?.trim()) {
+					const imageKey = `${item.id}:curated`;
+					if (failedImageKeys[imageKey]) {
+						return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">🔗</span>;
+					}
+					return (
+						<Image
+							src={item.sourceImage.trim()}
+							alt={item.source || item.title}
+							width={NEWS_THUMBNAIL_SIZE}
+							height={NEWS_THUMBNAIL_SIZE}
+							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+							quality={NEWS_THUMBNAIL_QUALITY}
+							className="rounded-full w-14 h-14 object-cover group-hover:scale-[1.08] transition-transform duration-150"
+							onError={() => markImageFailed(imageKey)}
+						/>
+					);
+				}
 				return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">🔗</span>;
 			case "announcement":
 				if (item.companyLogo?.trim()) {
@@ -354,6 +406,11 @@ export function NewsGrid({ news }: NewsGridProps) {
 												✨ FRESH
 											</span>
 										)}
+										{clicksLoaded && isPopular(item.id) && (
+											<span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+												🔥 POPULAR
+											</span>
+										)}
 										{isExternalLink(item) && (
 											<svg
 												className="w-4 h-4 flex-shrink-0 text-neutral-400"
@@ -381,7 +438,10 @@ export function NewsGrid({ news }: NewsGridProps) {
 									{/* Meta info */}
 									<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
 										<span>{formatDate(item.date)}</span>
-										{item.source && <span>{item.source}</span>}
+										{clicksLoaded && getClickCount(item.id) > 0 && (
+											<span>{getClickCount(item.id)} clicks</span>
+										)}
+										{renderCommaSeparatedTokens(item.source, `${item.id}:source`)}
 										{item.company && <span>{item.company}</span>}
 										{item.readingTime && <span>{item.readingTime}</span>}
 										<span

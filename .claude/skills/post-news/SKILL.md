@@ -82,6 +82,20 @@ Required fields:
 
 ### Step 2: Insert via Database
 
+Preferred (script):
+
+```bash
+# Example (loads env vars from .env.local)
+bunx dotenv -e .env.local -- bun run scripts/add-curated-link.ts \
+  --title "YOUR_TITLE" \
+  --url "YOUR_URL" \
+  --source "SOURCE_NAME" \
+  --category x_post \
+  --date YYYY-MM-DD
+```
+
+Alternate (inline):
+
 ```bash
 bun -e "
 import { db, curatedLinks } from './src/db';
@@ -212,7 +226,4 @@ process.exit(0);
 - **`references/schemas.md`** - Detailed field schemas and validation rules
 
 ### Scripts
-- **`scripts/add-announcement.ts`** - Add announcement via JSON
-- **`scripts/add-curated-link.ts`** - Add curated link via JSON
-- **`scripts/download-image.ts`** - Download image from URL
-- **`scripts/upload-to-r2.ts`** - Upload image to R2
+- **`scripts/add-curated-link.ts`** - Add curated link via CLI flags (`--dry-run` supported)
