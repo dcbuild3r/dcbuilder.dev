@@ -8,8 +8,8 @@ export const metadata = {
   title: "Portfolio",
 };
 
-// Use ISR with 5 minute revalidation instead of force-dynamic
-export const revalidate = 300;
+// Force runtime rendering since this page reads directly from Postgres.
+export const dynamic = "force-dynamic";
 
 const getInvestments = unstable_cache(
   async () => {
