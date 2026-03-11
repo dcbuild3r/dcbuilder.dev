@@ -22,6 +22,10 @@ type NewsletterType = "news" | "jobs" | "candidates";
 type NewsletterContentMode = "template" | "markdown" | "manual";
 type CampaignStatus = "draft" | "scheduled" | "sending" | "sent" | "failed";
 type WorkspaceView = "editor" | "split" | "preview";
+type AvailabilityMeta = {
+  newsletterUnavailable?: boolean;
+  reason?: string;
+};
 
 type Mode = "compose" | "queue" | "subscribers" | "templates";
 type PreviewTab = "subject" | "html" | "text" | "starter";
@@ -255,6 +259,14 @@ function formatLocalInputFromIso(iso: string | null): string {
   return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
 }
 
+function getAvailabilityReason(meta: Record<string, unknown> | null): string | null {
+  const candidate = meta as AvailabilityMeta | null;
+  if (!candidate?.newsletterUnavailable) return null;
+  return typeof candidate.reason === "string" && candidate.reason.trim()
+    ? candidate.reason
+    : "Newsletter database is temporarily unavailable.";
+}
+
 function StatusPill({ status }: { status: CampaignStatus }) {
   const styles = {
     draft: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200",
@@ -462,6 +474,7 @@ export function NewsletterStudio() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
 
   const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>([]);
   const [templates, setTemplates] = useState<Record<NewsletterType, NewsletterTemplate> | null>(null);
@@ -545,12 +558,18 @@ export function NewsletterStudio() {
 
   const refreshData = useCallback(async () => {
     setError(null);
+    setAvailabilityError(null);
 
     const headers = { "x-api-key": getAdminApiKey() };
     const [campaignsResult, templatesResult] = await Promise.all([
       adminFetch<NewsletterCampaign[]>("/api/v1/newsletter/campaigns?limit=100", { headers }),
       adminFetch<NewsletterTemplate[]>("/api/v1/newsletter/templates", { headers }),
     ]);
+
+    const availabilityReason =
+      getAvailabilityReason(campaignsResult.meta) ||
+      getAvailabilityReason(templatesResult.meta);
+    setAvailabilityError(availabilityReason);
 
     if (campaignsResult.error) {
       setError(campaignsResult.error);
@@ -580,6 +599,11 @@ export function NewsletterStudio() {
 
     setSubscribersLoading(false);
 
+    const availabilityReason = getAvailabilityReason(result.meta);
+    if (availabilityReason) {
+      setAvailabilityError(availabilityReason);
+    }
+
     if (result.error) {
       setError(result.error);
       return;
@@ -588,6 +612,12 @@ export function NewsletterStudio() {
     setSubscribers((result.data || []).map((subscriber) => toSubscriberDraftRow(subscriber)));
     setSubscribersLoaded(true);
   }, []);
+
+  const ensureNewsletterWritable = useCallback(() => {
+    if (!availabilityError) return true;
+    setError(availabilityError);
+    return false;
+  }, [availabilityError]);
 
   useEffect(() => {
     const load = async () => {
@@ -755,6 +785,7 @@ export function NewsletterStudio() {
   );
 
   const createCampaign = async () => {
+    if (!ensureNewsletterWritable()) return;
     if (!composeForm.subject.trim()) {
       setError("Subject is required");
       return;
@@ -806,6 +837,7 @@ export function NewsletterStudio() {
   };
 
   const autoCreateWeekly = async () => {
+    if (!ensureNewsletterWritable()) return;
     setSaving(true);
     setError(null);
 
@@ -840,6 +872,7 @@ export function NewsletterStudio() {
   };
 
   const scheduleCampaign = async (campaignId: string) => {
+    if (!ensureNewsletterWritable()) return;
     const localValue = scheduleDrafts[campaignId];
     if (!localValue) {
       setError("Pick a schedule date/time first");
@@ -870,6 +903,7 @@ export function NewsletterStudio() {
   };
 
   const sendNow = async (campaignId: string) => {
+    if (!ensureNewsletterWritable()) return;
     setSaving(true);
     setError(null);
 
@@ -890,6 +924,7 @@ export function NewsletterStudio() {
   };
 
   const deleteCampaign = async (campaign: NewsletterCampaign) => {
+    if (!ensureNewsletterWritable()) return;
     if (!MUTABLE_STATUSES.has(campaign.status)) return;
     const ok = confirm(`Delete draft \"${campaign.subject}\"? This cannot be undone.`);
     if (!ok) return;
@@ -918,6 +953,7 @@ export function NewsletterStudio() {
   };
 
   const openCampaignEditor = async (campaignId: string) => {
+    if (!ensureNewsletterWritable()) return;
     if (editingCampaignId && isEditDirty) {
       const confirmed = confirm("You have unsaved campaign edits. Continue and discard them?");
       if (!confirmed) return;
@@ -958,6 +994,7 @@ export function NewsletterStudio() {
   };
 
   const saveCampaignEdit = async () => {
+    if (!ensureNewsletterWritable()) return;
     if (!editingCampaignId || !editForm) return;
 
     setSaving(true);
@@ -1021,6 +1058,7 @@ export function NewsletterStudio() {
   }, [mode, editForm, renderEditPreview]);
 
   const saveTemplate = async () => {
+    if (!ensureNewsletterWritable()) return;
     if (!templateDraft) return;
 
     setSaving(true);
@@ -1411,6 +1449,7 @@ export function NewsletterStudio() {
   };
 
   const saveSubscriberDraft = async (subscriberId: string) => {
+    if (!ensureNewsletterWritable()) return;
     const subscriber = subscribers.find((row) => row.id === subscriberId);
     if (!subscriber) return;
 
@@ -1478,6 +1517,14 @@ export function NewsletterStudio() {
 
   return (
     <div className="space-y-4">
+      {availabilityError && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-100">
+          {availabilityError} Read-only fallbacks are enabled where possible, but
+          queue and subscriber write actions stay disabled until migrations are
+          applied.
+        </div>
+      )}
+
       {error && (
         <ErrorAlert
           message={error}

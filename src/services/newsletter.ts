@@ -29,6 +29,7 @@ import {
   normalizeNewsletterContentMode,
 } from "@/lib/newsletter-utils";
 import { getRecommendedLinks, OTHER_CONTENT_I_LIKE } from "@/lib/recommendations";
+import { isMissingNewsletterSchemaError } from "@/services/newsletter-schema";
 
 type SendResult = { success: true; messageId: string } | { success: false; error: string };
 
@@ -135,6 +136,26 @@ const DEFAULT_NEWSLETTER_TEMPLATES: Record<NewsletterType, NewsletterTemplatePay
     markdownTemplate: "{{default_markdown_body}}",
   },
 };
+
+function getDefaultNewsletterTemplate(newsletterType: NewsletterType): NewsletterTemplatePayload {
+  return DEFAULT_NEWSLETTER_TEMPLATES[newsletterType];
+}
+
+export function getDefaultNewsletterTemplates(): NewsletterTemplatePayload[] {
+  return NEWSLETTER_TYPES.map((newsletterType) => getDefaultNewsletterTemplate(newsletterType));
+}
+
+async function loadStoredNewsletterTemplates() {
+  try {
+    return await db.select().from(newsletterTemplates);
+  } catch (error) {
+    if (isMissingNewsletterSchemaError(error)) {
+      console.error("[newsletter] templates table unavailable, using defaults", error);
+      return null;
+    }
+    throw error;
+  }
+}
 
 const LEGACY_NEWS_HTML_TEMPLATE = "{{default_html_body}}<hr /><h3>Recent News</h3><ul>{{recent_news_html}}</ul>";
 const LEGACY_NEWS_TEXT_TEMPLATE = "{{default_text_body}}\n\nRecent News:\n{{recent_news_text}}";
@@ -1333,14 +1354,15 @@ function renderRecentNewsText(recentNews: Awaited<ReturnType<typeof getRecentNew
 }
 
 async function getNewsletterTemplatePayload(newsletterType: NewsletterType): Promise<NewsletterTemplatePayload> {
-  const [stored] = await db
-    .select()
-    .from(newsletterTemplates)
-    .where(eq(newsletterTemplates.newsletterType, newsletterType))
-    .limit(1);
+  const templates = await loadStoredNewsletterTemplates();
+  if (!templates) {
+    return getDefaultNewsletterTemplate(newsletterType);
+  }
+
+  const stored = templates.find((template) => template.newsletterType === newsletterType);
 
   if (!stored) {
-    return DEFAULT_NEWSLETTER_TEMPLATES[newsletterType];
+    return getDefaultNewsletterTemplate(newsletterType);
   }
 
   return normalizeLegacyTemplatePayload({
@@ -1551,13 +1573,17 @@ function resolveCampaignRenderContent(params: {
 }
 
 export async function listNewsletterTemplates() {
-  const templates = await db.select().from(newsletterTemplates);
+  const templates = await loadStoredNewsletterTemplates();
+  if (!templates) {
+    return getDefaultNewsletterTemplates();
+  }
+
   const byType = new Map(templates.map((template) => [template.newsletterType, template]));
 
   return NEWSLETTER_TYPES.map((type) => {
     const stored = byType.get(type);
     if (!stored) {
-      return DEFAULT_NEWSLETTER_TEMPLATES[type];
+      return getDefaultNewsletterTemplate(type);
     }
     return normalizeLegacyTemplatePayload({
       newsletterType: type,

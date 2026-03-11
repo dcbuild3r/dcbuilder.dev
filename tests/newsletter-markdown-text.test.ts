@@ -14,6 +14,8 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
             where: () => ({
               limit: async () => [],
             }),
+            then: (resolve: (value: unknown[]) => unknown, reject?: (reason: unknown) => unknown) =>
+              Promise.resolve([]).then(resolve, reject),
           }),
         }),
       },

@@ -14,6 +14,7 @@ export function getAdminApiKey(): string {
 export interface FetchResult<T> {
   data: T | null;
   error: string | null;
+  meta: Record<string, unknown> | null;
 }
 
 /**
@@ -36,22 +37,23 @@ export async function adminFetch<T>(
 
       // Special handling for auth errors
       if (res.status === 401) {
-        return { data: null, error: "Invalid or missing API key" };
+        return { data: null, error: "Invalid or missing API key", meta: errorBody.meta ?? null };
       }
       if (res.status === 403) {
-        return { data: null, error: "Access denied" };
+        return { data: null, error: "Access denied", meta: errorBody.meta ?? null };
       }
 
-      return { data: null, error: errorMessage };
+      return { data: null, error: errorMessage, meta: errorBody.meta ?? null };
     }
 
     const json = await res.json();
-    return { data: json.data ?? json, error: null };
+    return { data: json.data ?? json, error: null, meta: json.meta ?? null };
   } catch (error) {
     console.error(`Fetch error for ${url}:`, error);
     return {
       data: null,
       error: "Network error. Please check your connection and try again.",
+      meta: null,
     };
   }
 }
