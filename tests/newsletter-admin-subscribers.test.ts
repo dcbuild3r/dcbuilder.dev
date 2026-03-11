@@ -73,6 +73,7 @@ describe("adminUpdateSubscriberPreferences", () => {
   });
 
   test("updates subscriber status without auto-confirming pending subscribers", async () => {
+    const actualDb = await import("../src/db");
     const actualPosthog = await import("../src/services/posthog");
     const state: MockState = {
       subscriber: null,
@@ -84,6 +85,7 @@ describe("adminUpdateSubscriberPreferences", () => {
     const newsletterPreferences = { table: "newsletter_preferences" };
 
     mock.module("@/db", () => ({
+      ...actualDb,
       db: {
         select: () => ({
           from: (table: unknown) => ({
