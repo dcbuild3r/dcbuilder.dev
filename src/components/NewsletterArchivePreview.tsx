@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listSentNewsletterCampaigns } from "@/services/newsletter";
+import { loadPublicNewsletterArchive } from "@/lib/newsletter-archive";
 
 const TYPE_LABELS: Record<string, string> = {
   news: "News",
@@ -14,7 +14,11 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export async function NewsletterArchivePreview() {
-  const campaigns = await listSentNewsletterCampaigns(3);
+  const { available, campaigns } = await loadPublicNewsletterArchive(3);
+
+  if (!available) {
+    return null;
+  }
 
   if (campaigns.length === 0) {
     return null;

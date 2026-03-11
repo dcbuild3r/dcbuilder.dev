@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Ignore sibling/local worktrees and generated deployment artifacts.
+    "worktrees/**",
+    ".worktrees/**",
+    "test-results/**",
+    ".vercel/**",
   ]),
 ]);
 

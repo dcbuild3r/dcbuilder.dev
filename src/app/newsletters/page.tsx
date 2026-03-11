@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
-import {
-  listSentNewsletterCampaigns,
-} from "@/services/newsletter";
+import { loadPublicNewsletterArchive } from "@/lib/newsletter-archive";
 
 export const metadata = {
   title: "Newsletter Archive",
@@ -25,7 +23,7 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export default async function NewslettersPage() {
-  const campaigns = await listSentNewsletterCampaigns();
+  const { available, campaigns } = await loadPublicNewsletterArchive();
 
   return (
     <>
@@ -50,7 +48,13 @@ export default async function NewslettersPage() {
             </p>
           </div>
 
-          {campaigns.length === 0 ? (
+          {!available ? (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-6 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">
+              Newsletter archive is temporarily unavailable. This usually means the
+              newsletter database schema has not been applied yet or the archive
+              is offline.
+            </div>
+          ) : campaigns.length === 0 ? (
             <p className="text-center text-neutral-500 py-12">
               No newsletters have been sent yet. Check back soon!
             </p>
