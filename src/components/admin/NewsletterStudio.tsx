@@ -91,6 +91,15 @@ interface NewsletterCampaign {
   failureReason: string | null;
   createdBy: string | null;
   createdAt: string;
+  archiveSubject?: string | null;
+  archivePreviewText?: string | null;
+  archiveContentMode?: NewsletterContentMode | null;
+  archiveMarkdownContent?: string | null;
+  archiveManualHtml?: string | null;
+  archiveManualText?: string | null;
+  archiveRenderedHtml?: string | null;
+  archiveCorrectedAt?: string | null;
+  archiveCorrectedBy?: string | null;
 }
 
 interface NewsletterTemplate {
@@ -121,6 +130,8 @@ type CampaignDraft = {
   periodDays: number;
   scheduledAtLocal: string;
 };
+
+type CampaignEditMode = "campaign" | "archive";
 
 const NEWSLETTER_TYPES: NewsletterType[] = ["news", "jobs", "candidates"];
 const MUTABLE_STATUSES = new Set<CampaignStatus>(["draft", "scheduled"]);
@@ -326,9 +337,10 @@ function SegmentedControl<T extends string>(props: {
   value: T;
   onChange: (value: T) => void;
   options: Array<{ value: T; label: string; hint?: string }>;
+  disabled?: boolean;
 }) {
   return (
-    <div className="inline-flex rounded-full bg-neutral-100 p-1 dark:bg-neutral-800/80">
+    <div className={cx("inline-flex rounded-full bg-neutral-100 p-1 dark:bg-neutral-800/80", props.disabled && "opacity-60")}>
       {props.options.map((opt) => {
         const active = opt.value === props.value;
         return (
@@ -336,9 +348,10 @@ function SegmentedControl<T extends string>(props: {
             key={opt.value}
             type="button"
             onClick={() => props.onChange(opt.value)}
+            disabled={props.disabled}
             title={opt.hint}
             className={cx(
-              "rounded-full px-3 py-1.5 text-sm font-semibold transition",
+              "rounded-full px-3 py-1.5 text-sm font-semibold transition disabled:cursor-not-allowed",
               active
                 ? "bg-white text-neutral-900 shadow-sm ring-1 ring-neutral-200 dark:bg-neutral-950 dark:text-neutral-50 dark:ring-neutral-800"
                 : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
@@ -504,6 +517,7 @@ export function NewsletterStudio() {
   const [scheduleDrafts, setScheduleDrafts] = useState<Record<string, string>>({});
 
   const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null);
+  const [editingCampaignMode, setEditingCampaignMode] = useState<CampaignEditMode>("campaign");
   const [editForm, setEditForm] = useState<CampaignDraft | null>(null);
   const [editPreview, setEditPreview] = useState<CampaignPreviewResult | null>(null);
   const [editPreviewTab, setEditPreviewTab] = useState<PreviewTab>("html");
@@ -775,6 +789,7 @@ export function NewsletterStudio() {
       }
 
       setEditingCampaignId(null);
+      setEditingCampaignMode("campaign");
       setEditForm(null);
       setEditPreview(null);
       setEditPreviewLoading(false);
@@ -952,7 +967,7 @@ export function NewsletterStudio() {
     await refreshData();
   };
 
-  const openCampaignEditor = async (campaignId: string) => {
+  const openCampaignEditor = async (campaignId: string, mode: CampaignEditMode = "campaign") => {
     if (!ensureNewsletterWritable()) return;
     if (editingCampaignId && isEditDirty) {
       const confirmed = confirm("You have unsaved campaign edits. Continue and discard them?");
@@ -974,19 +989,29 @@ export function NewsletterStudio() {
     }
 
     const campaign = result.data;
+    const archiveMode = mode === "archive";
     const draft: CampaignDraft = {
       newsletterType: campaign.newsletterType,
-      subject: campaign.subject,
-      previewText: campaign.previewText || "",
-      contentMode: campaign.contentMode,
-      markdownContent: campaign.markdownContent || "",
-      manualHtml: campaign.manualHtml || "",
-      manualText: campaign.manualText || "",
+      subject: archiveMode ? (campaign.archiveSubject || campaign.subject) : campaign.subject,
+      previewText: archiveMode ? (campaign.archivePreviewText || campaign.previewText || "") : (campaign.previewText || ""),
+      contentMode: archiveMode
+        ? ((campaign.archiveContentMode || campaign.contentMode) as NewsletterContentMode)
+        : campaign.contentMode,
+      markdownContent: archiveMode
+        ? (campaign.archiveMarkdownContent || campaign.markdownContent || "")
+        : (campaign.markdownContent || ""),
+      manualHtml: archiveMode
+        ? (campaign.archiveManualHtml || campaign.manualHtml || "")
+        : (campaign.manualHtml || ""),
+      manualText: archiveMode
+        ? (campaign.archiveManualText || campaign.manualText || "")
+        : (campaign.manualText || ""),
       periodDays: campaign.periodDays,
       scheduledAtLocal: formatLocalInputFromIso(campaign.scheduledAt),
     };
 
     setEditingCampaignId(campaign.id);
+    setEditingCampaignMode(mode);
     setEditForm(draft);
     setEditInitialSnapshot(serializeCampaignDraft(draft));
     setEditPreview(null);
@@ -996,6 +1021,7 @@ export function NewsletterStudio() {
   const saveCampaignEdit = async () => {
     if (!ensureNewsletterWritable()) return;
     if (!editingCampaignId || !editForm) return;
+    const archiveOnly = editingCampaignMode === "archive";
 
     setSaving(true);
     setError(null);
@@ -1011,11 +1037,14 @@ export function NewsletterStudio() {
         subject: editForm.subject,
         previewText: editForm.previewText,
         periodDays: editForm.periodDays,
-        scheduledAt: editForm.scheduledAtLocal ? new Date(editForm.scheduledAtLocal).toISOString() : null,
+        scheduledAt: archiveOnly
+          ? undefined
+          : (editForm.scheduledAtLocal ? new Date(editForm.scheduledAtLocal).toISOString() : null),
         contentMode: editForm.contentMode,
         markdownContent: editForm.contentMode === "markdown" ? editForm.markdownContent : null,
         manualHtml: editForm.contentMode === "manual" ? editForm.manualHtml : null,
         manualText: editForm.contentMode === "manual" ? editForm.manualText : null,
+        archiveOnly,
       }),
     });
 
@@ -1026,7 +1055,7 @@ export function NewsletterStudio() {
       return;
     }
 
-    setStatusMessage("Campaign updated");
+    setStatusMessage(archiveOnly ? "Archive correction saved" : "Campaign updated");
     setEditInitialSnapshot(serializeCampaignDraft(editForm));
     await refreshData();
   };
@@ -2097,6 +2126,7 @@ export function NewsletterStudio() {
                 <tbody>
                   {filteredCampaigns.map((campaign) => {
                     const mutable = MUTABLE_STATUSES.has(campaign.status);
+                    const archiveEditable = campaign.status === "sent";
                     return (
                       <tr key={campaign.id} className="border-t border-neutral-200 align-top dark:border-neutral-800">
                         <td className="px-4 py-3">
@@ -2139,11 +2169,11 @@ export function NewsletterStudio() {
                           <div className="flex justify-end gap-2">
                             <button
                               type="button"
-                              onClick={() => openCampaignEditor(campaign.id)}
-                              disabled={saving || !mutable}
+                              onClick={() => openCampaignEditor(campaign.id, archiveEditable ? "archive" : "campaign")}
+                              disabled={saving || (!mutable && !archiveEditable)}
                               className="rounded-xl border px-3 py-2 text-xs font-semibold disabled:opacity-50"
                             >
-                              Edit
+                              {archiveEditable ? "Correct archive" : "Edit"}
                             </button>
                             <button
                               type="button"
@@ -2175,7 +2205,9 @@ export function NewsletterStudio() {
             <div className="mt-6 space-y-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-semibold">Edit Campaign</h3>
+                  <h3 className="text-base font-semibold">
+                    {editingCampaignMode === "archive" ? "Correct Archive" : "Edit Campaign"}
+                  </h3>
                   {isEditDirty && (
                     <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                       Unsaved
@@ -2202,6 +2234,12 @@ export function NewsletterStudio() {
                 </div>
               </div>
 
+              {editingCampaignMode === "archive" && (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                  This only updates the archived web version. Emails that were already sent will not change.
+                </div>
+              )}
+
               <div className={cx("grid grid-cols-1 gap-4", editWorkspaceView === "split" && "xl:grid-cols-2")}>
                 {editWorkspaceView !== "preview" && (
                   <div className={cx("space-y-3", editWorkspaceView === "editor" && "min-h-[68vh]")}>
@@ -2210,6 +2248,7 @@ export function NewsletterStudio() {
                       <span className="text-sm font-semibold">Type</span>
                       <select
                         value={editForm.newsletterType}
+                        disabled={editingCampaignMode === "archive"}
                         onChange={(event) =>
                           setEditForm((current) =>
                             current ? { ...current, newsletterType: event.target.value as NewsletterType } : current
@@ -2232,6 +2271,7 @@ export function NewsletterStudio() {
                         min={1}
                         max={30}
                         value={editForm.periodDays}
+                        disabled={editingCampaignMode === "archive"}
                         onChange={(event) =>
                           setEditForm((current) =>
                             current ? { ...current, periodDays: Number(event.target.value) || 7 } : current
@@ -2271,6 +2311,7 @@ export function NewsletterStudio() {
                     <input
                       type="datetime-local"
                       value={editForm.scheduledAtLocal}
+                      disabled={editingCampaignMode === "archive"}
                       onChange={(event) =>
                         setEditForm((current) =>
                           current ? { ...current, scheduledAtLocal: event.target.value } : current
@@ -2285,6 +2326,7 @@ export function NewsletterStudio() {
                     <SegmentedControl<NewsletterContentMode>
                       value={editForm.contentMode}
                       onChange={setEditContentMode}
+                      disabled={editingCampaignMode === "archive" ? false : undefined}
                       options={[
                         { value: "template", label: "Template" },
                         { value: "markdown", label: "Markdown" },
@@ -2417,7 +2459,7 @@ export function NewsletterStudio() {
                       disabled={saving}
                       className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-neutral-50 dark:text-neutral-900"
                     >
-                      Save changes
+                      {editingCampaignMode === "archive" ? "Save archive correction" : "Save changes"}
                     </button>
                     <button
                       type="button"

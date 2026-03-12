@@ -11,6 +11,7 @@ import {
   newsletterCampaignRecipients,
   newsletterSendEvents,
   newsletterUnsubTokens,
+  type NewsletterCampaign,
 } from "@/db";
 import {
   getCandidateViewsForWindow,
@@ -1975,11 +1976,18 @@ export async function updateNewsletterCampaign(campaignId: string, input: {
   markdownContent?: string | null;
   manualHtml?: string | null;
   manualText?: string | null;
+  archiveOnly?: boolean;
+  correctedBy?: string | null;
 }) {
   const current = await getNewsletterCampaignById(campaignId);
   if (!current.ok) {
     return current;
   }
+
+  if (current.data.status === "sent" && input.archiveOnly) {
+    return updateSentNewsletterCampaignArchive(current.data, input);
+  }
+
   if (!isCampaignMutable(current.data.status)) {
     return { ok: false as const, status: 409, error: "Only draft or scheduled campaigns can be modified" };
   }
@@ -2046,6 +2054,129 @@ export async function updateNewsletterCampaign(campaignId: string, input: {
       updatedAt: new Date(),
     })
     .where(eq(newsletterCampaigns.id, campaignId))
+    .returning();
+
+  return { ok: true as const, data: updated };
+}
+
+async function renderArchiveCorrection(params: {
+  current: NewsletterCampaign;
+  newsletterType: NewsletterType;
+  subject: string;
+  contentMode: NewsletterContentMode;
+  markdownContent: string | null;
+  manualHtml: string | null;
+  manualText: string | null;
+  periodDays: number;
+}) {
+  const [digest, templatePayload, recentNews] = await Promise.all([
+    buildDigest(params.newsletterType, params.periodDays),
+    getNewsletterTemplatePayload(params.newsletterType),
+    getRecentNewsSnapshot(8),
+  ]);
+
+  return resolveCampaignRenderContent({
+    campaign: {
+      campaignSubject: params.subject,
+      contentMode: params.contentMode,
+      markdownContent: params.markdownContent,
+      manualHtml: params.manualHtml,
+      manualText: params.manualText,
+    },
+    template: templatePayload,
+    campaignType: params.newsletterType,
+    periodDays: params.periodDays,
+    digest,
+    links: {
+      unsubscribe: `${getBaseUrl()}/newsletters`,
+      preferences: `${getBaseUrl()}/newsletters`,
+    },
+    recentNews,
+    now: new Date(),
+  });
+}
+
+async function updateSentNewsletterCampaignArchive(
+  current: NewsletterCampaign,
+  input: {
+    newsletterType?: string;
+    subject?: string;
+    previewText?: string | null;
+    periodDays?: number;
+    contentMode?: string;
+    markdownContent?: string | null;
+    manualHtml?: string | null;
+    manualText?: string | null;
+    correctedBy?: string | null;
+  }
+) {
+  const newsletterType = input.newsletterType
+    ? (NEWSLETTER_TYPES.includes(input.newsletterType as NewsletterType) ? input.newsletterType as NewsletterType : null)
+    : current.newsletterType as NewsletterType;
+  if (!newsletterType) {
+    return { ok: false as const, status: 400, error: "Invalid newsletter type" };
+  }
+
+  const subject = (input.subject ?? current.archiveSubject ?? current.subject)?.trim();
+  if (!subject) {
+    return { ok: false as const, status: 400, error: "Subject is required" };
+  }
+
+  if (input.contentMode && !NEWSLETTER_CONTENT_MODES.includes(input.contentMode as NewsletterContentMode)) {
+    return { ok: false as const, status: 400, error: "Invalid content mode" };
+  }
+  const contentMode = normalizeNewsletterContentMode(input.contentMode ?? current.archiveContentMode ?? current.contentMode);
+  const markdownContent = input.markdownContent ?? current.archiveMarkdownContent ?? current.markdownContent;
+  const manualHtml = input.manualHtml ?? current.archiveManualHtml ?? current.manualHtml;
+  const manualText = input.manualText ?? current.archiveManualText ?? current.manualText;
+  const draftValidation = validateCampaignContentDraft({
+    campaignSubject: subject,
+    contentMode,
+    markdownContent,
+    manualHtml,
+    manualText,
+  });
+  if (!draftValidation.ok) {
+    return draftValidation;
+  }
+
+  const periodValidation = validatePeriodDays(input.periodDays);
+  if (!periodValidation.ok) {
+    return periodValidation;
+  }
+  const periodDays = input.periodDays === undefined ? current.periodDays : periodValidation.data;
+  const archiveRendered = await renderArchiveCorrection({
+    current,
+    newsletterType,
+    subject,
+    contentMode,
+    markdownContent,
+    manualHtml,
+    manualText,
+    periodDays,
+  });
+  if (!archiveRendered.ok) {
+    return archiveRendered;
+  }
+
+  const [updated] = await db
+    .update(newsletterCampaigns)
+    .set({
+      archiveSubject: subject,
+      archivePreviewText: input.previewText === undefined
+        ? (current.archivePreviewText ?? current.previewText)
+        : (input.previewText || null),
+      archiveContentMode: contentMode,
+      archiveMarkdownContent: markdownContent,
+      archiveManualHtml: manualHtml,
+      archiveManualText: manualText,
+      archiveRenderedHtml: archiveRendered.data.html,
+      archiveRenderedText: archiveRendered.data.text,
+      archiveCorrectedAt: new Date(),
+      archiveCorrectedBy: input.correctedBy || null,
+      updatedAt: new Date(),
+    })
+    .where(eq(newsletterCampaigns.id, current.id))
     .returning();
 
   return { ok: true as const, data: updated };
@@ -2498,18 +2629,23 @@ export async function sendDueNewsletterCampaigns() {
 // ---------------------------------------------------------------------------
 
 export async function listSentNewsletterCampaigns(limit: number = 50) {
-  return db
+  const campaigns = await db
     .select({
       id: newsletterCampaigns.id,
       subject: newsletterCampaigns.subject,
       previewText: newsletterCampaigns.previewText,
       newsletterType: newsletterCampaigns.newsletterType,
       sentAt: newsletterCampaigns.sentAt,
+      archiveSubject: newsletterCampaigns.archiveSubject,
+      archivePreviewText: newsletterCampaigns.archivePreviewText,
+      archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
     })
     .from(newsletterCampaigns)
     .where(eq(newsletterCampaigns.status, "sent"))
     .orderBy(desc(newsletterCampaigns.sentAt))
     .limit(limit);
+
+  return campaigns.map(resolveArchiveCampaignSummary);
 }
 
 export async function getSentNewsletterCampaignForArchive(id: string) {
@@ -2521,6 +2657,10 @@ export async function getSentNewsletterCampaignForArchive(id: string) {
       newsletterType: newsletterCampaigns.newsletterType,
       sentAt: newsletterCampaigns.sentAt,
       renderedHtml: newsletterCampaigns.renderedHtml,
+      archiveSubject: newsletterCampaigns.archiveSubject,
+      archivePreviewText: newsletterCampaigns.archivePreviewText,
+      archiveRenderedHtml: newsletterCampaigns.archiveRenderedHtml,
+      archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
     })
     .from(newsletterCampaigns)
     .where(
@@ -2531,9 +2671,57 @@ export async function getSentNewsletterCampaignForArchive(id: string) {
     )
     .limit(1);
 
-  if (!campaign || !campaign.renderedHtml) {
+  if (!campaign) {
     return null;
   }
 
-  return campaign;
+  const resolved = resolveArchiveCampaignDetail(campaign);
+  if (!resolved.renderedHtml) {
+    return null;
+  }
+
+  return resolved;
+}
+
+function resolveArchiveCampaignSummary(campaign: {
+  id: string;
+  subject: string;
+  previewText: string | null;
+  newsletterType: string;
+  sentAt: Date | null;
+  archiveSubject?: string | null;
+  archivePreviewText?: string | null;
+  archiveCorrectedAt?: Date | null;
+}) {
+  return {
+    id: campaign.id,
+    subject: campaign.archiveSubject || campaign.subject,
+    previewText: campaign.archivePreviewText ?? campaign.previewText,
+    newsletterType: campaign.newsletterType,
+    sentAt: campaign.sentAt,
+    archiveCorrectedAt: campaign.archiveCorrectedAt ?? null,
+  };
+}
+
+function resolveArchiveCampaignDetail(campaign: {
+  id: string;
+  subject: string;
+  previewText: string | null;
+  newsletterType: string;
+  sentAt: Date | null;
+  renderedHtml: string | null;
+  archiveSubject?: string | null;
+  archivePreviewText?: string | null;
+  archiveRenderedHtml?: string | null;
+  archiveCorrectedAt?: Date | null;
+}) {
+  return {
+    id: campaign.id,
+    subject: campaign.archiveSubject || campaign.subject,
+    previewText: campaign.archivePreviewText ?? campaign.previewText,
+    newsletterType: campaign.newsletterType,
+    sentAt: campaign.sentAt,
+    renderedHtml: campaign.archiveRenderedHtml || campaign.renderedHtml,
+    archiveCorrectedAt: campaign.archiveCorrectedAt ?? null,
+  };
 }
