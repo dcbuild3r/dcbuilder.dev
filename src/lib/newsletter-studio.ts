@@ -36,3 +36,10 @@ export function shouldLoadSubscribersOnModeChange(input: {
     !input.subscribersLoading
   );
 }
+
+export function nextAvailabilityErrorAfterSubscribersRefresh(input: {
+  previousAvailabilityError: string | null;
+  subscriberAvailabilityReason: string | null;
+}) {
+  return input.subscriberAvailabilityReason ?? null;
+}

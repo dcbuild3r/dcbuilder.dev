@@ -33,11 +33,10 @@ export function isMissingNewsletterSchemaError(error: unknown): boolean {
   const mentionsNewsletter =
     haystack.includes("newsletter_") || haystack.includes("newsletter ");
   const mentionsMissingSchema =
-    haystack.includes("does not exist") ||
+    haystack.includes("relation") && haystack.includes("does not exist") ||
     haystack.includes("undefined column") ||
     haystack.includes("unknown column") ||
-    haystack.includes("no such table") ||
-    haystack.includes("relation");
+    haystack.includes("no such table");
 
   return mentionsNewsletter && mentionsMissingSchema;
 }

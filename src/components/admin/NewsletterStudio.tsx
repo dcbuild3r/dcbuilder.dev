@@ -15,6 +15,7 @@ import {
 } from "@/lib/newsletter-subscribers";
 import {
   canAutoRenderComposePreview,
+  nextAvailabilityErrorAfterSubscribersRefresh,
   shouldLoadSubscribersOnModeChange,
 } from "@/lib/newsletter-studio";
 
@@ -614,9 +615,12 @@ export function NewsletterStudio() {
     setSubscribersLoading(false);
 
     const availabilityReason = getAvailabilityReason(result.meta);
-    if (availabilityReason) {
-      setAvailabilityError(availabilityReason);
-    }
+    setAvailabilityError((current) =>
+      nextAvailabilityErrorAfterSubscribersRefresh({
+        previousAvailabilityError: current,
+        subscriberAvailabilityReason: availabilityReason,
+      })
+    );
 
     if (result.error) {
       setError(result.error);
