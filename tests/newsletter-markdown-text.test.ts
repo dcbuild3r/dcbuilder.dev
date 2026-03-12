@@ -6,8 +6,10 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
   });
 
   test("preserves links in rendered text output", async () => {
+    const actualDb = await import("../src/db");
     const actualPosthog = await import("../src/services/posthog");
     mock.module("@/db", () => ({
+      ...actualDb,
       db: {
         select: () => ({
           from: () => ({

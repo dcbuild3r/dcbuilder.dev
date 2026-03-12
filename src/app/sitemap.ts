@@ -4,6 +4,7 @@ import { blogPosts } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
 
 export const baseUrl = "https://dcbuilder.dev";
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes = [
