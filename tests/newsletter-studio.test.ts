@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   canAutoRenderComposePreview,
+  nextAvailabilityErrorAfterSubscribersRefresh,
   shouldLoadSubscribersOnModeChange,
 } from "../src/lib/newsletter-studio";
 
@@ -105,5 +106,21 @@ describe("canAutoRenderComposePreview", () => {
         subscribersLoading: false,
       })
     ).toBe(false);
+  });
+
+  test("clears a stale availability lock after subscriber refresh succeeds", () => {
+    expect(
+      nextAvailabilityErrorAfterSubscribersRefresh({
+        previousAvailabilityError: "Newsletter database is temporarily unavailable.",
+        subscriberAvailabilityReason: null,
+      })
+    ).toBe(null);
+
+    expect(
+      nextAvailabilityErrorAfterSubscribersRefresh({
+        previousAvailabilityError: "Newsletter database is temporarily unavailable.",
+        subscriberAvailabilityReason: "Newsletter database is temporarily unavailable.",
+      })
+    ).toBe("Newsletter database is temporarily unavailable.");
   });
 });
