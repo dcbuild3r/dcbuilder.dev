@@ -1,5 +1,5 @@
 import {
-  getSentNewsletterCampaignForArchive,
+  findSentNewsletterCampaignForArchive,
   listSentNewsletterCampaigns,
 } from "@/services/newsletter";
 
@@ -10,7 +10,8 @@ type PublicNewsletterArchiveResult = {
 
 type PublicNewsletterCampaignResult = {
   available: boolean;
-  campaign: Awaited<ReturnType<typeof getSentNewsletterCampaignForArchive>>;
+  campaign: Awaited<ReturnType<typeof findSentNewsletterCampaignForArchive>>["campaign"];
+  redirectTo: string | null;
 };
 
 function logArchiveFailure(operation: string, error: unknown) {
@@ -38,15 +39,22 @@ export async function loadPublicNewsletterCampaign(
   id: string
 ): Promise<PublicNewsletterCampaignResult> {
   try {
+    const result = await findSentNewsletterCampaignForArchive(id);
+
     return {
       available: true,
-      campaign: await getSentNewsletterCampaignForArchive(id),
+      campaign: result.campaign,
+      redirectTo:
+        result.campaign && result.matchedByLegacyId
+          ? `/newsletters/${result.campaign.publicSlug}`
+          : null,
     };
   } catch (error) {
     logArchiveFailure(`load archive campaign ${id}`, error);
     return {
       available: false,
       campaign: null,
+      redirectTo: null,
     };
   }
 }

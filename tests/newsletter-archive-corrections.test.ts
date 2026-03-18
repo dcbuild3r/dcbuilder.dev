@@ -2,6 +2,7 @@ import { afterEach, describe, expect, mock, test } from "bun:test";
 
 type NewsletterCampaignRecord = {
   id: string;
+  publicSlug?: string | null;
   newsletterType: string;
   subject: string;
   previewText: string | null;
@@ -177,6 +178,7 @@ describe("newsletter archive corrections", () => {
     await installNewsletterDbMock({
       selectQueue: [[{
         id: "camp_sent_1",
+        publicSlug: "weekly-news-digest-2026-03-12",
         subject: "Original subject",
         previewText: "Original preview",
         newsletterType: "news",
@@ -196,6 +198,7 @@ describe("newsletter archive corrections", () => {
 
     expect(campaign).toEqual({
       id: "camp_sent_1",
+      publicSlug: "weekly-news-digest-2026-03-12",
       subject: "Corrected archive subject",
       previewText: "Corrected archive preview",
       newsletterType: "news",

@@ -63,7 +63,7 @@ export default async function NewslettersPage() {
               {campaigns.map((campaign) => (
                 <Link
                   key={campaign.id}
-                  href={`/newsletters/${campaign.id}`}
+                  href={`/newsletters/${campaign.publicSlug}`}
                   className="block rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 hover:border-neutral-400 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-900/40 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3">
