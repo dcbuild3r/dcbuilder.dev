@@ -6,10 +6,12 @@ describe("GET /api/v1/newsletter/campaigns", () => {
   });
 
   test("returns an unavailable fallback instead of 500 when the campaigns table is missing", async () => {
+    const actualNewsletter = await import("../src/services/newsletter");
     mock.module("@/services/auth", () => ({
       requireAuth: async () => ({ valid: true as const, keyId: "key_123", name: "Admin" }),
     }));
     mock.module("@/services/newsletter", () => ({
+      ...actualNewsletter,
       listNewsletterCampaigns: async () => {
         throw new Error('relation "newsletter_campaigns" does not exist');
       },
