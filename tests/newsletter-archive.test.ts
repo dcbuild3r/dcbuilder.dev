@@ -7,8 +7,10 @@ describe("public newsletter archive loaders", () => {
 
   test("returns an unavailable archive state when listing campaigns throws", async () => {
     const originalConsoleError = console.error;
+    const actualNewsletter = await import("../src/services/newsletter");
     console.error = (() => {}) as typeof console.error;
     mock.module("@/services/newsletter", () => ({
+      ...actualNewsletter,
       listSentNewsletterCampaigns: async () => {
         throw new Error('relation "newsletter_campaigns" does not exist');
       },
@@ -30,8 +32,10 @@ describe("public newsletter archive loaders", () => {
 
   test("returns an unavailable campaign state when reading a campaign throws", async () => {
     const originalConsoleError = console.error;
+    const actualNewsletter = await import("../src/services/newsletter");
     console.error = (() => {}) as typeof console.error;
     mock.module("@/services/newsletter", () => ({
+      ...actualNewsletter,
       listSentNewsletterCampaigns: async () => [],
       getSentNewsletterCampaignForArchive: async () => {
         throw new Error('relation "newsletter_campaigns" does not exist');
@@ -52,6 +56,7 @@ describe("public newsletter archive loaders", () => {
   });
 
   test("passes through sent campaigns when the archive query succeeds", async () => {
+    const actualNewsletter = await import("../src/services/newsletter");
     const campaigns = [
       {
         id: "camp_123",
@@ -63,6 +68,7 @@ describe("public newsletter archive loaders", () => {
     ];
 
     mock.module("@/services/newsletter", () => ({
+      ...actualNewsletter,
       listSentNewsletterCampaigns: async () => campaigns,
       getSentNewsletterCampaignForArchive: async () => campaigns[0],
     }));
