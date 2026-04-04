@@ -1,5 +1,5 @@
 import { randomBytes } from "crypto";
-import { and, desc, eq, gt, inArray, isNull, lte } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, like, lte, ne, or } from "drizzle-orm";
 import {
   db,
   jobs,
@@ -29,6 +29,11 @@ import {
   computeViewTotals,
   normalizeNewsletterContentMode,
 } from "@/lib/newsletter-utils";
+import {
+  buildNewsletterPublicSlug,
+  deriveNewsletterSlugDateAnchor,
+  ensureUniqueNewsletterPublicSlug,
+} from "@/lib/newsletter-slug";
 import { getRecommendedLinks, OTHER_CONTENT_I_LIKE } from "@/lib/recommendations";
 import { isMissingNewsletterSchemaError } from "@/services/newsletter-schema";
 
@@ -1791,6 +1796,40 @@ function formatUtcDay(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
+async function resolveUniqueNewsletterPublicSlug(params: {
+  subject: string;
+  sentAt?: Date | null;
+  scheduledAt?: Date | null;
+  createdAt?: Date | null;
+  excludeCampaignId?: string;
+}) {
+  const baseSlug = buildNewsletterPublicSlug(
+    params.subject,
+    deriveNewsletterSlugDateAnchor({
+      sentAt: params.sentAt,
+      scheduledAt: params.scheduledAt,
+      createdAt: params.createdAt,
+    }),
+  );
+  const slugCondition = or(
+    eq(newsletterCampaigns.publicSlug, baseSlug),
+    like(newsletterCampaigns.publicSlug, `${baseSlug}-%`),
+  );
+  const whereClause = params.excludeCampaignId
+    ? and(slugCondition, ne(newsletterCampaigns.id, params.excludeCampaignId))
+    : slugCondition;
+
+  const existingSlugs = await db
+    .select({ publicSlug: newsletterCampaigns.publicSlug })
+    .from(newsletterCampaigns)
+    .where(whereClause);
+
+  return ensureUniqueNewsletterPublicSlug(
+    baseSlug,
+    existingSlugs.map((campaign) => campaign.publicSlug),
+  );
+}
+
 export async function createWeeklyNewsCampaignIssue(input?: {
   periodDays?: number;
   createdBy?: string;
@@ -1908,18 +1947,26 @@ export async function createNewsletterCampaign(input: {
   if (scheduledAt === "invalid") {
     return { ok: false as const, status: 400, error: "Invalid scheduledAt value" };
   }
+  const subject = input.subject.trim();
+  const now = new Date();
   const content = normalizeCampaignContentByMode({
     contentMode,
     markdownContent: input.markdownContent,
     manualHtml: input.manualHtml,
     manualText: input.manualText,
   });
+  const publicSlug = await resolveUniqueNewsletterPublicSlug({
+    subject,
+    scheduledAt,
+    createdAt: now,
+  });
 
   const [campaign] = await db
     .insert(newsletterCampaigns)
     .values({
+      publicSlug,
       newsletterType: input.newsletterType as NewsletterType,
-      subject: input.subject.trim(),
+      subject,
       previewText: input.previewText || null,
       contentMode,
       markdownContent: content.markdownContent,
@@ -1929,6 +1976,8 @@ export async function createNewsletterCampaign(input: {
       status: scheduledAt ? "scheduled" : "draft",
       scheduledAt,
       createdBy: input.createdBy || null,
+      createdAt: now,
+      updatedAt: now,
     })
     .returning();
 
@@ -1948,10 +1997,17 @@ export async function scheduleNewsletterCampaign(campaignId: string, scheduledAt
   if (scheduledAt === "invalid") {
     return { ok: false as const, status: 400, error: "Invalid scheduledAt value" };
   }
+  const publicSlug = await resolveUniqueNewsletterPublicSlug({
+    subject: existing.data.subject,
+    scheduledAt,
+    createdAt: existing.data.createdAt,
+    excludeCampaignId: campaignId,
+  });
 
   const [campaign] = await db
     .update(newsletterCampaigns)
     .set({
+      publicSlug,
       status: "scheduled",
       scheduledAt,
       updatedAt: new Date(),
@@ -2037,10 +2093,17 @@ export async function updateNewsletterCampaign(campaignId: string, input: {
     manualHtml: input.manualHtml ?? current.data.manualHtml,
     manualText: input.manualText ?? current.data.manualText,
   });
+  const publicSlug = await resolveUniqueNewsletterPublicSlug({
+    subject,
+    scheduledAt,
+    createdAt: current.data.createdAt,
+    excludeCampaignId: campaignId,
+  });
 
   const [updated] = await db
     .update(newsletterCampaigns)
     .set({
+      publicSlug,
       newsletterType,
       subject,
       previewText: input.previewText === undefined ? current.data.previewText : (input.previewText || null),
@@ -2570,11 +2633,23 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
     });
   }
 
+  const completedAt = failedCount > 0 ? null : new Date();
+  const publicSlug = completedAt
+    ? await resolveUniqueNewsletterPublicSlug({
+      subject: sendingCampaign.subject,
+      sentAt: completedAt,
+      scheduledAt: sendingCampaign.scheduledAt,
+      createdAt: sendingCampaign.createdAt,
+      excludeCampaignId: sendingCampaign.id,
+    })
+    : sendingCampaign.publicSlug;
+
   await db
     .update(newsletterCampaigns)
     .set({
       status: failedCount > 0 ? "failed" : "sent",
-      sentAt: failedCount > 0 ? null : new Date(),
+      sentAt: completedAt,
+      publicSlug,
       failureReason: failedCount > 0 ? `${failedCount} recipients failed` : null,
       updatedAt: new Date(),
     })
@@ -2632,6 +2707,7 @@ export async function listSentNewsletterCampaigns(limit: number = 50) {
   const campaigns = await db
     .select({
       id: newsletterCampaigns.id,
+      publicSlug: newsletterCampaigns.publicSlug,
       subject: newsletterCampaigns.subject,
       previewText: newsletterCampaigns.previewText,
       newsletterType: newsletterCampaigns.newsletterType,
@@ -2649,9 +2725,14 @@ export async function listSentNewsletterCampaigns(limit: number = 50) {
 }
 
 export async function getSentNewsletterCampaignForArchive(id: string) {
+  return (await findSentNewsletterCampaignForArchive(id)).campaign;
+}
+
+async function getSentNewsletterCampaignForArchiveByPublicSlug(publicSlug: string) {
   const [campaign] = await db
     .select({
       id: newsletterCampaigns.id,
+      publicSlug: newsletterCampaigns.publicSlug,
       subject: newsletterCampaigns.subject,
       previewText: newsletterCampaigns.previewText,
       newsletterType: newsletterCampaigns.newsletterType,
@@ -2665,7 +2746,7 @@ export async function getSentNewsletterCampaignForArchive(id: string) {
     .from(newsletterCampaigns)
     .where(
       and(
-        eq(newsletterCampaigns.id, id),
+        eq(newsletterCampaigns.publicSlug, publicSlug),
         eq(newsletterCampaigns.status, "sent")
       )
     )
@@ -2683,8 +2764,55 @@ export async function getSentNewsletterCampaignForArchive(id: string) {
   return resolved;
 }
 
+export async function findSentNewsletterCampaignForArchive(identifier: string) {
+  const slugMatch = await getSentNewsletterCampaignForArchiveByPublicSlug(identifier);
+  if (slugMatch) {
+    return {
+      campaign: slugMatch,
+      matchedByLegacyId: false,
+    };
+  }
+
+  const [campaign] = await db
+    .select({
+      id: newsletterCampaigns.id,
+      publicSlug: newsletterCampaigns.publicSlug,
+      subject: newsletterCampaigns.subject,
+      previewText: newsletterCampaigns.previewText,
+      newsletterType: newsletterCampaigns.newsletterType,
+      sentAt: newsletterCampaigns.sentAt,
+      renderedHtml: newsletterCampaigns.renderedHtml,
+      archiveSubject: newsletterCampaigns.archiveSubject,
+      archivePreviewText: newsletterCampaigns.archivePreviewText,
+      archiveRenderedHtml: newsletterCampaigns.archiveRenderedHtml,
+      archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
+    })
+    .from(newsletterCampaigns)
+    .where(
+      and(
+        eq(newsletterCampaigns.id, identifier),
+        eq(newsletterCampaigns.status, "sent")
+      )
+    )
+    .limit(1);
+
+  const resolved = campaign ? resolveArchiveCampaignDetail(campaign) : null;
+  if (!resolved?.renderedHtml) {
+    return {
+      campaign: null,
+      matchedByLegacyId: false,
+    };
+  }
+
+  return {
+    campaign: resolved,
+    matchedByLegacyId: true,
+  };
+}
+
 function resolveArchiveCampaignSummary(campaign: {
   id: string;
+  publicSlug: string;
   subject: string;
   previewText: string | null;
   newsletterType: string;
@@ -2695,6 +2823,7 @@ function resolveArchiveCampaignSummary(campaign: {
 }) {
   return {
     id: campaign.id,
+    publicSlug: campaign.publicSlug,
     subject: campaign.archiveSubject || campaign.subject,
     previewText: campaign.archivePreviewText ?? campaign.previewText,
     newsletterType: campaign.newsletterType,
@@ -2705,6 +2834,7 @@ function resolveArchiveCampaignSummary(campaign: {
 
 function resolveArchiveCampaignDetail(campaign: {
   id: string;
+  publicSlug: string;
   subject: string;
   previewText: string | null;
   newsletterType: string;
@@ -2717,6 +2847,7 @@ function resolveArchiveCampaignDetail(campaign: {
 }) {
   return {
     id: campaign.id,
+    publicSlug: campaign.publicSlug,
     subject: campaign.archiveSubject || campaign.subject,
     previewText: campaign.archivePreviewText ?? campaign.previewText,
     newsletterType: campaign.newsletterType,

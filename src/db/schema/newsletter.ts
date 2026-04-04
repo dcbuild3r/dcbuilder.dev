@@ -46,6 +46,7 @@ export const newsletterCampaigns = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => createId()),
+    publicSlug: text("public_slug").notNull(),
     newsletterType: text("newsletter_type").notNull(), // news | jobs | candidates
     subject: text("subject").notNull(),
     previewText: text("preview_text"),
@@ -75,6 +76,7 @@ export const newsletterCampaigns = pgTable(
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
+    uniqueIndex("newsletter_campaigns_public_slug_uidx").on(table.publicSlug),
     index("newsletter_campaigns_status_idx").on(table.status),
     index("newsletter_campaigns_type_idx").on(table.newsletterType),
     index("newsletter_campaigns_scheduled_idx").on(table.scheduledAt),

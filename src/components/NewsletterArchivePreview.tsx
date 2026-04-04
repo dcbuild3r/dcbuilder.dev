@@ -46,7 +46,7 @@ export async function NewsletterArchivePreview() {
         {campaigns.map((campaign) => (
           <Link
             key={campaign.id}
-            href={`/newsletters/${campaign.id}`}
+            href={`/newsletters/${campaign.publicSlug}`}
             className="group flex items-start gap-3 rounded-lg border border-neutral-200 dark:border-neutral-700/60 p-3 hover:border-neutral-400 dark:hover:border-neutral-500 hover:bg-neutral-100/50 dark:hover:bg-neutral-800/40 transition-colors"
           >
             <div className="min-w-0 flex-1">

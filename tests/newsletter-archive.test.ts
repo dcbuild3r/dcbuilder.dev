@@ -15,6 +15,7 @@ describe("public newsletter archive loaders", () => {
         throw new Error('relation "newsletter_campaigns" does not exist');
       },
       getSentNewsletterCampaignForArchive: async () => null,
+      findSentNewsletterCampaignForArchive: async () => ({ campaign: null, matchedByLegacyId: false }),
     }));
 
     const { loadPublicNewsletterArchive } = await import(
@@ -37,7 +38,8 @@ describe("public newsletter archive loaders", () => {
     mock.module("@/services/newsletter", () => ({
       ...actualNewsletter,
       listSentNewsletterCampaigns: async () => [],
-      getSentNewsletterCampaignForArchive: async () => {
+      getSentNewsletterCampaignForArchive: async () => null,
+      findSentNewsletterCampaignForArchive: async () => {
         throw new Error('relation "newsletter_campaigns" does not exist');
       },
     }));
@@ -50,6 +52,7 @@ describe("public newsletter archive loaders", () => {
     expect(result).toEqual({
       available: false,
       campaign: null,
+      redirectTo: null,
     });
 
     console.error = originalConsoleError;
@@ -60,6 +63,7 @@ describe("public newsletter archive loaders", () => {
     const campaigns = [
       {
         id: "camp_123",
+        publicSlug: "weekly-news-digest-2026-03-11",
         subject: "Weekly News Digest",
         previewText: "Top updates",
         newsletterType: "news",
@@ -71,6 +75,10 @@ describe("public newsletter archive loaders", () => {
       ...actualNewsletter,
       listSentNewsletterCampaigns: async () => campaigns,
       getSentNewsletterCampaignForArchive: async () => campaigns[0],
+      findSentNewsletterCampaignForArchive: async (identifier: string) => ({
+        campaign: campaigns[0],
+        matchedByLegacyId: identifier === campaigns[0].id,
+      }),
     }));
 
     const { loadPublicNewsletterArchive, loadPublicNewsletterCampaign } = await import(
@@ -81,9 +89,15 @@ describe("public newsletter archive loaders", () => {
       available: true,
       campaigns,
     });
+    await expect(loadPublicNewsletterCampaign(campaigns[0].publicSlug)).resolves.toEqual({
+      available: true,
+      campaign: campaigns[0],
+      redirectTo: null,
+    });
     await expect(loadPublicNewsletterCampaign("camp_123")).resolves.toEqual({
       available: true,
       campaign: campaigns[0],
+      redirectTo: `/newsletters/${campaigns[0].publicSlug}`,
     });
   });
 });

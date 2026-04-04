@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { NewsletterIframe } from "@/components/NewsletterIframe";
@@ -10,10 +10,14 @@ type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
-  const { available, campaign } = await loadPublicNewsletterCampaign(id);
+  const { available, campaign, redirectTo } = await loadPublicNewsletterCampaign(id);
 
   if (!available) {
     return { title: "Newsletter Archive Unavailable" };
+  }
+
+  if (redirectTo) {
+    permanentRedirect(redirectTo);
   }
 
   if (!campaign) {
@@ -28,7 +32,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function NewsletterViewPage({ params }: Props) {
   const { id } = await params;
-  const { available, campaign } = await loadPublicNewsletterCampaign(id);
+  const { available, campaign, redirectTo } = await loadPublicNewsletterCampaign(id);
 
   if (!available) {
     return (
@@ -52,6 +56,10 @@ export default async function NewsletterViewPage({ params }: Props) {
         </main>
       </>
     );
+  }
+
+  if (redirectTo) {
+    permanentRedirect(redirectTo);
   }
 
   if (!campaign) {

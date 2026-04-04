@@ -9,6 +9,7 @@ export async function NewsTools() {
       archiveAvailable={available}
       campaigns={campaigns.map((campaign) => ({
         id: campaign.id,
+        publicSlug: campaign.publicSlug,
         subject: campaign.subject,
         previewText: campaign.previewText ?? null,
         newsletterType: campaign.newsletterType,

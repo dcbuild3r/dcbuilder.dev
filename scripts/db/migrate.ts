@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { sql as drizzleSql } from "drizzle-orm";
+import { readMigrationFiles, type MigrationConfig } from "drizzle-orm/migrator";
 import postgres from "postgres";
 import { createPreferredPostgresSocket, resolvePreferredPostgresTarget } from "../../src/db/postgres-connection";
 
@@ -46,6 +47,99 @@ function resolveUrl(targetEnv: TargetEnv): string {
   return prodUrl;
 }
 
+function quoteSqlIdentifier(identifier: string): string {
+  return `"${identifier.replace(/"/g, "\"\"")}"`;
+}
+
+function quoteSqlLiteral(value: string): string {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+
+function isSchemaPermissionError(error: unknown): boolean {
+  const code = (
+    error as
+      | { code?: string; cause?: { code?: string } }
+      | undefined
+  )?.cause?.code ?? (error as { code?: string } | undefined)?.code;
+  const message = error instanceof Error ? error.message : String(error);
+
+  return code === "42501" || /permission denied/i.test(message);
+}
+
+async function schemaExists(db: ReturnType<typeof drizzle>, schema: string): Promise<boolean> {
+  const rows = await db.execute(
+    drizzleSql.raw(
+      `select schema_name from information_schema.schemata where schema_name = ${quoteSqlLiteral(schema)} limit 1`
+    )
+  ) as Array<{ schema_name?: string }>;
+
+  return rows.length > 0;
+}
+
+async function ensureMigrationSchema(
+  db: ReturnType<typeof drizzle>,
+  schema: string
+) {
+  if (await schemaExists(db, schema)) {
+    return;
+  }
+
+  try {
+    await db.execute(
+      drizzleSql.raw(`CREATE SCHEMA IF NOT EXISTS ${quoteSqlIdentifier(schema)}`)
+    );
+  } catch (error) {
+    if (isSchemaPermissionError(error) && await schemaExists(db, schema)) {
+      return;
+    }
+    throw error;
+  }
+}
+
+async function migrateWithSchemaFallback(
+  db: ReturnType<typeof drizzle>,
+  config: MigrationConfig
+) {
+  const migrations = readMigrationFiles(config);
+  const migrationsTable = config.migrationsTable ?? "__drizzle_migrations";
+  const migrationsSchema = config.migrationsSchema ?? "drizzle";
+  const qualifiedTable = `${quoteSqlIdentifier(migrationsSchema)}.${quoteSqlIdentifier(migrationsTable)}`;
+
+  await ensureMigrationSchema(db, migrationsSchema);
+  await db.execute(
+    drizzleSql.raw(
+      `CREATE TABLE IF NOT EXISTS ${qualifiedTable} (
+        id SERIAL PRIMARY KEY,
+        hash text NOT NULL,
+        created_at bigint
+      )`
+    )
+  );
+
+  const dbMigrations = await db.execute(
+    drizzleSql.raw(
+      `select id, hash, created_at from ${qualifiedTable} order by created_at desc limit 1`
+    )
+  ) as Array<{ created_at: string }>;
+  const lastDbMigration = dbMigrations[0];
+
+  await db.transaction(async (tx) => {
+    for await (const migration of migrations) {
+      if (!lastDbMigration || Number(lastDbMigration.created_at) < migration.folderMillis) {
+        for (const stmt of migration.sql) {
+          await tx.execute(drizzleSql.raw(stmt));
+        }
+
+        await tx.execute(
+          drizzleSql.raw(
+            `insert into ${qualifiedTable} ("hash", "created_at") values(${quoteSqlLiteral(migration.hash)}, ${migration.folderMillis})`
+          )
+        );
+      }
+    }
+  });
+}
+
 async function run() {
   const targetEnv = parseEnvArg(process.argv.slice(2));
 
@@ -63,7 +157,7 @@ async function run() {
     );
   }
 
-  const sql = postgres(databaseUrl, {
+  const queryClient = postgres(databaseUrl, {
     max: 1,
     socket: targetEnv === "dev"
       ? undefined
@@ -71,10 +165,10 @@ async function run() {
   });
 
   try {
-    const db = drizzle(sql);
-    await migrate(db, { migrationsFolder: "drizzle" });
+    const db = drizzle(queryClient);
+    await migrateWithSchemaFallback(db, { migrationsFolder: "drizzle" });
   } finally {
-    await sql.end({ timeout: 5 });
+    await queryClient.end({ timeout: 5 });
   }
 }
 
