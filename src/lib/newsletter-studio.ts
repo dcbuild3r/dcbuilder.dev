@@ -1,5 +1,19 @@
 export type NewsletterStudioMode = "compose" | "queue" | "subscribers" | "templates";
 
+export const NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME = "mx-auto max-w-3xl px-4 sm:px-6 lg:px-8";
+
+export function getNewsletterStarterHeadingClassName(level: number) {
+  if (level === 2) {
+    return "mb-6 mt-0 border-b border-neutral-900 pb-4 text-4xl font-black tracking-tight text-neutral-950 dark:border-neutral-100 dark:text-neutral-50";
+  }
+
+  if (level === 3) {
+    return "mb-4 mt-8 text-2xl font-bold tracking-tight text-neutral-950 dark:text-neutral-50";
+  }
+
+  return "text-xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-50";
+}
+
 export function canAutoRenderComposePreview(input: {
   loading: boolean;
   mode: NewsletterStudioMode;

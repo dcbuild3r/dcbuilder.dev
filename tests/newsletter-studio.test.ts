@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import {
+  NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME,
   canAutoRenderComposePreview,
+  getNewsletterStarterHeadingClassName,
   shouldLoadSubscribersOnModeChange,
 } from "../src/lib/newsletter-studio";
 
@@ -71,6 +73,15 @@ describe("canAutoRenderComposePreview", () => {
         draft: { contentMode: "manual", markdownContent: "", manualHtml: "<p>Hello</p>", manualText: "Hello" },
       })
     ).toBe(true);
+  });
+
+  test("styles the rendered starter preview with a left gutter and section separators", () => {
+    expect(NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME).toContain("max-w-3xl");
+    expect(NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME).toContain("px-4");
+    expect(NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME).toContain("sm:px-6");
+    expect(NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME).toContain("lg:px-8");
+    expect(getNewsletterStarterHeadingClassName(2)).toContain("border-b");
+    expect(getNewsletterStarterHeadingClassName(2)).toContain("pb-4");
   });
 
   test("loads subscribers only when entering the subscribers mode without cached data", () => {

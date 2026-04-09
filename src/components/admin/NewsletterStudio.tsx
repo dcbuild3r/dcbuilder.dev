@@ -1,6 +1,6 @@
 "use client";
 
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { ErrorAlert } from "@/components/admin/ActionButtons";
 import { adminFetch, getAdminApiKey } from "@/lib/admin-utils";
@@ -15,6 +15,8 @@ import {
 } from "@/lib/newsletter-subscribers";
 import {
   canAutoRenderComposePreview,
+  getNewsletterStarterHeadingClassName,
+  NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME,
   shouldLoadSubscribersOnModeChange,
 } from "@/lib/newsletter-studio";
 
@@ -378,6 +380,22 @@ function HtmlPreviewFrame({ html, className }: { html: string; className?: strin
     />
   );
 }
+
+const newsletterStarterMarkdownComponents: Components = {
+  h2: ({ children }) => (
+    <h2 className={getNewsletterStarterHeadingClassName(2)}>
+      {children}
+    </h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className={getNewsletterStarterHeadingClassName(3)}>
+      {children}
+    </h3>
+  ),
+  hr: () => (
+    <hr className="my-8 border-0 border-t border-neutral-200 dark:border-neutral-800" />
+  ),
+};
 
 function computeUtcWindow(periodDays: number, now: Date) {
   const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
@@ -2644,8 +2662,10 @@ export function NewsletterStudio() {
                     {templatePreview.starter.markdown}
                   </pre>
                   <div className="rounded-xl border border-neutral-200 bg-white p-5 sm:p-7 dark:border-neutral-800 dark:bg-neutral-950">
-                    <div className="prose prose-sm mx-auto max-w-3xl dark:prose-invert sm:prose-base">
-                      <ReactMarkdown>{templatePreview.starter.markdown}</ReactMarkdown>
+                    <div className={`prose prose-sm dark:prose-invert sm:prose-base ${NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME}`}>
+                      <ReactMarkdown components={newsletterStarterMarkdownComponents}>
+                        {templatePreview.starter.markdown}
+                      </ReactMarkdown>
                     </div>
                   </div>
                 </div>

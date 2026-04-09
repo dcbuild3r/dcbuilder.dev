@@ -1204,6 +1204,13 @@ export function markdownToHtml(markdown: string): string {
 
       const fontSizeByLevel = [0, 34, 24, 18, 16, 15, 14];
       const headingSize = fontSizeByLevel[level] ?? 16;
+      if (level === 2) {
+        output.push(
+          `<h2 style="margin:28px 0 14px;padding-bottom:10px;border-bottom:2px solid #171717;font-family:${SUBSTACK_SANS_FONT_STACK};font-size:${headingSize}px;line-height:1.18;font-weight:800;color:#111111;">${renderInlineMarkdown(headingText)}</h2>`
+        );
+        continue;
+      }
+
       output.push(`<h${level} style="margin:20px 0 10px;font-family:${SUBSTACK_SANS_FONT_STACK};font-size:${headingSize}px;line-height:1.22;font-weight:700;color:#111111;">${renderInlineMarkdown(headingText)}</h${level}>`);
       continue;
     }
@@ -1261,7 +1268,7 @@ export function markdownToHtml(markdown: string): string {
   const html = output.join("\n").trim();
   if (!html) return "";
   return `
-    <div style="max-width:560px;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#171717;line-height:1.6">
+    <div style="max-width:560px;margin:0 auto;padding:0 24px;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#171717;line-height:1.6">
       <div style="padding:32px 0 20px">
         <div style="width:64px;height:64px;border-radius:50%;overflow:hidden">
           <img src="${NEWSLETTER_AVATAR_URL}" alt="dcbuilder.eth" width="64" height="64" style="display:block;width:64px;height:64px;object-fit:cover" />
