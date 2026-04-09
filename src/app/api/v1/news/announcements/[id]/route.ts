@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { db, announcements } from "@/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "@/services/auth";
+import { validateEditorialRelevance } from "@/lib/news-relevance";
 
 // GET /api/v1/news/announcements/[id] - Get an announcement by ID
 export async function GET(
@@ -58,6 +59,13 @@ export async function PUT(
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;
     if (body.featured !== undefined) updateData.featured = body.featured;
+    if (body.relevance !== undefined) {
+      const relevanceValidation = validateEditorialRelevance(body.relevance);
+      if (!relevanceValidation.ok) {
+        return Response.json({ error: relevanceValidation.error, code: "VALIDATION_ERROR" }, { status: 400 });
+      }
+      updateData.relevance = relevanceValidation.data;
+    }
 
     const [updated] = await db
       .update(announcements)

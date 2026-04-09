@@ -13,6 +13,7 @@ export interface AggregatedNewsItem {
   description?: string;
   category: NewsCategory;
   featured?: boolean;
+  relevance: number;
   // Type-specific fields
   source?: string; // For curated links
   sourceImage?: string; // For curated links
@@ -42,6 +43,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     category: "general" as NewsCategory,
     readingTime: `${post.readingTime} min read`,
     image: post.image,
+    relevance: post.relevance,
   }));
 
   // Map curated links
@@ -54,6 +56,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     description: link.description || undefined,
     category: link.category as NewsCategory,
     featured: link.featured || false,
+    relevance: link.relevance,
     source: link.source,
     sourceImage: link.sourceImage || undefined,
   }));
@@ -68,6 +71,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     description: ann.description || undefined,
     category: ann.category as NewsCategory,
     featured: ann.featured || false,
+    relevance: ann.relevance,
     company: ann.company,
     companyLogo: ann.companyLogo || undefined,
     platform: ann.platform,

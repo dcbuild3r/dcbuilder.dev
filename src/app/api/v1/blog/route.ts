@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, blogPosts } from "@/db";
 import { desc, eq } from "drizzle-orm";
 import { requireAuth, validateApiKey } from "@/services/auth";
+import { validateEditorialRelevance } from "@/lib/news-relevance";
 
 function isValidDate(dateStr: string): boolean {
   const parsed = new Date(dateStr);
@@ -29,6 +30,7 @@ export async function GET(request: NextRequest) {
       sourceUrl: post.sourceUrl,
       image: post.image,
       published: post.published,
+      relevance: post.relevance,
       wordCount: post.content.trim().split(/\s+/).length,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
@@ -60,7 +62,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { slug, title, date, description, source, sourceUrl, image, content, published } = body as {
+  const { slug, title, date, description, source, sourceUrl, image, content, published, relevance } = body as {
     slug?: string;
     title?: string;
     date?: string;
@@ -70,6 +72,7 @@ export async function POST(request: NextRequest) {
     image?: string;
     content?: string;
     published?: boolean;
+    relevance?: number;
   };
 
   // Validate required fields
@@ -95,6 +98,14 @@ export async function POST(request: NextRequest) {
     console.warn("[api/blog] Invalid date format:", { date });
     return NextResponse.json(
       { error: "Invalid date format", code: "INVALID_DATE" },
+      { status: 400 }
+    );
+  }
+
+  const relevanceValidation = validateEditorialRelevance(relevance, 5);
+  if (!relevanceValidation.ok) {
+    return NextResponse.json(
+      { error: relevanceValidation.error, code: "VALIDATION_ERROR" },
       { status: 400 }
     );
   }
@@ -125,6 +136,7 @@ export async function POST(request: NextRequest) {
       sourceUrl: sourceUrl || null,
       image: image || null,
       published: published ?? true,
+      relevance: relevanceValidation.data ?? 5,
     });
 
     return NextResponse.json({

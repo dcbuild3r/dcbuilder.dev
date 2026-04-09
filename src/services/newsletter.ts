@@ -11,6 +11,7 @@ import {
   newsletterCampaignRecipients,
   newsletterSendEvents,
   newsletterUnsubTokens,
+  type NewsletterCampaign,
 } from "@/db";
 import {
   getCandidateViewsForWindow,
@@ -29,6 +30,14 @@ import {
   normalizeNewsletterContentMode,
 } from "@/lib/newsletter-utils";
 import { getRecommendedLinks, OTHER_CONTENT_I_LIKE } from "@/lib/recommendations";
+import {
+  NEWSLETTER_TIMEFRAME_PRESETS,
+  resolveNewsletterSummaryFilters,
+  validateMinimumRelevance,
+  validatePeriodDays as validateSummaryPeriodDays,
+  type NewsletterTimeframePreset,
+} from "@/lib/newsletter-summary";
+import { isMissingNewsletterSchemaError } from "@/services/newsletter-schema";
 
 type SendResult = { success: true; messageId: string } | { success: false; error: string };
 
@@ -81,6 +90,13 @@ function sortGroupsByCategory<T extends { category?: string }>(groups: T[]): T[]
 }
 
 const DEFAULT_CAMPAIGN_PERIOD_DAYS = 7;
+const DEFAULT_TIMEFRAME_PRESET: NewsletterTimeframePreset = "weekly";
+
+type NewsletterSummaryFilters = {
+  timeframePreset: NewsletterTimeframePreset;
+  periodDays: number;
+  minimumRelevance: number;
+};
 
 interface NewsletterTemplatePayload {
   newsletterType: NewsletterType;
@@ -135,6 +151,26 @@ const DEFAULT_NEWSLETTER_TEMPLATES: Record<NewsletterType, NewsletterTemplatePay
     markdownTemplate: "{{default_markdown_body}}",
   },
 };
+
+function getDefaultNewsletterTemplate(newsletterType: NewsletterType): NewsletterTemplatePayload {
+  return DEFAULT_NEWSLETTER_TEMPLATES[newsletterType];
+}
+
+export function getDefaultNewsletterTemplates(): NewsletterTemplatePayload[] {
+  return NEWSLETTER_TYPES.map((newsletterType) => getDefaultNewsletterTemplate(newsletterType));
+}
+
+async function loadStoredNewsletterTemplates() {
+  try {
+    return await db.select().from(newsletterTemplates);
+  } catch (error) {
+    if (isMissingNewsletterSchemaError(error)) {
+      console.error("[newsletter] templates table unavailable, using defaults", error);
+      return null;
+    }
+    throw error;
+  }
+}
 
 const LEGACY_NEWS_HTML_TEMPLATE = "{{default_html_body}}<hr /><h3>Recent News</h3><ul>{{recent_news_html}}</ul>";
 const LEGACY_NEWS_TEXT_TEMPLATE = "{{default_text_body}}\n\nRecent News:\n{{recent_news_text}}";
@@ -741,12 +777,124 @@ async function buildCandidatesDigest(periodDays: number): Promise<CampaignDigest
   };
 }
 
-async function buildNewsDigest(periodDays: number): Promise<CampaignDigest> {
-  const cutoff = new Date(Date.now() - periodDays * 24 * 60 * 60 * 1000);
-  const [allNews, clicksResult] = await Promise.all([getAllNews(), getNewsClicksForWindow(periodDays, 0)]);
+function formatDigestWindowLabel(filters: NewsletterSummaryFilters) {
+  if (filters.timeframePreset === "weekly") return "Weekly";
+  if (filters.timeframePreset === "monthly") return "Monthly";
+  if (filters.timeframePreset === "quarterly") return "Quarterly";
+  return "Custom";
+}
+
+function buildNewsDigestSummary(filters: NewsletterSummaryFilters) {
+  const label = formatDigestWindowLabel(filters);
+  const relevanceSuffix = filters.minimumRelevance > 1 ? ` Relevance ${filters.minimumRelevance}+.` : "";
+  if (filters.timeframePreset === "custom") {
+    return `Highlights from the last ${filters.periodDays} days.${relevanceSuffix}`;
+  }
+  return `${label} highlights from the last ${filters.periodDays} days.${relevanceSuffix}`;
+}
+
+function isNewsletterTimeframePreset(value: string): value is NewsletterTimeframePreset {
+  return value === "custom" || value in NEWSLETTER_TIMEFRAME_PRESETS;
+}
+
+function validateTimeframePreset(timeframePreset?: string | null) {
+  if (timeframePreset === undefined || timeframePreset === null || timeframePreset === "") {
+    return { ok: true as const, data: DEFAULT_TIMEFRAME_PRESET };
+  }
+  if (!isNewsletterTimeframePreset(timeframePreset)) {
+    return { ok: false as const, status: 400, error: "Invalid timeframe preset" };
+  }
+  return { ok: true as const, data: timeframePreset };
+}
+
+function validateSummaryFilters(
+  input: {
+    timeframePreset?: string | null;
+    periodDays?: number | null;
+    minimumRelevance?: number | null;
+  },
+  fallback?: NewsletterSummaryFilters,
+) {
+  const timeframeValidation = validateTimeframePreset(input.timeframePreset ?? fallback?.timeframePreset);
+  if (!timeframeValidation.ok) {
+    return timeframeValidation;
+  }
+
+  const timeframePreset = timeframeValidation.data;
+  const defaultMinimumRelevance = timeframePreset === "custom"
+    ? (fallback?.minimumRelevance ?? 1)
+    : NEWSLETTER_TIMEFRAME_PRESETS[timeframePreset].minimumRelevance;
+  const minimumRelevanceValidation = validateMinimumRelevance(
+    input.minimumRelevance ?? fallback?.minimumRelevance ?? defaultMinimumRelevance
+  );
+  if (!minimumRelevanceValidation.ok) {
+    return minimumRelevanceValidation;
+  }
+
+  if (timeframePreset !== "custom") {
+    const presetFilters = resolveNewsletterSummaryFilters({
+      timeframePreset,
+      minimumRelevance: minimumRelevanceValidation.data,
+    });
+    return {
+      ok: true as const,
+      data: {
+        ...presetFilters,
+        minimumRelevance: minimumRelevanceValidation.data,
+      },
+    };
+  }
+
+  const periodValidation = validateSummaryPeriodDays(input.periodDays ?? fallback?.periodDays);
+  if (!periodValidation.ok) {
+    return periodValidation;
+  }
+
+  return {
+    ok: true as const,
+    data: resolveNewsletterSummaryFilters({
+      timeframePreset,
+      periodDays: periodValidation.data,
+      minimumRelevance: minimumRelevanceValidation.data,
+    }),
+  };
+}
+
+function resolveStoredSummaryFilters(input: {
+  timeframePreset?: string | null;
+  periodDays?: number | null;
+  minimumRelevance?: number | null;
+}): NewsletterSummaryFilters {
+  const timeframeValidation = validateTimeframePreset(input.timeframePreset);
+  const timeframePreset = timeframeValidation.ok ? timeframeValidation.data : DEFAULT_TIMEFRAME_PRESET;
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset,
+    periodDays: input.periodDays ?? DEFAULT_CAMPAIGN_PERIOD_DAYS,
+    minimumRelevance: input.minimumRelevance ?? NEWSLETTER_TIMEFRAME_PRESETS.weekly.minimumRelevance,
+  });
+
+  if (summaryValidation.ok) {
+    return summaryValidation.data;
+  }
+
+  return {
+    timeframePreset: DEFAULT_TIMEFRAME_PRESET,
+    periodDays: DEFAULT_CAMPAIGN_PERIOD_DAYS,
+    minimumRelevance: NEWSLETTER_TIMEFRAME_PRESETS.weekly.minimumRelevance,
+  };
+}
+
+async function buildNewsDigest(filters: NewsletterSummaryFilters): Promise<CampaignDigest> {
+  const cutoff = new Date(Date.now() - filters.periodDays * 24 * 60 * 60 * 1000);
+  const [allNews, clicksResult] = await Promise.all([
+    getAllNews(),
+    getNewsClicksForWindow(filters.periodDays, 0),
+  ]);
   const clickMap = new Map((clicksResult.success ? clicksResult.data : []).map((row) => [row.id, row.count]));
 
-  const filtered = allNews.filter((item) => new Date(item.date) > cutoff);
+  const filtered = allNews.filter((item) => {
+    return new Date(item.date) > cutoff && (item.relevance ?? 5) >= filters.minimumRelevance;
+  });
 
   const items: DigestItem[] = filtered.slice(0, 20).map((item) => ({
     title: item.title,
@@ -773,21 +921,21 @@ async function buildNewsDigest(periodDays: number): Promise<CampaignDigest> {
 
   return {
     heading: "News digest",
-    summary: `Recent highlights from the last ${periodDays} days.`,
-    periodDays,
+    summary: buildNewsDigestSummary(filters),
+    periodDays: filters.periodDays,
     items,
     groups,
   };
 }
 
-async function buildDigest(newsletterType: NewsletterType, periodDays: number): Promise<CampaignDigest> {
+async function buildDigest(newsletterType: NewsletterType, summaryFilters: NewsletterSummaryFilters): Promise<CampaignDigest> {
   if (newsletterType === "jobs") {
-    return buildJobsDigest(periodDays);
+    return buildJobsDigest(summaryFilters.periodDays);
   }
   if (newsletterType === "candidates") {
-    return buildCandidatesDigest(periodDays);
+    return buildCandidatesDigest(summaryFilters.periodDays);
   }
-  return buildNewsDigest(periodDays);
+  return buildNewsDigest(summaryFilters);
 }
 
 function renderDigestItemsHtml(digest: CampaignDigest) {
@@ -1351,14 +1499,15 @@ function renderRecentNewsText(recentNews: Awaited<ReturnType<typeof getRecentNew
 }
 
 async function getNewsletterTemplatePayload(newsletterType: NewsletterType): Promise<NewsletterTemplatePayload> {
-  const [stored] = await db
-    .select()
-    .from(newsletterTemplates)
-    .where(eq(newsletterTemplates.newsletterType, newsletterType))
-    .limit(1);
+  const templates = await loadStoredNewsletterTemplates();
+  if (!templates) {
+    return getDefaultNewsletterTemplate(newsletterType);
+  }
+
+  const stored = templates.find((template) => template.newsletterType === newsletterType);
 
   if (!stored) {
-    return DEFAULT_NEWSLETTER_TEMPLATES[newsletterType];
+    return getDefaultNewsletterTemplate(newsletterType);
   }
 
   return normalizeLegacyTemplatePayload({
@@ -1373,7 +1522,7 @@ async function getNewsletterTemplatePayload(newsletterType: NewsletterType): Pro
 function buildTemplateValues(params: {
   campaignSubject: string;
   campaignType: NewsletterType;
-  periodDays: number;
+  summaryFilters: NewsletterSummaryFilters;
   digest: CampaignDigest;
   links: { unsubscribe: string; preferences: string };
   recentNews: Awaited<ReturnType<typeof getRecentNewsSnapshot>>;
@@ -1391,7 +1540,7 @@ function buildTemplateValues(params: {
   const values: Record<string, string> = {
     campaign_subject: params.campaignSubject,
     campaign_type: params.campaignType,
-    period_days: String(params.periodDays),
+    period_days: String(params.summaryFilters.periodDays),
     digest_heading: params.digest.heading,
     digest_summary: params.digest.summary,
     total_views: params.digest.totalViews !== undefined ? String(params.digest.totalViews) : "",
@@ -1422,7 +1571,7 @@ function renderTemplateContent(params: {
   template: NewsletterTemplatePayload;
   campaignSubject: string;
   campaignType: NewsletterType;
-  periodDays: number;
+  summaryFilters: NewsletterSummaryFilters;
   digest: CampaignDigest;
   links: { unsubscribe: string; preferences: string };
   recentNews: Awaited<ReturnType<typeof getRecentNewsSnapshot>>;
@@ -1454,7 +1603,7 @@ function renderMarkdownStarter(params: {
   template: NewsletterTemplatePayload;
   campaignSubject: string;
   campaignType: NewsletterType;
-  periodDays: number;
+  summaryFilters: NewsletterSummaryFilters;
   digest: CampaignDigest;
   links: { unsubscribe: string; preferences: string };
   recentNews: Awaited<ReturnType<typeof getRecentNewsSnapshot>>;
@@ -1498,7 +1647,7 @@ function resolveCampaignRenderContent(params: {
   campaign: CampaignContentDraft;
   template: NewsletterTemplatePayload;
   campaignType: NewsletterType;
-  periodDays: number;
+  summaryFilters: NewsletterSummaryFilters;
   digest: CampaignDigest;
   links: { unsubscribe: string; preferences: string };
   recentNews: Awaited<ReturnType<typeof getRecentNewsSnapshot>>;
@@ -1513,7 +1662,7 @@ function resolveCampaignRenderContent(params: {
     template: params.template,
     campaignSubject: params.campaign.campaignSubject,
     campaignType: params.campaignType,
-    periodDays: params.periodDays,
+    summaryFilters: params.summaryFilters,
     digest: params.digest,
     links: params.links,
     recentNews: params.recentNews,
@@ -1569,13 +1718,17 @@ function resolveCampaignRenderContent(params: {
 }
 
 export async function listNewsletterTemplates() {
-  const templates = await db.select().from(newsletterTemplates);
+  const templates = await loadStoredNewsletterTemplates();
+  if (!templates) {
+    return getDefaultNewsletterTemplates();
+  }
+
   const byType = new Map(templates.map((template) => [template.newsletterType, template]));
 
   return NEWSLETTER_TYPES.map((type) => {
     const stored = byType.get(type);
     if (!stored) {
-      return DEFAULT_NEWSLETTER_TEMPLATES[type];
+      return getDefaultNewsletterTemplate(type);
     }
     return normalizeLegacyTemplatePayload({
       newsletterType: type,
@@ -1645,7 +1798,9 @@ export async function upsertNewsletterTemplate(input: {
 
 export async function renderNewsletterTemplatePreview(input: {
   newsletterType: string;
+  timeframePreset?: string;
   periodDays?: number;
+  minimumRelevance?: number;
   campaignSubject?: string;
   subjectTemplate?: string;
   htmlTemplate?: string;
@@ -1657,10 +1812,17 @@ export async function renderNewsletterTemplatePreview(input: {
   }
 
   const newsletterType = input.newsletterType as NewsletterType;
-  const periodDays = Number.isInteger(input.periodDays) && input.periodDays! > 0
-    ? Math.min(input.periodDays!, 30)
-    : DEFAULT_CAMPAIGN_PERIOD_DAYS;
-  const digest = await buildDigest(newsletterType, periodDays);
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input.timeframePreset,
+    periodDays: input.periodDays,
+    minimumRelevance: input.minimumRelevance,
+  });
+  if (!summaryValidation.ok) {
+    return summaryValidation;
+  }
+
+  const summaryFilters = summaryValidation.data;
+  const digest = await buildDigest(newsletterType, summaryFilters);
   const recentNews = await getRecentNewsSnapshot(8);
   const storedTemplate = await getNewsletterTemplatePayload(newsletterType);
   const template: NewsletterTemplatePayload = {
@@ -1679,7 +1841,7 @@ export async function renderNewsletterTemplatePreview(input: {
     template,
     campaignSubject,
     campaignType: newsletterType,
-    periodDays,
+    summaryFilters,
     digest,
     links: {
       unsubscribe: "https://dcbuilder.dev/api/v1/newsletter/unsubscribe?token=preview-token",
@@ -1728,16 +1890,6 @@ export async function getNewsletterCampaignById(campaignId: string) {
   return { ok: true as const, data: campaign };
 }
 
-function validatePeriodDays(periodDays?: number) {
-  if (periodDays === undefined) {
-    return { ok: true as const, data: DEFAULT_CAMPAIGN_PERIOD_DAYS };
-  }
-  if (!Number.isInteger(periodDays) || periodDays < 1 || periodDays > 30) {
-    return { ok: false as const, status: 400, error: "periodDays must be an integer between 1 and 30" };
-  }
-  return { ok: true as const, data: periodDays };
-}
-
 function parseScheduledAt(scheduledAtIso?: string): Date | null | "invalid" {
   if (!scheduledAtIso) return null;
   const scheduledAt = new Date(scheduledAtIso);
@@ -1783,14 +1935,25 @@ function formatUtcDay(date: Date): string {
 }
 
 export async function createWeeklyNewsCampaignIssue(input?: {
+  timeframePreset?: string;
   periodDays?: number;
+  minimumRelevance?: number;
   createdBy?: string;
   scheduledAt?: string;
   now?: Date;
 }) {
-  const periodDays = Number.isInteger(input?.periodDays) && input!.periodDays! > 0
-    ? Math.min(input!.periodDays!, 30)
-    : DEFAULT_CAMPAIGN_PERIOD_DAYS;
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input?.timeframePreset,
+    periodDays: input?.periodDays,
+    minimumRelevance: input?.minimumRelevance,
+  });
+  if (!summaryValidation.ok) {
+    return summaryValidation;
+  }
+
+  const summaryFilters = summaryValidation.data;
+  const periodDays = summaryFilters.periodDays;
+  const digestLabel = formatDigestWindowLabel(summaryFilters);
 
   const now = input?.now || new Date();
   const periodEnd = new Date(Date.UTC(
@@ -1806,8 +1969,8 @@ export async function createWeeklyNewsCampaignIssue(input?: {
   periodStart.setUTCDate(periodStart.getUTCDate() - (periodDays - 1));
   periodStart.setUTCHours(0, 0, 0, 0);
 
-  const subject = `Weekly News Digest (${formatUtcDay(periodStart)} to ${formatUtcDay(periodEnd)})`;
-  const previewText = `Top updates from the last ${periodDays} days`;
+  const subject = `${digestLabel} News Digest (${formatUtcDay(periodStart)} to ${formatUtcDay(periodEnd)})`;
+  const previewText = `${digestLabel} updates from the last ${periodDays} days`;
 
   const [existing] = await db
     .select()
@@ -1836,7 +1999,9 @@ export async function createWeeklyNewsCampaignIssue(input?: {
     newsletterType: "news",
     subject,
     previewText,
+    timeframePreset: summaryFilters.timeframePreset,
     periodDays,
+    minimumRelevance: summaryFilters.minimumRelevance,
     scheduledAt: input?.scheduledAt,
     createdBy: input?.createdBy,
   });
@@ -1860,7 +2025,9 @@ export async function createNewsletterCampaign(input: {
   newsletterType: string;
   subject: string;
   previewText?: string;
+  timeframePreset?: string;
   periodDays?: number;
+  minimumRelevance?: number;
   scheduledAt?: string;
   createdBy?: string;
   contentMode?: string;
@@ -1890,11 +2057,15 @@ export async function createNewsletterCampaign(input: {
     return contentValidation;
   }
 
-  const periodValidation = validatePeriodDays(input.periodDays);
-  if (!periodValidation.ok) {
-    return periodValidation;
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input.timeframePreset,
+    periodDays: input.periodDays,
+    minimumRelevance: input.minimumRelevance,
+  });
+  if (!summaryValidation.ok) {
+    return summaryValidation;
   }
-  const periodDays = periodValidation.data;
+  const summaryFilters = summaryValidation.data;
   const scheduledAt = parseScheduledAt(input.scheduledAt);
   if (scheduledAt === "invalid") {
     return { ok: false as const, status: 400, error: "Invalid scheduledAt value" };
@@ -1916,7 +2087,9 @@ export async function createNewsletterCampaign(input: {
       markdownContent: content.markdownContent,
       manualHtml: content.manualHtml,
       manualText: content.manualText,
-      periodDays,
+      timeframePreset: summaryFilters.timeframePreset,
+      periodDays: summaryFilters.periodDays,
+      minimumRelevance: summaryFilters.minimumRelevance,
       status: scheduledAt ? "scheduled" : "draft",
       scheduledAt,
       createdBy: input.createdBy || null,
@@ -1961,17 +2134,26 @@ export async function updateNewsletterCampaign(campaignId: string, input: {
   newsletterType?: string;
   subject?: string;
   previewText?: string | null;
+  timeframePreset?: string;
   periodDays?: number;
+  minimumRelevance?: number;
   scheduledAt?: string | null;
   contentMode?: string;
   markdownContent?: string | null;
   manualHtml?: string | null;
   manualText?: string | null;
+  archiveOnly?: boolean;
+  correctedBy?: string | null;
 }) {
   const current = await getNewsletterCampaignById(campaignId);
   if (!current.ok) {
     return current;
   }
+
+  if (current.data.status === "sent" && input.archiveOnly) {
+    return updateSentNewsletterCampaignArchive(current.data, input);
+  }
+
   if (!isCampaignMutable(current.data.status)) {
     return { ok: false as const, status: 409, error: "Only draft or scheduled campaigns can be modified" };
   }
@@ -2003,11 +2185,16 @@ export async function updateNewsletterCampaign(campaignId: string, input: {
     return draftValidation;
   }
 
-  const periodValidation = validatePeriodDays(input.periodDays);
-  if (!periodValidation.ok) {
-    return periodValidation;
+  const currentSummaryFilters = resolveStoredSummaryFilters(current.data);
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input.timeframePreset,
+    periodDays: input.periodDays,
+    minimumRelevance: input.minimumRelevance,
+  }, currentSummaryFilters);
+  if (!summaryValidation.ok) {
+    return summaryValidation;
   }
-  const periodDays = input.periodDays === undefined ? current.data.periodDays : periodValidation.data;
+  const summaryFilters = summaryValidation.data;
   const scheduledAt = input.scheduledAt === null
     ? null
     : parseScheduledAt(input.scheduledAt ?? (current.data.scheduledAt ? current.data.scheduledAt.toISOString() : undefined));
@@ -2028,7 +2215,9 @@ export async function updateNewsletterCampaign(campaignId: string, input: {
       newsletterType,
       subject,
       previewText: input.previewText === undefined ? current.data.previewText : (input.previewText || null),
-      periodDays,
+      timeframePreset: summaryFilters.timeframePreset,
+      periodDays: summaryFilters.periodDays,
+      minimumRelevance: summaryFilters.minimumRelevance,
       scheduledAt,
       status: scheduledAt ? "scheduled" : "draft",
       contentMode,
@@ -2038,6 +2227,136 @@ export async function updateNewsletterCampaign(campaignId: string, input: {
       updatedAt: new Date(),
     })
     .where(eq(newsletterCampaigns.id, campaignId))
+    .returning();
+
+  return { ok: true as const, data: updated };
+}
+
+async function renderArchiveCorrection(params: {
+  current: NewsletterCampaign;
+  newsletterType: NewsletterType;
+  subject: string;
+  contentMode: NewsletterContentMode;
+  markdownContent: string | null;
+  manualHtml: string | null;
+  manualText: string | null;
+  summaryFilters: NewsletterSummaryFilters;
+}) {
+  const [digest, templatePayload, recentNews] = await Promise.all([
+    buildDigest(params.newsletterType, params.summaryFilters),
+    getNewsletterTemplatePayload(params.newsletterType),
+    getRecentNewsSnapshot(8),
+  ]);
+
+  return resolveCampaignRenderContent({
+    campaign: {
+      campaignSubject: params.subject,
+      contentMode: params.contentMode,
+      markdownContent: params.markdownContent,
+      manualHtml: params.manualHtml,
+      manualText: params.manualText,
+    },
+    template: templatePayload,
+    campaignType: params.newsletterType,
+    summaryFilters: params.summaryFilters,
+    digest,
+    links: {
+      unsubscribe: `${getBaseUrl()}/newsletters`,
+      preferences: `${getBaseUrl()}/newsletters`,
+    },
+    recentNews,
+    now: new Date(),
+  });
+}
+
+async function updateSentNewsletterCampaignArchive(
+  current: NewsletterCampaign,
+  input: {
+    newsletterType?: string;
+    subject?: string;
+    previewText?: string | null;
+    timeframePreset?: string;
+    periodDays?: number;
+    minimumRelevance?: number;
+    contentMode?: string;
+    markdownContent?: string | null;
+    manualHtml?: string | null;
+    manualText?: string | null;
+    correctedBy?: string | null;
+  }
+) {
+  const newsletterType = input.newsletterType
+    ? (NEWSLETTER_TYPES.includes(input.newsletterType as NewsletterType) ? input.newsletterType as NewsletterType : null)
+    : current.newsletterType as NewsletterType;
+  if (!newsletterType) {
+    return { ok: false as const, status: 400, error: "Invalid newsletter type" };
+  }
+
+  const subject = (input.subject ?? current.archiveSubject ?? current.subject)?.trim();
+  if (!subject) {
+    return { ok: false as const, status: 400, error: "Subject is required" };
+  }
+
+  if (input.contentMode && !NEWSLETTER_CONTENT_MODES.includes(input.contentMode as NewsletterContentMode)) {
+    return { ok: false as const, status: 400, error: "Invalid content mode" };
+  }
+  const contentMode = normalizeNewsletterContentMode(input.contentMode ?? current.archiveContentMode ?? current.contentMode);
+  const markdownContent = input.markdownContent ?? current.archiveMarkdownContent ?? current.markdownContent;
+  const manualHtml = input.manualHtml ?? current.archiveManualHtml ?? current.manualHtml;
+  const manualText = input.manualText ?? current.archiveManualText ?? current.manualText;
+  const draftValidation = validateCampaignContentDraft({
+    campaignSubject: subject,
+    contentMode,
+    markdownContent,
+    manualHtml,
+    manualText,
+  });
+  if (!draftValidation.ok) {
+    return draftValidation;
+  }
+
+  const currentSummaryFilters = resolveStoredSummaryFilters(current);
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input.timeframePreset,
+    periodDays: input.periodDays,
+    minimumRelevance: input.minimumRelevance,
+  }, currentSummaryFilters);
+  if (!summaryValidation.ok) {
+    return summaryValidation;
+  }
+  const summaryFilters = summaryValidation.data;
+  const archiveRendered = await renderArchiveCorrection({
+    current,
+    newsletterType,
+    subject,
+    contentMode,
+    markdownContent,
+    manualHtml,
+    manualText,
+    summaryFilters,
+  });
+  if (!archiveRendered.ok) {
+    return archiveRendered;
+  }
+
+  const [updated] = await db
+    .update(newsletterCampaigns)
+    .set({
+      archiveSubject: subject,
+      archivePreviewText: input.previewText === undefined
+        ? (current.archivePreviewText ?? current.previewText)
+        : (input.previewText || null),
+      archiveContentMode: contentMode,
+      archiveMarkdownContent: markdownContent,
+      archiveManualHtml: manualHtml,
+      archiveManualText: manualText,
+      archiveRenderedHtml: archiveRendered.data.html,
+      archiveRenderedText: archiveRendered.data.text,
+      archiveCorrectedAt: new Date(),
+      archiveCorrectedBy: input.correctedBy || null,
+      updatedAt: new Date(),
+    })
+    .where(eq(newsletterCampaigns.id, current.id))
     .returning();
 
   return { ok: true as const, data: updated };
@@ -2070,7 +2389,9 @@ export async function deleteNewsletterCampaign(campaignId: string) {
 export async function previewNewsletterCampaignDraft(input: {
   newsletterType: string;
   subject: string;
+  timeframePreset?: string;
   periodDays?: number;
+  minimumRelevance?: number;
   contentMode?: string;
   markdownContent?: string | null;
   manualHtml?: string | null;
@@ -2087,11 +2408,15 @@ export async function previewNewsletterCampaignDraft(input: {
     return { ok: false as const, status: 400, error: "Invalid content mode" };
   }
   const newsletterType = input.newsletterType as NewsletterType;
-  const periodValidation = validatePeriodDays(input.periodDays);
-  if (!periodValidation.ok) {
-    return periodValidation;
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input.timeframePreset,
+    periodDays: input.periodDays,
+    minimumRelevance: input.minimumRelevance,
+  });
+  if (!summaryValidation.ok) {
+    return summaryValidation;
   }
-  const periodDays = periodValidation.data;
+  const summaryFilters = summaryValidation.data;
   const contentMode = normalizeNewsletterContentMode(input.contentMode);
 
   const validation = validateCampaignContentDraft({
@@ -2106,7 +2431,7 @@ export async function previewNewsletterCampaignDraft(input: {
   }
 
   const [digest, recentNews, template] = await Promise.all([
-    buildDigest(newsletterType, periodDays),
+    buildDigest(newsletterType, summaryFilters),
     getRecentNewsSnapshot(8),
     getNewsletterTemplatePayload(newsletterType),
   ]);
@@ -2125,7 +2450,7 @@ export async function previewNewsletterCampaignDraft(input: {
     },
     template,
     campaignType: newsletterType,
-    periodDays,
+    summaryFilters,
     digest,
     links,
     recentNews,
@@ -2139,7 +2464,7 @@ export async function previewNewsletterCampaignDraft(input: {
     template,
     campaignSubject: input.subject.trim(),
     campaignType: newsletterType,
-    periodDays,
+    summaryFilters,
     digest,
     links,
     recentNews,
@@ -2272,9 +2597,9 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
     .where(eq(newsletterCampaignRecipients.campaignId, sendingCampaign.id));
 
   const campaignType = sendingCampaign.newsletterType as NewsletterType;
-  const periodDays = sendingCampaign.periodDays || DEFAULT_CAMPAIGN_PERIOD_DAYS;
+  const summaryFilters = resolveStoredSummaryFilters(sendingCampaign);
   const [digest, templatePayload, recentNews] = await Promise.all([
-    buildDigest(campaignType, periodDays),
+    buildDigest(campaignType, summaryFilters),
     getNewsletterTemplatePayload(campaignType),
     getRecentNewsSnapshot(8),
   ]);
@@ -2294,7 +2619,7 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
     },
     template: templatePayload,
     campaignType,
-    periodDays,
+    summaryFilters,
     digest,
     links: archiveLinks,
     recentNews,
@@ -2362,7 +2687,7 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
       },
       template: templatePayload,
       campaignType,
-      periodDays,
+      summaryFilters,
       digest,
       links,
       recentNews,
@@ -2490,18 +2815,23 @@ export async function sendDueNewsletterCampaigns() {
 // ---------------------------------------------------------------------------
 
 export async function listSentNewsletterCampaigns(limit: number = 50) {
-  return db
+  const campaigns = await db
     .select({
       id: newsletterCampaigns.id,
       subject: newsletterCampaigns.subject,
       previewText: newsletterCampaigns.previewText,
       newsletterType: newsletterCampaigns.newsletterType,
       sentAt: newsletterCampaigns.sentAt,
+      archiveSubject: newsletterCampaigns.archiveSubject,
+      archivePreviewText: newsletterCampaigns.archivePreviewText,
+      archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
     })
     .from(newsletterCampaigns)
     .where(eq(newsletterCampaigns.status, "sent"))
     .orderBy(desc(newsletterCampaigns.sentAt))
     .limit(limit);
+
+  return campaigns.map(resolveArchiveCampaignSummary);
 }
 
 export async function getSentNewsletterCampaignForArchive(id: string) {
@@ -2513,6 +2843,10 @@ export async function getSentNewsletterCampaignForArchive(id: string) {
       newsletterType: newsletterCampaigns.newsletterType,
       sentAt: newsletterCampaigns.sentAt,
       renderedHtml: newsletterCampaigns.renderedHtml,
+      archiveSubject: newsletterCampaigns.archiveSubject,
+      archivePreviewText: newsletterCampaigns.archivePreviewText,
+      archiveRenderedHtml: newsletterCampaigns.archiveRenderedHtml,
+      archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
     })
     .from(newsletterCampaigns)
     .where(
@@ -2523,9 +2857,57 @@ export async function getSentNewsletterCampaignForArchive(id: string) {
     )
     .limit(1);
 
-  if (!campaign || !campaign.renderedHtml) {
+  if (!campaign) {
     return null;
   }
 
-  return campaign;
+  const resolved = resolveArchiveCampaignDetail(campaign);
+  if (!resolved.renderedHtml) {
+    return null;
+  }
+
+  return resolved;
+}
+
+function resolveArchiveCampaignSummary(campaign: {
+  id: string;
+  subject: string;
+  previewText: string | null;
+  newsletterType: string;
+  sentAt: Date | null;
+  archiveSubject?: string | null;
+  archivePreviewText?: string | null;
+  archiveCorrectedAt?: Date | null;
+}) {
+  return {
+    id: campaign.id,
+    subject: campaign.archiveSubject || campaign.subject,
+    previewText: campaign.archivePreviewText ?? campaign.previewText,
+    newsletterType: campaign.newsletterType,
+    sentAt: campaign.sentAt,
+    archiveCorrectedAt: campaign.archiveCorrectedAt ?? null,
+  };
+}
+
+function resolveArchiveCampaignDetail(campaign: {
+  id: string;
+  subject: string;
+  previewText: string | null;
+  newsletterType: string;
+  sentAt: Date | null;
+  renderedHtml: string | null;
+  archiveSubject?: string | null;
+  archivePreviewText?: string | null;
+  archiveRenderedHtml?: string | null;
+  archiveCorrectedAt?: Date | null;
+}) {
+  return {
+    id: campaign.id,
+    subject: campaign.archiveSubject || campaign.subject,
+    previewText: campaign.archivePreviewText ?? campaign.previewText,
+    newsletterType: campaign.newsletterType,
+    sentAt: campaign.sentAt,
+    renderedHtml: campaign.archiveRenderedHtml || campaign.renderedHtml,
+    archiveCorrectedAt: campaign.archiveCorrectedAt ?? null,
+  };
 }

@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, timestamp, index, integer } from "drizzle-orm/pg-core";
 
 // Blog posts table
 export const blogPosts = pgTable(
@@ -13,6 +13,7 @@ export const blogPosts = pgTable(
     sourceUrl: text("source_url"), // Original URL if republished
     image: text("image"), // Featured image URL
     published: boolean("published").default(true),
+    relevance: integer("relevance").notNull().default(5),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

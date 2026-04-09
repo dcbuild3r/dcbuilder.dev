@@ -33,12 +33,15 @@ export async function PATCH(
     newsletterType?: string;
     subject?: string;
     previewText?: string | null;
+    timeframePreset?: string;
     periodDays?: number;
+    minimumRelevance?: number;
     scheduledAt?: string | null;
     contentMode?: string;
     markdownContent?: string | null;
     manualHtml?: string | null;
     manualText?: string | null;
+    archiveOnly?: boolean;
   };
 
   try {
@@ -48,7 +51,13 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const result = await updateNewsletterCampaign(id, body);
+  const correctedBy = auth.valid
+    ? ("name" in auth && auth.name ? auth.name : ("keyId" in auth ? auth.keyId : null))
+    : null;
+  const result = await updateNewsletterCampaign(id, {
+    ...body,
+    correctedBy,
+  });
   if (!result.ok) {
     return Response.json({ error: result.error }, { status: result.status });
   }
@@ -71,4 +80,3 @@ export async function DELETE(
 
   return Response.json({ data: result.data });
 }
-

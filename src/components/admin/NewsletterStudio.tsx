@@ -17,13 +17,20 @@ import {
   canAutoRenderComposePreview,
   getNewsletterStarterHeadingClassName,
   NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME,
+  nextAvailabilityErrorAfterSubscribersRefresh,
+  resolveNewsletterSummaryControls,
   shouldLoadSubscribersOnModeChange,
+  type NewsletterSummaryTimeframePreset,
 } from "@/lib/newsletter-studio";
 
 type NewsletterType = "news" | "jobs" | "candidates";
 type NewsletterContentMode = "template" | "markdown" | "manual";
 type CampaignStatus = "draft" | "scheduled" | "sending" | "sent" | "failed";
 type WorkspaceView = "editor" | "split" | "preview";
+type AvailabilityMeta = {
+  newsletterUnavailable?: boolean;
+  reason?: string;
+};
 
 type Mode = "compose" | "queue" | "subscribers" | "templates";
 type PreviewTab = "subject" | "html" | "text" | "starter";
@@ -82,13 +89,24 @@ interface NewsletterCampaign {
   markdownContent: string | null;
   manualHtml: string | null;
   manualText: string | null;
+  timeframePreset?: NewsletterSummaryTimeframePreset | null;
   periodDays: number;
+  minimumRelevance?: number | null;
   status: CampaignStatus;
   scheduledAt: string | null;
   sentAt: string | null;
   failureReason: string | null;
   createdBy: string | null;
   createdAt: string;
+  archiveSubject?: string | null;
+  archivePreviewText?: string | null;
+  archiveContentMode?: NewsletterContentMode | null;
+  archiveMarkdownContent?: string | null;
+  archiveManualHtml?: string | null;
+  archiveManualText?: string | null;
+  archiveRenderedHtml?: string | null;
+  archiveCorrectedAt?: string | null;
+  archiveCorrectedBy?: string | null;
 }
 
 interface NewsletterTemplate {
@@ -116,9 +134,13 @@ type CampaignDraft = {
   markdownContent: string;
   manualHtml: string;
   manualText: string;
+  timeframePreset: NewsletterSummaryTimeframePreset;
   periodDays: number;
+  minimumRelevance: number;
   scheduledAtLocal: string;
 };
+
+type CampaignEditMode = "campaign" | "archive";
 
 const NEWSLETTER_TYPES: NewsletterType[] = ["news", "jobs", "candidates"];
 const MUTABLE_STATUSES = new Set<CampaignStatus>(["draft", "scheduled"]);
@@ -240,6 +262,22 @@ function serializeCampaignDraft(draft: CampaignDraft | null) {
   return JSON.stringify(draft);
 }
 
+function applySummaryPreset<T extends { timeframePreset: NewsletterSummaryTimeframePreset; periodDays: number; minimumRelevance: number }>(
+  current: T,
+  timeframePreset: NewsletterSummaryTimeframePreset
+) {
+  const resolved = resolveNewsletterSummaryControls({
+    timeframePreset,
+    periodDays: current.periodDays,
+    minimumRelevance: current.minimumRelevance,
+  });
+
+  return {
+    ...current,
+    ...resolved,
+  };
+}
+
 function formatStatus(status: CampaignStatus) {
   return status === "sending" ? "Sending" : status.charAt(0).toUpperCase() + status.slice(1);
 }
@@ -255,6 +293,14 @@ function formatLocalInputFromIso(iso: string | null): string {
   const hh = String(d.getHours()).padStart(2, "0");
   const min = String(d.getMinutes()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+}
+
+function getAvailabilityReason(meta: Record<string, unknown> | null): string | null {
+  const candidate = meta as AvailabilityMeta | null;
+  if (!candidate?.newsletterUnavailable) return null;
+  return typeof candidate.reason === "string" && candidate.reason.trim()
+    ? candidate.reason
+    : "Newsletter database is temporarily unavailable.";
 }
 
 function StatusPill({ status }: { status: CampaignStatus }) {
@@ -316,9 +362,10 @@ function SegmentedControl<T extends string>(props: {
   value: T;
   onChange: (value: T) => void;
   options: Array<{ value: T; label: string; hint?: string }>;
+  disabled?: boolean;
 }) {
   return (
-    <div className="inline-flex rounded-full bg-neutral-100 p-1 dark:bg-neutral-800/80">
+    <div className={cx("inline-flex rounded-full bg-neutral-100 p-1 dark:bg-neutral-800/80", props.disabled && "opacity-60")}>
       {props.options.map((opt) => {
         const active = opt.value === props.value;
         return (
@@ -326,9 +373,10 @@ function SegmentedControl<T extends string>(props: {
             key={opt.value}
             type="button"
             onClick={() => props.onChange(opt.value)}
+            disabled={props.disabled}
             title={opt.hint}
             className={cx(
-              "rounded-full px-3 py-1.5 text-sm font-semibold transition",
+              "rounded-full px-3 py-1.5 text-sm font-semibold transition disabled:cursor-not-allowed",
               active
                 ? "bg-white text-neutral-900 shadow-sm ring-1 ring-neutral-200 dark:bg-neutral-950 dark:text-neutral-50 dark:ring-neutral-800"
                 : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
@@ -480,6 +528,7 @@ export function NewsletterStudio() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
 
   const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>([]);
   const [templates, setTemplates] = useState<Record<NewsletterType, NewsletterTemplate> | null>(null);
@@ -495,7 +544,9 @@ export function NewsletterStudio() {
     markdownContent: "",
     manualHtml: "",
     manualText: "",
+    timeframePreset: "weekly",
     periodDays: 7,
+    minimumRelevance: 1,
     scheduledAtLocal: "",
   });
   const [composePreview, setComposePreview] = useState<CampaignPreviewResult | null>(null);
@@ -509,6 +560,7 @@ export function NewsletterStudio() {
   const [scheduleDrafts, setScheduleDrafts] = useState<Record<string, string>>({});
 
   const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null);
+  const [editingCampaignMode, setEditingCampaignMode] = useState<CampaignEditMode>("campaign");
   const [editForm, setEditForm] = useState<CampaignDraft | null>(null);
   const [editPreview, setEditPreview] = useState<CampaignPreviewResult | null>(null);
   const [editPreviewTab, setEditPreviewTab] = useState<PreviewTab>("html");
@@ -521,7 +573,9 @@ export function NewsletterStudio() {
   const [templatePreview, setTemplatePreview] = useState<TemplatePreviewResult | null>(null);
   const [templatePreviewTab, setTemplatePreviewTab] = useState<PreviewTab>("html");
   const [templatePreviewContext, setTemplatePreviewContext] = useState({
+    timeframePreset: "weekly" as NewsletterSummaryTimeframePreset,
     periodDays: 7,
+    minimumRelevance: 1,
     campaignSubject: "Weekly News Digest",
   });
   const [focusedTemplateField, setFocusedTemplateField] = useState<TemplateFieldKey | null>(null);
@@ -541,6 +595,18 @@ export function NewsletterStudio() {
   const [editInitialSnapshot, setEditInitialSnapshot] = useState<string | null>(null);
 
   const statusMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const setComposeSummaryPreset = useCallback((timeframePreset: NewsletterSummaryTimeframePreset) => {
+    setComposeForm((current) => applySummaryPreset(current, timeframePreset));
+  }, []);
+
+  const setEditSummaryPreset = useCallback((timeframePreset: NewsletterSummaryTimeframePreset) => {
+    setEditForm((current) => (current ? applySummaryPreset(current, timeframePreset) : current));
+  }, []);
+
+  const setTemplateSummaryPreset = useCallback((timeframePreset: NewsletterSummaryTimeframePreset) => {
+    setTemplatePreviewContext((current) => applySummaryPreset(current, timeframePreset));
+  }, []);
 
   const setStatusMessage = (value: string) => {
     setMessage(value);
@@ -563,12 +629,18 @@ export function NewsletterStudio() {
 
   const refreshData = useCallback(async () => {
     setError(null);
+    setAvailabilityError(null);
 
     const headers = { "x-api-key": getAdminApiKey() };
     const [campaignsResult, templatesResult] = await Promise.all([
       adminFetch<NewsletterCampaign[]>("/api/v1/newsletter/campaigns?limit=100", { headers }),
       adminFetch<NewsletterTemplate[]>("/api/v1/newsletter/templates", { headers }),
     ]);
+
+    const availabilityReason =
+      getAvailabilityReason(campaignsResult.meta) ||
+      getAvailabilityReason(templatesResult.meta);
+    setAvailabilityError(availabilityReason);
 
     if (campaignsResult.error) {
       setError(campaignsResult.error);
@@ -598,6 +670,14 @@ export function NewsletterStudio() {
 
     setSubscribersLoading(false);
 
+    const availabilityReason = getAvailabilityReason(result.meta);
+    setAvailabilityError((current) =>
+      nextAvailabilityErrorAfterSubscribersRefresh({
+        previousAvailabilityError: current,
+        subscriberAvailabilityReason: availabilityReason,
+      })
+    );
+
     if (result.error) {
       setError(result.error);
       return;
@@ -606,6 +686,12 @@ export function NewsletterStudio() {
     setSubscribers((result.data || []).map((subscriber) => toSubscriberDraftRow(subscriber)));
     setSubscribersLoaded(true);
   }, []);
+
+  const ensureNewsletterWritable = useCallback(() => {
+    if (!availabilityError) return true;
+    setError(availabilityError);
+    return false;
+  }, [availabilityError]);
 
   useEffect(() => {
     const load = async () => {
@@ -708,12 +794,25 @@ export function NewsletterStudio() {
     return filterRelevantPlaceholders(resolvedPlaceholders, MINIMAL_WRITING_PLACEHOLDERS);
   }, [focusedTemplateField, resolvedPlaceholders]);
 
+  const composeSummary = useMemo(
+    () => resolveNewsletterSummaryControls(composeForm),
+    [composeForm]
+  );
+
   const requestCampaignPreview = useCallback(
     async (draft: CampaignDraft) => {
+      const summary = resolveNewsletterSummaryControls({
+        timeframePreset: draft.timeframePreset,
+        periodDays: draft.periodDays,
+        minimumRelevance: draft.minimumRelevance,
+      });
+
       const payload = {
         newsletterType: draft.newsletterType,
-        subject: draft.subject.trim() || suggestedSubject(draft.newsletterType, draft.periodDays),
-        periodDays: draft.periodDays,
+        subject: draft.subject.trim() || suggestedSubject(draft.newsletterType, summary.periodDays),
+        timeframePreset: summary.timeframePreset,
+        periodDays: summary.periodDays,
+        minimumRelevance: summary.minimumRelevance,
         contentMode: draft.contentMode,
         markdownContent: draft.contentMode === "markdown" ? draft.markdownContent : undefined,
         manualHtml: draft.contentMode === "manual" ? draft.manualHtml : undefined,
@@ -763,6 +862,7 @@ export function NewsletterStudio() {
       }
 
       setEditingCampaignId(null);
+      setEditingCampaignMode("campaign");
       setEditForm(null);
       setEditPreview(null);
       setEditPreviewLoading(false);
@@ -773,10 +873,17 @@ export function NewsletterStudio() {
   );
 
   const createCampaign = async () => {
+    if (!ensureNewsletterWritable()) return;
     if (!composeForm.subject.trim()) {
       setError("Subject is required");
       return;
     }
+
+    const summary = resolveNewsletterSummaryControls({
+      timeframePreset: composeForm.timeframePreset,
+      periodDays: composeForm.periodDays,
+      minimumRelevance: composeForm.minimumRelevance,
+    });
 
     setSaving(true);
     setError(null);
@@ -791,7 +898,9 @@ export function NewsletterStudio() {
         newsletterType: composeForm.newsletterType,
         subject: composeForm.subject,
         previewText: composeForm.previewText || undefined,
-        periodDays: composeForm.periodDays,
+        timeframePreset: summary.timeframePreset,
+        periodDays: summary.periodDays,
+        minimumRelevance: summary.minimumRelevance,
         scheduledAt: composeForm.scheduledAtLocal ? new Date(composeForm.scheduledAtLocal).toISOString() : undefined,
         createdBy: "admin-news-studio",
         contentMode: composeForm.contentMode,
@@ -813,6 +922,9 @@ export function NewsletterStudio() {
       ...current,
       subject: "",
       previewText: "",
+      timeframePreset: current.timeframePreset,
+      periodDays: current.periodDays,
+      minimumRelevance: current.minimumRelevance,
       scheduledAtLocal: "",
       markdownContent: current.contentMode === "markdown" ? current.markdownContent : "",
       manualHtml: current.contentMode === "manual" ? current.manualHtml : "",
@@ -824,6 +936,7 @@ export function NewsletterStudio() {
   };
 
   const autoCreateWeekly = async () => {
+    if (!ensureNewsletterWritable()) return;
     setSaving(true);
     setError(null);
 
@@ -837,7 +950,12 @@ export function NewsletterStudio() {
         "Content-Type": "application/json",
         "x-api-key": getAdminApiKey(),
       },
-      body: JSON.stringify({ periodDays: 7, createdBy: "admin-news-studio:auto" }),
+      body: JSON.stringify({
+        timeframePreset: "weekly",
+        periodDays: 7,
+        minimumRelevance: 1,
+        createdBy: "admin-news-studio:auto",
+      }),
     });
 
     setSaving(false);
@@ -858,6 +976,7 @@ export function NewsletterStudio() {
   };
 
   const scheduleCampaign = async (campaignId: string) => {
+    if (!ensureNewsletterWritable()) return;
     const localValue = scheduleDrafts[campaignId];
     if (!localValue) {
       setError("Pick a schedule date/time first");
@@ -888,6 +1007,7 @@ export function NewsletterStudio() {
   };
 
   const sendNow = async (campaignId: string) => {
+    if (!ensureNewsletterWritable()) return;
     setSaving(true);
     setError(null);
 
@@ -908,6 +1028,7 @@ export function NewsletterStudio() {
   };
 
   const deleteCampaign = async (campaign: NewsletterCampaign) => {
+    if (!ensureNewsletterWritable()) return;
     if (!MUTABLE_STATUSES.has(campaign.status)) return;
     const ok = confirm(`Delete draft \"${campaign.subject}\"? This cannot be undone.`);
     if (!ok) return;
@@ -935,7 +1056,8 @@ export function NewsletterStudio() {
     await refreshData();
   };
 
-  const openCampaignEditor = async (campaignId: string) => {
+  const openCampaignEditor = async (campaignId: string, mode: CampaignEditMode = "campaign") => {
+    if (!ensureNewsletterWritable()) return;
     if (editingCampaignId && isEditDirty) {
       const confirmed = confirm("You have unsaved campaign edits. Continue and discard them?");
       if (!confirmed) return;
@@ -956,19 +1078,36 @@ export function NewsletterStudio() {
     }
 
     const campaign = result.data;
+    const archiveMode = mode === "archive";
+    const summary = resolveNewsletterSummaryControls({
+      timeframePreset: campaign.timeframePreset ?? "weekly",
+      periodDays: campaign.periodDays,
+      minimumRelevance: campaign.minimumRelevance,
+    });
     const draft: CampaignDraft = {
       newsletterType: campaign.newsletterType,
-      subject: campaign.subject,
-      previewText: campaign.previewText || "",
-      contentMode: campaign.contentMode,
-      markdownContent: campaign.markdownContent || "",
-      manualHtml: campaign.manualHtml || "",
-      manualText: campaign.manualText || "",
-      periodDays: campaign.periodDays,
+      subject: archiveMode ? (campaign.archiveSubject || campaign.subject) : campaign.subject,
+      previewText: archiveMode ? (campaign.archivePreviewText || campaign.previewText || "") : (campaign.previewText || ""),
+      contentMode: archiveMode
+        ? ((campaign.archiveContentMode || campaign.contentMode) as NewsletterContentMode)
+        : campaign.contentMode,
+      markdownContent: archiveMode
+        ? (campaign.archiveMarkdownContent || campaign.markdownContent || "")
+        : (campaign.markdownContent || ""),
+      manualHtml: archiveMode
+        ? (campaign.archiveManualHtml || campaign.manualHtml || "")
+        : (campaign.manualHtml || ""),
+      manualText: archiveMode
+        ? (campaign.archiveManualText || campaign.manualText || "")
+        : (campaign.manualText || ""),
+      timeframePreset: summary.timeframePreset,
+      periodDays: summary.periodDays,
+      minimumRelevance: summary.minimumRelevance,
       scheduledAtLocal: formatLocalInputFromIso(campaign.scheduledAt),
     };
 
     setEditingCampaignId(campaign.id);
+    setEditingCampaignMode(mode);
     setEditForm(draft);
     setEditInitialSnapshot(serializeCampaignDraft(draft));
     setEditPreview(null);
@@ -976,7 +1115,14 @@ export function NewsletterStudio() {
   };
 
   const saveCampaignEdit = async () => {
+    if (!ensureNewsletterWritable()) return;
     if (!editingCampaignId || !editForm) return;
+    const archiveOnly = editingCampaignMode === "archive";
+    const summary = resolveNewsletterSummaryControls({
+      timeframePreset: editForm.timeframePreset,
+      periodDays: editForm.periodDays,
+      minimumRelevance: editForm.minimumRelevance,
+    });
 
     setSaving(true);
     setError(null);
@@ -991,12 +1137,17 @@ export function NewsletterStudio() {
         newsletterType: editForm.newsletterType,
         subject: editForm.subject,
         previewText: editForm.previewText,
-        periodDays: editForm.periodDays,
-        scheduledAt: editForm.scheduledAtLocal ? new Date(editForm.scheduledAtLocal).toISOString() : null,
+        timeframePreset: summary.timeframePreset,
+        periodDays: summary.periodDays,
+        minimumRelevance: summary.minimumRelevance,
+        scheduledAt: archiveOnly
+          ? undefined
+          : (editForm.scheduledAtLocal ? new Date(editForm.scheduledAtLocal).toISOString() : null),
         contentMode: editForm.contentMode,
         markdownContent: editForm.contentMode === "markdown" ? editForm.markdownContent : null,
         manualHtml: editForm.contentMode === "manual" ? editForm.manualHtml : null,
         manualText: editForm.contentMode === "manual" ? editForm.manualText : null,
+        archiveOnly,
       }),
     });
 
@@ -1007,7 +1158,7 @@ export function NewsletterStudio() {
       return;
     }
 
-    setStatusMessage("Campaign updated");
+    setStatusMessage(archiveOnly ? "Archive correction saved" : "Campaign updated");
     setEditInitialSnapshot(serializeCampaignDraft(editForm));
     await refreshData();
   };
@@ -1039,6 +1190,7 @@ export function NewsletterStudio() {
   }, [mode, editForm, renderEditPreview]);
 
   const saveTemplate = async () => {
+    if (!ensureNewsletterWritable()) return;
     if (!templateDraft) return;
 
     setSaving(true);
@@ -1066,6 +1218,7 @@ export function NewsletterStudio() {
 
   const renderTemplatePreview = async () => {
     if (!templateDraft) return;
+    const summary = resolveNewsletterSummaryControls(templatePreviewContext);
 
     setSaving(true);
     setError(null);
@@ -1078,7 +1231,9 @@ export function NewsletterStudio() {
       },
       body: JSON.stringify({
         newsletterType: templateDraft.newsletterType,
-        periodDays: templatePreviewContext.periodDays,
+        timeframePreset: summary.timeframePreset,
+        periodDays: summary.periodDays,
+        minimumRelevance: summary.minimumRelevance,
         campaignSubject: templatePreviewContext.campaignSubject,
         subjectTemplate: templateDraft.subjectTemplate,
         htmlTemplate: templateDraft.htmlTemplate,
@@ -1429,6 +1584,7 @@ export function NewsletterStudio() {
   };
 
   const saveSubscriberDraft = async (subscriberId: string) => {
+    if (!ensureNewsletterWritable()) return;
     const subscriber = subscribers.find((row) => row.id === subscriberId);
     if (!subscriber) return;
 
@@ -1496,6 +1652,14 @@ export function NewsletterStudio() {
 
   return (
     <div className="space-y-4">
+      {availabilityError && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-100">
+          {availabilityError} Read-only fallbacks are enabled where possible, but
+          queue and subscriber write actions stay disabled until migrations are
+          applied.
+        </div>
+      )}
+
       {error && (
         <ErrorAlert
           message={error}
@@ -1565,14 +1729,16 @@ export function NewsletterStudio() {
               </div>
               <button
                 type="button"
-                onClick={() => setComposeForm((c) => ({ ...c, subject: suggestedSubject(c.newsletterType, c.periodDays) }))}
+                onClick={() =>
+                  setComposeForm((c) => ({ ...c, subject: suggestedSubject(c.newsletterType, resolveNewsletterSummaryControls(c).periodDays) }))
+                }
                 className="rounded-xl border px-3 py-2 text-sm font-semibold"
               >
                 Use suggested subject
               </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               <label className="space-y-1">
                 <span className="text-sm font-semibold">Newsletter type</span>
                 <select
@@ -1591,18 +1757,48 @@ export function NewsletterStudio() {
               </label>
 
               <label className="space-y-1">
-                <span className="text-sm font-semibold">Period (days)</span>
+                <span className="text-sm font-semibold">Summary timeframe</span>
+                <select
+                  value={composeForm.timeframePreset}
+                  onChange={(event) => setComposeSummaryPreset(event.target.value as NewsletterSummaryTimeframePreset)}
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                >
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </label>
+
+              <label className="space-y-1">
+                <span className="text-sm font-semibold">Minimum relevance</span>
                 <input
                   type="number"
                   min={1}
-                  max={30}
-                  value={composeForm.periodDays}
+                  max={10}
+                  value={composeForm.minimumRelevance}
                   onChange={(event) =>
-                    setComposeForm((current) => ({ ...current, periodDays: Number(event.target.value) || 7 }))
+                    setComposeForm((current) => ({ ...current, minimumRelevance: Number(event.target.value) || 1 }))
                   }
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 />
               </label>
+
+              {composeForm.timeframePreset === "custom" && (
+                <label className="space-y-1 md:col-span-2 xl:col-span-1">
+                  <span className="text-sm font-semibold">Period (days)</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={composeForm.periodDays}
+                    onChange={(event) =>
+                      setComposeForm((current) => ({ ...current, periodDays: Number(event.target.value) || 7 }))
+                    }
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                  />
+                </label>
+              )}
 
               <label className="space-y-1 md:col-span-2">
                 <span className="text-sm font-semibold">Subject</span>
@@ -1610,7 +1806,7 @@ export function NewsletterStudio() {
                   type="text"
                   value={composeForm.subject}
                   onChange={(event) => setComposeForm((current) => ({ ...current, subject: event.target.value }))}
-                  placeholder={suggestedSubject(composeForm.newsletterType, composeForm.periodDays)}
+                  placeholder={suggestedSubject(composeForm.newsletterType, composeSummary.periodDays)}
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 />
               </label>
@@ -2068,6 +2264,7 @@ export function NewsletterStudio() {
                 <tbody>
                   {filteredCampaigns.map((campaign) => {
                     const mutable = MUTABLE_STATUSES.has(campaign.status);
+                    const archiveEditable = campaign.status === "sent";
                     return (
                       <tr key={campaign.id} className="border-t border-neutral-200 align-top dark:border-neutral-800">
                         <td className="px-4 py-3">
@@ -2110,11 +2307,11 @@ export function NewsletterStudio() {
                           <div className="flex justify-end gap-2">
                             <button
                               type="button"
-                              onClick={() => openCampaignEditor(campaign.id)}
-                              disabled={saving || !mutable}
+                              onClick={() => openCampaignEditor(campaign.id, archiveEditable ? "archive" : "campaign")}
+                              disabled={saving || (!mutable && !archiveEditable)}
                               className="rounded-xl border px-3 py-2 text-xs font-semibold disabled:opacity-50"
                             >
-                              Edit
+                              {archiveEditable ? "Correct archive" : "Edit"}
                             </button>
                             <button
                               type="button"
@@ -2146,7 +2343,9 @@ export function NewsletterStudio() {
             <div className="mt-6 space-y-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-semibold">Edit Campaign</h3>
+                  <h3 className="text-base font-semibold">
+                    {editingCampaignMode === "archive" ? "Correct Archive" : "Edit Campaign"}
+                  </h3>
                   {isEditDirty && (
                     <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                       Unsaved
@@ -2173,14 +2372,21 @@ export function NewsletterStudio() {
                 </div>
               </div>
 
+              {editingCampaignMode === "archive" && (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                  This only updates the archived web version. Emails that were already sent will not change.
+                </div>
+              )}
+
               <div className={cx("grid grid-cols-1 gap-4", editWorkspaceView === "split" && "xl:grid-cols-2")}>
                 {editWorkspaceView !== "preview" && (
                   <div className={cx("space-y-3", editWorkspaceView === "editor" && "min-h-[68vh]")}>
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                     <label className="space-y-1">
                       <span className="text-sm font-semibold">Type</span>
                       <select
                         value={editForm.newsletterType}
+                        disabled={editingCampaignMode === "archive"}
                         onChange={(event) =>
                           setEditForm((current) =>
                             current ? { ...current, newsletterType: event.target.value as NewsletterType } : current
@@ -2197,20 +2403,57 @@ export function NewsletterStudio() {
                     </label>
 
                     <label className="space-y-1">
-                      <span className="text-sm font-semibold">Period (days)</span>
+                      <span className="text-sm font-semibold">Summary timeframe</span>
+                      <select
+                        value={editForm.timeframePreset}
+                        disabled={editingCampaignMode === "archive"}
+                        onChange={(event) =>
+                          setEditSummaryPreset(event.target.value as NewsletterSummaryTimeframePreset)
+                        }
+                        className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                      >
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                        <option value="custom">Custom</option>
+                      </select>
+                    </label>
+
+                    <label className="space-y-1">
+                      <span className="text-sm font-semibold">Minimum relevance</span>
                       <input
                         type="number"
                         min={1}
-                        max={30}
-                        value={editForm.periodDays}
+                        max={10}
+                        value={editForm.minimumRelevance}
+                        disabled={editingCampaignMode === "archive"}
                         onChange={(event) =>
                           setEditForm((current) =>
-                            current ? { ...current, periodDays: Number(event.target.value) || 7 } : current
+                            current ? { ...current, minimumRelevance: Number(event.target.value) || 1 } : current
                           )
                         }
                         className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                       />
                     </label>
+
+                    {editForm.timeframePreset === "custom" && (
+                      <label className="space-y-1 md:col-span-2 xl:col-span-1">
+                        <span className="text-sm font-semibold">Period (days)</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={365}
+                          value={editForm.periodDays}
+                          disabled={editingCampaignMode === "archive"}
+                          onChange={(event) =>
+                            setEditForm((current) =>
+                              current ? { ...current, periodDays: Number(event.target.value) || 7 } : current
+                            )
+                          }
+                          className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                        />
+                      </label>
+                    )}
                   </div>
 
                   <label className="space-y-1">
@@ -2242,6 +2485,7 @@ export function NewsletterStudio() {
                     <input
                       type="datetime-local"
                       value={editForm.scheduledAtLocal}
+                      disabled={editingCampaignMode === "archive"}
                       onChange={(event) =>
                         setEditForm((current) =>
                           current ? { ...current, scheduledAtLocal: event.target.value } : current
@@ -2256,6 +2500,7 @@ export function NewsletterStudio() {
                     <SegmentedControl<NewsletterContentMode>
                       value={editForm.contentMode}
                       onChange={setEditContentMode}
+                      disabled={editingCampaignMode === "archive" ? false : undefined}
                       options={[
                         { value: "template", label: "Template" },
                         { value: "markdown", label: "Markdown" },
@@ -2388,7 +2633,7 @@ export function NewsletterStudio() {
                       disabled={saving}
                       className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-neutral-50 dark:text-neutral-900"
                     >
-                      Save changes
+                      {editingCampaignMode === "archive" ? "Save archive correction" : "Save changes"}
                     </button>
                     <button
                       type="button"
@@ -2609,7 +2854,7 @@ export function NewsletterStudio() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 <label className="space-y-1">
                   <span className="text-sm font-semibold">Preview subject</span>
                   <input
@@ -2622,18 +2867,52 @@ export function NewsletterStudio() {
                   />
                 </label>
                 <label className="space-y-1">
-                  <span className="text-sm font-semibold">Period (days)</span>
+                  <span className="text-sm font-semibold">Summary timeframe</span>
+                  <select
+                    value={templatePreviewContext.timeframePreset}
+                    onChange={(event) => setTemplateSummaryPreset(event.target.value as NewsletterSummaryTimeframePreset)}
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                  >
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-sm font-semibold">Minimum relevance</span>
                   <input
                     type="number"
                     min={1}
-                    max={30}
-                    value={templatePreviewContext.periodDays}
+                    max={10}
+                    value={templatePreviewContext.minimumRelevance}
                     onChange={(event) =>
-                      setTemplatePreviewContext((current) => ({ ...current, periodDays: Number(event.target.value) || 7 }))
+                      setTemplatePreviewContext((current) => ({
+                        ...current,
+                        minimumRelevance: Number(event.target.value) || 1,
+                      }))
                     }
                     className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                   />
                 </label>
+                {templatePreviewContext.timeframePreset === "custom" && (
+                  <label className="space-y-1 sm:col-span-2 xl:col-span-1">
+                    <span className="text-sm font-semibold">Period (days)</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={templatePreviewContext.periodDays}
+                      onChange={(event) =>
+                        setTemplatePreviewContext((current) => ({
+                          ...current,
+                          periodDays: Number(event.target.value) || 7,
+                        }))
+                      }
+                      className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                    />
+                  </label>
+                )}
               </div>
 
               {!templatePreview && (

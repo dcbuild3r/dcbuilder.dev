@@ -14,6 +14,7 @@ export interface BlogPostView {
   sourceUrl?: string;
   readingTime: number;
   image?: string;
+  relevance: number;
 }
 
 export interface BlogPostMeta {
@@ -25,6 +26,7 @@ export interface BlogPostMeta {
   sourceUrl?: string;
   readingTime: number;
   image?: string;
+  relevance: number;
 }
 
 // Re-export for backwards compatibility
@@ -77,6 +79,7 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
       sourceUrl: post.sourceUrl || undefined,
       readingTime: calculateReadingTime(post.content),
       image: post.image || undefined,
+      relevance: post.relevance,
     }));
   } catch (error) {
     console.error("[blog] Failed to fetch all posts:", error);
@@ -104,6 +107,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
       sourceUrl: post.sourceUrl || undefined,
       readingTime: calculateReadingTime(post.content),
       image: post.image || undefined,
+      relevance: post.relevance,
     };
   } catch (error) {
     console.error(`[blog] Failed to fetch post by slug "${slug}":`, error);

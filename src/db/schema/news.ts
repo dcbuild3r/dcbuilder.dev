@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, timestamp, index, integer } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
 
 // Curated links (news)
@@ -16,6 +16,7 @@ export const curatedLinks = pgTable(
     description: text("description"),
     category: text("category").notNull(), // crypto, ai, infrastructure, etc.
     featured: boolean("featured").default(false),
+    relevance: integer("relevance").notNull().default(5),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -41,6 +42,7 @@ export const announcements = pgTable(
     description: text("description"),
     category: text("category").notNull(),
     featured: boolean("featured").default(false),
+    relevance: integer("relevance").notNull().default(5),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

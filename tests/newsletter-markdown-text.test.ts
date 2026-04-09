@@ -90,6 +90,56 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
     expect(result.data.starter.markdown).not.toContain("### Recent News");
   });
 
+  test("filters quarterly summaries by minimum relevance", async () => {
+    mock.module("@/db", () => makeDbMock());
+    mock.module("@/services/posthog", () => ({
+      getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
+      getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
+      getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
+    }));
+    mock.module("@/lib/news", () => ({
+      getAllNews: async () => ([
+        {
+          id: "high-signal-quarterly",
+          type: "curated",
+          title: "High signal quarterly item",
+          url: "https://example.com/high-signal",
+          date: "2026-03-12",
+          category: "ai",
+          source: "Example AI",
+          relevance: 8,
+        },
+        {
+          id: "low-signal-filler",
+          type: "curated",
+          title: "Low relevance weekly filler",
+          url: "https://example.com/low-signal",
+          date: "2026-03-10",
+          category: "crypto",
+          source: "Example Crypto",
+          relevance: 4,
+        },
+      ]),
+    }));
+
+    const { previewNewsletterCampaignDraft } = await import(
+      `../src/services/newsletter?newsletter-quarterly-relevance=${Date.now()}`
+    );
+    const result = await previewNewsletterCampaignDraft({
+      newsletterType: "news",
+      subject: "Quarterly digest",
+      contentMode: "template",
+      timeframePreset: "quarterly",
+      minimumRelevance: 7,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected preview result");
+
+    expect(result.data.starter.markdown).toContain("High signal quarterly item");
+    expect(result.data.starter.markdown).not.toContain("Low relevance weekly filler");
+  });
+
   test("preserves links in rendered text output", async () => {
     mock.module("@/db", () => makeDbMock());
     mock.module("@/services/posthog", () => ({

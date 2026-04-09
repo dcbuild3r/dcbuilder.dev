@@ -1,8 +1,14 @@
-import { describe, expect, test } from "bun:test";
-import { markdownToHtml } from "../src/services/newsletter";
+import { afterEach, describe, expect, mock, test } from "bun:test";
 
 describe("markdownToHtml", () => {
-  test("renders starter markdown with section dividers and a padded newsletter shell", () => {
+  afterEach(() => {
+    mock.restore();
+  });
+
+  test("renders starter markdown with section dividers and a padded newsletter shell", async () => {
+    process.env.DATABASE_URL = "postgres://postgres:postgres@127.0.0.1:5432/dcbuilder_test";
+
+    const { markdownToHtml } = await import(`../src/services/newsletter?newsletter-markdown-html=${Date.now()}`);
     const html = markdownToHtml(`## News digest
 
 Recent highlights from the last 7 days.

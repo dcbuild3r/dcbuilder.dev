@@ -1,8 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import {
   NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME,
+  NEWSLETTER_SUMMARY_PRESET_DEFAULTS,
   canAutoRenderComposePreview,
   getNewsletterStarterHeadingClassName,
+  nextAvailabilityErrorAfterSubscribersRefresh,
+  resolveNewsletterSummaryControls,
   shouldLoadSubscribersOnModeChange,
 } from "../src/lib/newsletter-studio";
 
@@ -116,5 +119,47 @@ describe("canAutoRenderComposePreview", () => {
         subscribersLoading: false,
       })
     ).toBe(false);
+  });
+
+  test("clears a stale availability lock after subscriber refresh succeeds", () => {
+    expect(
+      nextAvailabilityErrorAfterSubscribersRefresh({
+        previousAvailabilityError: "Newsletter database is temporarily unavailable.",
+        subscriberAvailabilityReason: null,
+      })
+    ).toBe(null);
+
+    expect(
+      nextAvailabilityErrorAfterSubscribersRefresh({
+        previousAvailabilityError: "Newsletter database is temporarily unavailable.",
+        subscriberAvailabilityReason: "Newsletter database is temporarily unavailable.",
+      })
+    ).toBe("Newsletter database is temporarily unavailable.");
+  });
+
+  test("resolves preset summary controls with quarterly defaults and custom overrides", () => {
+    expect(resolveNewsletterSummaryControls({ timeframePreset: "quarterly" })).toEqual({
+      timeframePreset: "quarterly",
+      periodDays: NEWSLETTER_SUMMARY_PRESET_DEFAULTS.quarterly.periodDays,
+      minimumRelevance: NEWSLETTER_SUMMARY_PRESET_DEFAULTS.quarterly.minimumRelevance,
+    });
+
+    expect(
+      resolveNewsletterSummaryControls({
+        timeframePreset: "custom",
+        periodDays: 45,
+        minimumRelevance: 8,
+      })
+    ).toEqual({
+      timeframePreset: "custom",
+      periodDays: 45,
+      minimumRelevance: 8,
+    });
+
+    expect(resolveNewsletterSummaryControls({ periodDays: 30 })).toEqual({
+      timeframePreset: "monthly",
+      periodDays: NEWSLETTER_SUMMARY_PRESET_DEFAULTS.monthly.periodDays,
+      minimumRelevance: NEWSLETTER_SUMMARY_PRESET_DEFAULTS.monthly.minimumRelevance,
+    });
   });
 });

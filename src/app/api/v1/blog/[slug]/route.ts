@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, blogPosts } from "@/db";
 import { eq } from "drizzle-orm";
 import { requireAuth, validateApiKey } from "@/services/auth";
+import { validateEditorialRelevance } from "@/lib/news-relevance";
 
 function isValidDate(dateStr: string): boolean {
   const parsed = new Date(dateStr);
@@ -45,6 +46,7 @@ export async function GET(
         image: post.image,
         content: post.content,
         published: post.published,
+        relevance: post.relevance,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
       },
@@ -100,7 +102,7 @@ export async function PUT(
     );
   }
 
-  const { title, date, description, source, sourceUrl, image, content, newSlug, published } = body as {
+  const { title, date, description, source, sourceUrl, image, content, newSlug, published, relevance } = body as {
     title?: string;
     date?: string;
     description?: string;
@@ -110,6 +112,7 @@ export async function PUT(
     content?: string;
     newSlug?: string;
     published?: boolean;
+    relevance?: number;
   };
 
   if (!title || !content) {
@@ -125,6 +128,14 @@ export async function PUT(
     console.warn("[api/blog] Invalid date format:", { date });
     return NextResponse.json(
       { error: "Invalid date format", code: "INVALID_DATE" },
+      { status: 400 }
+    );
+  }
+
+  const relevanceValidation = validateEditorialRelevance(relevance, existingPost.relevance ?? 5);
+  if (!relevanceValidation.ok) {
+    return NextResponse.json(
+      { error: relevanceValidation.error, code: "VALIDATION_ERROR" },
       { status: 400 }
     );
   }
@@ -167,6 +178,7 @@ export async function PUT(
           sourceUrl: sourceUrl || null,
           image: image || null,
           published: published ?? true,
+          relevance: relevanceValidation.data ?? existingPost.relevance ?? 5,
           createdAt: existingPost.createdAt,
         });
       });
@@ -190,6 +202,7 @@ export async function PUT(
         sourceUrl: sourceUrl || null,
         image: image || null,
         published: published ?? true,
+        relevance: relevanceValidation.data ?? existingPost.relevance ?? 5,
         updatedAt: new Date(),
       })
       .where(eq(blogPosts.slug, slug));
