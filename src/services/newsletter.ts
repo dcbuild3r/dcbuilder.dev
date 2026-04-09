@@ -921,19 +921,30 @@ function renderDigestText(digest: CampaignDigest, links: { unsubscribe: string; 
 }
 
 function renderDigestItemsMarkdown(digest: CampaignDigest) {
+  const renderItem = (item: DigestItem) => {
+    const metric = item.currentViews !== undefined
+      ? `${item.currentViews} views${item.delta !== undefined ? ` (${item.delta >= 0 ? "+" : ""}${item.delta})` : ""}`
+      : "";
+    const pieces = [
+      `**${item.title}**`,
+      item.subtitle || "",
+      metric,
+      item.url ? `[open](${item.url})` : "",
+    ].filter(Boolean);
+    return `- ${pieces.join(" · ")}`;
+  };
+
+  if (digest.groups && digest.groups.length > 0) {
+    return digest.groups.map((group) => {
+      const items = group.items.length > 0
+        ? group.items.map(renderItem).join("\n")
+        : "- No items available for this section.";
+      return `## ${group.label}\n\n${items}`;
+    }).join("\n\n---\n\n");
+  }
+
   return digest.items.length > 0
-    ? digest.items.map((item) => {
-      const metric = item.currentViews !== undefined
-        ? `${item.currentViews} views${item.delta !== undefined ? ` (${item.delta >= 0 ? "+" : ""}${item.delta})` : ""}`
-        : "";
-      const pieces = [
-        `**${item.title}**`,
-        item.subtitle || "",
-        metric,
-        item.url ? `[open](${item.url})` : "",
-      ].filter(Boolean);
-      return `- ${pieces.join(" · ")}`;
-    }).join("\n")
+    ? digest.items.map(renderItem).join("\n")
     : "- No items available for this period.";
 }
 

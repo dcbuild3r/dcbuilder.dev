@@ -1536,8 +1536,8 @@ export function NewsletterStudio() {
       </section>
 
       {mode === "compose" && (
-        <div className="space-y-4">
-          <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mx-auto w-full max-w-[1680px] space-y-5">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">Compose draft</h2>
@@ -1633,7 +1633,7 @@ export function NewsletterStudio() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Content Workspace</h2>
@@ -1677,9 +1677,9 @@ export function NewsletterStudio() {
               />
             </div>
 
-            <div className={cx("mt-4 grid grid-cols-1 gap-4", composeWorkspaceView === "split" && "lg:grid-cols-2")}>
+            <div className={cx("mt-4 grid grid-cols-1 gap-6", composeWorkspaceView === "split" && "lg:grid-cols-2")}>
               {composeWorkspaceView !== "preview" && (
-              <div className={cx("min-h-[72vh] rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950", composeWorkspaceView === "editor" && "min-h-[78vh]")}>
+              <div className={cx("min-h-[72vh] rounded-xl border border-neutral-200 bg-neutral-50 p-5 lg:p-6 dark:border-neutral-800 dark:bg-neutral-950", composeWorkspaceView === "editor" && "min-h-[78vh]")}>
                 <div className="mb-3 flex items-center justify-between">
                   <div className="text-sm font-semibold">Editor</div>
                   <div className="text-xs uppercase tracking-wide text-neutral-500">
@@ -1810,7 +1810,7 @@ export function NewsletterStudio() {
               )}
 
               {composeWorkspaceView !== "editor" && (
-              <div className={cx("min-h-[72vh] rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950", composeWorkspaceView === "preview" && "min-h-[78vh]")}>
+              <div className={cx("min-h-[72vh] rounded-xl border border-neutral-200 bg-neutral-50 p-5 lg:p-6 dark:border-neutral-800 dark:bg-neutral-950", composeWorkspaceView === "preview" && "min-h-[78vh]")}>
                 <div className="mb-3 text-sm font-semibold">Live preview</div>
 
                 {composePreviewLoading && (
@@ -1849,7 +1849,7 @@ export function NewsletterStudio() {
 
                     {composePreviewTab === "text" && (
                       <pre className={cx(
-                        "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-900",
+                        "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-5 text-xs dark:border-neutral-800 dark:bg-neutral-900",
                         composeWorkspaceView === "preview" ? "max-h-[78vh]" : "max-h-[70vh]"
                       )}>
                         {composePreview.rendered.text}
@@ -1859,7 +1859,7 @@ export function NewsletterStudio() {
                     {composePreviewTab === "starter" && (
                       <div className="grid grid-cols-1 gap-3">
                         <pre className={cx(
-                          "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-900",
+                          "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-5 text-xs dark:border-neutral-800 dark:bg-neutral-900",
                           composeWorkspaceView === "preview" ? "max-h-[78vh]" : "max-h-[70vh]"
                         )}>
                           {composePreview.starter.markdown}
@@ -2455,8 +2455,8 @@ export function NewsletterStudio() {
       )}
 
       {mode === "templates" && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mx-auto grid w-full max-w-[1680px] grid-cols-1 gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold">Template editor</h2>
@@ -2575,7 +2575,7 @@ export function NewsletterStudio() {
             )}
           </section>
 
-          <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Template preview</h2>
@@ -2633,18 +2633,20 @@ export function NewsletterStudio() {
               {templatePreview && templatePreviewTab === "html" && <HtmlPreviewFrame html={templatePreview.rendered.html} />}
 
               {templatePreview && templatePreviewTab === "text" && (
-                <pre className="max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-950">
+                <pre className="max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-5 text-xs dark:border-neutral-800 dark:bg-neutral-950">
                   {templatePreview.rendered.text}
                 </pre>
               )}
 
               {templatePreview && templatePreviewTab === "starter" && (
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                  <pre className="max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-950">
+                  <pre className="max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-5 text-xs dark:border-neutral-800 dark:bg-neutral-950">
                     {templatePreview.starter.markdown}
                   </pre>
-                  <div className="prose prose-sm max-w-none rounded-xl border border-neutral-200 bg-white p-4 dark:prose-invert dark:border-neutral-800 dark:bg-neutral-950">
-                    <ReactMarkdown>{templatePreview.starter.markdown}</ReactMarkdown>
+                  <div className="rounded-xl border border-neutral-200 bg-white p-5 sm:p-7 dark:border-neutral-800 dark:bg-neutral-950">
+                    <div className="prose prose-sm mx-auto max-w-3xl dark:prose-invert sm:prose-base">
+                      <ReactMarkdown>{templatePreview.starter.markdown}</ReactMarkdown>
+                    </div>
                   </div>
                 </div>
               )}
