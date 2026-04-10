@@ -1,4 +1,7 @@
-import { spawnSync } from "node:child_process";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import postgres from "postgres";
+import { createPreferredPostgresSocket, resolvePreferredPostgresTarget } from "../../src/db/postgres-connection";
 
 type TargetEnv = "dev" | "staging" | "prod";
 
@@ -43,7 +46,7 @@ function resolveUrl(targetEnv: TargetEnv): string {
   return prodUrl;
 }
 
-function run() {
+async function run() {
   const targetEnv = parseEnvArg(process.argv.slice(2));
 
   if (targetEnv === "prod" && process.env.ALLOW_PROD_MIGRATION !== "true") {
@@ -53,24 +56,30 @@ function run() {
   const databaseUrl = resolveUrl(targetEnv);
   console.log(`[db:migrate] Applying migrations to ${targetEnv}`);
 
-  const child = spawnSync("bunx", ["drizzle-kit", "migrate", "--config", "drizzle.config.ts"], {
-    stdio: "inherit",
-    env: {
-      ...process.env,
-      DRIZZLE_ENV: targetEnv,
-      DATABASE_URL: databaseUrl,
-    },
+  const target = await resolvePreferredPostgresTarget(databaseUrl);
+  if (target.tlsServername && target.connectHost !== target.tlsServername) {
+    console.log(
+      `[db:migrate] Using IPv4 connect target ${target.connectHost} for ${target.tlsServername}`
+    );
+  }
+
+  const sql = postgres(databaseUrl, {
+    max: 1,
+    socket: targetEnv === "dev"
+      ? undefined
+      : () => createPreferredPostgresSocket(databaseUrl),
   });
 
-  if (child.status !== 0) {
-    process.exit(child.status ?? 1);
+  try {
+    const db = drizzle(sql);
+    await migrate(db, { migrationsFolder: "drizzle" });
+  } finally {
+    await sql.end({ timeout: 5 });
   }
 }
 
-try {
-  run();
-} catch (error) {
+run().catch((error) => {
   const message = error instanceof Error ? error.message : "Unknown migration error";
   console.error(`[db:migrate] ${message}`);
   process.exit(1);
-}
+});

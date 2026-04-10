@@ -14,6 +14,7 @@ describe("POST /api/cron/newsletter-send", () => {
 
   test("returns 500 when any scheduled campaign send fails", async () => {
     process.env.CRON_SECRET = "test-secret";
+    const actualNewsletter = await import("../src/services/newsletter");
 
     const sendDueNewsletterCampaigns = mock(async () => ({
       ok: true as const,
@@ -29,6 +30,7 @@ describe("POST /api/cron/newsletter-send", () => {
     }));
 
     mock.module("@/services/newsletter", () => ({
+      ...actualNewsletter,
       sendDueNewsletterCampaigns,
     }));
 
@@ -48,6 +50,7 @@ describe("POST /api/cron/newsletter-send", () => {
 
   test("returns 500 when a campaign send completes with failed recipients", async () => {
     process.env.CRON_SECRET = "test-secret";
+    const actualNewsletter = await import("../src/services/newsletter");
 
     const sendDueNewsletterCampaigns = mock(async () => ({
       ok: true as const,
@@ -66,6 +69,7 @@ describe("POST /api/cron/newsletter-send", () => {
     }));
 
     mock.module("@/services/newsletter", () => ({
+      ...actualNewsletter,
       sendDueNewsletterCampaigns,
     }));
 

@@ -17,9 +17,10 @@ import {
   investmentCategories,
 } from "../src/db/schema";
 import { sql } from "drizzle-orm";
+import { TEST_ID_PREFIX } from "../src/lib/test-data-cleanup";
 
 // Deterministic test IDs for reliable test assertions
-const TEST_PREFIX = "test-";
+const TEST_PREFIX = TEST_ID_PREFIX;
 
 const testJobTags = [
   { id: `${TEST_PREFIX}tag-ai`, slug: "ai", label: "AI" },

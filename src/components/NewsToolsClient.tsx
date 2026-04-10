@@ -21,6 +21,7 @@ type ArchiveCampaignPreview = {
 
 type NewsToolsClientProps = {
   campaigns: ArchiveCampaignPreview[];
+  archiveAvailable?: boolean;
 };
 
 const TAB_LABELS: Record<NewsToolsTab, { title: string; blurb: string }> = {
@@ -66,7 +67,23 @@ function formatShortDate(value: string | null) {
   });
 }
 
-function ArchivePanel({ campaigns }: { campaigns: ArchiveCampaignPreview[] }) {
+function ArchivePanel({
+  campaigns,
+  archiveAvailable,
+}: {
+  campaigns: ArchiveCampaignPreview[];
+  archiveAvailable: boolean;
+}) {
+  if (!archiveAvailable) {
+    return (
+      <div className="rounded-[1.5rem] border border-dashed border-amber-300/80 bg-amber-50/80 px-4 py-5 text-sm text-amber-900 dark:border-amber-900/80 dark:bg-amber-950/40 dark:text-amber-100">
+        Newsletter archive is temporarily unavailable. The rest of the news page
+        still works, but newsletter history is offline until the newsletter
+        database is available again.
+      </div>
+    );
+  }
+
   if (campaigns.length === 0) {
     return (
       <div className="rounded-[1.5rem] border border-dashed border-neutral-300/80 bg-white/70 px-4 py-5 text-sm text-neutral-500 dark:border-neutral-700 dark:bg-neutral-950/60 dark:text-neutral-400">
@@ -339,7 +356,10 @@ function RecommendationsPanel() {
   );
 }
 
-export function NewsToolsClient({ campaigns }: NewsToolsClientProps) {
+export function NewsToolsClient({
+  campaigns,
+  archiveAvailable = true,
+}: NewsToolsClientProps) {
   const [activeTab, setActiveTab] = useState<NewsToolsTab>("archive");
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const panelId = useId();
@@ -418,7 +438,12 @@ export function NewsToolsClient({ campaigns }: NewsToolsClientProps) {
             </div>
           </div>
 
-          {activeTab === "archive" && <ArchivePanel campaigns={campaigns} />}
+          {activeTab === "archive" && (
+            <ArchivePanel
+              campaigns={campaigns}
+              archiveAvailable={archiveAvailable}
+            />
+          )}
           {activeTab === "subscribe" && <SubscribePanel />}
           {activeTab === "recommendations" && <RecommendationsPanel />}
         </div>

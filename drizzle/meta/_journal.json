@@ -64,6 +64,13 @@
       "when": 1772201420401,
       "tag": "0008_bitter_mulholland_black",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1773316800000,
+      "tag": "0009_archive_newsletter_corrections",
+      "breakpoints": true
     }
   ]
 }

@@ -22,6 +22,7 @@ describe("sendDueNewsletterCampaigns", () => {
   });
 
   test("marks scheduled campaigns with zero recipients as failed", async () => {
+    const actualDb = await import("../src/db");
     const actualPosthog = await import("../src/services/posthog");
     const selectQueue = [
       [{ id: "camp-1" }],
@@ -44,6 +45,7 @@ describe("sendDueNewsletterCampaigns", () => {
     const updateCalls: Array<Record<string, unknown>> = [];
 
     mock.module("@/db", () => ({
+      ...actualDb,
       db: {
         select: () => ({
           from: () => ({

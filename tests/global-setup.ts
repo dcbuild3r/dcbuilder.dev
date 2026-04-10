@@ -20,8 +20,9 @@ import postgres from "postgres";
 import { resolve } from "node:path";
 import { loadEnvConfig } from "@next/env";
 import * as dbSchema from "../src/db/schema";
+import { TEST_ID_PREFIX } from "../src/lib/test-data-cleanup";
 
-const TEST_PREFIX = "test-";
+const TEST_PREFIX = TEST_ID_PREFIX;
 
 loadEnvConfig(process.cwd());
 
