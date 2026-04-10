@@ -15,6 +15,7 @@ import {
 } from "@/lib/newsletter-subscribers";
 import {
   canAutoRenderComposePreview,
+  getSuggestedNewsletterSubject,
   getNewsletterStarterHeadingClassName,
   NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME,
   nextAvailabilityErrorAfterSubscribersRefresh,
@@ -445,25 +446,6 @@ const newsletterStarterMarkdownComponents: Components = {
   ),
 };
 
-function computeUtcWindow(periodDays: number, now: Date) {
-  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
-  const start = new Date(end);
-  start.setUTCDate(start.getUTCDate() - (periodDays - 1));
-  start.setUTCHours(0, 0, 0, 0);
-  return { start, end };
-}
-
-function isoDay(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function suggestedSubject(type: NewsletterType, periodDays: number) {
-  const now = new Date();
-  const { start, end } = computeUtcWindow(periodDays, now);
-  const label = type === "news" ? "Weekly News Digest" : `${type[0].toUpperCase()}${type.slice(1)} Digest`;
-  return `${label} (${isoDay(start)} to ${isoDay(end)})`;
-}
-
 function withSelectionWrap(
   ref: HTMLTextAreaElement | null,
   value: string,
@@ -809,7 +791,11 @@ export function NewsletterStudio() {
 
       const payload = {
         newsletterType: draft.newsletterType,
-        subject: draft.subject.trim() || suggestedSubject(draft.newsletterType, summary.periodDays),
+        subject: draft.subject.trim() || getSuggestedNewsletterSubject({
+          newsletterType: draft.newsletterType,
+          timeframePreset: summary.timeframePreset,
+          periodDays: summary.periodDays,
+        }),
         timeframePreset: summary.timeframePreset,
         periodDays: summary.periodDays,
         minimumRelevance: summary.minimumRelevance,
@@ -1730,7 +1716,17 @@ export function NewsletterStudio() {
               <button
                 type="button"
                 onClick={() =>
-                  setComposeForm((c) => ({ ...c, subject: suggestedSubject(c.newsletterType, resolveNewsletterSummaryControls(c).periodDays) }))
+                  setComposeForm((current) => {
+                    const summary = resolveNewsletterSummaryControls(current);
+                    return {
+                      ...current,
+                      subject: getSuggestedNewsletterSubject({
+                        newsletterType: current.newsletterType,
+                        timeframePreset: summary.timeframePreset,
+                        periodDays: summary.periodDays,
+                      }),
+                    };
+                  })
                 }
                 className="rounded-xl border px-3 py-2 text-sm font-semibold"
               >
@@ -1806,7 +1802,11 @@ export function NewsletterStudio() {
                   type="text"
                   value={composeForm.subject}
                   onChange={(event) => setComposeForm((current) => ({ ...current, subject: event.target.value }))}
-                  placeholder={suggestedSubject(composeForm.newsletterType, composeSummary.periodDays)}
+                  placeholder={getSuggestedNewsletterSubject({
+                    newsletterType: composeForm.newsletterType,
+                    timeframePreset: composeSummary.timeframePreset,
+                    periodDays: composeSummary.periodDays,
+                  })}
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 />
               </label>
