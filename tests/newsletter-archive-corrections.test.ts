@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { createPosthogModuleMock } from "./helpers/posthog-module-mock";
 
 type NewsletterCampaignRecord = {
   id: string;
@@ -78,13 +79,13 @@ describe("newsletter archive corrections", () => {
   });
 
   test("allows archive-only corrections for sent campaigns while keeping normal sent edits blocked", async () => {
-    const actualPosthog = await import("../src/services/posthog");
-    mock.module("@/services/posthog", () => ({
-      ...actualPosthog,
-      getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
-      getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
-      getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
-    }));
+    mock.module("@/services/posthog", () =>
+      createPosthogModuleMock({
+        getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
+        getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
+        getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
+      })
+    );
     mock.module("@/lib/news", () => ({
       getAllNews: async () => [],
     }));

@@ -38,7 +38,9 @@ export async function POST(request: NextRequest) {
     newsletterType?: string;
     subject?: string;
     previewText?: string;
+    timeframePreset?: string;
     periodDays?: number;
+    minimumRelevance?: number;
     scheduledAt?: string;
     createdBy?: string;
     contentMode?: string;
@@ -58,7 +60,9 @@ export async function POST(request: NextRequest) {
       newsletterType: body.newsletterType || "",
       subject: body.subject || "",
       previewText: body.previewText,
+      timeframePreset: body.timeframePreset,
       periodDays: body.periodDays,
+      minimumRelevance: body.minimumRelevance,
       scheduledAt: body.scheduledAt,
       createdBy: body.createdBy,
       contentMode: body.contentMode,

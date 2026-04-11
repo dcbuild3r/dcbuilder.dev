@@ -9,7 +9,9 @@ export async function POST(request: NextRequest) {
   let body: {
     newsletterType?: string;
     subject?: string;
+    timeframePreset?: string;
     periodDays?: number;
+    minimumRelevance?: number;
     contentMode?: string;
     markdownContent?: string | null;
     manualHtml?: string | null;
@@ -25,7 +27,9 @@ export async function POST(request: NextRequest) {
   const result = await previewNewsletterCampaignDraft({
     newsletterType: body.newsletterType || "",
     subject: body.subject || "",
+    timeframePreset: body.timeframePreset,
     periodDays: body.periodDays,
+    minimumRelevance: body.minimumRelevance,
     contentMode: body.contentMode,
     markdownContent: body.markdownContent,
     manualHtml: body.manualHtml,
@@ -38,4 +42,3 @@ export async function POST(request: NextRequest) {
 
   return Response.json({ data: result.data });
 }
-

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { createPosthogModuleMock } from "./helpers/posthog-module-mock";
 
 describe("GET /api/hot-news", () => {
   afterEach(() => {
@@ -6,7 +7,6 @@ describe("GET /api/hot-news", () => {
   });
 
   test("returns hot news ids alongside click counts", async () => {
-    const actualPosthog = await import("../src/services/posthog");
     const getNewsClicksLast7Days = mock(async () => ({
       success: true as const,
       data: [
@@ -16,11 +16,12 @@ describe("GET /api/hot-news", () => {
     }));
     const determineHotNews = mock(() => ["news-1"]);
 
-    mock.module("@/services/posthog", () => ({
-      ...actualPosthog,
-      getNewsClicksLast7Days,
-      determineHotNews,
-    }));
+    mock.module("@/services/posthog", () =>
+      createPosthogModuleMock({
+        getNewsClicksLast7Days,
+        determineHotNews,
+      })
+    );
 
     const { GET } = await import("../src/app/api/hot-news/route");
     const response = await GET();

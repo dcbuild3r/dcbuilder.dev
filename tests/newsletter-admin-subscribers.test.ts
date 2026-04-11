@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { createPosthogModuleMock } from "./helpers/posthog-module-mock";
 
 function makeQueryResult<T>(value: T) {
   return {
@@ -74,7 +75,6 @@ describe("adminUpdateSubscriberPreferences", () => {
 
   test("updates subscriber status without auto-confirming pending subscribers", async () => {
     const actualDb = await import("../src/db");
-    const actualPosthog = await import("../src/services/posthog");
     const state: MockState = {
       subscriber: null,
       preferences: [],
@@ -130,12 +130,13 @@ describe("adminUpdateSubscriberPreferences", () => {
       newsletterSendEvents: {},
       newsletterUnsubTokens: {},
     }));
-    mock.module("@/services/posthog", () => ({
-      ...actualPosthog,
-      getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
-      getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
-      getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
-    }));
+    mock.module("@/services/posthog", () =>
+      createPosthogModuleMock({
+        getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
+        getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
+        getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
+      })
+    );
     mock.module("@/lib/news", () => ({
       getAllNews: async () => [],
     }));

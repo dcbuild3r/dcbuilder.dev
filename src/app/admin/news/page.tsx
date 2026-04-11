@@ -20,6 +20,7 @@ interface CuratedLink {
   description: string | null;
   category: string;
   featured: boolean | null;
+  relevance: number | null;
 }
 
 interface Announcement {
@@ -33,6 +34,7 @@ interface Announcement {
   description: string | null;
   category: string;
   featured: boolean | null;
+  relevance: number | null;
 }
 
 const emptyCuratedLink: Partial<CuratedLink> = {
@@ -43,6 +45,7 @@ const emptyCuratedLink: Partial<CuratedLink> = {
   description: "",
   category: "x_post",
   featured: false,
+  relevance: 5,
 };
 
 const emptyAnnouncement: Partial<Announcement> = {
@@ -55,6 +58,7 @@ const emptyAnnouncement: Partial<Announcement> = {
   description: "",
   category: "product",
   featured: false,
+  relevance: 5,
 };
 
 type TabType = "curated" | "announcements" | "newsletter";
@@ -391,6 +395,20 @@ export default function AdminNews() {
                 Featured
               </label>
             </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Relevance *</label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={(editingItem as Partial<CuratedLink | Announcement>).relevance ?? 5}
+                onChange={(e) =>
+                  setEditingItem({ ...editingItem, relevance: Number(e.target.value) || 5 })
+                }
+                className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+              />
+              <p className="mt-1 text-xs text-neutral-500">1 = low, 10 = highest</p>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Description</label>
@@ -522,8 +540,8 @@ export default function AdminNews() {
         <TableSkeleton
           headers={
             activeTab === "curated"
-              ? ["Title", "Source", "Category", "Date", { label: "Actions", align: "right" }]
-              : ["Title", "Company", "Platform", "Date", { label: "Actions", align: "right" }]
+              ? ["Title", "Source", "Category", "Relevance", "Date", { label: "Actions", align: "right" }]
+              : ["Title", "Company", "Platform", "Relevance", "Date", { label: "Actions", align: "right" }]
           }
           rows={8}
           headerColor={activeTab === "curated" ? "bg-purple-100 dark:bg-purple-900/30" : "bg-orange-100 dark:bg-orange-900/30"}
@@ -673,15 +691,16 @@ export default function AdminNews() {
                       }
                     }}
                     className={`flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white ${sortBy === "date" ? "text-blue-600 dark:text-blue-400" : ""}`}
-                  >
-                    <span>Date</span>
-                    {sortBy === "date" && (
-                      <svg className={`w-4 h-4 transition-transform ${sortOrder === "asc" ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    )}
-                  </button>
-                </th>
+                    >
+                      <span>Date</span>
+                      {sortBy === "date" && (
+                        <svg className={`w-4 h-4 transition-transform ${sortOrder === "asc" ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      )}
+                    </button>
+                  </th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Relevance</th>
                 <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
               </tr>
             </thead>
@@ -702,6 +721,11 @@ export default function AdminNews() {
                   <td className="px-4 py-3 text-sm">
                     <span className={`px-2 py-1 rounded-full text-xs ${getSkillColor(link.category)}`}>
                       {link.category}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <span className="inline-flex rounded-full bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+                      {link.relevance ?? 5}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm">
@@ -863,15 +887,16 @@ export default function AdminNews() {
                       }
                     }}
                     className={`flex items-center gap-1 hover:text-neutral-900 dark:hover:text-white ${sortBy === "date" ? "text-blue-600 dark:text-blue-400" : ""}`}
-                  >
-                    <span>Date</span>
-                    {sortBy === "date" && (
-                      <svg className={`w-4 h-4 transition-transform ${sortOrder === "asc" ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    )}
-                  </button>
-                </th>
+                    >
+                      <span>Date</span>
+                      {sortBy === "date" && (
+                        <svg className={`w-4 h-4 transition-transform ${sortOrder === "asc" ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      )}
+                    </button>
+                  </th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Relevance</th>
                 <th className="px-4 py-3 text-right text-sm font-medium">Actions</th>
               </tr>
             </thead>
@@ -888,6 +913,11 @@ export default function AdminNews() {
                   <td className="px-4 py-3 text-sm">
                     <span className={`px-2 py-1 rounded-full text-xs ${getSkillColor(announcement.platform)}`}>
                       {announcement.platform}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <span className="inline-flex rounded-full bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+                      {announcement.relevance ?? 5}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm">

@@ -8,7 +8,9 @@ export async function POST(request: NextRequest) {
 
   let body: {
     newsletterType?: string;
+    timeframePreset?: string;
     periodDays?: number;
+    minimumRelevance?: number;
     campaignSubject?: string;
     subjectTemplate?: string;
     htmlTemplate?: string;
@@ -24,7 +26,9 @@ export async function POST(request: NextRequest) {
 
   const result = await renderNewsletterTemplatePreview({
     newsletterType: body.newsletterType || "",
+    timeframePreset: body.timeframePreset,
     periodDays: body.periodDays,
+    minimumRelevance: body.minimumRelevance,
     campaignSubject: body.campaignSubject,
     subjectTemplate: body.subjectTemplate,
     htmlTemplate: body.htmlTemplate,

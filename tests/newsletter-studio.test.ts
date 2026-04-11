@@ -1,7 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import {
+  NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME,
+  NEWSLETTER_SUMMARY_PRESET_DEFAULTS,
   canAutoRenderComposePreview,
+  getSuggestedNewsletterSubject,
+  getNewsletterStarterHeadingClassName,
   nextAvailabilityErrorAfterSubscribersRefresh,
+  resolveNewsletterSummaryControls,
   shouldLoadSubscribersOnModeChange,
 } from "../src/lib/newsletter-studio";
 
@@ -74,6 +79,15 @@ describe("canAutoRenderComposePreview", () => {
     ).toBe(true);
   });
 
+  test("styles the rendered starter preview with a left gutter and section separators", () => {
+    expect(NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME).toContain("max-w-3xl");
+    expect(NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME).toContain("px-4");
+    expect(NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME).toContain("sm:px-6");
+    expect(NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME).toContain("lg:px-8");
+    expect(getNewsletterStarterHeadingClassName(2)).toContain("border-b");
+    expect(getNewsletterStarterHeadingClassName(2)).toContain("pb-4");
+  });
+
   test("loads subscribers only when entering the subscribers mode without cached data", () => {
     expect(
       shouldLoadSubscribersOnModeChange({
@@ -122,5 +136,65 @@ describe("canAutoRenderComposePreview", () => {
         subscriberAvailabilityReason: "Newsletter database is temporarily unavailable.",
       })
     ).toBe("Newsletter database is temporarily unavailable.");
+  });
+
+  test("resolves preset summary controls with quarterly defaults and custom overrides", () => {
+    expect(resolveNewsletterSummaryControls({ timeframePreset: "quarterly" })).toEqual({
+      timeframePreset: "quarterly",
+      periodDays: NEWSLETTER_SUMMARY_PRESET_DEFAULTS.quarterly.periodDays,
+      minimumRelevance: NEWSLETTER_SUMMARY_PRESET_DEFAULTS.quarterly.minimumRelevance,
+    });
+
+    expect(
+      resolveNewsletterSummaryControls({
+        timeframePreset: "custom",
+        periodDays: 45,
+        minimumRelevance: 8,
+      })
+    ).toEqual({
+      timeframePreset: "custom",
+      periodDays: 45,
+      minimumRelevance: 8,
+    });
+
+    expect(resolveNewsletterSummaryControls({ periodDays: 30 })).toEqual({
+      timeframePreset: "monthly",
+      periodDays: NEWSLETTER_SUMMARY_PRESET_DEFAULTS.monthly.periodDays,
+      minimumRelevance: NEWSLETTER_SUMMARY_PRESET_DEFAULTS.monthly.minimumRelevance,
+    });
+  });
+
+  test("preserves explicit relevance thresholds when using non-custom presets", () => {
+    expect(
+      resolveNewsletterSummaryControls({
+        timeframePreset: "quarterly",
+        minimumRelevance: 9,
+      })
+    ).toEqual({
+      timeframePreset: "quarterly",
+      periodDays: NEWSLETTER_SUMMARY_PRESET_DEFAULTS.quarterly.periodDays,
+      minimumRelevance: 9,
+    });
+
+    expect(
+      resolveNewsletterSummaryControls({
+        periodDays: 30,
+        minimumRelevance: 8,
+      })
+    ).toEqual({
+      timeframePreset: "monthly",
+      periodDays: NEWSLETTER_SUMMARY_PRESET_DEFAULTS.monthly.periodDays,
+      minimumRelevance: 8,
+    });
+  });
+
+  test("suggests a subject that matches the summary timeframe for news campaigns", () => {
+    expect(
+      getSuggestedNewsletterSubject({
+        newsletterType: "news",
+        periodDays: 90,
+        now: new Date("2026-04-10T12:00:00Z"),
+      })
+    ).toBe("Quarterly News Digest (2026-01-11 to 2026-04-10)");
   });
 });

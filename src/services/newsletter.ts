@@ -30,6 +30,13 @@ import {
   normalizeNewsletterContentMode,
 } from "@/lib/newsletter-utils";
 import { getRecommendedLinks, OTHER_CONTENT_I_LIKE } from "@/lib/recommendations";
+import {
+  NEWSLETTER_TIMEFRAME_PRESETS,
+  resolveNewsletterSummaryFilters,
+  validateMinimumRelevance,
+  validatePeriodDays as validateSummaryPeriodDays,
+  type NewsletterTimeframePreset,
+} from "@/lib/newsletter-summary";
 import { isMissingNewsletterSchemaError } from "@/services/newsletter-schema";
 
 type SendResult = { success: true; messageId: string } | { success: false; error: string };
@@ -83,6 +90,13 @@ function sortGroupsByCategory<T extends { category?: string }>(groups: T[]): T[]
 }
 
 const DEFAULT_CAMPAIGN_PERIOD_DAYS = 7;
+const DEFAULT_TIMEFRAME_PRESET: NewsletterTimeframePreset = "weekly";
+
+type NewsletterSummaryFilters = {
+  timeframePreset: NewsletterTimeframePreset;
+  periodDays: number;
+  minimumRelevance: number;
+};
 
 interface NewsletterTemplatePayload {
   newsletterType: NewsletterType;
@@ -763,12 +777,124 @@ async function buildCandidatesDigest(periodDays: number): Promise<CampaignDigest
   };
 }
 
-async function buildNewsDigest(periodDays: number): Promise<CampaignDigest> {
-  const cutoff = new Date(Date.now() - periodDays * 24 * 60 * 60 * 1000);
-  const [allNews, clicksResult] = await Promise.all([getAllNews(), getNewsClicksForWindow(periodDays, 0)]);
+function formatDigestWindowLabel(filters: NewsletterSummaryFilters) {
+  if (filters.timeframePreset === "weekly") return "Weekly";
+  if (filters.timeframePreset === "monthly") return "Monthly";
+  if (filters.timeframePreset === "quarterly") return "Quarterly";
+  return "Custom";
+}
+
+function buildNewsDigestSummary(filters: NewsletterSummaryFilters) {
+  const label = formatDigestWindowLabel(filters);
+  const relevanceSuffix = filters.minimumRelevance > 1 ? ` Relevance ${filters.minimumRelevance}+.` : "";
+  if (filters.timeframePreset === "custom") {
+    return `Highlights from the last ${filters.periodDays} days.${relevanceSuffix}`;
+  }
+  return `${label} highlights from the last ${filters.periodDays} days.${relevanceSuffix}`;
+}
+
+function isNewsletterTimeframePreset(value: string): value is NewsletterTimeframePreset {
+  return value === "custom" || value in NEWSLETTER_TIMEFRAME_PRESETS;
+}
+
+function validateTimeframePreset(timeframePreset?: string | null) {
+  if (timeframePreset === undefined || timeframePreset === null || timeframePreset === "") {
+    return { ok: true as const, data: DEFAULT_TIMEFRAME_PRESET };
+  }
+  if (!isNewsletterTimeframePreset(timeframePreset)) {
+    return { ok: false as const, status: 400, error: "Invalid timeframe preset" };
+  }
+  return { ok: true as const, data: timeframePreset };
+}
+
+function validateSummaryFilters(
+  input: {
+    timeframePreset?: string | null;
+    periodDays?: number | null;
+    minimumRelevance?: number | null;
+  },
+  fallback?: NewsletterSummaryFilters,
+) {
+  const timeframeValidation = validateTimeframePreset(input.timeframePreset ?? fallback?.timeframePreset);
+  if (!timeframeValidation.ok) {
+    return timeframeValidation;
+  }
+
+  const timeframePreset = timeframeValidation.data;
+  const defaultMinimumRelevance = timeframePreset === "custom"
+    ? (fallback?.minimumRelevance ?? 1)
+    : NEWSLETTER_TIMEFRAME_PRESETS[timeframePreset].minimumRelevance;
+  const minimumRelevanceValidation = validateMinimumRelevance(
+    input.minimumRelevance ?? fallback?.minimumRelevance ?? defaultMinimumRelevance
+  );
+  if (!minimumRelevanceValidation.ok) {
+    return minimumRelevanceValidation;
+  }
+
+  if (timeframePreset !== "custom") {
+    const presetFilters = resolveNewsletterSummaryFilters({
+      timeframePreset,
+      minimumRelevance: minimumRelevanceValidation.data,
+    });
+    return {
+      ok: true as const,
+      data: {
+        ...presetFilters,
+        minimumRelevance: minimumRelevanceValidation.data,
+      },
+    };
+  }
+
+  const periodValidation = validateSummaryPeriodDays(input.periodDays ?? fallback?.periodDays);
+  if (!periodValidation.ok) {
+    return periodValidation;
+  }
+
+  return {
+    ok: true as const,
+    data: resolveNewsletterSummaryFilters({
+      timeframePreset,
+      periodDays: periodValidation.data,
+      minimumRelevance: minimumRelevanceValidation.data,
+    }),
+  };
+}
+
+function resolveStoredSummaryFilters(input: {
+  timeframePreset?: string | null;
+  periodDays?: number | null;
+  minimumRelevance?: number | null;
+}): NewsletterSummaryFilters {
+  const timeframeValidation = validateTimeframePreset(input.timeframePreset);
+  const timeframePreset = timeframeValidation.ok ? timeframeValidation.data : DEFAULT_TIMEFRAME_PRESET;
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset,
+    periodDays: input.periodDays ?? DEFAULT_CAMPAIGN_PERIOD_DAYS,
+    minimumRelevance: input.minimumRelevance ?? NEWSLETTER_TIMEFRAME_PRESETS.weekly.minimumRelevance,
+  });
+
+  if (summaryValidation.ok) {
+    return summaryValidation.data;
+  }
+
+  return {
+    timeframePreset: DEFAULT_TIMEFRAME_PRESET,
+    periodDays: DEFAULT_CAMPAIGN_PERIOD_DAYS,
+    minimumRelevance: NEWSLETTER_TIMEFRAME_PRESETS.weekly.minimumRelevance,
+  };
+}
+
+async function buildNewsDigest(filters: NewsletterSummaryFilters): Promise<CampaignDigest> {
+  const cutoff = new Date(Date.now() - filters.periodDays * 24 * 60 * 60 * 1000);
+  const [allNews, clicksResult] = await Promise.all([
+    getAllNews(),
+    getNewsClicksForWindow(filters.periodDays, 0),
+  ]);
   const clickMap = new Map((clicksResult.success ? clicksResult.data : []).map((row) => [row.id, row.count]));
 
-  const filtered = allNews.filter((item) => new Date(item.date) > cutoff);
+  const filtered = allNews.filter((item) => {
+    return new Date(item.date) > cutoff && (item.relevance ?? 5) >= filters.minimumRelevance;
+  });
 
   const items: DigestItem[] = filtered.slice(0, 20).map((item) => ({
     title: item.title,
@@ -795,21 +921,21 @@ async function buildNewsDigest(periodDays: number): Promise<CampaignDigest> {
 
   return {
     heading: "News digest",
-    summary: `Recent highlights from the last ${periodDays} days.`,
-    periodDays,
+    summary: buildNewsDigestSummary(filters),
+    periodDays: filters.periodDays,
     items,
     groups,
   };
 }
 
-async function buildDigest(newsletterType: NewsletterType, periodDays: number): Promise<CampaignDigest> {
+async function buildDigest(newsletterType: NewsletterType, summaryFilters: NewsletterSummaryFilters): Promise<CampaignDigest> {
   if (newsletterType === "jobs") {
-    return buildJobsDigest(periodDays);
+    return buildJobsDigest(summaryFilters.periodDays);
   }
   if (newsletterType === "candidates") {
-    return buildCandidatesDigest(periodDays);
+    return buildCandidatesDigest(summaryFilters.periodDays);
   }
-  return buildNewsDigest(periodDays);
+  return buildNewsDigest(summaryFilters);
 }
 
 function renderDigestItemsHtml(digest: CampaignDigest) {
@@ -943,19 +1069,30 @@ function renderDigestText(digest: CampaignDigest, links: { unsubscribe: string; 
 }
 
 function renderDigestItemsMarkdown(digest: CampaignDigest) {
+  const renderItem = (item: DigestItem) => {
+    const metric = item.currentViews !== undefined
+      ? `${item.currentViews} views${item.delta !== undefined ? ` (${item.delta >= 0 ? "+" : ""}${item.delta})` : ""}`
+      : "";
+    const pieces = [
+      `**${item.title}**`,
+      item.subtitle || "",
+      metric,
+      item.url ? `[open](${item.url})` : "",
+    ].filter(Boolean);
+    return `- ${pieces.join(" · ")}`;
+  };
+
+  if (digest.groups && digest.groups.length > 0) {
+    return digest.groups.map((group) => {
+      const items = group.items.length > 0
+        ? group.items.map(renderItem).join("\n")
+        : "- No items available for this section.";
+      return `## ${group.label}\n\n${items}`;
+    }).join("\n\n---\n\n");
+  }
+
   return digest.items.length > 0
-    ? digest.items.map((item) => {
-      const metric = item.currentViews !== undefined
-        ? `${item.currentViews} views${item.delta !== undefined ? ` (${item.delta >= 0 ? "+" : ""}${item.delta})` : ""}`
-        : "";
-      const pieces = [
-        `**${item.title}**`,
-        item.subtitle || "",
-        metric,
-        item.url ? `[open](${item.url})` : "",
-      ].filter(Boolean);
-      return `- ${pieces.join(" · ")}`;
-    }).join("\n")
+    ? digest.items.map(renderItem).join("\n")
     : "- No items available for this period.";
 }
 
@@ -1215,6 +1352,13 @@ export function markdownToHtml(markdown: string): string {
 
       const fontSizeByLevel = [0, 34, 24, 18, 16, 15, 14];
       const headingSize = fontSizeByLevel[level] ?? 16;
+      if (level === 2) {
+        output.push(
+          `<h2 style="margin:28px 0 14px;padding-bottom:10px;border-bottom:2px solid #171717;font-family:${SUBSTACK_SANS_FONT_STACK};font-size:${headingSize}px;line-height:1.18;font-weight:800;color:#111111;">${renderInlineMarkdown(headingText)}</h2>`
+        );
+        continue;
+      }
+
       output.push(`<h${level} style="margin:20px 0 10px;font-family:${SUBSTACK_SANS_FONT_STACK};font-size:${headingSize}px;line-height:1.22;font-weight:700;color:#111111;">${renderInlineMarkdown(headingText)}</h${level}>`);
       continue;
     }
@@ -1272,7 +1416,7 @@ export function markdownToHtml(markdown: string): string {
   const html = output.join("\n").trim();
   if (!html) return "";
   return `
-    <div style="max-width:560px;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#171717;line-height:1.6">
+    <div style="max-width:560px;margin:0 auto;padding:0 24px;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#171717;line-height:1.6">
       <div style="padding:32px 0 20px">
         <div style="width:64px;height:64px;border-radius:50%;overflow:hidden">
           <img src="${NEWSLETTER_AVATAR_URL}" alt="dcbuilder.eth" width="64" height="64" style="display:block;width:64px;height:64px;object-fit:cover" />
@@ -1378,7 +1522,7 @@ async function getNewsletterTemplatePayload(newsletterType: NewsletterType): Pro
 function buildTemplateValues(params: {
   campaignSubject: string;
   campaignType: NewsletterType;
-  periodDays: number;
+  summaryFilters: NewsletterSummaryFilters;
   digest: CampaignDigest;
   links: { unsubscribe: string; preferences: string };
   recentNews: Awaited<ReturnType<typeof getRecentNewsSnapshot>>;
@@ -1396,7 +1540,7 @@ function buildTemplateValues(params: {
   const values: Record<string, string> = {
     campaign_subject: params.campaignSubject,
     campaign_type: params.campaignType,
-    period_days: String(params.periodDays),
+    period_days: String(params.summaryFilters.periodDays),
     digest_heading: params.digest.heading,
     digest_summary: params.digest.summary,
     total_views: params.digest.totalViews !== undefined ? String(params.digest.totalViews) : "",
@@ -1427,7 +1571,7 @@ function renderTemplateContent(params: {
   template: NewsletterTemplatePayload;
   campaignSubject: string;
   campaignType: NewsletterType;
-  periodDays: number;
+  summaryFilters: NewsletterSummaryFilters;
   digest: CampaignDigest;
   links: { unsubscribe: string; preferences: string };
   recentNews: Awaited<ReturnType<typeof getRecentNewsSnapshot>>;
@@ -1459,7 +1603,7 @@ function renderMarkdownStarter(params: {
   template: NewsletterTemplatePayload;
   campaignSubject: string;
   campaignType: NewsletterType;
-  periodDays: number;
+  summaryFilters: NewsletterSummaryFilters;
   digest: CampaignDigest;
   links: { unsubscribe: string; preferences: string };
   recentNews: Awaited<ReturnType<typeof getRecentNewsSnapshot>>;
@@ -1503,7 +1647,7 @@ function resolveCampaignRenderContent(params: {
   campaign: CampaignContentDraft;
   template: NewsletterTemplatePayload;
   campaignType: NewsletterType;
-  periodDays: number;
+  summaryFilters: NewsletterSummaryFilters;
   digest: CampaignDigest;
   links: { unsubscribe: string; preferences: string };
   recentNews: Awaited<ReturnType<typeof getRecentNewsSnapshot>>;
@@ -1518,7 +1662,7 @@ function resolveCampaignRenderContent(params: {
     template: params.template,
     campaignSubject: params.campaign.campaignSubject,
     campaignType: params.campaignType,
-    periodDays: params.periodDays,
+    summaryFilters: params.summaryFilters,
     digest: params.digest,
     links: params.links,
     recentNews: params.recentNews,
@@ -1654,7 +1798,9 @@ export async function upsertNewsletterTemplate(input: {
 
 export async function renderNewsletterTemplatePreview(input: {
   newsletterType: string;
+  timeframePreset?: string;
   periodDays?: number;
+  minimumRelevance?: number;
   campaignSubject?: string;
   subjectTemplate?: string;
   htmlTemplate?: string;
@@ -1666,10 +1812,17 @@ export async function renderNewsletterTemplatePreview(input: {
   }
 
   const newsletterType = input.newsletterType as NewsletterType;
-  const periodDays = Number.isInteger(input.periodDays) && input.periodDays! > 0
-    ? Math.min(input.periodDays!, 30)
-    : DEFAULT_CAMPAIGN_PERIOD_DAYS;
-  const digest = await buildDigest(newsletterType, periodDays);
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input.timeframePreset,
+    periodDays: input.periodDays,
+    minimumRelevance: input.minimumRelevance,
+  });
+  if (!summaryValidation.ok) {
+    return summaryValidation;
+  }
+
+  const summaryFilters = summaryValidation.data;
+  const digest = await buildDigest(newsletterType, summaryFilters);
   const recentNews = await getRecentNewsSnapshot(8);
   const storedTemplate = await getNewsletterTemplatePayload(newsletterType);
   const template: NewsletterTemplatePayload = {
@@ -1688,7 +1841,7 @@ export async function renderNewsletterTemplatePreview(input: {
     template,
     campaignSubject,
     campaignType: newsletterType,
-    periodDays,
+    summaryFilters,
     digest,
     links: {
       unsubscribe: "https://dcbuilder.dev/api/v1/newsletter/unsubscribe?token=preview-token",
@@ -1737,16 +1890,6 @@ export async function getNewsletterCampaignById(campaignId: string) {
   return { ok: true as const, data: campaign };
 }
 
-function validatePeriodDays(periodDays?: number) {
-  if (periodDays === undefined) {
-    return { ok: true as const, data: DEFAULT_CAMPAIGN_PERIOD_DAYS };
-  }
-  if (!Number.isInteger(periodDays) || periodDays < 1 || periodDays > 30) {
-    return { ok: false as const, status: 400, error: "periodDays must be an integer between 1 and 30" };
-  }
-  return { ok: true as const, data: periodDays };
-}
-
 function parseScheduledAt(scheduledAtIso?: string): Date | null | "invalid" {
   if (!scheduledAtIso) return null;
   const scheduledAt = new Date(scheduledAtIso);
@@ -1792,14 +1935,25 @@ function formatUtcDay(date: Date): string {
 }
 
 export async function createWeeklyNewsCampaignIssue(input?: {
+  timeframePreset?: string;
   periodDays?: number;
+  minimumRelevance?: number;
   createdBy?: string;
   scheduledAt?: string;
   now?: Date;
 }) {
-  const periodDays = Number.isInteger(input?.periodDays) && input!.periodDays! > 0
-    ? Math.min(input!.periodDays!, 30)
-    : DEFAULT_CAMPAIGN_PERIOD_DAYS;
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input?.timeframePreset,
+    periodDays: input?.periodDays,
+    minimumRelevance: input?.minimumRelevance,
+  });
+  if (!summaryValidation.ok) {
+    return summaryValidation;
+  }
+
+  const summaryFilters = summaryValidation.data;
+  const periodDays = summaryFilters.periodDays;
+  const digestLabel = formatDigestWindowLabel(summaryFilters);
 
   const now = input?.now || new Date();
   const periodEnd = new Date(Date.UTC(
@@ -1815,8 +1969,8 @@ export async function createWeeklyNewsCampaignIssue(input?: {
   periodStart.setUTCDate(periodStart.getUTCDate() - (periodDays - 1));
   periodStart.setUTCHours(0, 0, 0, 0);
 
-  const subject = `Weekly News Digest (${formatUtcDay(periodStart)} to ${formatUtcDay(periodEnd)})`;
-  const previewText = `Top updates from the last ${periodDays} days`;
+  const subject = `${digestLabel} News Digest (${formatUtcDay(periodStart)} to ${formatUtcDay(periodEnd)})`;
+  const previewText = `${digestLabel} updates from the last ${periodDays} days`;
 
   const [existing] = await db
     .select()
@@ -1845,7 +1999,9 @@ export async function createWeeklyNewsCampaignIssue(input?: {
     newsletterType: "news",
     subject,
     previewText,
+    timeframePreset: summaryFilters.timeframePreset,
     periodDays,
+    minimumRelevance: summaryFilters.minimumRelevance,
     scheduledAt: input?.scheduledAt,
     createdBy: input?.createdBy,
   });
@@ -1869,7 +2025,9 @@ export async function createNewsletterCampaign(input: {
   newsletterType: string;
   subject: string;
   previewText?: string;
+  timeframePreset?: string;
   periodDays?: number;
+  minimumRelevance?: number;
   scheduledAt?: string;
   createdBy?: string;
   contentMode?: string;
@@ -1899,11 +2057,15 @@ export async function createNewsletterCampaign(input: {
     return contentValidation;
   }
 
-  const periodValidation = validatePeriodDays(input.periodDays);
-  if (!periodValidation.ok) {
-    return periodValidation;
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input.timeframePreset,
+    periodDays: input.periodDays,
+    minimumRelevance: input.minimumRelevance,
+  });
+  if (!summaryValidation.ok) {
+    return summaryValidation;
   }
-  const periodDays = periodValidation.data;
+  const summaryFilters = summaryValidation.data;
   const scheduledAt = parseScheduledAt(input.scheduledAt);
   if (scheduledAt === "invalid") {
     return { ok: false as const, status: 400, error: "Invalid scheduledAt value" };
@@ -1925,7 +2087,9 @@ export async function createNewsletterCampaign(input: {
       markdownContent: content.markdownContent,
       manualHtml: content.manualHtml,
       manualText: content.manualText,
-      periodDays,
+      timeframePreset: summaryFilters.timeframePreset,
+      periodDays: summaryFilters.periodDays,
+      minimumRelevance: summaryFilters.minimumRelevance,
       status: scheduledAt ? "scheduled" : "draft",
       scheduledAt,
       createdBy: input.createdBy || null,
@@ -1970,7 +2134,9 @@ export async function updateNewsletterCampaign(campaignId: string, input: {
   newsletterType?: string;
   subject?: string;
   previewText?: string | null;
+  timeframePreset?: string;
   periodDays?: number;
+  minimumRelevance?: number;
   scheduledAt?: string | null;
   contentMode?: string;
   markdownContent?: string | null;
@@ -2019,11 +2185,16 @@ export async function updateNewsletterCampaign(campaignId: string, input: {
     return draftValidation;
   }
 
-  const periodValidation = validatePeriodDays(input.periodDays);
-  if (!periodValidation.ok) {
-    return periodValidation;
+  const currentSummaryFilters = resolveStoredSummaryFilters(current.data);
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input.timeframePreset,
+    periodDays: input.periodDays,
+    minimumRelevance: input.minimumRelevance,
+  }, currentSummaryFilters);
+  if (!summaryValidation.ok) {
+    return summaryValidation;
   }
-  const periodDays = input.periodDays === undefined ? current.data.periodDays : periodValidation.data;
+  const summaryFilters = summaryValidation.data;
   const scheduledAt = input.scheduledAt === null
     ? null
     : parseScheduledAt(input.scheduledAt ?? (current.data.scheduledAt ? current.data.scheduledAt.toISOString() : undefined));
@@ -2044,7 +2215,9 @@ export async function updateNewsletterCampaign(campaignId: string, input: {
       newsletterType,
       subject,
       previewText: input.previewText === undefined ? current.data.previewText : (input.previewText || null),
-      periodDays,
+      timeframePreset: summaryFilters.timeframePreset,
+      periodDays: summaryFilters.periodDays,
+      minimumRelevance: summaryFilters.minimumRelevance,
       scheduledAt,
       status: scheduledAt ? "scheduled" : "draft",
       contentMode,
@@ -2067,10 +2240,10 @@ async function renderArchiveCorrection(params: {
   markdownContent: string | null;
   manualHtml: string | null;
   manualText: string | null;
-  periodDays: number;
+  summaryFilters: NewsletterSummaryFilters;
 }) {
   const [digest, templatePayload, recentNews] = await Promise.all([
-    buildDigest(params.newsletterType, params.periodDays),
+    buildDigest(params.newsletterType, params.summaryFilters),
     getNewsletterTemplatePayload(params.newsletterType),
     getRecentNewsSnapshot(8),
   ]);
@@ -2085,7 +2258,7 @@ async function renderArchiveCorrection(params: {
     },
     template: templatePayload,
     campaignType: params.newsletterType,
-    periodDays: params.periodDays,
+    summaryFilters: params.summaryFilters,
     digest,
     links: {
       unsubscribe: `${getBaseUrl()}/newsletters`,
@@ -2102,7 +2275,9 @@ async function updateSentNewsletterCampaignArchive(
     newsletterType?: string;
     subject?: string;
     previewText?: string | null;
+    timeframePreset?: string;
     periodDays?: number;
+    minimumRelevance?: number;
     contentMode?: string;
     markdownContent?: string | null;
     manualHtml?: string | null;
@@ -2140,11 +2315,16 @@ async function updateSentNewsletterCampaignArchive(
     return draftValidation;
   }
 
-  const periodValidation = validatePeriodDays(input.periodDays);
-  if (!periodValidation.ok) {
-    return periodValidation;
+  const currentSummaryFilters = resolveStoredSummaryFilters(current);
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input.timeframePreset,
+    periodDays: input.periodDays,
+    minimumRelevance: input.minimumRelevance,
+  }, currentSummaryFilters);
+  if (!summaryValidation.ok) {
+    return summaryValidation;
   }
-  const periodDays = input.periodDays === undefined ? current.periodDays : periodValidation.data;
+  const summaryFilters = summaryValidation.data;
   const archiveRendered = await renderArchiveCorrection({
     current,
     newsletterType,
@@ -2153,7 +2333,7 @@ async function updateSentNewsletterCampaignArchive(
     markdownContent,
     manualHtml,
     manualText,
-    periodDays,
+    summaryFilters,
   });
   if (!archiveRendered.ok) {
     return archiveRendered;
@@ -2209,7 +2389,9 @@ export async function deleteNewsletterCampaign(campaignId: string) {
 export async function previewNewsletterCampaignDraft(input: {
   newsletterType: string;
   subject: string;
+  timeframePreset?: string;
   periodDays?: number;
+  minimumRelevance?: number;
   contentMode?: string;
   markdownContent?: string | null;
   manualHtml?: string | null;
@@ -2226,11 +2408,15 @@ export async function previewNewsletterCampaignDraft(input: {
     return { ok: false as const, status: 400, error: "Invalid content mode" };
   }
   const newsletterType = input.newsletterType as NewsletterType;
-  const periodValidation = validatePeriodDays(input.periodDays);
-  if (!periodValidation.ok) {
-    return periodValidation;
+  const summaryValidation = validateSummaryFilters({
+    timeframePreset: input.timeframePreset,
+    periodDays: input.periodDays,
+    minimumRelevance: input.minimumRelevance,
+  });
+  if (!summaryValidation.ok) {
+    return summaryValidation;
   }
-  const periodDays = periodValidation.data;
+  const summaryFilters = summaryValidation.data;
   const contentMode = normalizeNewsletterContentMode(input.contentMode);
 
   const validation = validateCampaignContentDraft({
@@ -2245,7 +2431,7 @@ export async function previewNewsletterCampaignDraft(input: {
   }
 
   const [digest, recentNews, template] = await Promise.all([
-    buildDigest(newsletterType, periodDays),
+    buildDigest(newsletterType, summaryFilters),
     getRecentNewsSnapshot(8),
     getNewsletterTemplatePayload(newsletterType),
   ]);
@@ -2264,7 +2450,7 @@ export async function previewNewsletterCampaignDraft(input: {
     },
     template,
     campaignType: newsletterType,
-    periodDays,
+    summaryFilters,
     digest,
     links,
     recentNews,
@@ -2278,7 +2464,7 @@ export async function previewNewsletterCampaignDraft(input: {
     template,
     campaignSubject: input.subject.trim(),
     campaignType: newsletterType,
-    periodDays,
+    summaryFilters,
     digest,
     links,
     recentNews,
@@ -2411,9 +2597,9 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
     .where(eq(newsletterCampaignRecipients.campaignId, sendingCampaign.id));
 
   const campaignType = sendingCampaign.newsletterType as NewsletterType;
-  const periodDays = sendingCampaign.periodDays || DEFAULT_CAMPAIGN_PERIOD_DAYS;
+  const summaryFilters = resolveStoredSummaryFilters(sendingCampaign);
   const [digest, templatePayload, recentNews] = await Promise.all([
-    buildDigest(campaignType, periodDays),
+    buildDigest(campaignType, summaryFilters),
     getNewsletterTemplatePayload(campaignType),
     getRecentNewsSnapshot(8),
   ]);
@@ -2433,7 +2619,7 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
     },
     template: templatePayload,
     campaignType,
-    periodDays,
+    summaryFilters,
     digest,
     links: archiveLinks,
     recentNews,
@@ -2501,7 +2687,7 @@ async function sendCampaignInternal(campaignId: string, force: boolean) {
       },
       template: templatePayload,
       campaignType,
-      periodDays,
+      summaryFilters,
       digest,
       links,
       recentNews,

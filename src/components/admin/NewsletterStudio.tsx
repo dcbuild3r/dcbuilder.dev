@@ -1,6 +1,6 @@
 "use client";
 
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { ErrorAlert } from "@/components/admin/ActionButtons";
 import { adminFetch, getAdminApiKey } from "@/lib/admin-utils";
@@ -15,8 +15,13 @@ import {
 } from "@/lib/newsletter-subscribers";
 import {
   canAutoRenderComposePreview,
+  getSuggestedNewsletterSubject,
+  getNewsletterStarterHeadingClassName,
+  NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME,
   nextAvailabilityErrorAfterSubscribersRefresh,
+  resolveNewsletterSummaryControls,
   shouldLoadSubscribersOnModeChange,
+  type NewsletterSummaryTimeframePreset,
 } from "@/lib/newsletter-studio";
 
 type NewsletterType = "news" | "jobs" | "candidates";
@@ -85,7 +90,9 @@ interface NewsletterCampaign {
   markdownContent: string | null;
   manualHtml: string | null;
   manualText: string | null;
+  timeframePreset?: NewsletterSummaryTimeframePreset | null;
   periodDays: number;
+  minimumRelevance?: number | null;
   status: CampaignStatus;
   scheduledAt: string | null;
   sentAt: string | null;
@@ -128,7 +135,9 @@ type CampaignDraft = {
   markdownContent: string;
   manualHtml: string;
   manualText: string;
+  timeframePreset: NewsletterSummaryTimeframePreset;
   periodDays: number;
+  minimumRelevance: number;
   scheduledAtLocal: string;
 };
 
@@ -252,6 +261,22 @@ function cx(...parts: Array<string | false | null | undefined>) {
 function serializeCampaignDraft(draft: CampaignDraft | null) {
   if (!draft) return null;
   return JSON.stringify(draft);
+}
+
+function applySummaryPreset<T extends { timeframePreset: NewsletterSummaryTimeframePreset; periodDays: number; minimumRelevance: number }>(
+  current: T,
+  timeframePreset: NewsletterSummaryTimeframePreset
+) {
+  const resolved = resolveNewsletterSummaryControls({
+    timeframePreset,
+    periodDays: current.periodDays,
+    minimumRelevance: current.minimumRelevance,
+  });
+
+  return {
+    ...current,
+    ...resolved,
+  };
 }
 
 function formatStatus(status: CampaignStatus) {
@@ -405,24 +430,21 @@ function HtmlPreviewFrame({ html, className }: { html: string; className?: strin
   );
 }
 
-function computeUtcWindow(periodDays: number, now: Date) {
-  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
-  const start = new Date(end);
-  start.setUTCDate(start.getUTCDate() - (periodDays - 1));
-  start.setUTCHours(0, 0, 0, 0);
-  return { start, end };
-}
-
-function isoDay(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function suggestedSubject(type: NewsletterType, periodDays: number) {
-  const now = new Date();
-  const { start, end } = computeUtcWindow(periodDays, now);
-  const label = type === "news" ? "Weekly News Digest" : `${type[0].toUpperCase()}${type.slice(1)} Digest`;
-  return `${label} (${isoDay(start)} to ${isoDay(end)})`;
-}
+const newsletterStarterMarkdownComponents: Components = {
+  h2: ({ children }) => (
+    <h2 className={getNewsletterStarterHeadingClassName(2)}>
+      {children}
+    </h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className={getNewsletterStarterHeadingClassName(3)}>
+      {children}
+    </h3>
+  ),
+  hr: () => (
+    <hr className="my-8 border-0 border-t border-neutral-200 dark:border-neutral-800" />
+  ),
+};
 
 function withSelectionWrap(
   ref: HTMLTextAreaElement | null,
@@ -504,7 +526,9 @@ export function NewsletterStudio() {
     markdownContent: "",
     manualHtml: "",
     manualText: "",
+    timeframePreset: "weekly",
     periodDays: 7,
+    minimumRelevance: 1,
     scheduledAtLocal: "",
   });
   const [composePreview, setComposePreview] = useState<CampaignPreviewResult | null>(null);
@@ -531,7 +555,9 @@ export function NewsletterStudio() {
   const [templatePreview, setTemplatePreview] = useState<TemplatePreviewResult | null>(null);
   const [templatePreviewTab, setTemplatePreviewTab] = useState<PreviewTab>("html");
   const [templatePreviewContext, setTemplatePreviewContext] = useState({
+    timeframePreset: "weekly" as NewsletterSummaryTimeframePreset,
     periodDays: 7,
+    minimumRelevance: 1,
     campaignSubject: "Weekly News Digest",
   });
   const [focusedTemplateField, setFocusedTemplateField] = useState<TemplateFieldKey | null>(null);
@@ -551,6 +577,18 @@ export function NewsletterStudio() {
   const [editInitialSnapshot, setEditInitialSnapshot] = useState<string | null>(null);
 
   const statusMessageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const setComposeSummaryPreset = useCallback((timeframePreset: NewsletterSummaryTimeframePreset) => {
+    setComposeForm((current) => applySummaryPreset(current, timeframePreset));
+  }, []);
+
+  const setEditSummaryPreset = useCallback((timeframePreset: NewsletterSummaryTimeframePreset) => {
+    setEditForm((current) => (current ? applySummaryPreset(current, timeframePreset) : current));
+  }, []);
+
+  const setTemplateSummaryPreset = useCallback((timeframePreset: NewsletterSummaryTimeframePreset) => {
+    setTemplatePreviewContext((current) => applySummaryPreset(current, timeframePreset));
+  }, []);
 
   const setStatusMessage = (value: string) => {
     setMessage(value);
@@ -738,12 +776,29 @@ export function NewsletterStudio() {
     return filterRelevantPlaceholders(resolvedPlaceholders, MINIMAL_WRITING_PLACEHOLDERS);
   }, [focusedTemplateField, resolvedPlaceholders]);
 
+  const composeSummary = useMemo(
+    () => resolveNewsletterSummaryControls(composeForm),
+    [composeForm]
+  );
+
   const requestCampaignPreview = useCallback(
     async (draft: CampaignDraft) => {
+      const summary = resolveNewsletterSummaryControls({
+        timeframePreset: draft.timeframePreset,
+        periodDays: draft.periodDays,
+        minimumRelevance: draft.minimumRelevance,
+      });
+
       const payload = {
         newsletterType: draft.newsletterType,
-        subject: draft.subject.trim() || suggestedSubject(draft.newsletterType, draft.periodDays),
-        periodDays: draft.periodDays,
+        subject: draft.subject.trim() || getSuggestedNewsletterSubject({
+          newsletterType: draft.newsletterType,
+          timeframePreset: summary.timeframePreset,
+          periodDays: summary.periodDays,
+        }),
+        timeframePreset: summary.timeframePreset,
+        periodDays: summary.periodDays,
+        minimumRelevance: summary.minimumRelevance,
         contentMode: draft.contentMode,
         markdownContent: draft.contentMode === "markdown" ? draft.markdownContent : undefined,
         manualHtml: draft.contentMode === "manual" ? draft.manualHtml : undefined,
@@ -810,6 +865,12 @@ export function NewsletterStudio() {
       return;
     }
 
+    const summary = resolveNewsletterSummaryControls({
+      timeframePreset: composeForm.timeframePreset,
+      periodDays: composeForm.periodDays,
+      minimumRelevance: composeForm.minimumRelevance,
+    });
+
     setSaving(true);
     setError(null);
 
@@ -823,7 +884,9 @@ export function NewsletterStudio() {
         newsletterType: composeForm.newsletterType,
         subject: composeForm.subject,
         previewText: composeForm.previewText || undefined,
-        periodDays: composeForm.periodDays,
+        timeframePreset: summary.timeframePreset,
+        periodDays: summary.periodDays,
+        minimumRelevance: summary.minimumRelevance,
         scheduledAt: composeForm.scheduledAtLocal ? new Date(composeForm.scheduledAtLocal).toISOString() : undefined,
         createdBy: "admin-news-studio",
         contentMode: composeForm.contentMode,
@@ -845,6 +908,9 @@ export function NewsletterStudio() {
       ...current,
       subject: "",
       previewText: "",
+      timeframePreset: current.timeframePreset,
+      periodDays: current.periodDays,
+      minimumRelevance: current.minimumRelevance,
       scheduledAtLocal: "",
       markdownContent: current.contentMode === "markdown" ? current.markdownContent : "",
       manualHtml: current.contentMode === "manual" ? current.manualHtml : "",
@@ -870,7 +936,12 @@ export function NewsletterStudio() {
         "Content-Type": "application/json",
         "x-api-key": getAdminApiKey(),
       },
-      body: JSON.stringify({ periodDays: 7, createdBy: "admin-news-studio:auto" }),
+      body: JSON.stringify({
+        timeframePreset: "weekly",
+        periodDays: 7,
+        minimumRelevance: 1,
+        createdBy: "admin-news-studio:auto",
+      }),
     });
 
     setSaving(false);
@@ -994,6 +1065,11 @@ export function NewsletterStudio() {
 
     const campaign = result.data;
     const archiveMode = mode === "archive";
+    const summary = resolveNewsletterSummaryControls({
+      timeframePreset: campaign.timeframePreset ?? "weekly",
+      periodDays: campaign.periodDays,
+      minimumRelevance: campaign.minimumRelevance,
+    });
     const draft: CampaignDraft = {
       newsletterType: campaign.newsletterType,
       subject: archiveMode ? (campaign.archiveSubject || campaign.subject) : campaign.subject,
@@ -1010,7 +1086,9 @@ export function NewsletterStudio() {
       manualText: archiveMode
         ? (campaign.archiveManualText || campaign.manualText || "")
         : (campaign.manualText || ""),
-      periodDays: campaign.periodDays,
+      timeframePreset: summary.timeframePreset,
+      periodDays: summary.periodDays,
+      minimumRelevance: summary.minimumRelevance,
       scheduledAtLocal: formatLocalInputFromIso(campaign.scheduledAt),
     };
 
@@ -1026,6 +1104,11 @@ export function NewsletterStudio() {
     if (!ensureNewsletterWritable()) return;
     if (!editingCampaignId || !editForm) return;
     const archiveOnly = editingCampaignMode === "archive";
+    const summary = resolveNewsletterSummaryControls({
+      timeframePreset: editForm.timeframePreset,
+      periodDays: editForm.periodDays,
+      minimumRelevance: editForm.minimumRelevance,
+    });
 
     setSaving(true);
     setError(null);
@@ -1040,7 +1123,9 @@ export function NewsletterStudio() {
         newsletterType: editForm.newsletterType,
         subject: editForm.subject,
         previewText: editForm.previewText,
-        periodDays: editForm.periodDays,
+        timeframePreset: summary.timeframePreset,
+        periodDays: summary.periodDays,
+        minimumRelevance: summary.minimumRelevance,
         scheduledAt: archiveOnly
           ? undefined
           : (editForm.scheduledAtLocal ? new Date(editForm.scheduledAtLocal).toISOString() : null),
@@ -1119,6 +1204,7 @@ export function NewsletterStudio() {
 
   const renderTemplatePreview = async () => {
     if (!templateDraft) return;
+    const summary = resolveNewsletterSummaryControls(templatePreviewContext);
 
     setSaving(true);
     setError(null);
@@ -1131,7 +1217,9 @@ export function NewsletterStudio() {
       },
       body: JSON.stringify({
         newsletterType: templateDraft.newsletterType,
-        periodDays: templatePreviewContext.periodDays,
+        timeframePreset: summary.timeframePreset,
+        periodDays: summary.periodDays,
+        minimumRelevance: summary.minimumRelevance,
         campaignSubject: templatePreviewContext.campaignSubject,
         subjectTemplate: templateDraft.subjectTemplate,
         htmlTemplate: templateDraft.htmlTemplate,
@@ -1616,8 +1704,8 @@ export function NewsletterStudio() {
       </section>
 
       {mode === "compose" && (
-        <div className="space-y-4">
-          <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mx-auto w-full max-w-[1680px] space-y-5">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">Compose draft</h2>
@@ -1627,14 +1715,26 @@ export function NewsletterStudio() {
               </div>
               <button
                 type="button"
-                onClick={() => setComposeForm((c) => ({ ...c, subject: suggestedSubject(c.newsletterType, c.periodDays) }))}
+                onClick={() =>
+                  setComposeForm((current) => {
+                    const summary = resolveNewsletterSummaryControls(current);
+                    return {
+                      ...current,
+                      subject: getSuggestedNewsletterSubject({
+                        newsletterType: current.newsletterType,
+                        timeframePreset: summary.timeframePreset,
+                        periodDays: summary.periodDays,
+                      }),
+                    };
+                  })
+                }
                 className="rounded-xl border px-3 py-2 text-sm font-semibold"
               >
                 Use suggested subject
               </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               <label className="space-y-1">
                 <span className="text-sm font-semibold">Newsletter type</span>
                 <select
@@ -1653,18 +1753,48 @@ export function NewsletterStudio() {
               </label>
 
               <label className="space-y-1">
-                <span className="text-sm font-semibold">Period (days)</span>
+                <span className="text-sm font-semibold">Summary timeframe</span>
+                <select
+                  value={composeForm.timeframePreset}
+                  onChange={(event) => setComposeSummaryPreset(event.target.value as NewsletterSummaryTimeframePreset)}
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                >
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </label>
+
+              <label className="space-y-1">
+                <span className="text-sm font-semibold">Minimum relevance</span>
                 <input
                   type="number"
                   min={1}
-                  max={30}
-                  value={composeForm.periodDays}
+                  max={10}
+                  value={composeForm.minimumRelevance}
                   onChange={(event) =>
-                    setComposeForm((current) => ({ ...current, periodDays: Number(event.target.value) || 7 }))
+                    setComposeForm((current) => ({ ...current, minimumRelevance: Number(event.target.value) || 1 }))
                   }
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 />
               </label>
+
+              {composeForm.timeframePreset === "custom" && (
+                <label className="space-y-1 md:col-span-2 xl:col-span-1">
+                  <span className="text-sm font-semibold">Period (days)</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={composeForm.periodDays}
+                    onChange={(event) =>
+                      setComposeForm((current) => ({ ...current, periodDays: Number(event.target.value) || 7 }))
+                    }
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                  />
+                </label>
+              )}
 
               <label className="space-y-1 md:col-span-2">
                 <span className="text-sm font-semibold">Subject</span>
@@ -1672,7 +1802,11 @@ export function NewsletterStudio() {
                   type="text"
                   value={composeForm.subject}
                   onChange={(event) => setComposeForm((current) => ({ ...current, subject: event.target.value }))}
-                  placeholder={suggestedSubject(composeForm.newsletterType, composeForm.periodDays)}
+                  placeholder={getSuggestedNewsletterSubject({
+                    newsletterType: composeForm.newsletterType,
+                    timeframePreset: composeSummary.timeframePreset,
+                    periodDays: composeSummary.periodDays,
+                  })}
                   className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                 />
               </label>
@@ -1713,7 +1847,7 @@ export function NewsletterStudio() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Content Workspace</h2>
@@ -1757,9 +1891,9 @@ export function NewsletterStudio() {
               />
             </div>
 
-            <div className={cx("mt-4 grid grid-cols-1 gap-4", composeWorkspaceView === "split" && "lg:grid-cols-2")}>
+            <div className={cx("mt-4 grid grid-cols-1 gap-6", composeWorkspaceView === "split" && "lg:grid-cols-2")}>
               {composeWorkspaceView !== "preview" && (
-              <div className={cx("min-h-[72vh] rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950", composeWorkspaceView === "editor" && "min-h-[78vh]")}>
+              <div className={cx("min-h-[72vh] rounded-xl border border-neutral-200 bg-neutral-50 p-5 lg:p-6 dark:border-neutral-800 dark:bg-neutral-950", composeWorkspaceView === "editor" && "min-h-[78vh]")}>
                 <div className="mb-3 flex items-center justify-between">
                   <div className="text-sm font-semibold">Editor</div>
                   <div className="text-xs uppercase tracking-wide text-neutral-500">
@@ -1890,7 +2024,7 @@ export function NewsletterStudio() {
               )}
 
               {composeWorkspaceView !== "editor" && (
-              <div className={cx("min-h-[72vh] rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-950", composeWorkspaceView === "preview" && "min-h-[78vh]")}>
+              <div className={cx("min-h-[72vh] rounded-xl border border-neutral-200 bg-neutral-50 p-5 lg:p-6 dark:border-neutral-800 dark:bg-neutral-950", composeWorkspaceView === "preview" && "min-h-[78vh]")}>
                 <div className="mb-3 text-sm font-semibold">Live preview</div>
 
                 {composePreviewLoading && (
@@ -1929,7 +2063,7 @@ export function NewsletterStudio() {
 
                     {composePreviewTab === "text" && (
                       <pre className={cx(
-                        "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-900",
+                        "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-5 text-xs dark:border-neutral-800 dark:bg-neutral-900",
                         composeWorkspaceView === "preview" ? "max-h-[78vh]" : "max-h-[70vh]"
                       )}>
                         {composePreview.rendered.text}
@@ -1939,7 +2073,7 @@ export function NewsletterStudio() {
                     {composePreviewTab === "starter" && (
                       <div className="grid grid-cols-1 gap-3">
                         <pre className={cx(
-                          "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-900",
+                          "overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-5 text-xs dark:border-neutral-800 dark:bg-neutral-900",
                           composeWorkspaceView === "preview" ? "max-h-[78vh]" : "max-h-[70vh]"
                         )}>
                           {composePreview.starter.markdown}
@@ -2247,7 +2381,7 @@ export function NewsletterStudio() {
               <div className={cx("grid grid-cols-1 gap-4", editWorkspaceView === "split" && "xl:grid-cols-2")}>
                 {editWorkspaceView !== "preview" && (
                   <div className={cx("space-y-3", editWorkspaceView === "editor" && "min-h-[68vh]")}>
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                     <label className="space-y-1">
                       <span className="text-sm font-semibold">Type</span>
                       <select
@@ -2269,21 +2403,57 @@ export function NewsletterStudio() {
                     </label>
 
                     <label className="space-y-1">
-                      <span className="text-sm font-semibold">Period (days)</span>
+                      <span className="text-sm font-semibold">Summary timeframe</span>
+                      <select
+                        value={editForm.timeframePreset}
+                        disabled={editingCampaignMode === "archive"}
+                        onChange={(event) =>
+                          setEditSummaryPreset(event.target.value as NewsletterSummaryTimeframePreset)
+                        }
+                        className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                      >
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                        <option value="custom">Custom</option>
+                      </select>
+                    </label>
+
+                    <label className="space-y-1">
+                      <span className="text-sm font-semibold">Minimum relevance</span>
                       <input
                         type="number"
                         min={1}
-                        max={30}
-                        value={editForm.periodDays}
+                        max={10}
+                        value={editForm.minimumRelevance}
                         disabled={editingCampaignMode === "archive"}
                         onChange={(event) =>
                           setEditForm((current) =>
-                            current ? { ...current, periodDays: Number(event.target.value) || 7 } : current
+                            current ? { ...current, minimumRelevance: Number(event.target.value) || 1 } : current
                           )
                         }
                         className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                       />
                     </label>
+
+                    {editForm.timeframePreset === "custom" && (
+                      <label className="space-y-1 md:col-span-2 xl:col-span-1">
+                        <span className="text-sm font-semibold">Period (days)</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={365}
+                          value={editForm.periodDays}
+                          disabled={editingCampaignMode === "archive"}
+                          onChange={(event) =>
+                            setEditForm((current) =>
+                              current ? { ...current, periodDays: Number(event.target.value) || 7 } : current
+                            )
+                          }
+                          className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                        />
+                      </label>
+                    )}
                   </div>
 
                   <label className="space-y-1">
@@ -2548,8 +2718,8 @@ export function NewsletterStudio() {
       )}
 
       {mode === "templates" && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mx-auto grid w-full max-w-[1680px] grid-cols-1 gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold">Template editor</h2>
@@ -2668,7 +2838,7 @@ export function NewsletterStudio() {
             )}
           </section>
 
-          <section className="rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+          <section className="rounded-2xl border border-neutral-200 bg-white p-6 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Template preview</h2>
@@ -2684,7 +2854,7 @@ export function NewsletterStudio() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 <label className="space-y-1">
                   <span className="text-sm font-semibold">Preview subject</span>
                   <input
@@ -2697,18 +2867,52 @@ export function NewsletterStudio() {
                   />
                 </label>
                 <label className="space-y-1">
-                  <span className="text-sm font-semibold">Period (days)</span>
+                  <span className="text-sm font-semibold">Summary timeframe</span>
+                  <select
+                    value={templatePreviewContext.timeframePreset}
+                    onChange={(event) => setTemplateSummaryPreset(event.target.value as NewsletterSummaryTimeframePreset)}
+                    className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                  >
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-sm font-semibold">Minimum relevance</span>
                   <input
                     type="number"
                     min={1}
-                    max={30}
-                    value={templatePreviewContext.periodDays}
+                    max={10}
+                    value={templatePreviewContext.minimumRelevance}
                     onChange={(event) =>
-                      setTemplatePreviewContext((current) => ({ ...current, periodDays: Number(event.target.value) || 7 }))
+                      setTemplatePreviewContext((current) => ({
+                        ...current,
+                        minimumRelevance: Number(event.target.value) || 1,
+                      }))
                     }
                     className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
                   />
                 </label>
+                {templatePreviewContext.timeframePreset === "custom" && (
+                  <label className="space-y-1 sm:col-span-2 xl:col-span-1">
+                    <span className="text-sm font-semibold">Period (days)</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={templatePreviewContext.periodDays}
+                      onChange={(event) =>
+                        setTemplatePreviewContext((current) => ({
+                          ...current,
+                          periodDays: Number(event.target.value) || 7,
+                        }))
+                      }
+                      className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+                    />
+                  </label>
+                )}
               </div>
 
               {!templatePreview && (
@@ -2726,18 +2930,22 @@ export function NewsletterStudio() {
               {templatePreview && templatePreviewTab === "html" && <HtmlPreviewFrame html={templatePreview.rendered.html} />}
 
               {templatePreview && templatePreviewTab === "text" && (
-                <pre className="max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-950">
+                <pre className="max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-5 text-xs dark:border-neutral-800 dark:bg-neutral-950">
                   {templatePreview.rendered.text}
                 </pre>
               )}
 
               {templatePreview && templatePreviewTab === "starter" && (
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                  <pre className="max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-950">
+                  <pre className="max-h-[480px] overflow-auto whitespace-pre-wrap rounded-xl border border-neutral-200 bg-white p-5 text-xs dark:border-neutral-800 dark:bg-neutral-950">
                     {templatePreview.starter.markdown}
                   </pre>
-                  <div className="prose prose-sm max-w-none rounded-xl border border-neutral-200 bg-white p-4 dark:prose-invert dark:border-neutral-800 dark:bg-neutral-950">
-                    <ReactMarkdown>{templatePreview.starter.markdown}</ReactMarkdown>
+                  <div className="rounded-xl border border-neutral-200 bg-white p-5 sm:p-7 dark:border-neutral-800 dark:bg-neutral-950">
+                    <div className={`prose prose-sm dark:prose-invert sm:prose-base ${NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME}`}>
+                      <ReactMarkdown components={newsletterStarterMarkdownComponents}>
+                        {templatePreview.starter.markdown}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </div>
               )}
