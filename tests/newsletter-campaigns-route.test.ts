@@ -6,7 +6,10 @@ describe("GET /api/v1/newsletter/campaigns", () => {
   });
 
   test("returns an unavailable fallback instead of 500 when the campaigns table is missing", async () => {
+    const actualAuth = await import("../src/services/auth");
+
     mock.module("@/services/auth", () => ({
+      ...actualAuth,
       requireAuth: async () => ({ valid: true as const, keyId: "key_123", name: "Admin" }),
     }));
     mock.module("@/services/newsletter", () => ({
@@ -39,8 +42,10 @@ describe("GET /api/v1/newsletter/campaigns", () => {
 
   test("passes timeframePreset and minimumRelevance through create and preview routes", async () => {
     const calls: Array<{ kind: "create" | "preview"; payload: unknown }> = [];
+    const actualAuth = await import("../src/services/auth");
 
     mock.module("@/services/auth", () => ({
+      ...actualAuth,
       requireAuth: async () => ({ valid: true as const, keyId: "key_123", name: "Admin" }),
     }));
     mock.module("@/services/newsletter", () => ({

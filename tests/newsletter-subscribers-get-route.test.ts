@@ -7,8 +7,10 @@ describe("GET /api/v1/newsletter/subscribers", () => {
 
   test("returns an unavailable fallback instead of 500 when subscriber tables are missing", async () => {
     const actualDb = await import("../src/db");
+    const actualAuth = await import("../src/services/auth");
 
     mock.module("@/services/auth", () => ({
+      ...actualAuth,
       requireAuth: async () => ({ valid: true as const, keyId: "key_123", name: "Admin" }),
     }));
     mock.module("@/db", () => ({

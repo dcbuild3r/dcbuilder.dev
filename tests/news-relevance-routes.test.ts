@@ -1,8 +1,13 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
 
-function installNewsRouteMocks() {
+const dbModulePath = new URL("../src/db/index.ts", import.meta.url).pathname;
+const authModulePath = new URL("../src/services/auth.ts", import.meta.url).pathname;
+
+async function installNewsRouteMocks() {
   const inserts: Array<{ table: string; values: Record<string, unknown> }> = [];
   const updates: Array<{ table: string; values: Record<string, unknown> }> = [];
+  const actualDb = await import("../src/db");
+  const actualAuth = await import("../src/services/auth");
 
   const tables = {
     curatedLinks: { id: "curated.id", date: "curated.date", category: "curated.category", featured: "curated.featured" },
@@ -86,6 +91,7 @@ function installNewsRouteMocks() {
   };
 
   const dbModule = () => ({
+    ...actualDb,
     db,
     curatedLinks: tables.curatedLinks,
     NewCuratedLink: {},
@@ -94,15 +100,16 @@ function installNewsRouteMocks() {
     blogPosts: tables.blogPosts,
   });
   mock.module("@/db", dbModule);
-  mock.module("/Users/dcbuilder/Code/projects/dcbuilder.dev/src/db/index.ts", dbModule);
+  mock.module(dbModulePath, dbModule);
 
   const authModule = () => ({
+    ...actualAuth,
     requireAuth: async () => ({ valid: true as const, keyId: "key_123", name: "Admin" }),
     validateApiKey: async () => ({ valid: true as const, keyId: "key_123", name: "Admin" }),
     parsePaginationParams: () => ({ limit: 50, offset: 0 }),
   });
   mock.module("@/services/auth", authModule);
-  mock.module("/Users/dcbuilder/Code/projects/dcbuilder.dev/src/services/auth.ts", authModule);
+  mock.module(authModulePath, authModule);
 
   return { inserts, updates };
 }
@@ -113,7 +120,7 @@ describe("news relevance routes", () => {
   });
 
   test("rejects curated relevance outside the allowed editorial range", async () => {
-    installNewsRouteMocks();
+    await installNewsRouteMocks();
 
     const { POST } = await import(`../src/app/api/v1/news/curated/route?curated-relevance=${Date.now()}`);
     const response = await POST(
@@ -136,7 +143,7 @@ describe("news relevance routes", () => {
   });
 
   test("persists announcement relevance and exposes blog relevance in admin reads", async () => {
-    const { inserts, updates } = installNewsRouteMocks();
+    const { inserts, updates } = await installNewsRouteMocks();
 
     const { PUT: updateAnnouncement } = await import(
       `../src/app/api/v1/news/announcements/[id]/route?announcement-relevance=${Date.now()}`
