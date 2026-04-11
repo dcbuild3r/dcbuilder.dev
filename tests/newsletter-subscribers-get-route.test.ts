@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { createPosthogModuleMock } from "./helpers/posthog-module-mock";
 
 describe("GET /api/v1/newsletter/subscribers", () => {
   afterEach(() => {
@@ -23,9 +24,11 @@ describe("GET /api/v1/newsletter/subscribers", () => {
         }),
       },
     }));
-    mock.module("@/services/posthog", () => ({
-      getEmailClicksLast7Days: async () => ({ success: true as const, data: [] }),
-    }));
+    mock.module("@/services/posthog", () =>
+      createPosthogModuleMock({
+        getEmailClicksLast7Days: async () => ({ success: true as const, data: [] }),
+      })
+    );
 
     const { GET } = await import("../src/app/api/v1/newsletter/subscribers/route");
     const response = await GET(

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { createPosthogModuleMock } from "./helpers/posthog-module-mock";
 
 function makeDbMock() {
   return {
@@ -32,11 +33,13 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
 
   test("groups starter markdown by category with section separators", async () => {
     mock.module("@/db", () => makeDbMock());
-    mock.module("@/services/posthog", () => ({
-      getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
-      getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
-      getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
-    }));
+    mock.module("@/services/posthog", () =>
+      createPosthogModuleMock({
+        getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
+        getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
+        getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
+      })
+    );
     mock.module("@/lib/news", () => ({
       getAllNews: async () => ([
         {
@@ -92,11 +95,13 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
 
   test("filters quarterly summaries by minimum relevance", async () => {
     mock.module("@/db", () => makeDbMock());
-    mock.module("@/services/posthog", () => ({
-      getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
-      getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
-      getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
-    }));
+    mock.module("@/services/posthog", () =>
+      createPosthogModuleMock({
+        getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
+        getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
+        getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
+      })
+    );
     mock.module("@/lib/news", () => ({
       getAllNews: async () => ([
         {
@@ -142,11 +147,13 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
 
   test("preserves links in rendered text output", async () => {
     mock.module("@/db", () => makeDbMock());
-    mock.module("@/services/posthog", () => ({
-      getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
-      getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
-      getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
-    }));
+    mock.module("@/services/posthog", () =>
+      createPosthogModuleMock({
+        getCandidateViewsForWindow: async () => ({ success: true as const, data: [] }),
+        getJobApplyClicksForWindow: async () => ({ success: true as const, data: [] }),
+        getNewsClicksForWindow: async () => ({ success: true as const, data: [] }),
+      })
+    );
     mock.module("@/lib/news", () => ({
       getAllNews: async () => [],
     }));
