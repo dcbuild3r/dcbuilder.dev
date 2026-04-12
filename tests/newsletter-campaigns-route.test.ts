@@ -1,11 +1,22 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
 
+function createMissingNewsletterCampaignColumnError(columnName: string) {
+  const cause = new Error(`column "${columnName}" does not exist`) as Error & {
+    code?: string;
+  };
+  cause.code = "42703";
+
+  const error = new Error("Failed query") as Error & { cause?: Error };
+  error.cause = cause;
+  return error;
+}
+
 describe("GET /api/v1/newsletter/campaigns", () => {
   afterEach(() => {
     mock.restore();
   });
 
-  test("returns an unavailable fallback instead of 500 when the campaigns table is missing", async () => {
+  test("returns an unavailable fallback instead of 500 when campaign reads hit a missing schema column", async () => {
     const actualAuth = await import("../src/services/auth");
 
     mock.module("@/services/auth", () => ({
@@ -14,7 +25,7 @@ describe("GET /api/v1/newsletter/campaigns", () => {
     }));
     mock.module("@/services/newsletter", () => ({
       listNewsletterCampaigns: async () => {
-        throw new Error('relation "newsletter_campaigns" does not exist');
+        throw createMissingNewsletterCampaignColumnError("timeframe_preset");
       },
       createNewsletterCampaign: async () => ({ ok: true as const, data: null }),
       previewNewsletterCampaignDraft: async () => ({
