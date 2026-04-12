@@ -1,5 +1,6 @@
 import { db, blogPosts } from "@/db";
 import { and, desc, eq } from "drizzle-orm";
+import { isMissingColumnError } from "@/lib/db-schema-compat";
 
 const FALLBACK_DATE = "1970-01-01";
 
@@ -82,6 +83,42 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
       relevance: post.relevance,
     }));
   } catch (error) {
+    if (isMissingColumnError(error, "relevance")) {
+      console.warn("[blog] blog_posts.relevance missing, using compatibility fallback");
+
+      try {
+        const posts = await db
+          .select({
+            slug: blogPosts.slug,
+            title: blogPosts.title,
+            date: blogPosts.date,
+            description: blogPosts.description,
+            content: blogPosts.content,
+            source: blogPosts.source,
+            sourceUrl: blogPosts.sourceUrl,
+            image: blogPosts.image,
+          })
+          .from(blogPosts)
+          .where(eq(blogPosts.published, true))
+          .orderBy(desc(blogPosts.date));
+
+        return posts.map((post) => ({
+          slug: post.slug,
+          title: post.title,
+          date: formatDateString(post.date, post.slug),
+          description: post.description || "",
+          source: post.source || undefined,
+          sourceUrl: post.sourceUrl || undefined,
+          readingTime: calculateReadingTime(post.content),
+          image: post.image || undefined,
+          relevance: 5,
+        }));
+      } catch (fallbackError) {
+        console.error("[blog] Compatibility fallback failed:", fallbackError);
+        return [];
+      }
+    }
+
     console.error("[blog] Failed to fetch all posts:", error);
     return [];
   }
