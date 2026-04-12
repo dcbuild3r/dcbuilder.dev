@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
 
+function createMissingRelevanceError(tableName: string) {
+  const error = new Error("Failed query");
+  (error as Error & { cause?: Error }).cause = new Error(
+    `column "${tableName}"."relevance" does not exist`
+  );
+  return error;
+}
+
 describe("getAllPosts relevance fallback", () => {
   afterEach(() => {
     mock.restore();
@@ -19,7 +27,7 @@ describe("getAllPosts relevance fallback", () => {
             where: () => ({
               orderBy: async () => {
                 if (!selection) {
-                  throw new Error(`column "${table.__table}.relevance" does not exist`);
+                  throw createMissingRelevanceError(table.__table);
                 }
 
                 return [
