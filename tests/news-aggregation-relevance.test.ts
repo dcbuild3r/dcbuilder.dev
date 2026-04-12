@@ -89,4 +89,88 @@ describe("getAllNews relevance mapping", () => {
       relevance: 5,
     });
   });
+
+  test("falls back to default relevance when production tables are missing the relevance column", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => ([
+        {
+          slug: "existing-post",
+          title: "Existing Post",
+          date: "2026-04-09",
+          description: "Blog summary",
+          content: "word ".repeat(300),
+          readingTime: 2,
+          image: null,
+          relevance: 9,
+        },
+      ]),
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+    }));
+
+    mock.module("@/db", () => ({
+      db: {
+        select: (selection?: Record<string, unknown>) => ({
+          from: (table: { __table: string }) => ({
+            orderBy: async () => {
+              if (!selection) {
+                throw new Error(`column "${table.__table}.relevance" does not exist`);
+              }
+
+              if (table.__table === "curated_links") {
+                return [
+                  {
+                    id: "curated-fallback",
+                    title: "Curated Fallback",
+                    url: "https://example.com/curated-fallback",
+                    source: "Example Source",
+                    sourceImage: null,
+                    date: new Date("2026-04-08T00:00:00.000Z"),
+                    description: "Curated summary",
+                    category: "ai",
+                    featured: false,
+                  },
+                ];
+              }
+
+              return [
+                {
+                  id: "announcement-fallback",
+                  title: "Announcement Fallback",
+                  url: "https://example.com/announcement-fallback",
+                  company: "Example Co",
+                  companyLogo: null,
+                  platform: "x",
+                  date: new Date("2026-04-07T00:00:00.000Z"),
+                  description: "Announcement summary",
+                  category: "product",
+                  featured: false,
+                },
+              ];
+            },
+          }),
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-relevance-fallback=${Date.now()}`);
+    const news = await getAllNews();
+
+    expect(news).toHaveLength(3);
+    expect(news.find((item: { id: string }) => item.id === "curated-fallback")).toMatchObject({
+      relevance: 5,
+    });
+    expect(news.find((item: { id: string }) => item.id === "announcement-fallback")).toMatchObject({
+      relevance: 5,
+    });
+    expect(news.find((item: { id: string }) => item.id === "blog-existing-post")).toMatchObject({
+      relevance: 9,
+    });
+  });
 });
