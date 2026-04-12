@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
-import { db, curatedLinks, announcements } from "@/db";
-import { desc } from "drizzle-orm";
 import { parsePaginationParams } from "@/services/auth";
+import { listAnnouncementsCompat, listCuratedLinksCompat } from "@/lib/editorial-read-compat";
 
 // GET /api/v1/news - Get all news (curated links + announcements) combined
 export async function GET(request: NextRequest) {
@@ -10,16 +9,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const [curated, announce] = await Promise.all([
-      db
-        .select()
-        .from(curatedLinks)
-        .orderBy(desc(curatedLinks.date))
-        .limit(limit),
-      db
-        .select()
-        .from(announcements)
-        .orderBy(desc(announcements.date))
-        .limit(limit),
+      listCuratedLinksCompat({ limit, offset: 0 }),
+      listAnnouncementsCompat({ limit, offset: 0 }),
     ]);
 
     // Transform and combine

@@ -3,6 +3,7 @@ import { db, announcements } from "@/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "@/services/auth";
 import { validateEditorialRelevance } from "@/lib/news-relevance";
+import { getAnnouncementByIdCompat } from "@/lib/editorial-read-compat";
 
 // GET /api/v1/news/announcements/[id] - Get an announcement by ID
 export async function GET(
@@ -12,11 +13,7 @@ export async function GET(
   const { id } = await params;
 
   try {
-    const [announcement] = await db
-      .select()
-      .from(announcements)
-      .where(eq(announcements.id, id))
-      .limit(1);
+    const announcement = await getAnnouncementByIdCompat(id);
 
     if (!announcement) {
       return Response.json({ error: "Announcement not found", code: "NOT_FOUND" }, { status: 404 });
