@@ -3,6 +3,7 @@ import { db, curatedLinks } from "@/db";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "@/services/auth";
 import { validateEditorialRelevance } from "@/lib/news-relevance";
+import { getCuratedLinkByIdCompat } from "@/lib/editorial-read-compat";
 
 // GET /api/v1/news/curated/[id] - Get a curated link by ID
 export async function GET(
@@ -12,11 +13,7 @@ export async function GET(
   const { id } = await params;
 
   try {
-    const [link] = await db
-      .select()
-      .from(curatedLinks)
-      .where(eq(curatedLinks.id, id))
-      .limit(1);
+    const link = await getCuratedLinkByIdCompat(id);
 
     if (!link) {
       return Response.json({ error: "Curated link not found", code: "NOT_FOUND" }, { status: 404 });

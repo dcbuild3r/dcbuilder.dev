@@ -3,6 +3,7 @@ import { db, blogPosts } from "@/db";
 import { eq } from "drizzle-orm";
 import { requireAuth, validateApiKey } from "@/services/auth";
 import { validateEditorialRelevance } from "@/lib/news-relevance";
+import { getBlogPostBySlugCompat } from "@/lib/editorial-read-compat";
 
 function isValidDate(dateStr: string): boolean {
   const parsed = new Date(dateStr);
@@ -20,11 +21,7 @@ export async function GET(
     // Check if authenticated - if so, can view unpublished
     const auth = await validateApiKey(request, "admin:read");
 
-    const [post] = await db
-      .select()
-      .from(blogPosts)
-      .where(eq(blogPosts.slug, slug))
-      .limit(1);
+    const post = await getBlogPostBySlugCompat(slug);
 
     if (!post) {
       return NextResponse.json({ error: "Post not found", code: "NOT_FOUND" }, { status: 404 });
@@ -73,11 +70,7 @@ export async function PUT(
   // Check if post exists first (before parsing body)
   let existingPost;
   try {
-    const [existing] = await db
-      .select()
-      .from(blogPosts)
-      .where(eq(blogPosts.slug, slug))
-      .limit(1);
+    const existing = await getBlogPostBySlugCompat(slug);
 
     if (!existing) {
       return NextResponse.json({ error: "Post not found", code: "NOT_FOUND" }, { status: 404 });

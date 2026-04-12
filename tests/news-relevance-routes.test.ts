@@ -30,6 +30,27 @@ async function installNewsRouteMocks() {
     select: () => ({
       from: (table: unknown) => ({
         where: () => ({
+          orderBy: async () => {
+            if (table === tables.blogPosts) {
+              return [
+                {
+                  slug: "editorial-post",
+                  title: "Editorial post",
+                  date: new Date("2026-04-08T00:00:00.000Z"),
+                  description: "Post description",
+                  source: null,
+                  sourceUrl: null,
+                  image: null,
+                  content: "Hello world",
+                  published: true,
+                  relevance: 8,
+                  createdAt: new Date("2026-04-08T00:00:00.000Z"),
+                  updatedAt: new Date("2026-04-08T00:00:00.000Z"),
+                },
+              ];
+            }
+            return [];
+          },
           limit: async () => {
             if (table === tables.blogPosts) {
               return [];

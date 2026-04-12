@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import { db, curatedLinks, NewCuratedLink } from "@/db";
-import { eq, desc, and, SQL } from "drizzle-orm";
+import { eq, and, SQL } from "drizzle-orm";
 import { requireAuth, parsePaginationParams } from "@/services/auth";
 import { validateEditorialRelevance } from "@/lib/news-relevance";
+import { listCuratedLinksCompat } from "@/lib/editorial-read-compat";
 
 // GET /api/v1/news/curated - List curated links
 export async function GET(request: NextRequest) {
@@ -23,13 +24,7 @@ export async function GET(request: NextRequest) {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const data = await db
-      .select()
-      .from(curatedLinks)
-      .where(whereClause)
-      .orderBy(desc(curatedLinks.date))
-      .limit(limit)
-      .offset(offset);
+    const data = await listCuratedLinksCompat({ whereClause, limit, offset });
 
     return Response.json({
       data,
