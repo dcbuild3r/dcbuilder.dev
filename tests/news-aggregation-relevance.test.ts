@@ -173,4 +173,67 @@ describe("getAllNews relevance mapping", () => {
       relevance: 9,
     });
   });
+
+  test("keeps rendering available sources when one news table is unavailable", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => ([
+        {
+          slug: "blog-still-visible",
+          title: "Blog Still Visible",
+          date: "2026-04-09",
+          description: "Blog summary",
+          content: "word ".repeat(300),
+          readingTime: 2,
+          image: null,
+          relevance: 6,
+        },
+      ]),
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+    }));
+
+    mock.module("@/db", () => ({
+      db: {
+        select: () => ({
+          from: (table: { __table: string }) => ({
+            orderBy: async () => {
+              if (table.__table === "curated_links") {
+                return [
+                  {
+                    id: "curated-still-visible",
+                    title: "Curated Still Visible",
+                    url: "https://example.com/curated-still-visible",
+                    source: "Example Source",
+                    sourceImage: null,
+                    date: new Date("2026-04-08T00:00:00.000Z"),
+                    description: "Curated summary",
+                    category: "ai",
+                    featured: false,
+                    relevance: 7,
+                  },
+                ];
+              }
+
+              throw new Error('relation "announcements" does not exist');
+            },
+          }),
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-source-fallback=${Date.now()}`);
+    const news = await getAllNews();
+
+    expect(news).toHaveLength(2);
+    expect(news.map((item: { id: string }) => item.id)).toEqual([
+      "blog-blog-still-visible",
+      "curated-still-visible",
+    ]);
+  });
 });

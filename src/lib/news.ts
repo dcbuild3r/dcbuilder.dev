@@ -32,31 +32,37 @@ async function getCuratedLinksWithFallback() {
       .from(curatedLinksTable)
       .orderBy(desc(curatedLinksTable.date));
   } catch (error) {
-    if (!isMissingColumnError(error, "relevance")) {
-      throw error;
+    if (isMissingColumnError(error, "relevance")) {
+      console.warn("[news] curated_links.relevance missing, using compatibility fallback");
+
+      try {
+        const rows = await db
+          .select({
+            id: curatedLinksTable.id,
+            title: curatedLinksTable.title,
+            url: curatedLinksTable.url,
+            source: curatedLinksTable.source,
+            sourceImage: curatedLinksTable.sourceImage,
+            date: curatedLinksTable.date,
+            description: curatedLinksTable.description,
+            category: curatedLinksTable.category,
+            featured: curatedLinksTable.featured,
+          })
+          .from(curatedLinksTable)
+          .orderBy(desc(curatedLinksTable.date));
+
+        return rows.map((row) => ({
+          ...row,
+          relevance: 5,
+        }));
+      } catch (fallbackError) {
+        console.error("[news] Curated links compatibility fallback failed:", fallbackError);
+        return [];
+      }
     }
 
-    console.warn("[news] curated_links.relevance missing, using compatibility fallback");
-
-    const rows = await db
-      .select({
-        id: curatedLinksTable.id,
-        title: curatedLinksTable.title,
-        url: curatedLinksTable.url,
-        source: curatedLinksTable.source,
-        sourceImage: curatedLinksTable.sourceImage,
-        date: curatedLinksTable.date,
-        description: curatedLinksTable.description,
-        category: curatedLinksTable.category,
-        featured: curatedLinksTable.featured,
-      })
-      .from(curatedLinksTable)
-      .orderBy(desc(curatedLinksTable.date));
-
-    return rows.map((row) => ({
-      ...row,
-      relevance: 5,
-    }));
+    console.error("[news] Failed to fetch curated links:", error);
+    return [];
   }
 }
 
@@ -67,32 +73,38 @@ async function getAnnouncementsWithFallback() {
       .from(announcementsTable)
       .orderBy(desc(announcementsTable.date));
   } catch (error) {
-    if (!isMissingColumnError(error, "relevance")) {
-      throw error;
+    if (isMissingColumnError(error, "relevance")) {
+      console.warn("[news] announcements.relevance missing, using compatibility fallback");
+
+      try {
+        const rows = await db
+          .select({
+            id: announcementsTable.id,
+            title: announcementsTable.title,
+            url: announcementsTable.url,
+            company: announcementsTable.company,
+            companyLogo: announcementsTable.companyLogo,
+            platform: announcementsTable.platform,
+            date: announcementsTable.date,
+            description: announcementsTable.description,
+            category: announcementsTable.category,
+            featured: announcementsTable.featured,
+          })
+          .from(announcementsTable)
+          .orderBy(desc(announcementsTable.date));
+
+        return rows.map((row) => ({
+          ...row,
+          relevance: 5,
+        }));
+      } catch (fallbackError) {
+        console.error("[news] Announcements compatibility fallback failed:", fallbackError);
+        return [];
+      }
     }
 
-    console.warn("[news] announcements.relevance missing, using compatibility fallback");
-
-    const rows = await db
-      .select({
-        id: announcementsTable.id,
-        title: announcementsTable.title,
-        url: announcementsTable.url,
-        company: announcementsTable.company,
-        companyLogo: announcementsTable.companyLogo,
-        platform: announcementsTable.platform,
-        date: announcementsTable.date,
-        description: announcementsTable.description,
-        category: announcementsTable.category,
-        featured: announcementsTable.featured,
-      })
-      .from(announcementsTable)
-      .orderBy(desc(announcementsTable.date));
-
-    return rows.map((row) => ({
-      ...row,
-      relevance: 5,
-    }));
+    console.error("[news] Failed to fetch announcements:", error);
+    return [];
   }
 }
 
