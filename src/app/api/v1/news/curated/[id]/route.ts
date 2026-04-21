@@ -50,6 +50,7 @@ export async function PUT(
     if (body.title !== undefined) updateData.title = body.title;
     if (body.url !== undefined) updateData.url = body.url;
     if (body.source !== undefined) updateData.source = body.source;
+    if (body.sourceImage !== undefined) updateData.sourceImage = body.sourceImage;
     if (body.date !== undefined) updateData.date = new Date(body.date);
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;
