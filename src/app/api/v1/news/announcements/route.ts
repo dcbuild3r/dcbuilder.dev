@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import { db, announcements, NewAnnouncement } from "@/db";
-import { eq, desc, and, SQL, sql } from "drizzle-orm";
+import { eq, and, SQL } from "drizzle-orm";
 import { requireAuth, parsePaginationParams } from "@/services/auth";
 import { validateEditorialRelevance } from "@/lib/news-relevance";
+import { listAnnouncementsCompat } from "@/lib/editorial-read-compat";
 
 // GET /api/v1/news/announcements - List announcements
 export async function GET(request: NextRequest) {
@@ -27,17 +28,7 @@ export async function GET(request: NextRequest) {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const data = await db
-      .select()
-      .from(announcements)
-      .where(whereClause)
-      .orderBy(
-        desc(sql`date_trunc('day', ${announcements.date})`),
-        desc(announcements.relevance),
-        desc(announcements.date)
-      )
-      .limit(limit)
-      .offset(offset);
+    const data = await listAnnouncementsCompat({ whereClause, limit, offset });
 
     return Response.json({
       data,

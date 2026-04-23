@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, blogPosts } from "@/db";
-import { desc, eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { requireAuth, validateApiKey } from "@/services/auth";
 import { validateEditorialRelevance } from "@/lib/news-relevance";
+import { listBlogPostsCompat } from "@/lib/editorial-read-compat";
 
 function isValidDate(dateStr: string): boolean {
   const parsed = new Date(dateStr);
@@ -15,21 +16,7 @@ export async function GET(request: NextRequest) {
     // Check if authenticated - if so, show all posts including unpublished
     const auth = await validateApiKey(request, "admin:read");
 
-    const orderByDateAndRelevance = [
-      desc(sql`date_trunc('day', ${blogPosts.date})`),
-      desc(blogPosts.relevance),
-      desc(blogPosts.date),
-    ] as const;
-
-    const query = auth.valid
-      ? db.select().from(blogPosts).orderBy(...orderByDateAndRelevance)
-      : db
-          .select()
-          .from(blogPosts)
-          .where(eq(blogPosts.published, true))
-          .orderBy(...orderByDateAndRelevance);
-
-    const posts = await query;
+    const posts = await listBlogPostsCompat(auth.valid);
 
     const data = posts.map((post) => ({
       slug: post.slug,

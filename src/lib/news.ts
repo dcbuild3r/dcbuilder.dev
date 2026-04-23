@@ -1,8 +1,9 @@
 import { getAllPosts } from "./blog";
 import { db } from "@/db";
 import { curatedLinks as curatedLinksTable, announcements as announcementsTable } from "@/db/schema";
-import { desc, sql } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { NewsCategory } from "@/data/news";
+import { isMissingColumnError } from "@/lib/db-schema-compat";
 import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
 
 export interface AggregatedNewsItem {
@@ -25,26 +26,95 @@ export interface AggregatedNewsItem {
   image?: string; // For blog posts
 }
 
+async function getCuratedLinksWithFallback() {
+  try {
+    return await db
+      .select()
+      .from(curatedLinksTable)
+      .orderBy(desc(curatedLinksTable.date));
+  } catch (error) {
+    if (isMissingColumnError(error, "relevance")) {
+      console.warn("[news] curated_links.relevance missing, using compatibility fallback");
+
+      try {
+        const rows = await db
+          .select({
+            id: curatedLinksTable.id,
+            title: curatedLinksTable.title,
+            url: curatedLinksTable.url,
+            source: curatedLinksTable.source,
+            sourceImage: curatedLinksTable.sourceImage,
+            date: curatedLinksTable.date,
+            description: curatedLinksTable.description,
+            category: curatedLinksTable.category,
+            featured: curatedLinksTable.featured,
+          })
+          .from(curatedLinksTable)
+          .orderBy(desc(curatedLinksTable.date));
+
+        return rows.map((row) => ({
+          ...row,
+          relevance: 5,
+        }));
+      } catch (fallbackError) {
+        console.error("[news] Curated links compatibility fallback failed:", fallbackError);
+        return [];
+      }
+    }
+
+    console.error("[news] Failed to fetch curated links:", error);
+    return [];
+  }
+}
+
+async function getAnnouncementsWithFallback() {
+  try {
+    return await db
+      .select()
+      .from(announcementsTable)
+      .orderBy(desc(announcementsTable.date));
+  } catch (error) {
+    if (isMissingColumnError(error, "relevance")) {
+      console.warn("[news] announcements.relevance missing, using compatibility fallback");
+
+      try {
+        const rows = await db
+          .select({
+            id: announcementsTable.id,
+            title: announcementsTable.title,
+            url: announcementsTable.url,
+            company: announcementsTable.company,
+            companyLogo: announcementsTable.companyLogo,
+            platform: announcementsTable.platform,
+            date: announcementsTable.date,
+            description: announcementsTable.description,
+            category: announcementsTable.category,
+            featured: announcementsTable.featured,
+          })
+          .from(announcementsTable)
+          .orderBy(desc(announcementsTable.date));
+
+        return rows.map((row) => ({
+          ...row,
+          relevance: 5,
+        }));
+      } catch (fallbackError) {
+        console.error("[news] Announcements compatibility fallback failed:", fallbackError);
+        return [];
+      }
+    }
+
+    console.error("[news] Failed to fetch announcements:", error);
+    return [];
+  }
+}
+
 export async function getAllNews(): Promise<AggregatedNewsItem[]> {
   // Fetch all data sources in parallel
   const [blogPosts, dbCuratedLinks, dbAnnouncements] = await Promise.all([
     getAllPosts(),
-    db
-      .select()
-      .from(curatedLinksTable)
-      .orderBy(
-        desc(sql`date_trunc('day', ${curatedLinksTable.date})`),
-        desc(curatedLinksTable.relevance),
-        desc(curatedLinksTable.date)
-      ),
-    db
-      .select()
-      .from(announcementsTable)
-      .orderBy(
-        desc(sql`date_trunc('day', ${announcementsTable.date})`),
-        desc(announcementsTable.relevance),
-        desc(announcementsTable.date)
-      ),
+    getCuratedLinksWithFallback(),
+    getAnnouncementsWithFallback(),
   ]);
 
   // Map blog posts

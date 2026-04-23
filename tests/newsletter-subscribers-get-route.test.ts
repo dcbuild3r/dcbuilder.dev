@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { createPosthogModuleMock } from "./helpers/posthog-module-mock";
 
 describe("GET /api/v1/newsletter/subscribers", () => {
   afterEach(() => {
@@ -7,8 +8,10 @@ describe("GET /api/v1/newsletter/subscribers", () => {
 
   test("returns an unavailable fallback instead of 500 when subscriber tables are missing", async () => {
     const actualDb = await import("../src/db");
+    const actualAuth = await import("../src/services/auth");
 
     mock.module("@/services/auth", () => ({
+      ...actualAuth,
       requireAuth: async () => ({ valid: true as const, keyId: "key_123", name: "Admin" }),
     }));
     mock.module("@/db", () => ({
@@ -21,9 +24,11 @@ describe("GET /api/v1/newsletter/subscribers", () => {
         }),
       },
     }));
-    mock.module("@/services/posthog", () => ({
-      getEmailClicksLast7Days: async () => ({ success: true as const, data: [] }),
-    }));
+    mock.module("@/services/posthog", () =>
+      createPosthogModuleMock({
+        getEmailClicksLast7Days: async () => ({ success: true as const, data: [] }),
+      })
+    );
 
     const { GET } = await import("../src/app/api/v1/newsletter/subscribers/route");
     const response = await GET(

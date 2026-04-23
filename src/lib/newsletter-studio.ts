@@ -1,4 +1,5 @@
 export type NewsletterStudioMode = "compose" | "queue" | "subscribers" | "templates";
+export type NewsletterStudioNewsletterType = "news" | "jobs" | "candidates";
 export type NewsletterSummaryTimeframePreset = "weekly" | "monthly" | "quarterly" | "custom";
 
 export type NewsletterSummaryControls = {
@@ -30,6 +31,18 @@ function inferNewsletterSummaryPreset(periodDays?: number | null): NewsletterSum
   if (periodDays === NEWSLETTER_SUMMARY_PRESET_DEFAULTS.monthly.periodDays) return "monthly";
   if (periodDays === NEWSLETTER_SUMMARY_PRESET_DEFAULTS.quarterly.periodDays) return "quarterly";
   return "custom";
+}
+
+function computeUtcWindow(periodDays: number, now: Date) {
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+  const start = new Date(end);
+  start.setUTCDate(start.getUTCDate() - (periodDays - 1));
+  start.setUTCHours(0, 0, 0, 0);
+  return { start, end };
+}
+
+function isoDay(date: Date) {
+  return date.toISOString().slice(0, 10);
 }
 
 export const NEWSLETTER_STARTER_RENDERED_PANEL_CLASSNAME = "mx-auto max-w-3xl px-4 sm:px-6 lg:px-8";
@@ -96,22 +109,53 @@ export function resolveNewsletterSummaryControls(input: {
   minimumRelevance?: number | null;
 }): NewsletterSummaryControls {
   const timeframePreset = input.timeframePreset ?? inferNewsletterSummaryPreset(input.periodDays);
+  const presetMinimumRelevance = timeframePreset === "custom"
+    ? 1
+    : NEWSLETTER_SUMMARY_PRESET_DEFAULTS[timeframePreset].minimumRelevance;
+  const minimumRelevance = input.minimumRelevance ?? presetMinimumRelevance;
 
   if (timeframePreset !== "custom") {
     const defaults = NEWSLETTER_SUMMARY_PRESET_DEFAULTS[timeframePreset];
     return {
       timeframePreset,
       periodDays: defaults.periodDays,
-      minimumRelevance: defaults.minimumRelevance,
+      minimumRelevance,
     };
   }
 
   const periodDays = input.periodDays ?? 7;
-  const minimumRelevance = input.minimumRelevance ?? 1;
 
   return {
     timeframePreset,
     periodDays,
     minimumRelevance,
   };
+}
+
+export function getSuggestedNewsletterSubject(input: {
+  newsletterType: NewsletterStudioNewsletterType;
+  periodDays: number;
+  timeframePreset?: NewsletterSummaryTimeframePreset | null;
+  now?: Date;
+}) {
+  const now = input.now ?? new Date();
+  const { start, end } = computeUtcWindow(input.periodDays, now);
+  const timeframePreset = input.timeframePreset ?? inferNewsletterSummaryPreset(input.periodDays);
+
+  let label: string;
+  if (input.newsletterType === "news") {
+    if (timeframePreset === "monthly") {
+      label = "Monthly News Digest";
+    } else if (timeframePreset === "quarterly") {
+      label = "Quarterly News Digest";
+    } else if (timeframePreset === "custom") {
+      label = "News Digest";
+    } else {
+      label = "Weekly News Digest";
+    }
+  } else {
+    label = `${input.newsletterType[0].toUpperCase()}${input.newsletterType.slice(1)} Digest`;
+  }
+
+  return `${label} (${isoDay(start)} to ${isoDay(end)})`;
 }
