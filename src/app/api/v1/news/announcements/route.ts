@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { db, announcements, NewAnnouncement } from "@/db";
-import { eq, desc, and, SQL } from "drizzle-orm";
+import { eq, desc, and, SQL, sql } from "drizzle-orm";
 import { requireAuth, parsePaginationParams } from "@/services/auth";
+import { validateEditorialRelevance } from "@/lib/news-relevance";
 
 // GET /api/v1/news/announcements - List announcements
 export async function GET(request: NextRequest) {
@@ -30,7 +31,11 @@ export async function GET(request: NextRequest) {
       .select()
       .from(announcements)
       .where(whereClause)
-      .orderBy(desc(announcements.date))
+      .orderBy(
+        desc(sql`date_trunc('day', ${announcements.date})`),
+        desc(announcements.relevance),
+        desc(announcements.date)
+      )
       .limit(limit)
       .offset(offset);
 
@@ -74,11 +79,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const relevanceValidation = validateEditorialRelevance(body.relevance, 5);
+    if (!relevanceValidation.ok) {
+      return Response.json({ error: relevanceValidation.error, code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+
     const [newAnnouncement] = await db
       .insert(announcements)
       .values({
         ...body,
         date: new Date(body.date),
+        relevance: relevanceValidation.data ?? 5,
       })
       .returning();
 

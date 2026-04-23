@@ -1,5 +1,5 @@
 import { db, blogPosts } from "@/db";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 const FALLBACK_DATE = "1970-01-01";
 
@@ -14,6 +14,7 @@ export interface BlogPostView {
   sourceUrl?: string;
   readingTime: number;
   image?: string;
+  relevance: number;
 }
 
 export interface BlogPostMeta {
@@ -25,6 +26,7 @@ export interface BlogPostMeta {
   sourceUrl?: string;
   readingTime: number;
   image?: string;
+  relevance: number;
 }
 
 // Re-export for backwards compatibility
@@ -66,7 +68,11 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
       .select()
       .from(blogPosts)
       .where(eq(blogPosts.published, true))
-      .orderBy(desc(blogPosts.date));
+      .orderBy(
+        desc(sql`date_trunc('day', ${blogPosts.date})`),
+        desc(blogPosts.relevance),
+        desc(blogPosts.date)
+      );
 
     return posts.map((post) => ({
       slug: post.slug,
@@ -77,6 +83,7 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
       sourceUrl: post.sourceUrl || undefined,
       readingTime: calculateReadingTime(post.content),
       image: post.image || undefined,
+      relevance: post.relevance,
     }));
   } catch (error) {
     console.error("[blog] Failed to fetch all posts:", error);
@@ -104,6 +111,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
       sourceUrl: post.sourceUrl || undefined,
       readingTime: calculateReadingTime(post.content),
       image: post.image || undefined,
+      relevance: post.relevance,
     };
   } catch (error) {
     console.error(`[blog] Failed to fetch post by slug "${slug}":`, error);

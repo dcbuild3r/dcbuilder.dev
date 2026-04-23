@@ -7,7 +7,9 @@ export async function POST(request: NextRequest) {
   if (auth instanceof Response) return auth;
 
   let body: {
+    timeframePreset?: string;
     periodDays?: number;
+    minimumRelevance?: number;
     createdBy?: string;
     scheduledAt?: string;
   };
@@ -19,7 +21,9 @@ export async function POST(request: NextRequest) {
   }
 
   const result = await createWeeklyNewsCampaignIssue({
+    timeframePreset: body.timeframePreset,
     periodDays: body.periodDays,
+    minimumRelevance: body.minimumRelevance,
     createdBy: body.createdBy,
     scheduledAt: body.scheduledAt,
   });

@@ -1,8 +1,9 @@
 import { getAllPosts } from "./blog";
 import { db } from "@/db";
 import { curatedLinks as curatedLinksTable, announcements as announcementsTable } from "@/db/schema";
-import { desc } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { NewsCategory } from "@/data/news";
+import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
 
 export interface AggregatedNewsItem {
   id: string;
@@ -13,6 +14,7 @@ export interface AggregatedNewsItem {
   description?: string;
   category: NewsCategory;
   featured?: boolean;
+  relevance: number;
   // Type-specific fields
   source?: string; // For curated links
   sourceImage?: string; // For curated links
@@ -27,8 +29,22 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
   // Fetch all data sources in parallel
   const [blogPosts, dbCuratedLinks, dbAnnouncements] = await Promise.all([
     getAllPosts(),
-    db.select().from(curatedLinksTable).orderBy(desc(curatedLinksTable.date)),
-    db.select().from(announcementsTable).orderBy(desc(announcementsTable.date)),
+    db
+      .select()
+      .from(curatedLinksTable)
+      .orderBy(
+        desc(sql`date_trunc('day', ${curatedLinksTable.date})`),
+        desc(curatedLinksTable.relevance),
+        desc(curatedLinksTable.date)
+      ),
+    db
+      .select()
+      .from(announcementsTable)
+      .orderBy(
+        desc(sql`date_trunc('day', ${announcementsTable.date})`),
+        desc(announcementsTable.relevance),
+        desc(announcementsTable.date)
+      ),
   ]);
 
   // Map blog posts
@@ -42,6 +58,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     category: "general" as NewsCategory,
     readingTime: `${post.readingTime} min read`,
     image: post.image,
+    relevance: post.relevance,
   }));
 
   // Map curated links
@@ -54,6 +71,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     description: link.description || undefined,
     category: link.category as NewsCategory,
     featured: link.featured || false,
+    relevance: link.relevance,
     source: link.source,
     sourceImage: link.sourceImage || undefined,
   }));
@@ -68,14 +86,15 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     description: ann.description || undefined,
     category: ann.category as NewsCategory,
     featured: ann.featured || false,
+    relevance: ann.relevance,
     company: ann.company,
     companyLogo: ann.companyLogo || undefined,
     platform: ann.platform,
   }));
 
-  // Combine and sort by date (newest first)
+  // Combine and sort by date, then relevance for same-day items.
   const allNews = [...blogItems, ...curatedItems, ...announcementItems];
-  allNews.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  allNews.sort(compareNewsByDateAndRelevance);
 
   return allNews;
 }

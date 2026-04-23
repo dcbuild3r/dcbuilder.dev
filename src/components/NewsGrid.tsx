@@ -44,6 +44,7 @@ interface NewsGridProps {
 export function NewsGrid({ news }: NewsGridProps) {
 	const [typeFilter, setTypeFilter] = useState<NewsType>("all");
 	const [categoryFilter, setCategoryFilter] = useState<"all" | NewsCategory>("all");
+	const [minimumRelevance, setMinimumRelevance] = useState(0);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [failedImageKeys, setFailedImageKeys] = useState<Record<string, true>>({});
 	const { getClickCount, isPopular, loaded: clicksLoaded } = useNewsClicks();
@@ -92,18 +93,21 @@ export function NewsGrid({ news }: NewsGridProps) {
 				return false;
 			}
 
-			// Search filter
-				if (deferredSearchQuery) {
-					const query = deferredSearchQuery.toLowerCase();
-					const searchableText = newsSearchIndex.get(item.id) || "";
-					if (!searchableText.includes(query)) {
-						return false;
-					}
+			if (minimumRelevance > 0 && (item.relevance ?? 5) < minimumRelevance) {
+				return false;
+			}
+
+			if (deferredSearchQuery) {
+				const query = deferredSearchQuery.toLowerCase();
+				const searchableText = newsSearchIndex.get(item.id) || "";
+				if (!searchableText.includes(query)) {
+					return false;
 				}
+			}
 
 			return true;
 		});
-		}, [news, typeFilter, categoryFilter, deferredSearchQuery, newsSearchIndex]);
+		}, [news, typeFilter, categoryFilter, minimumRelevance, deferredSearchQuery, newsSearchIndex]);
 
 	// Format date for display
 	const formatDate = (dateString: string) => {
@@ -334,17 +338,47 @@ export function NewsGrid({ news }: NewsGridProps) {
 					</div>
 				</div>
 
-				{/* Row 2: Search */}
+				{/* Row 2: Relevance */}
+				<div className="rounded-lg border border-neutral-200 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900">
+					<div className="mb-2 flex items-center justify-between gap-3">
+						<label
+							htmlFor="relevance-filter"
+							className="text-sm text-neutral-600 dark:text-neutral-400"
+						>
+							Relevance
+						</label>
+						<span className="min-w-10 rounded-full bg-neutral-100 px-2 py-0.5 text-center text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+							{minimumRelevance === 0 ? "All" : `${minimumRelevance}+`}
+						</span>
+					</div>
+					<input
+						id="relevance-filter"
+						type="range"
+						min={0}
+						max={10}
+						step={1}
+						value={minimumRelevance}
+						onChange={(event) => setMinimumRelevance(Number(event.target.value))}
+						aria-valuetext={minimumRelevance === 0 ? "All" : `${minimumRelevance} and up`}
+						className="w-full accent-neutral-900 dark:accent-neutral-100"
+					/>
+					<div className="mt-1 flex justify-between text-[11px] text-neutral-400 dark:text-neutral-500">
+						<span>All</span>
+						<span>10</span>
+					</div>
+				</div>
+
+				{/* Row 3: Search */}
 				<div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-						<div className="flex-1 relative">
-							<input
-								type="text"
-								aria-label="Search news"
-								placeholder="Search news..."
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-							/>
+					<div className="flex-1 relative">
+						<input
+							type="text"
+							aria-label="Search news"
+							placeholder="Search news..."
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+						/>
 						{searchQuery && (
 							<button
 								type="button"

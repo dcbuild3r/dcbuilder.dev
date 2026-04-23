@@ -33,7 +33,9 @@ export async function PATCH(
     newsletterType?: string;
     subject?: string;
     previewText?: string | null;
+    timeframePreset?: string;
     periodDays?: number;
+    minimumRelevance?: number;
     scheduledAt?: string | null;
     contentMode?: string;
     markdownContent?: string | null;

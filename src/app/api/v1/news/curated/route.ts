@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { db, curatedLinks, NewCuratedLink } from "@/db";
-import { eq, desc, and, SQL } from "drizzle-orm";
+import { eq, desc, and, SQL, sql } from "drizzle-orm";
 import { requireAuth, parsePaginationParams } from "@/services/auth";
+import { validateEditorialRelevance } from "@/lib/news-relevance";
 
 // GET /api/v1/news/curated - List curated links
 export async function GET(request: NextRequest) {
@@ -26,7 +27,11 @@ export async function GET(request: NextRequest) {
       .select()
       .from(curatedLinks)
       .where(whereClause)
-      .orderBy(desc(curatedLinks.date))
+      .orderBy(
+        desc(sql`date_trunc('day', ${curatedLinks.date})`),
+        desc(curatedLinks.relevance),
+        desc(curatedLinks.date)
+      )
       .limit(limit)
       .offset(offset);
 
@@ -59,11 +64,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const relevanceValidation = validateEditorialRelevance(body.relevance, 5);
+    if (!relevanceValidation.ok) {
+      return Response.json({ error: relevanceValidation.error, code: "VALIDATION_ERROR" }, { status: 400 });
+    }
+
     const [newLink] = await db
       .insert(curatedLinks)
       .values({
         ...body,
         date: new Date(body.date),
+        relevance: relevanceValidation.data ?? 5,
       })
       .returning();
 

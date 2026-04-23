@@ -21,6 +21,8 @@ interface UseHotCandidatesReturn {
  * 1. Analytics data from PostHog (candidates with high recent views)
  * 2. Explicit "hot" skill tag in the database
  *
+ * Candidates marked as not currently looking are never treated as HOT.
+ *
  * This hook also manages TOP badge styling logic to prevent the purple→orange
  * flicker that would occur if we showed TOP styling before knowing if a
  * candidate is also HOT.
@@ -56,9 +58,16 @@ export function useHotCandidates(): UseHotCandidatesReturn {
 
 	// Check if candidate is hot (data-driven OR has hot skill tag)
 	const isHotCandidate = useCallback(
-		(candidate: Candidate) =>
-			dataHotCandidateIds.has(candidate.id) ||
-			candidate.skills?.includes("hot" as SkillTag) === true,
+		(candidate: Candidate) => {
+			if (candidate.availability === "not-looking") {
+				return false;
+			}
+
+			return (
+				dataHotCandidateIds.has(candidate.id) ||
+				candidate.skills?.includes("hot" as SkillTag) === true
+			);
+		},
 		[dataHotCandidateIds]
 	);
 

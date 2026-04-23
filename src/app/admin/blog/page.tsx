@@ -8,6 +8,7 @@ import { TableSkeleton } from "@/components/admin/TableSkeleton";
 import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
 import { ViewButton, EditButton, DeleteButton, ErrorAlert } from "@/components/admin/ActionButtons";
 import { ADMIN_THEMES } from "@/lib/admin-themes";
+import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
 
 interface BlogPost {
   slug: string;
@@ -16,6 +17,7 @@ interface BlogPost {
   description: string;
   source: string | null;
   sourceUrl: string | null;
+  relevance: number | null;
   content?: string;
   contentLength?: number;
   wordCount?: number;
@@ -28,6 +30,7 @@ const emptyPost: Partial<BlogPost> & { content: string } = {
   description: "",
   source: "",
   sourceUrl: "",
+  relevance: 5,
   content: "",
 };
 
@@ -185,9 +188,7 @@ export default function AdminBlog() {
         const viewsB = blogViews[b.slug] || 0;
         return sortOrder === "desc" ? viewsB - viewsA : viewsA - viewsB;
       }
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
+      return compareNewsByDateAndRelevance(a, b, sortOrder);
     });
 
   // Editor view
@@ -230,7 +231,7 @@ export default function AdminBlog() {
           <div className={`flex flex-col bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden ${showPreview ? "w-1/2" : "w-full"}`}>
             {/* Metadata Fields */}
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 space-y-3 flex-shrink-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-sm font-medium mb-1">Title *</label>
                   <input
@@ -272,6 +273,20 @@ export default function AdminBlog() {
                     }
                     className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Relevance *</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={editingPost.relevance ?? 5}
+                    onChange={(e) =>
+                      setEditingPost({ ...editingPost, relevance: Number(e.target.value) || 5 })
+                    }
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm"
+                  />
+                  <p className="mt-1 text-xs text-neutral-500">1 = low, 10 = highest</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Source</label>
@@ -434,6 +449,7 @@ export default function AdminBlog() {
             "Title",
             { label: "Source", className: "hidden lg:table-cell" },
             "Date",
+            "Relevance",
             { label: "Words", className: "hidden lg:table-cell" },
             { label: "Views", className: "hidden md:table-cell" },
             { label: "Actions", align: "right" },
@@ -560,6 +576,7 @@ export default function AdminBlog() {
                     )}
                   </button>
                 </th>
+                <th className="px-4 py-3 text-left text-sm font-medium">Relevance</th>
                 <th className="px-4 py-3 text-left text-sm font-medium hidden lg:table-cell">Words</th>
                 <th className="px-4 py-3 text-left text-sm font-medium hidden md:table-cell">
                   <button
@@ -606,6 +623,11 @@ export default function AdminBlog() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm text-neutral-500">{post.date}</td>
+                  <td className="px-4 py-3 text-sm">
+                    <span className="inline-flex rounded-full bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+                      {post.relevance ?? 5}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-sm text-neutral-500 hidden lg:table-cell">
                     {post.wordCount?.toLocaleString()}
                   </td>
@@ -623,7 +645,7 @@ export default function AdminBlog() {
               ))}
               {filteredPosts.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-neutral-500">
+                  <td colSpan={7} className="px-4 py-8 text-center text-neutral-500">
                     {searchQuery ? "No posts match your search" : "No blog posts yet"}
                   </td>
                 </tr>

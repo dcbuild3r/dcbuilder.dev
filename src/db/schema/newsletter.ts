@@ -67,6 +67,8 @@ export const newsletterCampaigns = pgTable(
     archiveCorrectedBy: text("archive_corrected_by"),
     status: text("status").notNull().default("draft"), // draft | scheduled | sending | sent | failed
     periodDays: integer("period_days").notNull().default(7),
+    timeframePreset: text("timeframe_preset").notNull().default("weekly"),
+    minimumRelevance: integer("minimum_relevance").notNull().default(1),
     scheduledAt: timestamp("scheduled_at"),
     sentAt: timestamp("sent_at"),
     failureReason: text("failure_reason"),

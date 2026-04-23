@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { jobs as jobsTable, candidates as candidatesTable, curatedLinks as curatedLinksTable, candidateRedirects } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import type { Job, Company, RelationshipCategory, JobTag, JobTier } from "@/data/jobs";
 import type {
   Candidate,
@@ -81,7 +81,14 @@ export async function getCandidatesFromDB(): Promise<Candidate[]> {
 
 // Fetch curated links from database
 export async function getCuratedLinksFromDB(): Promise<CuratedLink[]> {
-  const dbLinks = await db.select().from(curatedLinksTable).orderBy(desc(curatedLinksTable.date));
+  const dbLinks = await db
+    .select()
+    .from(curatedLinksTable)
+    .orderBy(
+      desc(sql`date_trunc('day', ${curatedLinksTable.date})`),
+      desc(curatedLinksTable.relevance),
+      desc(curatedLinksTable.date)
+    );
 
   return dbLinks.map((link) => ({
     id: link.id,

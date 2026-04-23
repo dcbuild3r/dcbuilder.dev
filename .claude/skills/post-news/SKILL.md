@@ -1,11 +1,35 @@
 ---
 name: post-news
-description: This skill should be used when the user asks to "add news", "post news", "add an X post to news", "add tweet to news", "add announcement", "add curated link", "post to news feed", "share on news", "add article to news", or mentions adding content to the dcbuilder.dev news section. Provides workflows for adding announcements (portfolio company posts with logos) and curated links (external content) with optional R2 image upload.
+description: Use when the user asks to add or post content to the dcbuilder.dev news feed, including X posts, announcements, curated links, or articles.
 ---
 
 # Post News Skill
 
 Add news items to the dcbuilder.dev news feed. Supports two types: **announcements** (company posts with logos) and **curated links** (external content without logos).
+
+## Description Style
+
+When writing `description`, prefer direct event framing instead of attribution framing.
+
+- Good: `OpenAI has acquired TBPN.`
+- Good: `An orbital animation shows Artemis II's crewed trajectory around the Moon and back to Earth.`
+- Avoid: `Jordi Hays says OpenAI has acquired TBPN.`
+- Avoid: `delian shares orbital animation of Artemis 2 heading to the Moon.`
+
+## Default Publishing Behavior
+
+Unless the user explicitly says otherwise, `post-news` means:
+
+1. Resolve the item metadata and decide announcement vs curated link.
+2. Check the local/runtime database for an existing record with the same URL.
+3. Insert into the local/runtime database if not present.
+4. Check the production database for an existing record with the same URL.
+5. Insert into production if not present.
+6. Verify both environments before reporting success.
+
+Use `.env.local` for local/runtime access (`DATABASE_URL`) and `DATABASE_URL_PROD` for production.
+
+For production writes, do **not** rely on `src/db/index.ts`, which always reads `DATABASE_URL`. Use a one-off Bun script with `postgres`, `drizzle`, and `src/db/postgres-connection.ts` so the write is explicitly bound to `DATABASE_URL_PROD`.
 
 ## Quick Decision
 
@@ -45,7 +69,7 @@ Common logo paths: `/images/investments/lighter.jpg`, `/images/investments/megae
 
 If no existing logo, see "Image Upload Flow" below.
 
-### Step 3: Insert via Database
+### Step 3: Insert into Local/Runtime Database
 
 Run from project root:
 
@@ -67,6 +91,54 @@ process.exit(0);
 "
 ```
 
+### Step 4: Mirror to Production
+
+Always check prod for an existing record with the same URL first. If it does not exist, insert it with a one-off script that uses `DATABASE_URL_PROD` directly.
+
+```bash
+bunx dotenv -e .env.local -- bun -e '
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { eq } from "drizzle-orm";
+import { announcements } from "./src/db/schema/news";
+import { createPreferredPostgresSocket } from "./src/db/postgres-connection";
+
+const prodUrl = process.env.DATABASE_URL_PROD;
+if (!prodUrl) throw new Error("DATABASE_URL_PROD is required");
+
+const payload = {
+  title: "YOUR_TITLE",
+  url: "YOUR_URL",
+  company: "COMPANY_NAME",
+  companyLogo: "/images/investments/company.jpg",
+  platform: "x",
+  date: new Date("YYYY-MM-DD"),
+  category: "x_post",
+  description: "OPTIONAL_DESCRIPTION",
+  featured: false,
+};
+
+const sql = postgres(prodUrl, {
+  max: 1,
+  socket: () => createPreferredPostgresSocket(prodUrl),
+});
+
+try {
+  const db = drizzle(sql, { schema: { announcements } });
+  const existing = await db.select().from(announcements).where(eq(announcements.url, payload.url));
+
+  if (existing.length) {
+    console.log(JSON.stringify({ status: "exists", existing }, null, 2));
+  } else {
+    const created = await db.insert(announcements).values(payload).returning();
+    console.log(JSON.stringify({ status: "created", created }, null, 2));
+  }
+} finally {
+  await sql.end({ timeout: 5 });
+}
+'
+```
+
 ## Workflow: Add Curated Link
 
 For external articles, individual posts, or content not from portfolio companies.
@@ -80,7 +152,7 @@ Required fields:
 - **date**: Publication date (YYYY-MM-DD)
 - **category**: `x_post`, `crypto`, `ai`, `research`, etc.
 
-### Step 2: Insert via Database
+### Step 2: Insert into Local/Runtime Database
 
 Preferred (script):
 
@@ -110,6 +182,52 @@ await db.insert(curatedLinks).values({
 
 process.exit(0);
 "
+```
+
+### Step 3: Mirror to Production
+
+Check prod for an existing record with the same URL first. If it does not exist, insert it with a one-off script that uses `DATABASE_URL_PROD` directly.
+
+```bash
+bunx dotenv -e .env.local -- bun -e '
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { eq } from "drizzle-orm";
+import { curatedLinks } from "./src/db/schema/news";
+import { createPreferredPostgresSocket } from "./src/db/postgres-connection";
+
+const prodUrl = process.env.DATABASE_URL_PROD;
+if (!prodUrl) throw new Error("DATABASE_URL_PROD is required");
+
+const payload = {
+  title: "YOUR_TITLE",
+  url: "YOUR_URL",
+  source: "SOURCE_NAME",
+  date: new Date("YYYY-MM-DD"),
+  description: "OPTIONAL_DESCRIPTION",
+  category: "x_post",
+  featured: false,
+};
+
+const sql = postgres(prodUrl, {
+  max: 1,
+  socket: () => createPreferredPostgresSocket(prodUrl),
+});
+
+try {
+  const db = drizzle(sql, { schema: { curatedLinks } });
+  const existing = await db.select().from(curatedLinks).where(eq(curatedLinks.url, payload.url));
+
+  if (existing.length) {
+    console.log(JSON.stringify({ status: "exists", existing }, null, 2));
+  } else {
+    const created = await db.insert(curatedLinks).values(payload).returning();
+    console.log(JSON.stringify({ status: "created", created }, null, 2));
+  }
+} finally {
+  await sql.end({ timeout: 5 });
+}
+'
 ```
 
 ## Image Upload Flow
@@ -176,14 +294,17 @@ Use path format: `/images/investments/company-name.jpg`
 
 ## Verification
 
-After adding, verify the item exists:
+After adding, verify the item exists in both environments:
 
 ```bash
-# For announcements
+# Local/runtime announcements
 curl -s "http://localhost:3000/api/v1/news/announcements?limit=1" | jq .
 
-# For curated links
+# Local/runtime curated links
 curl -s "http://localhost:3000/api/v1/news/curated?limit=1" | jq .
+
+# Production direct DB verification should query DATABASE_URL_PROD by URL
+# using the same pattern as the production duplicate-check script above.
 ```
 
 ## Common Examples

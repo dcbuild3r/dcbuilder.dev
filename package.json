@@ -26,6 +26,7 @@
     "@anthropic-ai/sdk": "^0.71.2",
     "@aws-sdk/client-s3": "^3.978.0",
     "@paralleldrive/cuid2": "^3.3.0",
+    "@smithy/core": "^3.23.16",
     "@tailwindcss/typography": "^0.5.19",
     "cheerio": "^1.2.0",
     "class-variance-authority": "^0.7.1",
