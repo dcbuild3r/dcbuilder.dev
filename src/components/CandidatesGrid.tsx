@@ -45,11 +45,13 @@ interface CandidatesGridProps {
 	candidates: Candidate[];
 }
 
+type AvailabilityFilter = "all" | "active" | AvailabilityStatus;
+
 export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const searchParams = useSearchParams();
 	const [availabilityFilter, setAvailabilityFilter] = useState<
-		"all" | AvailabilityStatus
-	>("all");
+		AvailabilityFilter
+	>("active");
 	const [experienceFilter, setExperienceFilter] = useState<
 		"all" | ExperienceLevel
 	>("all");
@@ -201,7 +203,11 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const filteredCandidates = useMemo(() => {
 		return candidates.filter((candidate) => {
 			// Availability filter
-			if (
+			if (availabilityFilter === "active") {
+				if (candidate.availability === "not-looking") {
+					return false;
+				}
+			} else if (
 				availabilityFilter !== "all" &&
 				candidate.availability !== availabilityFilter
 			) {
@@ -353,9 +359,10 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 						<CustomSelect
 							id="availability-filter"
 							value={availabilityFilter}
-							onChange={(value) => setAvailabilityFilter(value as "all" | AvailabilityStatus)}
+							onChange={(value) => setAvailabilityFilter(value as AvailabilityFilter)}
 							options={[
-								{ value: "all", label: "All" },
+								{ value: "active", label: "Available" },
+								{ value: "all", label: "All (incl. not looking)" },
 								{ value: "looking", label: "Actively Looking" },
 								{ value: "open", label: "Open to Opportunities" },
 								{ value: "not-looking", label: "Not Currently Looking" },
