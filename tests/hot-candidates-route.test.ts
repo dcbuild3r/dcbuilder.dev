@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { dbTableExportPlaceholders } from "./helpers/db-module-mock";
 
 describe("GET /api/hot-candidates", () => {
   afterEach(() => {
@@ -34,6 +35,7 @@ describe("GET /api/hot-candidates", () => {
     }));
 
     mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
       db: {
         select: () => ({
           from: () => ({

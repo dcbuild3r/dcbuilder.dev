@@ -10,7 +10,7 @@
     "lint:fix": "eslint --fix",
     "format": "prettier --write .",
     "test": "playwright test",
-    "test:unit": "bun test tests/*.test.ts",
+    "test:unit": "bun run scripts/test-unit.ts",
     "test:e2e": "playwright test",
     "test:all": "bun run test:unit && bun run test:e2e",
     "newsletter:send-due": "bun run scripts/send-due-newsletters.ts",

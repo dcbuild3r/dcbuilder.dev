@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { dbTableExportPlaceholders } from "./helpers/db-module-mock";
 
 const dbModulePath = new URL("../src/db/index.ts", import.meta.url).pathname;
 const authModulePath = new URL("../src/services/auth.ts", import.meta.url).pathname;
@@ -111,6 +112,7 @@ async function installNewsRouteMocks() {
   };
 
   const dbModule = () => ({
+    ...dbTableExportPlaceholders,
     db,
     apiKeys: tables.apiKeys,
     curatedLinks: tables.curatedLinks,

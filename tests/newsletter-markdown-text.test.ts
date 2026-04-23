@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { dbTableExportPlaceholders } from "./helpers/db-module-mock";
 import { createPosthogModuleMock } from "./helpers/posthog-module-mock";
 
 function makeDbMock() {
   return {
+    ...dbTableExportPlaceholders,
     db: {
       select: () => ({
         from: () => ({
@@ -14,15 +16,6 @@ function makeDbMock() {
         }),
       }),
     },
-    jobs: {},
-    candidates: {},
-    newsletterTemplates: {},
-    newsletterSubscribers: {},
-    newsletterPreferences: {},
-    newsletterCampaigns: {},
-    newsletterCampaignRecipients: {},
-    newsletterSendEvents: {},
-    newsletterUnsubTokens: {},
   };
 }
 
@@ -47,7 +40,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "AI story",
           url: "https://example.com/ai",
-          date: "2026-04-08",
+          date: "2026-04-21",
           category: "ai",
           source: "Example AI",
         },
@@ -56,7 +49,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "Crypto story",
           url: "https://example.com/crypto",
-          date: "2026-04-07",
+          date: "2026-04-20",
           category: "crypto",
           source: "Example Crypto",
         },
@@ -65,7 +58,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "Research story",
           url: "https://example.com/research",
-          date: "2026-04-06",
+          date: "2026-04-19",
           category: "research",
           source: "Example Research",
         },

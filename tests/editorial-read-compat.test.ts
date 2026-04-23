@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { dbTableExportPlaceholders } from "./helpers/db-module-mock";
 
 function createMissingRelevanceError(tableName: string) {
   const cause = new Error(`column "${tableName}"."relevance" does not exist`) as Error & {
@@ -181,6 +182,7 @@ describe("editorial read compatibility", () => {
     };
 
     mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
       db,
       curatedLinks,
       announcements,
