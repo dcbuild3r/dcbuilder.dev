@@ -19,12 +19,27 @@ export type PreferredPostgresTarget = {
 
 type PostgresClientOptions = {
   socket?: () => Promise<ConnectedSocket>;
+  max?: number;
+  idle_timeout?: number;
+  connect_timeout?: number;
 };
 
 type ConnectedSocket = net.Socket & {
   host: string;
   port: number;
 };
+
+const DEFAULT_POOL_MAX = 1;
+const DEFAULT_IDLE_TIMEOUT_SECONDS = 20;
+const DEFAULT_CONNECT_TIMEOUT_SECONDS = 10;
+
+function readPositiveIntegerEnv(name: string, fallback: number): number {
+  const value = process.env[name];
+  if (!value) return fallback;
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
 
 export async function resolvePreferredPostgresTarget(
   databaseUrl: string,
@@ -98,22 +113,35 @@ function isLoopbackHostname(hostname: string) {
 export function getPostgresClientOptions(
   databaseUrl: string | undefined
 ): PostgresClientOptions {
+  const poolOptions: PostgresClientOptions = {
+    max: readPositiveIntegerEnv("POSTGRES_POOL_MAX", DEFAULT_POOL_MAX),
+    idle_timeout: readPositiveIntegerEnv(
+      "POSTGRES_IDLE_TIMEOUT_SECONDS",
+      DEFAULT_IDLE_TIMEOUT_SECONDS
+    ),
+    connect_timeout: readPositiveIntegerEnv(
+      "POSTGRES_CONNECT_TIMEOUT_SECONDS",
+      DEFAULT_CONNECT_TIMEOUT_SECONDS
+    ),
+  };
+
   if (!databaseUrl) {
-    return {};
+    return poolOptions;
   }
 
   let hostname: string;
   try {
     hostname = new URL(databaseUrl).hostname;
   } catch {
-    return {};
+    return poolOptions;
   }
 
   if (isLoopbackHostname(hostname)) {
-    return {};
+    return poolOptions;
   }
 
   return {
+    ...poolOptions,
     socket: () => createPreferredPostgresSocket(databaseUrl),
   };
 }

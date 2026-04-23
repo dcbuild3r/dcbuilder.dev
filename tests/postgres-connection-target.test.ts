@@ -28,11 +28,14 @@ describe("getPostgresClientOptions", () => {
     expect(result.socket).toBeFunction();
   });
 
-  test("leaves localhost connections on the default client path", () => {
+  test("leaves localhost connections on the direct socket path with a constrained pool", () => {
     const result = getPostgresClientOptions(
       "postgresql://user:pass@127.0.0.1:5432/app"
     );
 
     expect(result.socket).toBeUndefined();
+    expect(result.max).toBe(1);
+    expect(result.idle_timeout).toBe(20);
+    expect(result.connect_timeout).toBe(10);
   });
 });
