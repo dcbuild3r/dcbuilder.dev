@@ -292,8 +292,8 @@ export function NewsGrid({ news }: NewsGridProps) {
 		<div className="space-y-6">
 			{/* Filters */}
 			<div className="space-y-4">
-				{/* Row 1: Type and Category filters */}
-				<div className="flex flex-col sm:flex-row gap-3">
+				{/* Row 1: Type, Category, and Relevance filters */}
+				<div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
 					{/* Type Filter */}
 					<div className="flex items-center gap-2">
 						<label
@@ -336,39 +336,35 @@ export function NewsGrid({ news }: NewsGridProps) {
 							className="flex-1 sm:flex-none sm:min-w-[160px]"
 						/>
 					</div>
-				</div>
 
-				{/* Row 2: Relevance */}
-				<div className="rounded-lg border border-neutral-200 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900">
-					<div className="mb-2 flex items-center justify-between gap-3">
+					{/* Relevance Filter */}
+					<div className="flex items-center gap-2 sm:ml-1">
 						<label
 							htmlFor="relevance-filter"
-							className="text-sm text-neutral-600 dark:text-neutral-400"
+							className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
 						>
-							Relevance
+							Relevance:
 						</label>
-						<span className="min-w-10 rounded-full bg-neutral-100 px-2 py-0.5 text-center text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
-							{minimumRelevance === 0 ? "All" : `${minimumRelevance}+`}
-						</span>
-					</div>
-					<input
-						id="relevance-filter"
-						type="range"
-						min={0}
-						max={10}
-						step={1}
-						value={minimumRelevance}
-						onChange={(event) => setMinimumRelevance(Number(event.target.value))}
-						aria-valuetext={minimumRelevance === 0 ? "All" : `${minimumRelevance} and up`}
-						className="w-full accent-neutral-900 dark:accent-neutral-100"
-					/>
-					<div className="mt-1 flex justify-between text-[11px] text-neutral-400 dark:text-neutral-500">
-						<span>All</span>
-						<span>10</span>
+						<div className="flex min-h-9 flex-1 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 dark:border-neutral-700 dark:bg-neutral-900 sm:flex-none">
+							<input
+								id="relevance-filter"
+								type="range"
+								min={0}
+								max={10}
+								step={1}
+								value={minimumRelevance}
+								onChange={(event) => setMinimumRelevance(Number(event.target.value))}
+								aria-valuetext={minimumRelevance === 0 ? "All" : `${minimumRelevance} and up`}
+								className="w-full accent-neutral-900 dark:accent-neutral-100 sm:w-24"
+							/>
+							<span className="min-w-9 rounded-full bg-neutral-100 px-2 py-0.5 text-center text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+								{minimumRelevance === 0 ? "All" : `${minimumRelevance}+`}
+							</span>
+						</div>
 					</div>
 				</div>
 
-				{/* Row 3: Search */}
+				{/* Row 2: Search */}
 				<div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
 					<div className="flex-1 relative">
 						<input
