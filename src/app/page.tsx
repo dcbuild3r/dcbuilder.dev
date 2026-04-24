@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { HERO, SECTIONS } from "@/data/home";
-import { R2_PUBLIC_URL } from "@/services/r2";
 
 export default function Home() {
   return (
@@ -14,7 +13,7 @@ export default function Home() {
           <div className="w-full lg:w-[65%]">
             <div className="bg-white dark:bg-[radial-gradient(circle,_#d9d9d9_0%,_#d9d9d9_50%,_#161616_100%)] rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 w-full overflow-hidden hover:scale-[1.03] transition-transform duration-150">
               <Image
-                src={`${R2_PUBLIC_URL}${HERO.image}`}
+                src={HERO.image}
                 alt={HERO.alt}
                 width={800}
                 height={800}
