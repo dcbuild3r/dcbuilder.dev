@@ -8,6 +8,7 @@ import { TableSkeleton } from "@/components/admin/TableSkeleton";
 import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
 import { ViewButton, EditButton, DeleteButton, ErrorAlert } from "@/components/admin/ActionButtons";
 import { ADMIN_THEMES } from "@/lib/admin-themes";
+import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
 
 interface BlogPost {
   slug: string;
@@ -187,9 +188,7 @@ export default function AdminBlog() {
         const viewsB = blogViews[b.slug] || 0;
         return sortOrder === "desc" ? viewsB - viewsA : viewsA - viewsB;
       }
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
+      return compareNewsByDateAndRelevance(a, b, sortOrder);
     });
 
   // Editor view

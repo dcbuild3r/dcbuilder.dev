@@ -1,5 +1,5 @@
 import { announcements, blogPosts, curatedLinks, db } from "@/db";
-import { desc, eq, SQL } from "drizzle-orm";
+import { desc, eq, SQL, sql } from "drizzle-orm";
 import { isMissingColumnError } from "@/lib/db-schema-compat";
 
 type WhereClause = SQL | undefined;
@@ -16,7 +16,11 @@ export async function listCuratedLinksCompat(params: {
       .select()
       .from(curatedLinks)
       .where(whereClause)
-      .orderBy(desc(curatedLinks.date))
+      .orderBy(
+        desc(sql`date_trunc('day', ${curatedLinks.date})`),
+        desc(curatedLinks.relevance),
+        desc(curatedLinks.date)
+      )
       .limit(limit)
       .offset(offset);
   } catch (error) {
@@ -108,7 +112,11 @@ export async function listAnnouncementsCompat(params: {
       .select()
       .from(announcements)
       .where(whereClause)
-      .orderBy(desc(announcements.date))
+      .orderBy(
+        desc(sql`date_trunc('day', ${announcements.date})`),
+        desc(announcements.relevance),
+        desc(announcements.date)
+      )
       .limit(limit)
       .offset(offset);
   } catch (error) {
@@ -196,14 +204,22 @@ export async function listBlogPostsCompat(includeUnpublished: boolean) {
       return await db
         .select()
         .from(blogPosts)
-        .orderBy(desc(blogPosts.date));
+        .orderBy(
+          desc(sql`date_trunc('day', ${blogPosts.date})`),
+          desc(blogPosts.relevance),
+          desc(blogPosts.date)
+        );
     }
 
     return await db
       .select()
       .from(blogPosts)
       .where(eq(blogPosts.published, true))
-      .orderBy(desc(blogPosts.date));
+      .orderBy(
+        desc(sql`date_trunc('day', ${blogPosts.date})`),
+        desc(blogPosts.relevance),
+        desc(blogPosts.date)
+      );
   } catch (error) {
     if (!isMissingColumnError(error, "relevance")) {
       throw error;

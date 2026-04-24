@@ -4,6 +4,7 @@ import { curatedLinks as curatedLinksTable, announcements as announcementsTable 
 import { desc } from "drizzle-orm";
 import { NewsCategory } from "@/data/news";
 import { isMissingColumnError } from "@/lib/db-schema-compat";
+import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
 
 export interface AggregatedNewsItem {
   id: string;
@@ -161,9 +162,9 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     platform: ann.platform,
   }));
 
-  // Combine and sort by date (newest first)
+  // Combine and sort by date, then relevance for same-day items.
   const allNews = [...blogItems, ...curatedItems, ...announcementItems];
-  allNews.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  allNews.sort(compareNewsByDateAndRelevance);
 
   return allNews;
 }

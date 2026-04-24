@@ -1,0 +1,22 @@
+export const dbTableExportPlaceholders = {
+  affiliations: {},
+  apiKeys: {},
+  candidateRedirects: {},
+  candidates: {},
+  jobs: {},
+  jobTags: {},
+  jobRoles: {},
+  investments: {},
+  investmentCategories: {},
+  curatedLinks: {},
+  announcements: {},
+  blogPosts: {},
+  newsletterSubscribers: {},
+  newsletterPreferences: {},
+  newsletterCampaigns: {},
+  newsletterTemplates: {},
+  newsletterCampaignRecipients: {},
+  newsletterSendEvents: {},
+  newsletterUnsubTokens: {},
+};
+

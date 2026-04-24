@@ -11,6 +11,42 @@ export const size = {
 };
 export const contentType = "image/png";
 
+const SKILLS_ROW_WIDTH = 1080;
+const SKILL_GAP = 18;
+const MAX_SKILLS = 5;
+const SKILL_HORIZONTAL_PADDING = 72;
+const ESTIMATED_SKILL_CHAR_WIDTH = 18;
+
+function estimateSkillWidth(skill: string) {
+	return SKILL_HORIZONTAL_PADDING + skill.length * ESTIMATED_SKILL_CHAR_WIDTH;
+}
+
+function selectOneLineSkills(skills: string[]) {
+	const selected: string[] = [];
+	let usedWidth = 0;
+
+	for (const skill of skills) {
+		const nextWidth =
+			usedWidth + (selected.length > 0 ? SKILL_GAP : 0) + estimateSkillWidth(skill);
+
+		if (nextWidth > SKILLS_ROW_WIDTH) {
+			if (selected.length === 0) {
+				selected.push(skill);
+			}
+			break;
+		}
+
+		selected.push(skill);
+		usedWidth = nextWidth;
+
+		if (selected.length >= MAX_SKILLS) {
+			break;
+		}
+	}
+
+	return selected;
+}
+
 interface Props {
 	params: Promise<{ id: string }>;
 }
@@ -25,10 +61,9 @@ export default async function Image({ params }: Props) {
 	const isHot = allSkills.some(s => s.toLowerCase() === "hot");
 	const isTop = allSkills.some(s => s.toLowerCase() === "top");
 	const isNewCandidate = isNew(candidate?.createdAt);
-	// Filter out hot/top (shown as badges) and take first 5 skills as ordered in DB
-	const skills = allSkills
-		.filter(s => s.toLowerCase() !== "hot" && s.toLowerCase() !== "top")
-		.slice(0, 5);
+	const skills = selectOneLineSkills(
+		allSkills.filter(s => s.toLowerCase() !== "hot" && s.toLowerCase() !== "top")
+	);
 	const image = candidate?.image;
 
 	return new ImageResponse(
@@ -209,7 +244,15 @@ export default async function Image({ params }: Props) {
 				</div>
 
 				{/* Bottom: Skills */}
-				<div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
+				<div
+					style={{
+						display: "flex",
+						gap: SKILL_GAP,
+						flexWrap: "nowrap",
+						overflow: "hidden",
+						width: SKILLS_ROW_WIDTH,
+					}}
+				>
 					{skills.map((skill) => (
 						<div
 							key={skill}
@@ -219,6 +262,8 @@ export default async function Image({ params }: Props) {
 								backgroundColor: "#1a1a2e",
 								color: "#ddd",
 								fontSize: 36,
+								flexShrink: 0,
+								whiteSpace: "nowrap",
 							}}
 						>
 							{skill}

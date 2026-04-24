@@ -9,10 +9,8 @@ describe("PATCH /api/v1/newsletter/subscribers/[id]", () => {
     let requestedPermission: string | undefined;
     let calledId: string | null = null;
     let calledNewsletterTypes: string[] | null = null;
-    const actualAuth = await import("../src/services/auth");
 
     mock.module("@/services/auth", () => ({
-      ...actualAuth,
       requireAuth: async (_request: Request, permission?: string) => {
         requestedPermission = permission;
         return { valid: true as const, keyId: "key_123", name: "Admin" };

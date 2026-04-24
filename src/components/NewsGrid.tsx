@@ -44,6 +44,7 @@ interface NewsGridProps {
 export function NewsGrid({ news }: NewsGridProps) {
 	const [typeFilter, setTypeFilter] = useState<NewsType>("all");
 	const [categoryFilter, setCategoryFilter] = useState<"all" | NewsCategory>("all");
+	const [minimumRelevance, setMinimumRelevance] = useState(0);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [failedImageKeys, setFailedImageKeys] = useState<Record<string, true>>({});
 	const { getClickCount, isPopular, loaded: clicksLoaded } = useNewsClicks();
@@ -92,18 +93,21 @@ export function NewsGrid({ news }: NewsGridProps) {
 				return false;
 			}
 
-			// Search filter
-				if (deferredSearchQuery) {
-					const query = deferredSearchQuery.toLowerCase();
-					const searchableText = newsSearchIndex.get(item.id) || "";
-					if (!searchableText.includes(query)) {
-						return false;
-					}
+			if (minimumRelevance > 0 && (item.relevance ?? 5) < minimumRelevance) {
+				return false;
+			}
+
+			if (deferredSearchQuery) {
+				const query = deferredSearchQuery.toLowerCase();
+				const searchableText = newsSearchIndex.get(item.id) || "";
+				if (!searchableText.includes(query)) {
+					return false;
 				}
+			}
 
 			return true;
 		});
-		}, [news, typeFilter, categoryFilter, deferredSearchQuery, newsSearchIndex]);
+		}, [news, typeFilter, categoryFilter, minimumRelevance, deferredSearchQuery, newsSearchIndex]);
 
 	// Format date for display
 	const formatDate = (dateString: string) => {
@@ -288,8 +292,8 @@ export function NewsGrid({ news }: NewsGridProps) {
 		<div className="space-y-6">
 			{/* Filters */}
 			<div className="space-y-4">
-				{/* Row 1: Type and Category filters */}
-				<div className="flex flex-col sm:flex-row gap-3">
+				{/* Row 1: Type, Category, and Relevance filters */}
+				<div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
 					{/* Type Filter */}
 					<div className="flex items-center gap-2">
 						<label
@@ -332,19 +336,45 @@ export function NewsGrid({ news }: NewsGridProps) {
 							className="flex-1 sm:flex-none sm:min-w-[160px]"
 						/>
 					</div>
+
+					{/* Relevance Filter */}
+					<div className="flex items-center gap-2 sm:ml-1">
+						<label
+							htmlFor="relevance-filter"
+							className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
+						>
+							Relevance:
+						</label>
+						<div className="flex min-h-9 flex-1 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 dark:border-neutral-700 dark:bg-neutral-900 sm:flex-none">
+							<input
+								id="relevance-filter"
+								type="range"
+								min={0}
+								max={10}
+								step={1}
+								value={minimumRelevance}
+								onChange={(event) => setMinimumRelevance(Number(event.target.value))}
+								aria-valuetext={minimumRelevance === 0 ? "All" : `${minimumRelevance} and up`}
+								className="w-full accent-neutral-900 dark:accent-neutral-100 sm:w-24"
+							/>
+							<span className="min-w-9 rounded-full bg-neutral-100 px-2 py-0.5 text-center text-xs font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+								{minimumRelevance === 0 ? "All" : `${minimumRelevance}+`}
+							</span>
+						</div>
+					</div>
 				</div>
 
 				{/* Row 2: Search */}
 				<div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-						<div className="flex-1 relative">
-							<input
-								type="text"
-								aria-label="Search news"
-								placeholder="Search news..."
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-							/>
+					<div className="flex-1 relative">
+						<input
+							type="text"
+							aria-label="Search news"
+							placeholder="Search news..."
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+						/>
 						{searchQuery && (
 							<button
 								type="button"

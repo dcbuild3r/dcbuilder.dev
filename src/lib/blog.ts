@@ -1,5 +1,5 @@
 import { db, blogPosts } from "@/db";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { isMissingColumnError } from "@/lib/db-schema-compat";
 
 const FALLBACK_DATE = "1970-01-01";
@@ -69,7 +69,11 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
       .select()
       .from(blogPosts)
       .where(eq(blogPosts.published, true))
-      .orderBy(desc(blogPosts.date));
+      .orderBy(
+        desc(sql`date_trunc('day', ${blogPosts.date})`),
+        desc(blogPosts.relevance),
+        desc(blogPosts.date)
+      );
 
     return posts.map((post) => ({
       slug: post.slug,

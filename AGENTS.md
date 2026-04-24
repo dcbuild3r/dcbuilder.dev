@@ -63,7 +63,7 @@ Use the smallest set of agents needed for a task. If multiple agents are used, t
   - `frontend-design`
   - `vercel-react-best-practices`
   - `web-design-guidelines`
-  - `playwright`
+  - `vercel:agent-browser`
   - `e2e-testing-patterns`
 
 ### 3) `admin-ui-agent`
@@ -132,7 +132,7 @@ Use the smallest set of agents needed for a task. If multiple agents are used, t
 - Skills:
   - `e2e-testing-patterns`
   - `javascript-testing-patterns`
-  - `playwright`
+  - `vercel:agent-browser`
   - `gh-fix-ci`
 
 ### 10) `security-agent`

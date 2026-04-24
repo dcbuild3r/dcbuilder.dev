@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { parsePaginationParams } from "@/services/auth";
 import { listAnnouncementsCompat, listCuratedLinksCompat } from "@/lib/editorial-read-compat";
+import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
 
 // GET /api/v1/news - Get all news (curated links + announcements) combined
 export async function GET(request: NextRequest) {
@@ -24,9 +25,8 @@ export async function GET(request: NextRequest) {
       type: "announcement" as const,
     }));
 
-    // Combine and sort by date
     const combined = [...curatedItems, ...announcementItems].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      compareNewsByDateAndRelevance
     );
 
     return Response.json({

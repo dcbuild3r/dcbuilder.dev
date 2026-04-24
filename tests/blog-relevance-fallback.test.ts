@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { dbTableExportPlaceholders } from "./helpers/db-module-mock";
 
 function createMissingRelevanceError(tableName: string) {
   const error = new Error("Failed query");
@@ -21,6 +22,7 @@ describe("getAllPosts relevance fallback", () => {
     };
 
     mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
       db: {
         select: (selection?: Record<string, unknown>) => ({
           from: (table: { __table: string }) => ({

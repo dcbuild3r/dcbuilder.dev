@@ -10,6 +10,7 @@ import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
 import { EditButton, DeleteButton, ErrorAlert } from "@/components/admin/ActionButtons";
 import { NewsletterStudio } from "@/components/admin/NewsletterStudio";
 import { ADMIN_THEMES } from "@/lib/admin-themes";
+import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
 
 interface CuratedLink {
   id: string;
@@ -217,9 +218,7 @@ export default function AdminNews() {
     })
     .sort((a, b) => {
       if (sortBy === "date") {
-        return sortOrder === "desc"
-          ? new Date(b.date).getTime() - new Date(a.date).getTime()
-          : new Date(a.date).getTime() - new Date(b.date).getTime();
+        return compareNewsByDateAndRelevance(a, b, sortOrder);
       }
       return 0;
     });
@@ -245,9 +244,7 @@ export default function AdminNews() {
     })
     .sort((a, b) => {
       if (sortBy === "date") {
-        return sortOrder === "desc"
-          ? new Date(b.date).getTime() - new Date(a.date).getTime()
-          : new Date(a.date).getTime() - new Date(b.date).getTime();
+        return compareNewsByDateAndRelevance(a, b, sortOrder);
       }
       return 0;
     });

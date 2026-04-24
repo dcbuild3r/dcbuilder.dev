@@ -11,6 +11,10 @@
 
 import { db } from "../src/db";
 import { curatedLinks } from "../src/db/schema";
+import {
+  resolveMevLetterDescription,
+  shouldRefreshMevLetterDescription,
+} from "../src/lib/news-description-style";
 
 type Args = {
   title?: string;
@@ -111,6 +115,25 @@ function dateFromXStatusUrl(url: string): string | null {
   }
 }
 
+async function fetchHtml(url: string): Promise<string> {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+      },
+    });
+
+    if (!response.ok) {
+      return "";
+    }
+
+    return await response.text();
+  } catch {
+    return "";
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) {
@@ -126,6 +149,15 @@ async function main() {
   const category = args.category ?? (isXUrl(args.url) ? "x_post" : "general");
   const date =
     args.date ?? dateFromXStatusUrl(args.url) ?? new Date().toISOString().split("T")[0];
+  const html = shouldRefreshMevLetterDescription(args.title, args.url, args.description)
+    ? await fetchHtml(args.url)
+    : "";
+  const description = resolveMevLetterDescription({
+    title: args.title,
+    url: args.url,
+    description: args.description,
+    html,
+  });
 
   const payload = {
     title: args.title,
@@ -133,7 +165,7 @@ async function main() {
     source: args.source,
     sourceImage: args.sourceImage,
     date: new Date(date),
-    description: args.description,
+    description,
     category,
     featured: args.featured ?? false,
   };
@@ -152,4 +184,3 @@ main().catch((err) => {
   console.error("Failed to add curated link:", err);
   process.exit(1);
 });
-

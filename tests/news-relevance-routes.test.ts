@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
+import { dbTableExportPlaceholders } from "./helpers/db-module-mock";
 
 const dbModulePath = new URL("../src/db/index.ts", import.meta.url).pathname;
 const authModulePath = new URL("../src/services/auth.ts", import.meta.url).pathname;
@@ -6,10 +7,9 @@ const authModulePath = new URL("../src/services/auth.ts", import.meta.url).pathn
 async function installNewsRouteMocks() {
   const inserts: Array<{ table: string; values: Record<string, unknown> }> = [];
   const updates: Array<{ table: string; values: Record<string, unknown> }> = [];
-  const actualDb = await import("../src/db");
-  const actualAuth = await import("../src/services/auth");
 
   const tables = {
+    apiKeys: { id: "api_keys.id", key: "api_keys.key" },
     curatedLinks: { id: "curated.id", date: "curated.date", category: "curated.category", featured: "curated.featured" },
     announcements: {
       id: "announcements.id",
@@ -112,8 +112,9 @@ async function installNewsRouteMocks() {
   };
 
   const dbModule = () => ({
-    ...actualDb,
+    ...dbTableExportPlaceholders,
     db,
+    apiKeys: tables.apiKeys,
     curatedLinks: tables.curatedLinks,
     NewCuratedLink: {},
     announcements: tables.announcements,
@@ -124,7 +125,6 @@ async function installNewsRouteMocks() {
   mock.module(dbModulePath, dbModule);
 
   const authModule = () => ({
-    ...actualAuth,
     requireAuth: async () => ({ valid: true as const, keyId: "key_123", name: "Admin" }),
     validateApiKey: async () => ({ valid: true as const, keyId: "key_123", name: "Admin" }),
     parsePaginationParams: () => ({ limit: 50, offset: 0 }),
