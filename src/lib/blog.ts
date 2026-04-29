@@ -9,6 +9,7 @@ export interface BlogPostView {
   slug: string;
   title: string;
   date: string;
+  createdAt: string;
   description: string;
   content: string;
   source?: string;
@@ -22,6 +23,7 @@ export interface BlogPostMeta {
   slug: string;
   title: string;
   date: string;
+  createdAt: string;
   description: string;
   source?: string;
   sourceUrl?: string;
@@ -45,6 +47,10 @@ function formatDateString(date: Date | null, slug?: string): string {
     return FALLBACK_DATE;
   }
   return date.toISOString().split("T")[0];
+}
+
+function formatDateTimeString(date: Date | null | undefined): string {
+  return (date ?? new Date(0)).toISOString();
 }
 
 export function formatBlogDate(dateString: string): string {
@@ -79,6 +85,7 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
       slug: post.slug,
       title: post.title,
       date: formatDateString(post.date, post.slug),
+      createdAt: formatDateTimeString(post.createdAt),
       description: post.description || "",
       source: post.source || undefined,
       sourceUrl: post.sourceUrl || undefined,
@@ -101,6 +108,7 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
             source: blogPosts.source,
             sourceUrl: blogPosts.sourceUrl,
             image: blogPosts.image,
+            createdAt: blogPosts.createdAt,
           })
           .from(blogPosts)
           .where(eq(blogPosts.published, true))
@@ -110,6 +118,7 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
           slug: post.slug,
           title: post.title,
           date: formatDateString(post.date, post.slug),
+          createdAt: formatDateTimeString(post.createdAt),
           description: post.description || "",
           source: post.source || undefined,
           sourceUrl: post.sourceUrl || undefined,
@@ -142,6 +151,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
       slug: post.slug,
       title: post.title,
       date: formatDateString(post.date, post.slug),
+      createdAt: formatDateTimeString(post.createdAt),
       description: post.description || "",
       content: post.content,
       source: post.source || undefined,

@@ -7,6 +7,10 @@ export interface NewsSortItem {
   relevance?: number | null;
 }
 
+export interface NewsPostedSortItem extends NewsSortItem {
+  postedAt?: string | Date | null | undefined;
+}
+
 function getUtcDayTimestamp(date: string | Date | null | undefined): number | null {
   if (!date) return null;
 
@@ -62,6 +66,25 @@ export function compareNewsByDateAndRelevance<T extends NewsSortItem>(
   );
 
   if (exactDateComparison !== 0) return exactDateComparison;
+
+  return (a.title ?? a.id ?? "").localeCompare(b.title ?? b.id ?? "");
+}
+
+export function compareNewsByPostedAtAndRelevance<T extends NewsPostedSortItem>(
+  a: T,
+  b: T,
+  direction: NewsSortDirection = "desc"
+) {
+  const postedComparison = compareNullableTimestamps(
+    getExactTimestamp(a.postedAt ?? a.date),
+    getExactTimestamp(b.postedAt ?? b.date),
+    direction
+  );
+
+  if (postedComparison !== 0) return postedComparison;
+
+  const relevanceComparison = (b.relevance ?? 0) - (a.relevance ?? 0);
+  if (relevanceComparison !== 0) return relevanceComparison;
 
   return (a.title ?? a.id ?? "").localeCompare(b.title ?? b.id ?? "");
 }
