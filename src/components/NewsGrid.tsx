@@ -23,7 +23,7 @@ const typeLabels: Record<NewsType, string> = {
 };
 
 const sortModeLabels: Record<NewsSortMode, string> = {
-	posted: "Date I posted",
+	posted: "Date DC posted",
 	content: "Date content posted",
 };
 
