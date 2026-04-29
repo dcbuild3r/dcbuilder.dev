@@ -19,8 +19,10 @@ function makeDbMock() {
   };
 }
 
-function dateDaysAgo(daysAgo: number): string {
-  return new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+function daysAgoIsoDate(daysAgo: number) {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() - daysAgo);
+  return date.toISOString().split("T")[0];
 }
 
 describe("previewNewsletterCampaignDraft markdown text output", () => {
@@ -44,7 +46,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "AI story",
           url: "https://example.com/ai",
-          date: dateDaysAgo(1),
+          date: daysAgoIsoDate(1),
           category: "ai",
           source: "Example AI",
         },
@@ -53,7 +55,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "Crypto story",
           url: "https://example.com/crypto",
-          date: dateDaysAgo(2),
+          date: daysAgoIsoDate(2),
           category: "crypto",
           source: "Example Crypto",
         },
@@ -62,7 +64,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "Research story",
           url: "https://example.com/research",
-          date: dateDaysAgo(3),
+          date: daysAgoIsoDate(3),
           category: "research",
           source: "Example Research",
         },
@@ -106,7 +108,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "High signal quarterly item",
           url: "https://example.com/high-signal",
-          date: dateDaysAgo(30),
+          date: daysAgoIsoDate(30),
           category: "ai",
           source: "Example AI",
           relevance: 8,
@@ -116,7 +118,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "Low relevance weekly filler",
           url: "https://example.com/low-signal",
-          date: dateDaysAgo(31),
+          date: daysAgoIsoDate(31),
           category: "crypto",
           source: "Example Crypto",
           relevance: 4,
