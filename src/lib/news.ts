@@ -12,6 +12,7 @@ export interface AggregatedNewsItem {
   title: string;
   url: string;
   date: string;
+  postedAt: string;
   description?: string;
   category: NewsCategory;
   featured?: boolean;
@@ -24,6 +25,11 @@ export interface AggregatedNewsItem {
   platform?: string; // For announcements
   readingTime?: string; // For blog posts
   image?: string; // For blog posts
+}
+
+function toIsoDateTime(date: string | Date | null | undefined, fallback?: string | Date | null): string {
+  const parsed = new Date(date ?? fallback ?? 0);
+  return Number.isNaN(parsed.getTime()) ? new Date(0).toISOString() : parsed.toISOString();
 }
 
 async function getCuratedLinksWithFallback() {
@@ -48,6 +54,7 @@ async function getCuratedLinksWithFallback() {
             description: curatedLinksTable.description,
             category: curatedLinksTable.category,
             featured: curatedLinksTable.featured,
+            createdAt: curatedLinksTable.createdAt,
           })
           .from(curatedLinksTable)
           .orderBy(desc(curatedLinksTable.date));
@@ -90,6 +97,7 @@ async function getAnnouncementsWithFallback() {
             description: announcementsTable.description,
             category: announcementsTable.category,
             featured: announcementsTable.featured,
+            createdAt: announcementsTable.createdAt,
           })
           .from(announcementsTable)
           .orderBy(desc(announcementsTable.date));
@@ -124,6 +132,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     title: post.title,
     url: `/blog/${post.slug}`,
     date: post.date,
+    postedAt: toIsoDateTime(post.createdAt, post.date),
     description: post.description,
     category: "general" as NewsCategory,
     readingTime: `${post.readingTime} min read`,
@@ -138,6 +147,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     title: link.title,
     url: link.url,
     date: link.date.toISOString().split("T")[0],
+    postedAt: toIsoDateTime(link.createdAt, link.date),
     description: link.description || undefined,
     category: link.category as NewsCategory,
     featured: link.featured || false,
@@ -153,6 +163,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     title: ann.title,
     url: ann.url,
     date: ann.date.toISOString().split("T")[0],
+    postedAt: toIsoDateTime(ann.createdAt, ann.date),
     description: ann.description || undefined,
     category: ann.category as NewsCategory,
     featured: ann.featured || false,

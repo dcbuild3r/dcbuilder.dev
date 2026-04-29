@@ -3,18 +3,28 @@
 import { useState, useMemo, useDeferredValue, useCallback } from "react";
 import Image from "next/image";
 import { AggregatedNewsItem } from "@/lib/news";
+import {
+	compareNewsByDateAndRelevance,
+	compareNewsByPostedAtAndRelevance,
+} from "@/lib/news-sorting";
 import { NewsCategory, categoryLabels } from "@/data/news";
 import { CustomSelect } from "./CustomSelect";
 import { trackNewsClick } from "@/lib/posthog";
 import { useNewsClicks } from "@/hooks/useNewsClicks";
 
 type NewsType = "all" | "blog" | "curated" | "announcement";
+type NewsSortMode = "posted" | "content";
 
 const typeLabels: Record<NewsType, string> = {
 	all: "All",
 	blog: "Blog Posts",
 	curated: "Curated Links",
 	announcement: "Announcements",
+};
+
+const sortModeLabels: Record<NewsSortMode, string> = {
+	posted: "Date DC posted",
+	content: "Date content posted",
 };
 
 const NEWS_THUMBNAIL_SIZE = 56;
@@ -44,8 +54,10 @@ interface NewsGridProps {
 export function NewsGrid({ news }: NewsGridProps) {
 	const [typeFilter, setTypeFilter] = useState<NewsType>("all");
 	const [categoryFilter, setCategoryFilter] = useState<"all" | NewsCategory>("all");
+	const [sortMode, setSortMode] = useState<NewsSortMode>("posted");
 	const [minimumRelevance, setMinimumRelevance] = useState(0);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [expandedDescriptionIds, setExpandedDescriptionIds] = useState<Set<string>>(() => new Set());
 	const [failedImageKeys, setFailedImageKeys] = useState<Record<string, true>>({});
 	const { getClickCount, isPopular, loaded: clicksLoaded } = useNewsClicks();
 	const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -56,6 +68,18 @@ export function NewsGrid({ news }: NewsGridProps) {
 				month: "short",
 				day: "numeric",
 				timeZone: "UTC",
+			}),
+		[],
+	);
+	const postedAtFormatter = useMemo(
+		() =>
+			new Intl.DateTimeFormat("en-US", {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+				hour: "numeric",
+				minute: "2-digit",
+				timeZoneName: "short",
 			}),
 		[],
 	);
@@ -107,12 +131,23 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 			return true;
 		});
-		}, [news, typeFilter, categoryFilter, minimumRelevance, deferredSearchQuery, newsSearchIndex]);
+	}, [news, typeFilter, categoryFilter, minimumRelevance, deferredSearchQuery, newsSearchIndex]);
+
+	const sortedNews = useMemo(() => {
+		const comparator =
+			sortMode === "posted" ? compareNewsByPostedAtAndRelevance : compareNewsByDateAndRelevance;
+		return [...filteredNews].sort(comparator);
+	}, [filteredNews, sortMode]);
 
 	// Format date for display
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
 		return dateFormatter.format(date);
+	};
+
+	const formatPostedAt = (dateString: string) => {
+		const date = new Date(dateString);
+		return postedAtFormatter.format(date);
 	};
 
 	const renderCommaSeparatedTokens = (value: string | undefined, keyPrefix: string) => {
@@ -138,6 +173,18 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 	const markImageFailed = useCallback((key: string) => {
 		setFailedImageKeys((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+	}, []);
+
+	const toggleDescription = useCallback((itemId: string) => {
+		setExpandedDescriptionIds((current) => {
+			const next = new Set(current);
+			if (next.has(itemId)) {
+				next.delete(itemId);
+			} else {
+				next.add(itemId);
+			}
+			return next;
+		});
 	}, []);
 
 	const getBlogImageUrl = useCallback((rawUrl: string) => {
@@ -337,6 +384,26 @@ export function NewsGrid({ news }: NewsGridProps) {
 						/>
 					</div>
 
+					{/* Sort Mode */}
+					<div className="flex items-center gap-2">
+						<label
+							htmlFor="sort-mode"
+							className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
+						>
+							Order:
+						</label>
+						<CustomSelect
+							id="sort-mode"
+							value={sortMode}
+							onChange={(value) => setSortMode(value as NewsSortMode)}
+							options={Object.entries(sortModeLabels).map(([value, label]) => ({
+								value,
+								label,
+							}))}
+							className="flex-1 sm:flex-none sm:min-w-[180px]"
+						/>
+					</div>
+
 					{/* Relevance Filter */}
 					<div className="flex items-center gap-2 sm:ml-1">
 						<label
@@ -411,23 +478,32 @@ export function NewsGrid({ news }: NewsGridProps) {
 						No news found matching your criteria.
 					</p>
 				) : (
-					filteredNews.map((item) => (
-						<a
-							key={item.id}
-							href={item.url}
-							target={isExternalLink(item) ? "_blank" : undefined}
-							rel={isExternalLink(item) ? "noopener noreferrer" : undefined}
-							onClick={() => handleNewsClick(item)}
-							className="group block p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
-						>
-							<div className="flex items-center gap-4">
-								{/* Icon */}
-								<div className="flex-shrink-0 w-14 h-14 flex items-center justify-center">
-									{getTypeIcon(item)}
-								</div>
+					sortedNews.map((item) => {
+						const isDescriptionExpanded = expandedDescriptionIds.has(item.id);
 
-								{/* Content */}
-								<div className="flex-1 min-w-0">
+						return (
+							<div
+								key={item.id}
+								className="group relative block p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
+							>
+								<a
+									href={item.url}
+									target={isExternalLink(item) ? "_blank" : undefined}
+									rel={isExternalLink(item) ? "noopener noreferrer" : undefined}
+									onClick={() => handleNewsClick(item)}
+									className="absolute inset-0 z-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600"
+									aria-label={`Open ${item.title}`}
+								>
+									<span className="sr-only">Open {item.title}</span>
+								</a>
+								<div className="relative z-10 flex items-start gap-4 pointer-events-none">
+									{/* Icon */}
+									<div className="flex-shrink-0 w-14 h-14 flex items-center justify-center">
+										{getTypeIcon(item)}
+									</div>
+
+									{/* Content */}
+									<div className="flex-1 min-w-0">
 									{/* Title */}
 									<h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors flex items-center gap-2">
 										<span className="truncate">{item.title}</span>
@@ -460,14 +536,30 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 									{/* Description */}
 									{item.description && (
-										<p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
+										<p
+											className={`mt-1 text-sm leading-6 text-neutral-600 dark:text-neutral-400 ${
+												isDescriptionExpanded ? "" : "line-clamp-3 sm:line-clamp-2"
+											}`}
+										>
 											{item.description}
 										</p>
 									)}
 
+									{item.description && (
+										<button
+											type="button"
+											onClick={() => toggleDescription(item.id)}
+											className="pointer-events-auto mt-2 inline-flex items-center text-xs font-medium text-neutral-700 underline decoration-neutral-300 underline-offset-4 transition-colors hover:text-neutral-950 dark:text-neutral-300 dark:decoration-neutral-700 dark:hover:text-neutral-50 sm:hidden"
+											aria-expanded={isDescriptionExpanded}
+										>
+											{isDescriptionExpanded ? "Show less" : "Show more"}
+										</button>
+									)}
+
 									{/* Meta info */}
 									<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
-										<span>{formatDate(item.date)}</span>
+										<span>Published {formatDate(item.date)}</span>
+										<span>Added {formatPostedAt(item.postedAt)}</span>
 										{clicksLoaded && getClickCount(item.id) > 0 && (
 											<span>{getClickCount(item.id)} clicks</span>
 										)}
@@ -497,9 +589,10 @@ export function NewsGrid({ news }: NewsGridProps) {
 										</span>
 									</div>
 								</div>
+								</div>
 							</div>
-						</a>
-					))
+						);
+					})
 				)}
 			</div>
 		</div>

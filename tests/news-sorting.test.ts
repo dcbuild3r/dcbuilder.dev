@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { compareNewsByDateAndRelevance } from "../src/lib/news-sorting";
+import {
+  compareNewsByDateAndRelevance,
+  compareNewsByPostedAtAndRelevance,
+} from "../src/lib/news-sorting";
 
 describe("compareNewsByDateAndRelevance", () => {
   test("sorts newer days first, then same-day items by relevance", () => {
@@ -28,5 +31,48 @@ describe("compareNewsByDateAndRelevance", () => {
     expect(
       items.sort((a, b) => compareNewsByDateAndRelevance(a, b, "asc")).map((item) => item.id)
     ).toEqual(["older-high", "older-low", "newer"]);
+  });
+});
+
+describe("compareNewsByPostedAtAndRelevance", () => {
+  test("sorts by the exact posted timestamp before source content date", () => {
+    const items = [
+      {
+        id: "newer-content",
+        date: "2026-04-29",
+        postedAt: "2026-04-29T08:00:00.000Z",
+        relevance: 10,
+      },
+      {
+        id: "newer-posted",
+        date: "2026-04-20",
+        postedAt: "2026-04-29T09:00:00.000Z",
+        relevance: 1,
+      },
+      {
+        id: "older-posted",
+        date: "2026-04-30",
+        postedAt: "2026-04-28T23:00:00.000Z",
+        relevance: 10,
+      },
+    ];
+
+    expect(items.sort(compareNewsByPostedAtAndRelevance).map((item) => item.id)).toEqual([
+      "newer-posted",
+      "newer-content",
+      "older-posted",
+    ]);
+  });
+
+  test("falls back to relevance when posted timestamps match", () => {
+    const items = [
+      { id: "low", date: "2026-04-29", postedAt: "2026-04-29T08:00:00.000Z", relevance: 1 },
+      { id: "high", date: "2026-04-28", postedAt: "2026-04-29T08:00:00.000Z", relevance: 9 },
+    ];
+
+    expect(items.sort(compareNewsByPostedAtAndRelevance).map((item) => item.id)).toEqual([
+      "high",
+      "low",
+    ]);
   });
 });
