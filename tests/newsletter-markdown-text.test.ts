@@ -19,6 +19,10 @@ function makeDbMock() {
   };
 }
 
+function dateDaysAgo(daysAgo: number): string {
+  return new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+}
+
 describe("previewNewsletterCampaignDraft markdown text output", () => {
   afterEach(() => {
     mock.restore();
@@ -40,7 +44,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "AI story",
           url: "https://example.com/ai",
-          date: "2026-04-21",
+          date: dateDaysAgo(1),
           category: "ai",
           source: "Example AI",
         },
@@ -49,7 +53,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "Crypto story",
           url: "https://example.com/crypto",
-          date: "2026-04-20",
+          date: dateDaysAgo(2),
           category: "crypto",
           source: "Example Crypto",
         },
@@ -58,7 +62,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "Research story",
           url: "https://example.com/research",
-          date: "2026-04-19",
+          date: dateDaysAgo(3),
           category: "research",
           source: "Example Research",
         },
@@ -102,7 +106,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "High signal quarterly item",
           url: "https://example.com/high-signal",
-          date: "2026-03-12",
+          date: dateDaysAgo(30),
           category: "ai",
           source: "Example AI",
           relevance: 8,
@@ -112,7 +116,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "Low relevance weekly filler",
           url: "https://example.com/low-signal",
-          date: "2026-03-10",
+          date: dateDaysAgo(31),
           category: "crypto",
           source: "Example Crypto",
           relevance: 4,

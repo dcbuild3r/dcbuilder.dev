@@ -27,6 +27,11 @@ export interface AggregatedNewsItem {
   image?: string; // For blog posts
 }
 
+function toIsoDateTime(date: string | Date | null | undefined, fallback?: string | Date | null): string {
+  const parsed = new Date(date ?? fallback ?? 0);
+  return Number.isNaN(parsed.getTime()) ? new Date(0).toISOString() : parsed.toISOString();
+}
+
 async function getCuratedLinksWithFallback() {
   try {
     return await db
@@ -127,7 +132,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     title: post.title,
     url: `/blog/${post.slug}`,
     date: post.date,
-    postedAt: post.createdAt,
+    postedAt: toIsoDateTime(post.createdAt, post.date),
     description: post.description,
     category: "general" as NewsCategory,
     readingTime: `${post.readingTime} min read`,
@@ -142,7 +147,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     title: link.title,
     url: link.url,
     date: link.date.toISOString().split("T")[0],
-    postedAt: link.createdAt.toISOString(),
+    postedAt: toIsoDateTime(link.createdAt, link.date),
     description: link.description || undefined,
     category: link.category as NewsCategory,
     featured: link.featured || false,
@@ -158,7 +163,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     title: ann.title,
     url: ann.url,
     date: ann.date.toISOString().split("T")[0],
-    postedAt: ann.createdAt.toISOString(),
+    postedAt: toIsoDateTime(ann.createdAt, ann.date),
     description: ann.description || undefined,
     category: ann.category as NewsCategory,
     featured: ann.featured || false,

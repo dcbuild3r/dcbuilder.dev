@@ -61,6 +61,7 @@ describe("getAllPosts relevance fallback", () => {
         slug: "fallback-post",
         title: "Fallback Post",
         date: "2026-04-10",
+        createdAt: "2026-04-10T00:00:00.000Z",
         description: "Fallback summary",
         source: undefined,
         sourceUrl: undefined,

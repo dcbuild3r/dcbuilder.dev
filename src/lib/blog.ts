@@ -49,8 +49,8 @@ function formatDateString(date: Date | null, slug?: string): string {
   return date.toISOString().split("T")[0];
 }
 
-function formatDateTimeString(date: Date | null | undefined): string {
-  return (date ?? new Date(0)).toISOString();
+function formatDateTimeString(date: Date | null | undefined, fallback?: Date | null): string {
+  return (date ?? fallback ?? new Date(0)).toISOString();
 }
 
 export function formatBlogDate(dateString: string): string {
@@ -85,7 +85,7 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
       slug: post.slug,
       title: post.title,
       date: formatDateString(post.date, post.slug),
-      createdAt: formatDateTimeString(post.createdAt),
+      createdAt: formatDateTimeString(post.createdAt, post.date),
       description: post.description || "",
       source: post.source || undefined,
       sourceUrl: post.sourceUrl || undefined,
@@ -118,7 +118,7 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
           slug: post.slug,
           title: post.title,
           date: formatDateString(post.date, post.slug),
-          createdAt: formatDateTimeString(post.createdAt),
+          createdAt: formatDateTimeString(post.createdAt, post.date),
           description: post.description || "",
           source: post.source || undefined,
           sourceUrl: post.sourceUrl || undefined,
@@ -151,7 +151,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
       slug: post.slug,
       title: post.title,
       date: formatDateString(post.date, post.slug),
-      createdAt: formatDateTimeString(post.createdAt),
+      createdAt: formatDateTimeString(post.createdAt, post.date),
       description: post.description || "",
       content: post.content,
       source: post.source || undefined,
