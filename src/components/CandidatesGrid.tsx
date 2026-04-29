@@ -23,7 +23,8 @@ import {
 	trackCandidateSocialClick,
 	trackCandidateContactClick,
 } from "@/lib/posthog";
-import { hashString, seededRandom, shuffleArray, isNew } from "@/lib/shuffle";
+import { sortCandidatesByVisibilityPriority } from "@/lib/candidate-sorting";
+import { isNew } from "@/lib/shuffle";
 import { cn } from "@/lib/utils";
 import { useHotCandidates } from "@/hooks/useHotCandidates";
 import { HotBadge, TopBadge, NewBadge, Badge } from "./ui/badge";
@@ -268,62 +269,14 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		[availabilityFilter, experienceFilter, roleFilter, deferredSearchQuery, selectedTags, shuffleSeed]
 	);
 
-	// Helper to check skill tags
-	const hasSkillTag = useCallback((candidate: Candidate, tag: string) => {
-		return candidate.skills?.includes(tag as SkillTag) ?? false;
-	}, []);
-
-	// Deterministic shuffle: hot+top, hot, top, featured, verified, then unverified
+	// Deterministic shuffle: featured+hot, featured, hot, top, verified, then unverified
 	const sortedCandidates = useMemo(() => {
-		// Priority groups
-		const hotAndTop = filteredCandidates.filter(
-			(c) => hasSkillTag(c, "hot") && hasSkillTag(c, "top")
-		);
-		const hotOnly = filteredCandidates.filter(
-			(c) => hasSkillTag(c, "hot") && !hasSkillTag(c, "top")
-		);
-		const topOnly = filteredCandidates.filter(
-			(c) => hasSkillTag(c, "top") && !hasSkillTag(c, "hot")
-		);
-
-		// Remaining candidates (no hot/top tags)
-		const remaining = filteredCandidates.filter(
-			(c) => !hasSkillTag(c, "hot") && !hasSkillTag(c, "top")
-		);
-
-		// Split remaining by featured, verified, and unverified
-		const featured = remaining.filter((c) => c.featured);
-		const verified = remaining.filter((c) => !c.featured && c.vouched === true);
-		const unverified = remaining.filter((c) => !c.featured && c.vouched !== true);
-
-		// Shuffle and sort each group by tier (deterministic)
-		const shuffleAndSortByTier = (candidates: Candidate[], seedPrefix: string) => {
-			const tierGroups: Record<number, Candidate[]> = {};
-			candidates.forEach((candidate) => {
-				const tier = candidate.tier;
-				if (!tierGroups[tier]) tierGroups[tier] = [];
-				tierGroups[tier].push(candidate);
-			});
-			return Object.keys(tierGroups)
-				.map(Number)
-				.sort((a, b) => a - b)
-				.flatMap((tier) =>
-					shuffleArray(
-						tierGroups[tier],
-						seededRandom(hashString(`${filterKey}|${seedPrefix}|tier-${tier}`))
-					)
-				);
-		};
-
-		return [
-			...shuffleAndSortByTier(hotAndTop, "hot-top"),
-			...shuffleAndSortByTier(hotOnly, "hot-only"),
-			...shuffleAndSortByTier(topOnly, "top-only"),
-			...shuffleAndSortByTier(featured, "featured"),
-			...shuffleAndSortByTier(verified, "verified"),
-			...shuffleAndSortByTier(unverified, "unverified"),
-		];
-	}, [filteredCandidates, hasSkillTag, filterKey]);
+		return sortCandidatesByVisibilityPriority(filteredCandidates, {
+			filterKey,
+			isHotCandidate,
+			hasTopTag,
+		});
+	}, [filteredCandidates, filterKey, isHotCandidate, hasTopTag]);
 
 	const candidatesToDisplay = sortedCandidates;
 

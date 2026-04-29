@@ -19,6 +19,12 @@ function makeDbMock() {
   };
 }
 
+function daysAgoIsoDate(daysAgo: number) {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() - daysAgo);
+  return date.toISOString().split("T")[0];
+}
+
 describe("previewNewsletterCampaignDraft markdown text output", () => {
   afterEach(() => {
     mock.restore();
@@ -40,7 +46,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "AI story",
           url: "https://example.com/ai",
-          date: "2026-04-21",
+          date: daysAgoIsoDate(1),
           category: "ai",
           source: "Example AI",
         },
@@ -49,7 +55,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "Crypto story",
           url: "https://example.com/crypto",
-          date: "2026-04-20",
+          date: daysAgoIsoDate(2),
           category: "crypto",
           source: "Example Crypto",
         },
@@ -58,7 +64,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
           type: "curated",
           title: "Research story",
           url: "https://example.com/research",
-          date: "2026-04-19",
+          date: daysAgoIsoDate(3),
           category: "research",
           source: "Example Research",
         },
