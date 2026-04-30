@@ -71,19 +71,6 @@ export function NewsGrid({ news }: NewsGridProps) {
 			}),
 		[],
 	);
-	const postedAtFormatter = useMemo(
-		() =>
-			new Intl.DateTimeFormat("en-US", {
-				year: "numeric",
-				month: "short",
-				day: "numeric",
-				hour: "numeric",
-				minute: "2-digit",
-				timeZoneName: "short",
-			}),
-		[],
-	);
-
 	// Get all unique categories from news items
 	const allCategories = useMemo(() => {
 		const categories = new Set<NewsCategory>();
@@ -143,11 +130,6 @@ export function NewsGrid({ news }: NewsGridProps) {
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
 		return dateFormatter.format(date);
-	};
-
-	const formatPostedAt = (dateString: string) => {
-		const date = new Date(dateString);
-		return postedAtFormatter.format(date);
 	};
 
 	const renderCommaSeparatedTokens = (value: string | undefined, keyPrefix: string) => {
@@ -559,7 +541,6 @@ export function NewsGrid({ news }: NewsGridProps) {
 									{/* Meta info */}
 									<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
 										<span>Published {formatDate(item.date)}</span>
-										<span>Added {formatPostedAt(item.postedAt)}</span>
 										{clicksLoaded && getClickCount(item.id) > 0 && (
 											<span>{getClickCount(item.id)} clicks</span>
 										)}

@@ -57,11 +57,6 @@ export const OTHER_CONTENT_I_LIKE: RecommendationItem[] = [
     description: "Podcast on ZK proofs and the decentralized web",
   },
   {
-    name: "TBPN Podcast",
-    url: "https://tbpn.substack.com",
-    description: "Daily live video & audio show on business and tech by @johncoogan & @jordihays",
-  },
-  {
     name: "Hardcore History",
     url: "https://www.dancarlin.com/hardcore-history-series",
     description: "Dan Carlin's epic deep-dives into history",
