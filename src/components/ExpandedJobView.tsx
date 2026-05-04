@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, useId } from "react";
 import Image from "next/image";
 import Markdown from "react-markdown";
 import { Job } from "@/data/jobs";
+import { getJobTagLabel, normalizeJobTags } from "@/lib/job-tags";
 import { isNew } from "@/lib/shuffle";
 
 // Job type labels for display
@@ -48,6 +49,9 @@ export function ExpandedJobView({
 	const [isOpen, setIsOpen] = useState(false);
 	const titleId = useId();
 	const descriptionId = useId();
+	const displayTags = normalizeJobTags(job.tags).filter(
+		(tag) => !["hot", "top", "new"].includes(tag),
+	);
 
 	useEffect(() => {
 		// Trigger open animation after mount
@@ -328,16 +332,16 @@ export function ExpandedJobView({
 				{/* Content Section */}
 				<div className="p-6 sm:p-8 space-y-6 sm:space-y-8">
 					{/* Tags - exclude hot, top, new as they're shown in header */}
-					{job.tags && job.tags.filter(t => !["hot", "top", "new"].includes(t)).length > 0 && (
+					{displayTags.length > 0 && (
 						<div>
 							<h3 className="text-lg font-semibold mb-3">Tags</h3>
 							<div className="flex flex-wrap gap-2">
-								{job.tags.filter(t => !["hot", "top", "new"].includes(t)).map((tag) => (
+								{displayTags.map((tag) => (
 									<span
 										key={tag}
 										className="px-3 py-1.5 text-sm rounded-full bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
 									>
-										{tagLabels[tag] ?? tag}
+										{getJobTagLabel(tag, tagLabels)}
 									</span>
 								))}
 							</div>
