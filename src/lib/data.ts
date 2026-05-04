@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { jobs as jobsTable, candidates as candidatesTable, curatedLinks as curatedLinksTable, candidateRedirects } from "@/db/schema";
 import { desc, eq, sql } from "drizzle-orm";
 import type { Job, Company, RelationshipCategory, JobTag, JobTier } from "@/data/jobs";
+import { normalizeJobTags } from "@/lib/job-tags";
 import type {
   Candidate,
   VisibilityMode,
@@ -38,7 +39,7 @@ export async function getJobsFromDB(): Promise<Job[]> {
       salary: job.salary || undefined,
       link: job.link,
       featured: job.featured || false,
-      tags: (job.tags || []) as JobTag[],
+      tags: normalizeJobTags(job.tags) as JobTag[],
       tier: 3 as JobTier, // Default tier
       description: job.description || undefined,
       createdAt: job.createdAt,

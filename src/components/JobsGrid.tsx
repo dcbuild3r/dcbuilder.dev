@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useState, useMemo, useEffect, useCallback, useDeferredValue } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { Job, JobTag, RelationshipCategory, tagLabels as defaultTagLabels } from "@/data/jobs";
+import { Job, RelationshipCategory, tagLabels as defaultTagLabels } from "@/data/jobs";
 import { CustomSelect } from "./CustomSelect";
 import { CustomMultiSelect } from "./CustomMultiSelect";
 import {
@@ -12,6 +12,7 @@ import {
 	trackJobApplyClick,
 	trackJobDetailsClick,
 } from "@/lib/posthog";
+import { getJobTagLabel, normalizeJobTags } from "@/lib/job-tags";
 import { hashString, seededRandom, shuffleArray, isNew } from "@/lib/shuffle";
 
 const ExpandedJobView = dynamic(
@@ -97,10 +98,26 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
   const tagLabels = useMemo(() => {
     const labels: Record<string, string> = { ...defaultTagLabels };
     tagDefinitions.forEach((tag) => {
-      labels[tag.slug] = tag.label;
+      const [slug] = normalizeJobTags([tag.slug]);
+      const label = tag.label.trim();
+      if (slug && label) {
+        labels[slug] = label;
+      }
     });
     return labels;
   }, [tagDefinitions]);
+
+  const getTagLabel = useCallback(
+    (tag: string) => getJobTagLabel(tag, tagLabels),
+    [tagLabels],
+  );
+
+  // Get all unique displayable tags from jobs
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    jobs.forEach((job) => normalizeJobTags(job.tags).forEach((tag) => tags.add(tag)));
+    return Array.from(tags).sort((a, b) => getTagLabel(a).localeCompare(getTagLabel(b)));
+  }, [jobs, getTagLabel]);
 
   const searchParams = useSearchParams();
   const initialParams = useMemo(() => {
@@ -114,9 +131,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
     const showFeaturedOnly = searchParams.get("featured") === "1";
     const tagsParam = searchParams.get("tags");
     const selectedTags = tagsParam
-      ? tagsParam
-          .split(",")
-          .filter((tag): tag is JobTag => Object.keys(tagLabels).includes(tag))
+      ? normalizeJobTags(tagsParam.split(",")).filter((tag) => allTags.includes(tag))
       : [];
     const jobId = searchParams.get("job");
     const selectedRole = searchParams.get("role") || "all";
@@ -130,14 +145,14 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
       jobId,
       selectedRole,
     };
-  }, [searchParams, tagLabels]);
+  }, [searchParams, allTags]);
 
   const [filterCategory, setFilterCategory] = useState<FilterCategory>(initialParams.filterCategory);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>(initialParams.selectedCompanies);
   const [selectedRole, setSelectedRole] = useState<string>(initialParams.selectedRole);
   const [selectedLocation, setSelectedLocation] = useState<string>(initialParams.selectedLocation);
   const [searchQuery, setSearchQuery] = useState(initialParams.searchQuery);
-  const [selectedTags, setSelectedTags] = useState<JobTag[]>(initialParams.selectedTags);
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialParams.selectedTags);
   const [tagsExpanded, setTagsExpanded] = useState(false);
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(initialParams.showFeaturedOnly);
   const [displayCount, setDisplayCount] = useState(JOBS_PAGE_SIZE);
@@ -240,7 +255,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
     updateUrlParams({ featured: newValue ? "1" : null });
   }, [showFeaturedOnly, updateUrlParams]);
 
-  const handleTagToggle = useCallback((tag: JobTag) => {
+  const handleTagToggle = useCallback((tag: string) => {
     const newTags = selectedTags.includes(tag)
       ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
@@ -306,13 +321,6 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
     };
   }, [expandedJob, closeJob]);
 
-  // Get all unique tags from jobs
-  const allTags = useMemo(() => {
-    const tags = new Set<JobTag>();
-    jobs.forEach((job) => job.tags?.forEach((tag) => tags.add(tag)));
-    return Array.from(tags).sort();
-  }, [jobs]);
-
   // Get all unique companies from jobs
   const allCompanies = useMemo(() => {
     const companies = new Map<string, string>();
@@ -374,7 +382,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
   const jobSearchIndex = useMemo(() => {
     const index = new Map<string, string>();
     jobs.forEach((job) => {
-      const tagText = job.tags?.map((t) => tagLabels[t]).join(" ") || "";
+      const tagText = normalizeJobTags(job.tags).map(getTagLabel).join(" ");
       index.set(
         job.id,
         [job.title, job.company.name, job.location, job.department, tagText]
@@ -384,7 +392,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
       );
     });
     return index;
-  }, [jobs, tagLabels]);
+  }, [jobs, getTagLabel]);
 
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
@@ -435,7 +443,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
       if (selectedTags.length > 0) {
         if (
           !job.tags ||
-          !selectedTags.every((tag) => job.tags?.includes(tag))
+          !selectedTags.every((tag) => normalizeJobTags(job.tags).includes(tag))
         ) {
           return false;
         }
@@ -717,11 +725,11 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
                     : "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
                 }`}
               >
-                {tagLabels[tag]}
+                {getTagLabel(tag)}
                 <button
                   onClick={() => handleTagToggle(tag)}
                   className="ml-1 hover:opacity-70"
-                  aria-label={`Remove ${tagLabels[tag]} filter`}
+                  aria-label={`Remove ${getTagLabel(tag)} filter`}
                 >
                   <svg
                     className="w-3.5 h-3.5"
@@ -766,7 +774,7 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
                         : "bg-white text-neutral-700 hover:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
                   }`}
                 >
-                  {tagLabels[tag]}
+                  {getTagLabel(tag)}
                 </button>
               ))}
               <button
@@ -938,23 +946,26 @@ export function JobsGrid({ jobs, tagDefinitions = [], roleDefinitions = [] }: Jo
                   </div>
 
                   {/* Row 3: Tags */}
-                  {job.tags && job.tags.filter(t => t !== "hot").length > 0 && (
-                    <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-1">
-                      {job.tags.filter(t => t !== "hot").map((tag, index) => (
-                        <span
-                          key={tag}
-                          className={`px-2.5 py-1 text-sm rounded-full ${index >= 3 ? "hidden sm:inline-flex" : ""} bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400`}
-                        >
-                          {tagLabels[tag] ?? tag}
-                        </span>
-                      ))}
-                      {job.tags.filter(t => t !== "hot").length > 3 && (
-                        <span className="sm:hidden px-2.5 py-1 text-sm text-neutral-500">
-                          +{job.tags.filter(t => t !== "hot").length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  {(() => {
+                    const displayTags = normalizeJobTags(job.tags).filter((tag) => tag !== "hot");
+                    return displayTags.length > 0 && (
+                      <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-1">
+                        {displayTags.map((tag, index) => (
+                          <span
+                            key={tag}
+                            className={`px-2.5 py-1 text-sm rounded-full ${index >= 3 ? "hidden sm:inline-flex" : ""} bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400`}
+                          >
+                            {getTagLabel(tag)}
+                          </span>
+                        ))}
+                        {displayTags.length > 3 && (
+                          <span className="sm:hidden px-2.5 py-1 text-sm text-neutral-500">
+                            +{displayTags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Row 4: Buttons */}
                   <div className="mt-3 flex items-center justify-center sm:justify-end gap-2">

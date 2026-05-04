@@ -7,7 +7,7 @@ export type RelationshipCategory = "portfolio" | "network";
 
 export type JobType = "full-time" | "part-time" | "contract" | "internship";
 
-export type JobTag =
+export type KnownJobTag =
 	| "hot"
 	| "top"
 	| "ai"
@@ -54,7 +54,9 @@ export type JobTag =
 	| "android"
 	| "ios";
 
-export const tagLabels: Record<JobTag, string> = {
+export type JobTag = KnownJobTag | (string & {});
+
+export const tagLabels: Record<KnownJobTag, string> = {
 	hot: "🔥 HOT",
 	top: "⭐ TOP",
 	ai: "AI",
