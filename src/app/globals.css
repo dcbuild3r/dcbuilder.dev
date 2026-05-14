@@ -28,6 +28,32 @@ body {
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+.home-kaneki-shell {
+  width: 100%;
+}
+
+.home-kaneki-frame {
+  width: 100%;
+  max-width: clamp(5.5rem, min(64vw, calc(100dvh - var(--navbar-height) - 27.5rem)), 20rem);
+}
+
+@media (min-width: 640px) {
+  .home-kaneki-frame {
+    max-width: clamp(10rem, min(48vw, calc(100dvh - var(--navbar-height) - 23rem)), 30rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-kaneki-shell {
+    flex-shrink: 0;
+    width: min(50vw, calc(100dvh - var(--navbar-height) - 4rem));
+  }
+
+  .home-kaneki-frame {
+    max-width: 100%;
+  }
+}
+
 .skip-link {
   position: fixed;
   top: 0.5rem;
