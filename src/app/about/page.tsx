@@ -22,15 +22,53 @@ const isActive = (dateEnd: string | null): boolean => {
 	return dateEnd?.toLowerCase() === "present" || dateEnd === null;
 };
 
+const months: Record<string, number> = {
+	jan: 1, january: 1, feb: 2, february: 2, mar: 3, march: 3,
+	apr: 4, april: 4, may: 5, jun: 6, june: 6,
+	jul: 7, july: 7, aug: 8, august: 8, sep: 9, september: 9,
+	oct: 10, october: 10, nov: 11, november: 11, dec: 12, december: 12,
+};
+
+const parseMonthDate = (date: string | null): { year: number; month: number } | null => {
+	if (!date || date.toLowerCase() === "present") return null;
+	const parts = date.toLowerCase().split(" ");
+	const month = months[parts[0]];
+	const year = Number.parseInt(parts[1], 10);
+	if (!month || Number.isNaN(year)) return null;
+	return { year, month };
+};
+
+const formatAffiliationDuration = (
+	dateBegin: string | null,
+	dateEnd: string | null
+): string | null => {
+	const start = parseMonthDate(dateBegin);
+	if (!start) return null;
+
+	const now = new Date();
+	const end = parseMonthDate(dateEnd) ?? {
+		year: now.getFullYear(),
+		month: now.getMonth() + 1,
+	};
+
+	const totalMonths = Math.max(1, (end.year - start.year) * 12 + end.month - start.month);
+	const years = Math.floor(totalMonths / 12);
+	const monthsRemaining = totalMonths % 12;
+
+	if (years === 0) {
+		return `${monthsRemaining} ${monthsRemaining === 1 ? "month" : "months"}`;
+	}
+
+	if (monthsRemaining === 0) {
+		return `${years} ${years === 1 ? "year" : "years"}`;
+	}
+
+	return `${years} ${years === 1 ? "year" : "years"} ${monthsRemaining} ${monthsRemaining === 1 ? "month" : "months"}`;
+};
+
 // Parse date string like "Mar 2022", "July 2022", "Dec 2024" to comparable value
 const parseEndDate = (dateEnd: string | null): number => {
 	if (!dateEnd || dateEnd.toLowerCase() === "present") return Infinity;
-	const months: Record<string, number> = {
-		jan: 1, january: 1, feb: 2, february: 2, mar: 3, march: 3,
-		apr: 4, april: 4, may: 5, jun: 6, june: 6,
-		jul: 7, july: 7, aug: 8, august: 8, sep: 9, september: 9,
-		oct: 10, october: 10, nov: 11, november: 11, dec: 12, december: 12,
-	};
 	const parts = dateEnd.toLowerCase().split(" ");
 	const month = months[parts[0]] || 1;
 	const year = parseInt(parts[1]) || 2000;
@@ -114,46 +152,54 @@ export default async function About() {
 							Affiliations
 						</h2>
 						<div className="space-y-6 sm:space-y-8">
-							{affiliations.map((affiliation) => (
-								<a
-									key={affiliation.title}
-									href={affiliation.website || "#"}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="group block p-4 sm:p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
-								>
-									<div className="flex flex-col sm:flex-row gap-4 sm:gap-6 text-center sm:text-left">
-										<div className="shrink-0 flex items-center justify-center sm:w-32">
-											{affiliation.logo && (
-												<Image
-													src={affiliation.logo}
-													alt={affiliation.title}
-													width={160}
-													height={160}
-													className="w-32 h-32 sm:w-24 sm:h-24 object-contain bg-white rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150"
-												/>
-											)}
-										</div>
-										<div className="flex-1">
-											<div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
-												<h3 className="text-lg sm:text-xl font-semibold">
-													{affiliation.title}
-												</h3>
-												<span className="text-neutral-500 dark:text-neutral-400">
-													{affiliation.role}
-												</span>
+							{affiliations.map((affiliation) => {
+								const duration = formatAffiliationDuration(
+									affiliation.dateBegin,
+									affiliation.dateEnd
+								);
+
+								return (
+									<a
+										key={affiliation.title}
+										href={affiliation.website || "#"}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="group block p-4 sm:p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
+									>
+										<div className="flex flex-col sm:flex-row gap-4 sm:gap-6 text-center sm:text-left">
+											<div className="shrink-0 flex items-center justify-center sm:w-32">
+												{affiliation.logo && (
+													<Image
+														src={affiliation.logo}
+														alt={affiliation.title}
+														width={160}
+														height={160}
+														className="w-32 h-32 sm:w-24 sm:h-24 object-contain bg-white rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150"
+													/>
+												)}
 											</div>
-											<p className="text-sm text-neutral-500 dark:text-neutral-400 mb-2 sm:mb-3">
-												{affiliation.dateBegin} –{" "}
-												{affiliation.dateEnd}
-											</p>
-											<p className="text-neutral-700 dark:text-neutral-300">
-												{affiliation.description}
-											</p>
+											<div className="flex-1">
+												<div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
+													<h3 className="text-lg sm:text-xl font-semibold">
+														{affiliation.title}
+													</h3>
+													<span className="text-neutral-500 dark:text-neutral-400">
+														{affiliation.role}
+													</span>
+												</div>
+												<p className="text-sm text-neutral-500 dark:text-neutral-400 mb-2 sm:mb-3">
+													{affiliation.dateBegin} –{" "}
+													{affiliation.dateEnd}
+													{duration && <> · {duration}</>}
+												</p>
+												<p className="text-neutral-700 dark:text-neutral-300">
+													{affiliation.description}
+												</p>
+											</div>
 										</div>
-									</div>
-								</a>
-							))}
+									</a>
+								);
+							})}
 						</div>
 					</section>
 				</div>
