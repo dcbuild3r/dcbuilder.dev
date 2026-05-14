@@ -7,11 +7,11 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main id="main-content" className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-[7.5vw]">
-        <div className="flex flex-col-reverse lg:flex-row items-center gap-6 sm:gap-8 py-8 sm:py-12">
+      <main id="main-content" className="h-dvh overflow-hidden pt-[var(--navbar-height)] px-4 sm:px-[7.5vw] lg:px-[2vw]">
+        <div className="mx-auto flex h-full max-w-[1700px] flex-col-reverse items-center justify-center gap-3 py-3 sm:gap-5 sm:py-5 lg:flex-row lg:gap-[clamp(3rem,4vw,5rem)] lg:py-3">
           {/* Image */}
-          <div className="w-full lg:w-[65%]">
-            <div className="bg-white dark:bg-[radial-gradient(circle,_#d9d9d9_0%,_#d9d9d9_50%,_#161616_100%)] rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 w-full overflow-hidden hover:scale-[1.03] transition-transform duration-150">
+          <div className="home-kaneki-shell flex justify-center">
+            <div className="home-kaneki-frame bg-white dark:bg-[radial-gradient(circle,_#d9d9d9_0%,_#d9d9d9_50%,_#161616_100%)] rounded-2xl sm:rounded-[2.5rem] p-3 sm:p-5 lg:p-8 overflow-hidden hover:scale-[1.03] transition-transform duration-150">
               <Image
                 src={HERO.image}
                 alt={HERO.alt}
@@ -24,13 +24,13 @@ export default function Home() {
           </div>
 
           {/* Content */}
-          <div className="w-full lg:w-[35%] space-y-8 sm:space-y-10 text-center sm:text-left">
+          <div className="w-full space-y-4 text-center sm:space-y-6 sm:text-left lg:w-[clamp(26rem,36vw,33rem)] lg:max-w-none lg:space-y-8">
             {/* Research */}
             <section>
-              <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-2 sm:mb-3 lg:mb-4">
                 {SECTIONS.research.title}
               </h2>
-              <ul className="space-y-1.5 sm:space-y-2 text-base sm:text-lg">
+              <ul className="space-y-1 sm:space-y-1.5 lg:space-y-2 text-sm sm:text-base lg:text-lg lg:whitespace-nowrap">
                 {SECTIONS.research.items.map((item, index) => (
                   <li key={index}>
                     {item.text}
@@ -42,10 +42,10 @@ export default function Home() {
 
             {/* Engineering */}
             <section>
-              <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-2 sm:mb-3 lg:mb-4">
                 {SECTIONS.engineering.title}
               </h2>
-              <ul className="space-y-1.5 sm:space-y-2 text-base sm:text-lg">
+              <ul className="space-y-1 sm:space-y-1.5 lg:space-y-2 text-sm sm:text-base lg:text-lg lg:whitespace-nowrap">
                 {SECTIONS.engineering.items.map((item, index) => (
                   <li key={index}>{item.text}</li>
                 ))}
@@ -54,10 +54,10 @@ export default function Home() {
 
             {/* Angel Investing */}
             <section>
-              <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-2 sm:mb-3 lg:mb-4">
                 {SECTIONS.angelInvesting.title}
               </h2>
-              <p className="text-base sm:text-lg">
+              <p className="text-sm sm:text-base lg:text-lg">
                 {SECTIONS.angelInvesting.text}{" "}
                 <Link
                   href="/portfolio"
