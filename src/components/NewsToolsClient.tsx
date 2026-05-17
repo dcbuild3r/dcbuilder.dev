@@ -13,6 +13,7 @@ type NewsToolsTab = "archive" | "subscribe" | "recommendations";
 
 type ArchiveCampaignPreview = {
   id: string;
+  publicSlug: string;
   subject: string;
   previewText: string | null;
   newsletterType: string;
@@ -97,7 +98,7 @@ function ArchivePanel({
   return (
     <div className="grid gap-3 lg:grid-cols-[minmax(0,1.45fr)_minmax(16rem,0.95fr)]">
       <Link
-        href={`/newsletters/${lead.id}`}
+        href={`/newsletters/${lead.publicSlug}`}
         className="group rounded-[1.5rem] border border-neutral-900 bg-neutral-950 px-4 py-4 text-white transition-transform duration-200 hover:-translate-y-0.5 dark:border-neutral-200 dark:bg-white dark:text-neutral-950"
       >
         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60 dark:text-neutral-500">
@@ -120,7 +121,7 @@ function ArchivePanel({
         {rest.map((campaign) => (
           <Link
             key={campaign.id}
-            href={`/newsletters/${campaign.id}`}
+            href={`/newsletters/${campaign.publicSlug}`}
             className="group rounded-[1.25rem] border border-neutral-200 bg-white/80 px-3.5 py-3 transition-colors hover:border-neutral-300 hover:bg-white dark:border-neutral-800 dark:bg-neutral-950/60 dark:hover:border-neutral-700 dark:hover:bg-neutral-950"
           >
             <div className="flex items-start justify-between gap-3">

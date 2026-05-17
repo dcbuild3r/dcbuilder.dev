@@ -25,6 +25,7 @@ const NEWSLETTER_SCHEMA_COLUMN_HINTS = [
   "archive_corrected_by",
   "timeframe_preset",
   "minimum_relevance",
+  "public_slug",
 ] as const;
 
 function collectErrorMessages(error: unknown, depth: number = 0): string[] {
