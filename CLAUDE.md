@@ -12,6 +12,10 @@ This project uses **bun** exclusively. Always use bun commands:
 
 Never use npm, npx, yarn, or pnpm.
 
+## Planning Artifacts
+
+Do not create or persist planning documents in `docs/plans` or any docs/plans-style directory. Keep plans in the active conversation.
+
 ## Tech Stack
 
 - Next.js 16 (App Router, Turbopack)
