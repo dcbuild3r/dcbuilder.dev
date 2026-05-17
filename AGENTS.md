@@ -8,6 +8,7 @@ This file defines a practical multi-agent setup for `dcbuilder.dev` so concurren
 - Keep changes migration-first for database work (Drizzle schema + SQL migration).
 - Prefer backend source-of-truth over client-only logic for lifecycle/state features.
 - Any agent touching API routes must preserve auth/permission checks.
+- Do not create or persist planning documents in `docs/plans` or any docs/plans-style directory; keep plans in the active conversation.
 
 ## Shared Architecture Context
 
