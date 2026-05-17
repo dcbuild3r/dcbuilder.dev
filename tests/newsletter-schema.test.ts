@@ -23,6 +23,12 @@ describe("isMissingNewsletterSchemaError", () => {
     expect(isMissingNewsletterSchemaError(error)).toBe(true);
   });
 
+  test("matches missing public slug errors", () => {
+    expect(
+      isMissingNewsletterSchemaError(new Error('column "public_slug" does not exist'))
+    ).toBe(true);
+  });
+
   test("does not treat permission errors as missing schema", () => {
     expect(
       isMissingNewsletterSchemaError(new Error("permission denied for relation newsletter_campaigns"))
