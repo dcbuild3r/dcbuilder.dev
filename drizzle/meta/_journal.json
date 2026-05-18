@@ -85,6 +85,20 @@
       "when": 1773792000000,
       "tag": "0011_newsletter_campaign_public_slug",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1779140400000,
+      "tag": "0012_news_source_investments",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1779141000000,
+      "tag": "0013_news_source_company_contexts",
+      "breakpoints": true
     }
   ]
 }

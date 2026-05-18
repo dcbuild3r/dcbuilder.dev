@@ -756,4 +756,92 @@ describe("getAllNews relevance mapping", () => {
       sourceIsCompanyAccount: true,
     });
   });
+
+  test("uses direct company mappings for job-only companies like World", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+    const investments = {
+      __table: "investments",
+      id: {},
+      title: {},
+      logo: {},
+      website: {},
+    };
+    const jobs = {
+      __table: "jobs",
+      company: {},
+    };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => [],
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+      newsSourceInvestments: null,
+      investments,
+      jobs,
+    }));
+
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: (selection?: { count?: unknown }) => ({
+          from: (table: { __table: string }) => {
+            if (table.__table === "curated_links") {
+              return {
+                orderBy: async () => [
+                  {
+                    id: "world-x",
+                    title: "World ID 4.0",
+                    url: "https://x.com/worldnetwork/status/2045201131589218574",
+                    source: "World",
+                    sourceImage: null,
+                    date: new Date("2026-04-17T00:00:00.000Z"),
+                    description: "Curated summary",
+                    category: "identity",
+                    featured: false,
+                    relevance: 8,
+                  },
+                ],
+              };
+            }
+
+            if (table.__table === "announcements") {
+              return { orderBy: async () => [] };
+            }
+
+            if (table.__table === "investments") {
+              return { where: async () => [] };
+            }
+
+            if (selection?.count) {
+              return {
+                where: () => ({
+                  groupBy: async () => [{ company: "World", count: 78 }],
+                }),
+              };
+            }
+
+            return {
+              where: async () => [{ company: "World" }],
+            };
+          },
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-direct-company=${Date.now()}`);
+    const news = await getAllNews();
+
+    expect(news[0].portfolioCompany).toMatchObject({
+      title: "World",
+      logo: "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/investments/world.png",
+      website: "https://world.org/",
+      jobsUrl: "/jobs?company=World",
+      jobCount: 78,
+      sourceIsCompanyAccount: true,
+    });
+  });
 });

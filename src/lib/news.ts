@@ -26,6 +26,27 @@ interface PortfolioCompanyNewsContext {
   sourceIsCompanyAccount: boolean;
 }
 
+const WORLD_COMPANY = {
+  companyTitle: "World",
+  companyLogo: "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/investments/world.png",
+  companyWebsite: "https://world.org/",
+  jobCompanies: ["World"],
+};
+
+const RUNNER_COMPANY = {
+  companyTitle: "Runner",
+  companyLogo: "https://runner.now/apple-touch-icon.png",
+  companyWebsite: "https://runner.now/",
+  jobCompanies: ["Runner"],
+};
+
+const KNOX_COMPANY = {
+  companyTitle: "KNOX",
+  companyLogo: "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/investments/gashawk.png",
+  companyWebsite: "https://x.com/0xKnoxFi",
+  jobCompanies: ["KNOX", "Knox", "GasHawk"],
+};
+
 const STARTER_SOURCE_INVESTMENT_MAPPINGS = [
   {
     sourceType: "x_handle",
@@ -65,6 +86,18 @@ const STARTER_SOURCE_INVESTMENT_MAPPINGS = [
   },
   {
     sourceType: "x_handle",
+    sourceValue: "drydenwtbrown",
+    sourceKind: "person",
+    investmentTitle: "Praxis",
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "odysseas_eth",
+    sourceKind: "person",
+    investmentTitle: "Phylax",
+  },
+  {
+    sourceType: "x_handle",
     sourceValue: "morpho",
     sourceKind: "company",
     investmentTitle: "Morpho",
@@ -83,12 +116,6 @@ const STARTER_SOURCE_INVESTMENT_MAPPINGS = [
   },
   {
     sourceType: "x_handle",
-    sourceValue: "0xknoxfi",
-    sourceKind: "company",
-    investmentTitle: "GasHawk",
-  },
-  {
-    sourceType: "x_handle",
     sourceValue: "lighter_xyz",
     sourceKind: "company",
     investmentTitle: "Lighter",
@@ -98,6 +125,93 @@ const STARTER_SOURCE_INVESTMENT_MAPPINGS = [
     sourceValue: "avischiffmann",
     sourceKind: "person",
     investmentTitle: "Friend",
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "eito_miyamura",
+    sourceKind: "person",
+    investmentTitle: "Edison",
+  },
+];
+
+const STARTER_SOURCE_COMPANY_MAPPINGS = [
+  {
+    sourceType: "x_handle",
+    sourceValue: "realdanielshorr",
+    sourceKind: "person",
+    ...WORLD_COMPANY,
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "recmo",
+    sourceKind: "person",
+    ...WORLD_COMPANY,
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "tiagosada",
+    sourceKind: "person",
+    ...WORLD_COMPANY,
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "wangandyy",
+    sourceKind: "person",
+    ...WORLD_COMPANY,
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "dcbuilder",
+    sourceKind: "person",
+    ...WORLD_COMPANY,
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "worldnetwork",
+    sourceKind: "company",
+    ...WORLD_COMPANY,
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "world_chain_",
+    sourceKind: "company",
+    ...WORLD_COMPANY,
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "worldcoin",
+    sourceKind: "company",
+    ...WORLD_COMPANY,
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "worldfoundation",
+    sourceKind: "company",
+    ...WORLD_COMPANY,
+  },
+  {
+    sourceType: "blog_host",
+    sourceValue: "toolsforhumanity.com",
+    sourceKind: "company",
+    ...WORLD_COMPANY,
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "yitong",
+    sourceKind: "person",
+    ...RUNNER_COMPANY,
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "odysseus0z",
+    sourceKind: "person",
+    ...RUNNER_COMPANY,
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "0xknoxfi",
+    sourceKind: "company",
+    ...KNOX_COMPANY,
   },
 ];
 
@@ -274,7 +388,11 @@ async function getPortfolioCompanyContextsBySource() {
       sourceType: string;
       sourceValue: string;
       sourceKind: string | null;
-      investmentId: string;
+      investmentId: string | null;
+      companyTitle: string | null;
+      companyLogo: string | null;
+      companyWebsite: string | null;
+      jobCompanies: string[] | null;
     }> = [];
 
     if (newsSourceInvestmentsTable) {
@@ -285,6 +403,10 @@ async function getPortfolioCompanyContextsBySource() {
             sourceValue: newsSourceInvestmentsTable.sourceValue,
             sourceKind: newsSourceInvestmentsTable.sourceKind,
             investmentId: newsSourceInvestmentsTable.investmentId,
+            companyTitle: newsSourceInvestmentsTable.companyTitle,
+            companyLogo: newsSourceInvestmentsTable.companyLogo,
+            companyWebsite: newsSourceInvestmentsTable.companyWebsite,
+            jobCompanies: newsSourceInvestmentsTable.jobCompanies,
           })
           .from(newsSourceInvestmentsTable);
       } catch (error) {
@@ -300,7 +422,42 @@ async function getPortfolioCompanyContextsBySource() {
                   investmentId: newsSourceInvestmentsTable.investmentId,
                 })
                 .from(newsSourceInvestmentsTable)
-            ).map((mapping) => ({ ...mapping, sourceKind: null }));
+            ).map((mapping) => ({
+              ...mapping,
+              sourceKind: null,
+              companyTitle: null,
+              companyLogo: null,
+              companyWebsite: null,
+              jobCompanies: null,
+            }));
+          } catch (fallbackError) {
+            if (!isMissingRelationError(fallbackError, "news_source_investments")) {
+              console.error("[news] Failed to load portfolio source mappings:", fallbackError);
+            }
+          }
+        } else if (
+          isMissingColumnError(error, "company_title") ||
+          isMissingColumnError(error, "company_logo") ||
+          isMissingColumnError(error, "company_website") ||
+          isMissingColumnError(error, "job_companies")
+        ) {
+          try {
+            mappings = (
+              await db
+                .select({
+                  sourceType: newsSourceInvestmentsTable.sourceType,
+                  sourceValue: newsSourceInvestmentsTable.sourceValue,
+                  sourceKind: newsSourceInvestmentsTable.sourceKind,
+                  investmentId: newsSourceInvestmentsTable.investmentId,
+                })
+                .from(newsSourceInvestmentsTable)
+            ).map((mapping) => ({
+              ...mapping,
+              companyTitle: null,
+              companyLogo: null,
+              companyWebsite: null,
+              jobCompanies: null,
+            }));
           } catch (fallbackError) {
             if (!isMissingRelationError(fallbackError, "news_source_investments")) {
               console.error("[news] Failed to load portfolio source mappings:", fallbackError);
@@ -312,7 +469,9 @@ async function getPortfolioCompanyContextsBySource() {
       }
     }
 
-    const investmentIds = Array.from(new Set(mappings.map((mapping) => mapping.investmentId)));
+    const investmentIds = Array.from(
+      new Set(mappings.map((mapping) => mapping.investmentId).filter((id): id is string => Boolean(id)))
+    );
     const starterInvestmentTitles = Array.from(
       new Set(STARTER_SOURCE_INVESTMENT_MAPPINGS.map((mapping) => mapping.investmentTitle))
     );
@@ -344,14 +503,22 @@ async function getPortfolioCompanyContextsBySource() {
     const investments = Array.from(
       new Map([...mappedInvestments, ...starterInvestments].map((investment) => [investment.id, investment])).values()
     );
-    if (investments.length === 0) {
-      return contexts;
-    }
 
     const investmentsById = new Map(investments.map((investment) => [investment.id, investment]));
     const investmentsByTitle = new Map(investments.map((investment) => [investment.title, investment]));
+    const getDirectJobCompanies = (mapping: { companyTitle: string | null; jobCompanies: string[] | null }) => {
+      const jobCompanies = (mapping.jobCompanies || []).map((company) => company.trim()).filter(Boolean);
+      if (jobCompanies.length > 0) return jobCompanies;
+      return mapping.companyTitle?.trim() ? [mapping.companyTitle.trim()] : [];
+    };
+    const directCompanyMappings = [...mappings, ...STARTER_SOURCE_COMPANY_MAPPINGS].filter((mapping) =>
+      mapping.companyTitle?.trim()
+    );
     const jobCompanies = Array.from(
-      new Set(investments.flatMap((investment) => getPortfolioJobCompanies(investment.title)))
+      new Set([
+        ...investments.flatMap((investment) => getPortfolioJobCompanies(investment.title)),
+        ...directCompanyMappings.flatMap((mapping) => getDirectJobCompanies(mapping)),
+      ])
     );
 
     let jobCountsByCompany: Record<string, number> = {};
@@ -409,11 +576,49 @@ async function getPortfolioCompanyContextsBySource() {
       });
     };
 
+    const setDirectCompanyContext = (
+      sourceType: string,
+      rawSourceValue: string,
+      company: {
+        companyTitle: string | null;
+        companyLogo: string | null;
+        companyWebsite: string | null;
+        jobCompanies: string[] | null;
+      },
+      rawSourceKind: string | null | undefined
+    ) => {
+      const title = company.companyTitle?.trim();
+      if (!title) return;
+
+      const sourceValue =
+        sourceType === "x_handle" ? normalizeXHandle(rawSourceValue) : normalizeHost(rawSourceValue);
+      const sourceKind = rawSourceKind?.trim().toLowerCase();
+      const jobCompanies = getDirectJobCompanies(company);
+      const companiesForJobs = jobCompanies.length > 0 ? jobCompanies : [title];
+      const jobsUrl = companiesForJobs
+        .map((entity) => `company=${encodeURIComponent(entity)}`)
+        .join("&");
+
+      contexts.set(`${sourceType}:${sourceValue}`, {
+        title,
+        logo: company.companyLogo?.trim() || null,
+        website: company.companyWebsite?.trim() || null,
+        jobsUrl: `/jobs?${jobsUrl}`,
+        jobCount: companiesForJobs.reduce((sum, entity) => sum + (jobCountsByCompany[entity] || 0), 0),
+        sourceIsCompanyAccount: sourceKind === "company",
+      });
+    };
+
     mappings.forEach((mapping) => {
+      if (mapping.companyTitle?.trim()) {
+        setDirectCompanyContext(mapping.sourceType.trim(), mapping.sourceValue, mapping, mapping.sourceKind);
+        return;
+      }
+
       setContext(
         mapping.sourceType.trim(),
         mapping.sourceValue,
-        investmentsById.get(mapping.investmentId),
+        investmentsById.get(mapping.investmentId || ""),
         mapping.sourceKind
       );
     });
@@ -432,6 +637,17 @@ async function getPortfolioCompanyContextsBySource() {
         investmentsByTitle.get(mapping.investmentTitle),
         mapping.sourceKind
       );
+    });
+
+    STARTER_SOURCE_COMPANY_MAPPINGS.forEach((mapping) => {
+      const sourceValue =
+        mapping.sourceType === "x_handle"
+          ? normalizeXHandle(mapping.sourceValue)
+          : normalizeHost(mapping.sourceValue);
+      const key = `${mapping.sourceType}:${sourceValue}`;
+      if (contexts.has(key)) return;
+
+      setDirectCompanyContext(mapping.sourceType, mapping.sourceValue, mapping, mapping.sourceKind);
     });
   } catch (error) {
     console.error("[news] Failed to load portfolio source mappings:", error);

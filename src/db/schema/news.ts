@@ -53,7 +53,7 @@ export const announcements = pgTable(
   ]
 );
 
-// Maps external news sources, such as X handles and blog hosts, to portfolio companies.
+// Maps external news sources, such as X handles and blog hosts, to portfolio or hiring companies.
 export const newsSourceInvestments = pgTable(
   "news_source_investments",
   {
@@ -63,9 +63,11 @@ export const newsSourceInvestments = pgTable(
     sourceType: text("source_type").notNull(), // x_handle, blog_host
     sourceValue: text("source_value").notNull(),
     sourceKind: text("source_kind").notNull().default("person"), // person, company
-    investmentId: text("investment_id")
-      .notNull()
-      .references(() => investments.id, { onDelete: "cascade" }),
+    investmentId: text("investment_id").references(() => investments.id, { onDelete: "cascade" }),
+    companyTitle: text("company_title"),
+    companyLogo: text("company_logo"),
+    companyWebsite: text("company_website"),
+    jobCompanies: text("job_companies").array(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
