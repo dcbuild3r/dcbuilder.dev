@@ -276,6 +276,13 @@ export function NewsGrid({ news }: NewsGridProps) {
 		);
 	};
 
+	const hasPortfolioCompanyAvatarBadge = (item: AggregatedNewsItem) => {
+		const company = item.portfolioCompany;
+		if (!company?.logo?.trim() || company.sourceIsCompanyAccount) return false;
+
+		return !failedImageKeys[`${item.id}:portfolio-company`];
+	};
+
 	const getPortfolioCompanyTitleLink = (item: AggregatedNewsItem) => {
 		const company = item.portfolioCompany;
 		if (!company?.sourceIsCompanyAccount || !company.logo?.trim()) return null;
@@ -651,6 +658,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 				) : (
 					renderedNews.map((item) => {
 						const isDescriptionExpanded = expandedDescriptionIds.has(item.id);
+						const hasAvatarBadge = hasPortfolioCompanyAvatarBadge(item);
 
 						return (
 							<div
@@ -668,7 +676,11 @@ export function NewsGrid({ news }: NewsGridProps) {
 									<span className="sr-only">Open {item.title}</span>
 								</a>
 								<div className="relative z-10 flex items-start gap-4 pointer-events-none">
-									<div className="flex-shrink-0 w-14 h-14 flex items-center justify-center">
+									<div
+										className={`flex w-14 flex-shrink-0 justify-center ${
+											hasAvatarBadge ? "h-28 items-start" : "h-14 items-center"
+										}`}
+									>
 										{getTypeIcon(item)}
 									</div>
 
