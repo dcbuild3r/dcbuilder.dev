@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useDeferredValue, useCallback } from "react";
+import { useState, useMemo, useDeferredValue, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { AggregatedNewsItem } from "@/lib/news";
 import {
@@ -31,6 +31,8 @@ const NEWS_THUMBNAIL_SIZE = 56;
 const NEWS_THUMBNAIL_REQUEST_SIZE = "112px";
 const NEWS_THUMBNAIL_QUALITY = 90;
 const BLOG_IMAGE_CACHE_VERSION = "20260206";
+const INITIAL_RENDERED_NEWS_COUNT = 30;
+const NEWS_RENDER_BATCH_SIZE = 30;
 
 // Check if item is fresh based on platform
 // X posts: 5 days, everything else: 2 weeks
@@ -59,6 +61,11 @@ export function NewsGrid({ news }: NewsGridProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [expandedDescriptionIds, setExpandedDescriptionIds] = useState<Set<string>>(() => new Set());
 	const [failedImageKeys, setFailedImageKeys] = useState<Record<string, true>>({});
+	const [newsRenderWindow, setNewsRenderWindow] = useState({
+		key: "",
+		count: INITIAL_RENDERED_NEWS_COUNT,
+	});
+	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 	const { getClickCount, isPopular, loaded: clicksLoaded } = useNewsClicks();
 	const deferredSearchQuery = useDeferredValue(searchQuery);
 	const dateFormatter = useMemo(
@@ -125,6 +132,52 @@ export function NewsGrid({ news }: NewsGridProps) {
 			sortMode === "posted" ? compareNewsByPostedAtAndRelevance : compareNewsByDateAndRelevance;
 		return [...filteredNews].sort(comparator);
 	}, [filteredNews, sortMode]);
+
+	const renderWindowKey = useMemo(
+		() => JSON.stringify([typeFilter, categoryFilter, minimumRelevance, deferredSearchQuery, sortMode]),
+		[typeFilter, categoryFilter, minimumRelevance, deferredSearchQuery, sortMode],
+	);
+	const renderedNewsCount =
+		newsRenderWindow.key === renderWindowKey ? newsRenderWindow.count : INITIAL_RENDERED_NEWS_COUNT;
+
+	const renderedNews = useMemo(
+		() => sortedNews.slice(0, renderedNewsCount),
+		[sortedNews, renderedNewsCount],
+	);
+	const hasMoreNews = renderedNewsCount < sortedNews.length;
+
+	const renderNextNewsBatch = useCallback(() => {
+		setNewsRenderWindow((current) => {
+			const currentCount =
+				current.key === renderWindowKey ? current.count : INITIAL_RENDERED_NEWS_COUNT;
+
+			return {
+				key: renderWindowKey,
+				count: Math.min(currentCount + NEWS_RENDER_BATCH_SIZE, sortedNews.length),
+			};
+		});
+	}, [renderWindowKey, sortedNews.length]);
+
+	useEffect(() => {
+		const loadMoreElement = loadMoreRef.current;
+		if (!loadMoreElement || !hasMoreNews) return;
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((entry) => entry.isIntersecting)) {
+					renderNextNewsBatch();
+				}
+			},
+			{
+				rootMargin: "1200px 0px",
+				threshold: 0,
+			},
+		);
+
+		observer.observe(loadMoreElement);
+
+		return () => observer.disconnect();
+	}, [hasMoreNews, renderNextNewsBatch]);
 
 	// Format date for display
 	const formatDate = (dateString: string) => {
@@ -460,7 +513,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 						No news found matching your criteria.
 					</p>
 				) : (
-					sortedNews.map((item) => {
+					renderedNews.map((item) => {
 						const isDescriptionExpanded = expandedDescriptionIds.has(item.id);
 
 						return (
@@ -574,6 +627,17 @@ export function NewsGrid({ news }: NewsGridProps) {
 							</div>
 						);
 					})
+				)}
+				{hasMoreNews && (
+					<div ref={loadMoreRef} className="flex justify-center py-3">
+						<button
+							type="button"
+							onClick={renderNextNewsBatch}
+							className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-600 transition-colors hover:border-neutral-400 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:border-neutral-600 dark:hover:text-white"
+						>
+							Load more news
+						</button>
+					</div>
 				)}
 			</div>
 		</div>
