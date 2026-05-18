@@ -36,6 +36,9 @@ describe("getAllNews relevance mapping", () => {
     mock.module("@/db/schema", () => ({
       curatedLinks,
       announcements,
+      newsSourceInvestments: null,
+      investments: null,
+      jobs: null,
     }));
 
     mock.module("@/db", () => ({
@@ -122,6 +125,9 @@ describe("getAllNews relevance mapping", () => {
     mock.module("@/db/schema", () => ({
       curatedLinks,
       announcements,
+      newsSourceInvestments: null,
+      investments: null,
+      jobs: null,
     }));
 
     mock.module("@/db", () => ({
@@ -207,6 +213,9 @@ describe("getAllNews relevance mapping", () => {
     mock.module("@/db/schema", () => ({
       curatedLinks,
       announcements,
+      newsSourceInvestments: null,
+      investments: null,
+      jobs: null,
     }));
 
     mock.module("@/db", () => ({
@@ -247,5 +256,202 @@ describe("getAllNews relevance mapping", () => {
       "blog-blog-still-visible",
       "curated-still-visible",
     ]);
+  });
+
+  test("attaches portfolio company context from X source mappings", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+    const newsSourceInvestments = {
+      __table: "news_source_investments",
+      sourceType: {},
+      sourceValue: {},
+      investmentId: {},
+    };
+    const investments = {
+      __table: "investments",
+      id: {},
+      title: {},
+      logo: {},
+      website: {},
+    };
+    const jobs = {
+      __table: "jobs",
+      company: {},
+    };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => [],
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+      newsSourceInvestments,
+      investments,
+      jobs,
+    }));
+
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: () => ({
+          from: (table: { __table: string }) => {
+            if (table.__table === "curated_links") {
+              return {
+                orderBy: async () => [
+                  {
+                    id: "benjamin-x",
+                    title: "The Feature",
+                    url: "https://x.com/benjamintfels/status/2056307684622696836",
+                    source: "Benjamin Fels",
+                    sourceImage: null,
+                    date: new Date("2026-05-18T00:00:00.000Z"),
+                    description: "Curated summary",
+                    category: "ai",
+                    featured: false,
+                    relevance: 8,
+                  },
+                ],
+              };
+            }
+
+            if (table.__table === "announcements") {
+              return { orderBy: async () => [] };
+            }
+
+            if (table.__table === "news_source_investments") {
+              return Promise.resolve([
+                {
+                  sourceType: "x_handle",
+                  sourceValue: "benjamintfels",
+                  investmentId: "octet-id",
+                },
+              ]);
+            }
+
+            if (table.__table === "investments") {
+              return {
+                where: async () => [
+                  {
+                    id: "octet-id",
+                    title: "Octet",
+                    logo: "https://r2.example/octet.svg",
+                    website: "https://octetproof.com/",
+                  },
+                ],
+              };
+            }
+
+            return {
+              where: () => ({
+                groupBy: async () => [{ company: "Octet", count: 2 }],
+              }),
+            };
+          },
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-portfolio=${Date.now()}`);
+    const news = await getAllNews();
+
+    expect(news).toHaveLength(1);
+    expect(news[0].portfolioCompany).toEqual({
+      title: "Octet",
+      logo: "https://r2.example/octet.svg",
+      website: "https://octetproof.com/",
+      jobsUrl: "/jobs?company=Octet",
+      jobCount: 2,
+    });
+  });
+
+  test("uses the starter Benjamin Fels mapping before the mapping table exists", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+    const investments = {
+      __table: "investments",
+      id: {},
+      title: {},
+      logo: {},
+      website: {},
+    };
+    const jobs = {
+      __table: "jobs",
+      company: {},
+    };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => [],
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+      newsSourceInvestments: null,
+      investments,
+      jobs,
+    }));
+
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: () => ({
+          from: (table: { __table: string }) => {
+            if (table.__table === "curated_links") {
+              return {
+                orderBy: async () => [
+                  {
+                    id: "benjamin-x-starter",
+                    title: "The Feature",
+                    url: "https://x.com/benjamintfels/status/2056307684622696836",
+                    source: "Benjamin Fels",
+                    sourceImage: null,
+                    date: new Date("2026-05-18T00:00:00.000Z"),
+                    description: "Curated summary",
+                    category: "ai",
+                    featured: false,
+                    relevance: 8,
+                  },
+                ],
+              };
+            }
+
+            if (table.__table === "announcements") {
+              return { orderBy: async () => [] };
+            }
+
+            if (table.__table === "investments") {
+              return {
+                where: async () => [
+                  {
+                    id: "octet-id",
+                    title: "Octet",
+                    logo: "https://r2.example/octet.svg",
+                    website: "https://octetproof.com/",
+                  },
+                ],
+              };
+            }
+
+            return {
+              where: () => ({
+                groupBy: async () => [{ company: "Octet", count: 3 }],
+              }),
+            };
+          },
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-portfolio-starter=${Date.now()}`);
+    const news = await getAllNews();
+
+    expect(news[0].portfolioCompany).toMatchObject({
+      title: "Octet",
+      logo: "https://r2.example/octet.svg",
+      website: "https://octetproof.com/",
+      jobsUrl: "/jobs?company=Octet",
+      jobCount: 3,
+    });
   });
 });

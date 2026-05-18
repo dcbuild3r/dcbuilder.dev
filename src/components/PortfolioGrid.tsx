@@ -11,31 +11,12 @@ import {
   FilterOption,
 } from "@/types/investments";
 import { hashString, seededRandom, shuffleArray } from "@/lib/shuffle";
+import { getPortfolioJobCount, getPortfolioJobsUrl } from "@/lib/portfolio-jobs";
 
 interface PortfolioGridProps {
   investments: Investment[];
   jobCounts?: Record<string, number>;
   categories?: InvestmentCategory[];
-}
-
-// Map investment titles to all their hiring entities (for umbrella orgs)
-const HIRING_ENTITIES: Record<string, string[]> = {
-  Monad: ["Monad Foundation", "Category Labs"],
-};
-
-// Get total job count for an investment (including related entities)
-function getJobCount(title: string, jobCounts: Record<string, number>): number {
-  const entities = HIRING_ENTITIES[title] || [title];
-  return entities.reduce((sum, entity) => sum + (jobCounts[entity] || 0), 0);
-}
-
-// Build jobs page URL with all related company filters
-function getJobsUrl(title: string): string {
-  const entities = HIRING_ENTITIES[title] || [title];
-  const params = entities
-    .map((e) => `company=${encodeURIComponent(e)}`)
-    .join("&");
-  return `/jobs?${params}`;
 }
 
 export function PortfolioGrid({
@@ -278,8 +259,8 @@ export function PortfolioGrid({
           <InvestmentCard
             key={investment.title}
             investment={investment}
-            jobCount={getJobCount(investment.title, jobCounts)}
-            jobsUrl={getJobsUrl(investment.title)}
+            jobCount={getPortfolioJobCount(investment.title, jobCounts)}
+            jobsUrl={getPortfolioJobsUrl(investment.title)}
           />
         ))}
       </div>

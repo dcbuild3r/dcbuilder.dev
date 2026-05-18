@@ -1,10 +1,42 @@
 import { getAllPosts } from "./blog";
 import { db } from "@/db";
-import { curatedLinks as curatedLinksTable, announcements as announcementsTable } from "@/db/schema";
-import { desc } from "drizzle-orm";
+import {
+  curatedLinks as curatedLinksTable,
+  announcements as announcementsTable,
+  newsSourceInvestments as newsSourceInvestmentsTable,
+  investments as investmentsTable,
+  jobs as jobsTable,
+} from "@/db/schema";
+import { desc, inArray, sql } from "drizzle-orm";
 import { NewsCategory } from "@/data/news";
-import { isMissingColumnError } from "@/lib/db-schema-compat";
+import { isMissingColumnError, isMissingRelationError } from "@/lib/db-schema-compat";
 import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
+import {
+  getPortfolioJobCompanies,
+  getPortfolioJobCount,
+  getPortfolioJobsUrl,
+} from "@/lib/portfolio-jobs";
+
+interface PortfolioCompanyNewsContext {
+  title: string;
+  logo: string | null;
+  website: string | null;
+  jobsUrl: string;
+  jobCount: number;
+}
+
+const STARTER_SOURCE_INVESTMENT_MAPPINGS = [
+  {
+    sourceType: "x_handle",
+    sourceValue: "benjamintfels",
+    investmentTitle: "Octet",
+  },
+  {
+    sourceType: "blog_host",
+    sourceValue: "benjaminfels.substack.com",
+    investmentTitle: "Octet",
+  },
+];
 
 export interface AggregatedNewsItem {
   id: string;
@@ -25,6 +57,7 @@ export interface AggregatedNewsItem {
   platform?: string; // For announcements
   readingTime?: string; // For blog posts
   image?: string; // For blog posts
+  portfolioCompany?: PortfolioCompanyNewsContext;
 }
 
 function toIsoDateTime(date: string | Date | null | undefined, fallback?: string | Date | null): string {
@@ -117,12 +150,198 @@ async function getAnnouncementsWithFallback() {
   }
 }
 
+function normalizeXHandle(value: string): string {
+  return value.trim().replace(/^@/, "").toLowerCase();
+}
+
+function normalizeHost(value: string): string {
+  return value.trim().replace(/^www\./, "").toLowerCase();
+}
+
+function getUrlHost(value: string): string | null {
+  try {
+    const url = new URL(value);
+    return normalizeHost(url.hostname);
+  } catch {
+    return null;
+  }
+}
+
+function getXHandleFromUrl(value: string): string | null {
+  try {
+    const url = new URL(value);
+    const host = normalizeHost(url.hostname);
+    if (host !== "x.com" && host !== "twitter.com") return null;
+
+    const [handle] = url.pathname.split("/").filter(Boolean);
+    if (!handle || ["i", "intent", "share"].includes(handle)) return null;
+
+    return normalizeXHandle(handle);
+  } catch {
+    return null;
+  }
+}
+
+function getSourceLookupKeys(item: AggregatedNewsItem): string[] {
+  const keys = new Set<string>();
+  const xHandle = getXHandleFromUrl(item.url);
+
+  if (xHandle) {
+    keys.add(`x_handle:${xHandle}`);
+    return Array.from(keys);
+  }
+
+  const host = getUrlHost(item.url);
+  if (host) {
+    keys.add(`blog_host:${host}`);
+  }
+
+  return Array.from(keys);
+}
+
+async function getPortfolioCompanyContextsBySource() {
+  const contexts = new Map<string, PortfolioCompanyNewsContext>();
+
+  try {
+    if (!investmentsTable || !jobsTable) {
+      return contexts;
+    }
+
+    let mappings: Array<{
+      sourceType: string;
+      sourceValue: string;
+      investmentId: string;
+    }> = [];
+
+    if (newsSourceInvestmentsTable) {
+      try {
+        mappings = await db
+          .select({
+            sourceType: newsSourceInvestmentsTable.sourceType,
+            sourceValue: newsSourceInvestmentsTable.sourceValue,
+            investmentId: newsSourceInvestmentsTable.investmentId,
+          })
+          .from(newsSourceInvestmentsTable);
+      } catch (error) {
+        if (!isMissingRelationError(error, "news_source_investments")) {
+          console.error("[news] Failed to load portfolio source mappings:", error);
+        }
+      }
+    }
+
+    const investmentIds = Array.from(new Set(mappings.map((mapping) => mapping.investmentId)));
+    const starterInvestmentTitles = Array.from(
+      new Set(STARTER_SOURCE_INVESTMENT_MAPPINGS.map((mapping) => mapping.investmentTitle))
+    );
+    const [mappedInvestments, starterInvestments] = await Promise.all([
+      investmentIds.length > 0
+        ? db
+            .select({
+              id: investmentsTable.id,
+              title: investmentsTable.title,
+              logo: investmentsTable.logo,
+              website: investmentsTable.website,
+            })
+            .from(investmentsTable)
+            .where(inArray(investmentsTable.id, investmentIds))
+        : Promise.resolve([]),
+      starterInvestmentTitles.length > 0
+        ? db
+            .select({
+              id: investmentsTable.id,
+              title: investmentsTable.title,
+              logo: investmentsTable.logo,
+              website: investmentsTable.website,
+            })
+            .from(investmentsTable)
+            .where(inArray(investmentsTable.title, starterInvestmentTitles))
+        : Promise.resolve([]),
+    ]);
+
+    const investments = Array.from(
+      new Map([...mappedInvestments, ...starterInvestments].map((investment) => [investment.id, investment])).values()
+    );
+    if (investments.length === 0) {
+      return contexts;
+    }
+
+    const investmentsById = new Map(investments.map((investment) => [investment.id, investment]));
+    const investmentsByTitle = new Map(investments.map((investment) => [investment.title, investment]));
+    const jobCompanies = Array.from(
+      new Set(investments.flatMap((investment) => getPortfolioJobCompanies(investment.title)))
+    );
+
+    const jobCountsByCompany =
+      jobCompanies.length > 0
+        ? Object.fromEntries(
+            (
+              await db
+                .select({
+                  company: jobsTable.company,
+                  count: sql<number>`count(*)::int`,
+                })
+                .from(jobsTable)
+                .where(inArray(jobsTable.company, jobCompanies))
+                .groupBy(jobsTable.company)
+            ).map((row) => [row.company, row.count])
+          )
+        : {};
+
+    const setContext = (
+      sourceType: string,
+      rawSourceValue: string,
+      investment: (typeof investments)[number] | undefined
+    ) => {
+      if (!investment) return;
+
+      const sourceValue =
+        sourceType === "x_handle" ? normalizeXHandle(rawSourceValue) : normalizeHost(rawSourceValue);
+
+      contexts.set(`${sourceType}:${sourceValue}`, {
+        title: investment.title,
+        logo: investment.logo,
+        website: investment.website,
+        jobsUrl: getPortfolioJobsUrl(investment.title),
+        jobCount: getPortfolioJobCount(investment.title, jobCountsByCompany),
+      });
+    };
+
+    mappings.forEach((mapping) => {
+      setContext(
+        mapping.sourceType.trim(),
+        mapping.sourceValue,
+        investmentsById.get(mapping.investmentId)
+      );
+    });
+
+    STARTER_SOURCE_INVESTMENT_MAPPINGS.forEach((mapping) => {
+      const sourceValue =
+        mapping.sourceType === "x_handle"
+          ? normalizeXHandle(mapping.sourceValue)
+          : normalizeHost(mapping.sourceValue);
+      const key = `${mapping.sourceType}:${sourceValue}`;
+      if (contexts.has(key)) return;
+
+      setContext(
+        mapping.sourceType,
+        mapping.sourceValue,
+        investmentsByTitle.get(mapping.investmentTitle)
+      );
+    });
+  } catch (error) {
+    console.error("[news] Failed to load portfolio source mappings:", error);
+  }
+
+  return contexts;
+}
+
 export async function getAllNews(): Promise<AggregatedNewsItem[]> {
   // Fetch all data sources in parallel
-  const [blogPosts, dbCuratedLinks, dbAnnouncements] = await Promise.all([
+  const [blogPosts, dbCuratedLinks, dbAnnouncements, portfolioCompanyContexts] = await Promise.all([
     getAllPosts(),
     getCuratedLinksWithFallback(),
     getAnnouncementsWithFallback(),
+    getPortfolioCompanyContextsBySource(),
   ]);
 
   // Map blog posts
@@ -175,6 +394,15 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
 
   // Combine and sort by date, then relevance for same-day items.
   const allNews = [...blogItems, ...curatedItems, ...announcementItems];
+  allNews.forEach((item) => {
+    const portfolioCompany = getSourceLookupKeys(item)
+      .map((key) => portfolioCompanyContexts.get(key))
+      .find(Boolean);
+
+    if (portfolioCompany) {
+      item.portfolioCompany = portfolioCompany;
+    }
+  });
   allNews.sort(compareNewsByDateAndRelevance);
 
   return allNews;

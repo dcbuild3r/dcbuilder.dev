@@ -10,6 +10,7 @@ export const dbTableExportPlaceholders = {
   investmentCategories: {},
   curatedLinks: {},
   announcements: {},
+  newsSourceInvestments: {},
   blogPosts: {},
   newsletterSubscribers: {},
   newsletterPreferences: {},
@@ -19,4 +20,3 @@ export const dbTableExportPlaceholders = {
   newsletterSendEvents: {},
   newsletterUnsubTokens: {},
 };
-

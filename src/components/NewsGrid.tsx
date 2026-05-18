@@ -231,6 +231,82 @@ export function NewsGrid({ news }: NewsGridProps) {
 		return `${url}${separator}v=${BLOG_IMAGE_CACHE_VERSION}`;
 	}, []);
 
+	const getPortfolioCompanyBadge = (item: AggregatedNewsItem) => {
+		const company = item.portfolioCompany;
+		if (!company?.logo?.trim()) return null;
+
+		const imageKey = `${item.id}:portfolio-company`;
+		if (failedImageKeys[imageKey]) return null;
+
+		const logo = (
+			<Image
+				src={company.logo.trim()}
+				alt={company.title}
+				width={40}
+				height={40}
+				sizes="40px"
+				className="h-full w-full rounded-md bg-white object-contain p-0.5"
+				unoptimized
+				onError={() => markImageFailed(imageKey)}
+			/>
+		);
+		const className =
+			"pointer-events-auto absolute -bottom-12 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-lg border-2 border-white bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-900";
+
+		if (!company.website) {
+			return (
+				<span className={className} aria-label={company.title}>
+					{logo}
+				</span>
+			);
+		}
+
+		return (
+			<a
+				href={company.website}
+				target="_blank"
+				rel="noopener noreferrer"
+				onClick={(event) => event.stopPropagation()}
+				className={className}
+				aria-label={`Open ${company.title}`}
+				title={company.title}
+			>
+				{logo}
+			</a>
+		);
+	};
+
+	const getPortfolioHiringLink = (item: AggregatedNewsItem) => {
+		const company = item.portfolioCompany;
+		if (!company?.jobsUrl) return null;
+
+		const hasJobCount = company.jobCount > 0;
+
+		return (
+			<a
+				href={company.jobsUrl}
+				onClick={(event) => event.stopPropagation()}
+				className="pointer-events-auto flex-shrink-0 inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-3 py-1.5 text-xs font-semibold leading-none text-white shadow-sm transition-[transform,box-shadow,background-color] duration-150 hover:scale-105 hover:bg-black hover:shadow-md active:scale-100 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
+				aria-label={
+					hasJobCount
+						? `View ${company.jobCount} job openings at ${company.title}`
+						: `View job openings at ${company.title}`
+				}
+			>
+				<span className="relative flex h-2 w-2">
+					<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75 dark:bg-neutral-900"></span>
+					<span className="relative inline-flex h-2 w-2 rounded-full bg-white dark:bg-neutral-900"></span>
+				</span>
+				<span>Hiring</span>
+				{hasJobCount && (
+					<span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] font-bold leading-none text-neutral-900 dark:bg-neutral-900 dark:text-white">
+						{company.jobCount}
+					</span>
+				)}
+			</a>
+		);
+	};
+
 	// X logo SVG for overlay
 	const XLogo = () => (
 		<div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full flex items-center justify-center border-2 border-white dark:border-neutral-900">
@@ -260,6 +336,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 							onError={() => markImageFailed(imageKey)}
 						/>
 						<XLogo />
+						{getPortfolioCompanyBadge(item)}
 					</div>
 				);
 			}
@@ -279,10 +356,16 @@ export function NewsGrid({ news }: NewsGridProps) {
 							onError={() => markImageFailed(imageKey)}
 						/>
 						<XLogo />
+						{getPortfolioCompanyBadge(item)}
 					</div>
 				);
 			}
-			return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">𝕏</span>;
+			return (
+				<span className="relative inline-block text-5xl transition-transform duration-150 group-hover:scale-[1.08]">
+					𝕏
+					{getPortfolioCompanyBadge(item)}
+				</span>
+			);
 		}
 
 		switch (item.type) {
@@ -313,19 +396,27 @@ export function NewsGrid({ news }: NewsGridProps) {
 						return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">🔗</span>;
 					}
 					return (
-						<Image
-							src={item.sourceImage.trim()}
-							alt={item.source || item.title}
-							width={NEWS_THUMBNAIL_SIZE}
-							height={NEWS_THUMBNAIL_SIZE}
-							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
-							quality={NEWS_THUMBNAIL_QUALITY}
-							className="rounded-full w-14 h-14 object-cover group-hover:scale-[1.08] transition-transform duration-150"
-							onError={() => markImageFailed(imageKey)}
-						/>
+						<div className="relative group-hover:scale-[1.08] transition-transform duration-150">
+							<Image
+								src={item.sourceImage.trim()}
+								alt={item.source || item.title}
+								width={NEWS_THUMBNAIL_SIZE}
+								height={NEWS_THUMBNAIL_SIZE}
+								sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+								quality={NEWS_THUMBNAIL_QUALITY}
+								className="rounded-full w-14 h-14 object-cover"
+								onError={() => markImageFailed(imageKey)}
+							/>
+							{getPortfolioCompanyBadge(item)}
+						</div>
 					);
 				}
-				return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">🔗</span>;
+				return (
+					<span className="relative inline-block text-5xl transition-transform duration-150 group-hover:scale-[1.08]">
+						🔗
+						{getPortfolioCompanyBadge(item)}
+					</span>
+				);
 			case "announcement":
 				if (item.companyLogo?.trim()) {
 					const imageKey = `${item.id}:announcement`;
@@ -519,7 +610,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 						return (
 							<div
 								key={item.id}
-								className="group relative block p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
+								className="group relative block rounded-xl border border-neutral-200 p-4 transition-colors hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600"
 							>
 								<a
 									href={item.url}
@@ -532,97 +623,93 @@ export function NewsGrid({ news }: NewsGridProps) {
 									<span className="sr-only">Open {item.title}</span>
 								</a>
 								<div className="relative z-10 flex items-start gap-4 pointer-events-none">
-									{/* Icon */}
 									<div className="flex-shrink-0 w-14 h-14 flex items-center justify-center">
 										{getTypeIcon(item)}
 									</div>
 
-									{/* Content */}
 									<div className="flex-1 min-w-0">
-									{/* Title */}
-									<h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors flex items-center gap-2">
-										<span className="truncate">{item.title}</span>
-										{isFreshItem(item.date, item.platform) && (
-											<span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
-												✨ FRESH
-											</span>
-										)}
-										{clicksLoaded && isPopular(item.id) && (
-											<span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
-												🔥 POPULAR
-											</span>
-										)}
-										{isExternalLink(item) && (
-											<svg
-												className="w-4 h-4 flex-shrink-0 text-neutral-400"
-												viewBox="0 0 24 24"
-												fill="none"
-												stroke="currentColor"
-												strokeWidth="2"
-												strokeLinecap="round"
-												strokeLinejoin="round"
+										<h3 className="font-semibold group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors flex items-center gap-2">
+											<span className="truncate">{item.title}</span>
+											{isFreshItem(item.date, item.platform) && (
+												<span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
+													✨ FRESH
+												</span>
+											)}
+											{getPortfolioHiringLink(item)}
+											{clicksLoaded && isPopular(item.id) && (
+												<span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+													🔥 POPULAR
+												</span>
+											)}
+											{isExternalLink(item) && (
+												<svg
+													className="w-4 h-4 flex-shrink-0 text-neutral-400"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													strokeWidth="2"
+													strokeLinecap="round"
+													strokeLinejoin="round"
+												>
+													<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+													<polyline points="15 3 21 3 21 9" />
+													<line x1="10" y1="14" x2="21" y2="3" />
+												</svg>
+											)}
+										</h3>
+
+										{item.description && (
+											<p
+												className={`mt-1 text-sm leading-6 text-neutral-600 dark:text-neutral-400 ${
+													isDescriptionExpanded ? "" : "line-clamp-3 sm:line-clamp-2"
+												}`}
 											>
-												<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-												<polyline points="15 3 21 3 21 9" />
-												<line x1="10" y1="14" x2="21" y2="3" />
-											</svg>
+												{item.description}
+											</p>
 										)}
-									</h3>
 
-									{/* Description */}
-									{item.description && (
-										<p
-											className={`mt-1 text-sm leading-6 text-neutral-600 dark:text-neutral-400 ${
-												isDescriptionExpanded ? "" : "line-clamp-3 sm:line-clamp-2"
-											}`}
-										>
-											{item.description}
-										</p>
-									)}
-
-									{item.description && (
-										<button
-											type="button"
-											onClick={() => toggleDescription(item.id)}
-											className="pointer-events-auto mt-2 inline-flex items-center text-xs font-medium text-neutral-700 underline decoration-neutral-300 underline-offset-4 transition-colors hover:text-neutral-950 dark:text-neutral-300 dark:decoration-neutral-700 dark:hover:text-neutral-50 sm:hidden"
-											aria-expanded={isDescriptionExpanded}
-										>
-											{isDescriptionExpanded ? "Show less" : "Show more"}
-										</button>
-									)}
-
-									{/* Meta info */}
-									<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
-										<span>Published {formatDate(item.date)}</span>
-										{clicksLoaded && getClickCount(item.id) > 0 && (
-											<span>{getClickCount(item.id)} clicks</span>
+										{item.description && (
+											<button
+												type="button"
+												onClick={() => toggleDescription(item.id)}
+												className="pointer-events-auto mt-2 inline-flex items-center text-xs font-medium text-neutral-700 underline decoration-neutral-300 underline-offset-4 transition-colors hover:text-neutral-950 dark:text-neutral-300 dark:decoration-neutral-700 dark:hover:text-neutral-50 sm:hidden"
+												aria-expanded={isDescriptionExpanded}
+											>
+												{isDescriptionExpanded ? "Show less" : "Show more"}
+											</button>
 										)}
-										{renderCommaSeparatedTokens(item.source, `${item.id}:source`)}
-										{item.company && <span>{item.company}</span>}
-										{item.readingTime && <span>{item.readingTime}</span>}
-										<span
-											className={`px-2 py-0.5 rounded-full ${
-												item.category === "crypto"
-													? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-													: item.category === "ai"
-														? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-														: item.category === "defi"
-															? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-															: item.category === "infrastructure"
-																? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-																: item.category === "research"
-																	? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-																	: item.category === "product"
-																		? "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400"
-																		: item.category === "funding"
-																			? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-																			: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
-											}`}
-										>
-											{categoryLabels[item.category]}
-										</span>
+
+										<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
+											<span>Published {formatDate(item.date)}</span>
+											{clicksLoaded && getClickCount(item.id) > 0 && (
+												<span>{getClickCount(item.id)} clicks</span>
+											)}
+											{renderCommaSeparatedTokens(item.source, `${item.id}:source`)}
+											{item.company && <span>{item.company}</span>}
+											{item.readingTime && <span>{item.readingTime}</span>}
+											<span
+												className={`px-2 py-0.5 rounded-full ${
+													item.category === "crypto"
+														? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+														: item.category === "ai"
+															? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+															: item.category === "defi"
+																? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+																: item.category === "infrastructure"
+																	? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+																	: item.category === "research"
+																		? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+																		: item.category === "product"
+																			? "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400"
+																			: item.category === "funding"
+																				? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+																				: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+												}`}
+											>
+												{categoryLabels[item.category]}
+											</span>
+										</div>
 									</div>
-								</div>
 								</div>
 							</div>
 						);

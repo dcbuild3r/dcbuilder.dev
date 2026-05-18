@@ -1,5 +1,6 @@
-import { pgTable, text, boolean, timestamp, index, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, timestamp, index, integer, uniqueIndex } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
+import { investments } from "./investments";
 
 // Curated links (news)
 export const curatedLinks = pgTable(
@@ -52,8 +53,32 @@ export const announcements = pgTable(
   ]
 );
 
+// Maps external news sources, such as X handles and blog hosts, to portfolio companies.
+export const newsSourceInvestments = pgTable(
+  "news_source_investments",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    sourceType: text("source_type").notNull(), // x_handle, blog_host
+    sourceValue: text("source_value").notNull(),
+    investmentId: text("investment_id")
+      .notNull()
+      .references(() => investments.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("news_source_investments_source_unique").on(table.sourceType, table.sourceValue),
+    index("news_source_investments_investment_idx").on(table.investmentId),
+  ]
+);
+
 export type CuratedLink = typeof curatedLinks.$inferSelect;
 export type NewCuratedLink = typeof curatedLinks.$inferInsert;
 
 export type Announcement = typeof announcements.$inferSelect;
 export type NewAnnouncement = typeof announcements.$inferInsert;
+
+export type NewsSourceInvestment = typeof newsSourceInvestments.$inferSelect;
+export type NewNewsSourceInvestment = typeof newsSourceInvestments.$inferInsert;

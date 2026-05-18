@@ -66,3 +66,19 @@ export function isMissingColumnError(error: unknown, columnName: string): boolea
 
   return missingColumn && referencesColumn;
 }
+
+export function isMissingRelationError(error: unknown, relationName: string): boolean {
+  const { texts, codes } = collectErrorMetadata(error);
+
+  const referencesRelation = texts.some(
+    (text) =>
+      text.includes(`"${relationName}"`) ||
+      text.includes(`relation "${relationName}" does not exist`)
+  );
+
+  const missingRelation =
+    codes.includes("42P01") ||
+    texts.some((text) => text.includes("does not exist"));
+
+  return missingRelation && referencesRelation;
+}
