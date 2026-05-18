@@ -547,4 +547,104 @@ describe("getAllNews relevance mapping", () => {
       sourceIsCompanyAccount: true,
     });
   });
+
+  test("keeps portfolio context when the grouped job count query falls back", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+    const investments = {
+      __table: "investments",
+      id: {},
+      title: {},
+      logo: {},
+      website: {},
+    };
+    const jobs = {
+      __table: "jobs",
+      company: {},
+    };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => [],
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+      newsSourceInvestments: null,
+      investments,
+      jobs,
+    }));
+
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: (selection?: { count?: unknown }) => ({
+          from: (table: { __table: string }) => {
+            if (table.__table === "curated_links") {
+              return {
+                orderBy: async () => [
+                  {
+                    id: "prime-intellect-x-fallback",
+                    title: "Prime Intellect Lab exits beta",
+                    url: "https://x.com/primeintellect/status/2051576508675350953",
+                    source: "Prime Intellect",
+                    sourceImage: null,
+                    date: new Date("2026-05-07T00:00:00.000Z"),
+                    description: "Curated summary",
+                    category: "ai",
+                    featured: false,
+                    relevance: 8,
+                  },
+                ],
+              };
+            }
+
+            if (table.__table === "announcements") {
+              return { orderBy: async () => [] };
+            }
+
+            if (table.__table === "investments") {
+              return {
+                where: async () => [
+                  {
+                    id: "prime-intellect-id",
+                    title: "Prime Intellect",
+                    logo: "https://r2.example/prime-intellect.jpg",
+                    website: "https://www.primeintellect.ai/",
+                  },
+                ],
+              };
+            }
+
+            if (selection?.count) {
+              return {
+                where: () => ({
+                  groupBy: async () => {
+                    throw new Error("grouped count unavailable");
+                  },
+                }),
+              };
+            }
+
+            return {
+              where: async () => [
+                { company: "Prime Intellect" },
+                { company: "Prime Intellect" },
+              ],
+            };
+          },
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-portfolio-job-fallback=${Date.now()}`);
+    const news = await getAllNews();
+
+    expect(news[0].portfolioCompany).toMatchObject({
+      title: "Prime Intellect",
+      jobsUrl: "/jobs?company=Prime%20Intellect",
+      jobCount: 2,
+      sourceIsCompanyAccount: true,
+    });
+  });
 });

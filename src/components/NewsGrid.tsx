@@ -323,9 +323,9 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 	const getPortfolioHiringLink = (item: AggregatedNewsItem) => {
 		const company = item.portfolioCompany;
-		if (!company?.jobsUrl) return null;
+		if (!company?.jobsUrl || company.jobCount <= 0) return null;
 
-		const hasJobCount = company.jobCount > 0;
+		const hasJobCount = true;
 
 		return (
 			<a

@@ -266,7 +266,7 @@ async function getPortfolioCompanyContextsBySource() {
   const contexts = new Map<string, PortfolioCompanyNewsContext>();
 
   try {
-    if (!investmentsTable || !jobsTable) {
+    if (!investmentsTable) {
       return contexts;
     }
 
@@ -346,21 +346,38 @@ async function getPortfolioCompanyContextsBySource() {
       new Set(investments.flatMap((investment) => getPortfolioJobCompanies(investment.title)))
     );
 
-    const jobCountsByCompany =
-      jobCompanies.length > 0
-        ? Object.fromEntries(
-            (
-              await db
-                .select({
-                  company: jobsTable.company,
-                  count: sql<number>`count(*)::int`,
-                })
-                .from(jobsTable)
-                .where(inArray(jobsTable.company, jobCompanies))
-                .groupBy(jobsTable.company)
-            ).map((row) => [row.company, row.count])
-          )
-        : {};
+    let jobCountsByCompany: Record<string, number> = {};
+    if (jobsTable && jobCompanies.length > 0) {
+      try {
+        jobCountsByCompany = Object.fromEntries(
+          (
+            await db
+              .select({
+                company: jobsTable.company,
+                count: sql<number>`count(*)::int`,
+              })
+              .from(jobsTable)
+              .where(inArray(jobsTable.company, jobCompanies))
+              .groupBy(jobsTable.company)
+          ).map((row) => [row.company, row.count])
+        );
+      } catch (error) {
+        console.error("[news] Failed to load portfolio job counts:", error);
+        try {
+          const jobRows = await db
+            .select({ company: jobsTable.company })
+            .from(jobsTable)
+            .where(inArray(jobsTable.company, jobCompanies));
+
+          jobCountsByCompany = jobRows.reduce<Record<string, number>>((counts, row) => {
+            counts[row.company] = (counts[row.company] || 0) + 1;
+            return counts;
+          }, {});
+        } catch (fallbackError) {
+          console.error("[news] Portfolio job count fallback failed:", fallbackError);
+        }
+      }
+    }
 
     const setContext = (
       sourceType: string,
