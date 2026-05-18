@@ -16,8 +16,9 @@ import {
   newsletterSendEvents,
   newsletterSubscribers,
   newsletterUnsubTokens,
-} from "../../src/db";
+} from "../../src/db/schema";
 import { createPreferredPostgresSocket, resolvePreferredPostgresTarget } from "../../src/db/postgres-connection";
+import { assertNotProd, formatDatabaseTarget } from "../../src/lib/prod-db-guard";
 import { TEST_ID_PREFIX } from "../../src/lib/test-data-cleanup";
 import { isMissingNewsletterSchemaError } from "../../src/services/newsletter-schema";
 
@@ -34,6 +35,22 @@ const TEST_SUBSTRINGS = [
   "@example.com",
   ".example.com",
   "://example.com",
+];
+const CLEANUP_TARGETS = [
+  "newsletter_send_events",
+  "newsletter_campaign_recipients",
+  "newsletter_preferences",
+  "newsletter_unsub_tokens",
+  "newsletter_campaigns",
+  "newsletter_subscribers",
+  "announcements",
+  "curated_links",
+  "jobs",
+  "candidates",
+  "investments",
+  "investment_categories",
+  "job_tags",
+  "job_roles",
 ];
 
 function parseEnvArg(argv: string[]): TargetEnv {
@@ -93,6 +110,15 @@ async function run() {
   const targetEnv = parseEnvArg(process.argv.slice(2));
   const databaseUrl = resolveUrl(targetEnv);
   console.log(`[db:cleanup-test-data] Cleaning ${targetEnv}`);
+  try {
+    console.log(`[db:cleanup-test-data] Database: ${formatDatabaseTarget(databaseUrl)}`);
+  } catch {
+    console.log(`[db:cleanup-test-data] Database: malformed URL (${databaseUrl || "empty"})`);
+  }
+  console.log(
+    `[db:cleanup-test-data] Rows this script may touch: matching test/demo/qa/e2e rows in ${CLEANUP_TARGETS.length} tables`
+  );
+  assertNotProd(databaseUrl);
 
   const target = await resolvePreferredPostgresTarget(databaseUrl);
   if (target.tlsServername && target.connectHost !== target.tlsServername) {

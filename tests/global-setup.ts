@@ -20,6 +20,7 @@ import postgres from "postgres";
 import { resolve } from "node:path";
 import { loadEnvConfig } from "@next/env";
 import * as dbSchema from "../src/db/schema";
+import { assertNotProd, formatDatabaseTarget } from "../src/lib/prod-db-guard";
 import { TEST_ID_PREFIX } from "../src/lib/test-data-cleanup";
 
 const TEST_PREFIX = TEST_ID_PREFIX;
@@ -303,6 +304,9 @@ export default async function globalSetup() {
   console.log("\n🌱 Setting up E2E test data...");
 
   const connectionString = getConnectionString();
+  console.log(`E2E database: ${formatDatabaseTarget(connectionString)}`);
+  assertNotProd(connectionString, { allowEnvVar: "__ALLOW_E2E_PROD_SEED_NEVER__" });
+
   const queryClient = postgres(connectionString, { onnotice: () => {} });
   const testDb = drizzle(queryClient, { schema: dbSchema });
 

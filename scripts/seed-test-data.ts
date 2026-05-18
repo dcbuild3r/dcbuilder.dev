@@ -6,7 +6,6 @@
  * Use TEST_MODE=true environment variable to only seed when appropriate.
  */
 
-import { db } from "../src/db";
 import {
   jobs,
   jobTags,
@@ -17,10 +16,40 @@ import {
   investmentCategories,
 } from "../src/db/schema";
 import { sql } from "drizzle-orm";
+import { assertNotProd, formatDatabaseTarget } from "../src/lib/prod-db-guard";
 import { TEST_ID_PREFIX } from "../src/lib/test-data-cleanup";
 
 // Deterministic test IDs for reliable test assertions
 const TEST_PREFIX = TEST_ID_PREFIX;
+
+const databaseUrl = process.env.DATABASE_URL || "";
+const args = process.argv.slice(2);
+const cleanOnly = args.includes("--clean");
+const seedOnly = args.includes("--seed");
+
+function logWritePlan() {
+  console.log("\n🚧 Test data seed target");
+  try {
+    console.log(`Database: ${formatDatabaseTarget(databaseUrl)}`);
+  } catch {
+    console.log(`Database: malformed URL (${databaseUrl || "empty"})`);
+  }
+
+  console.log("Rows this script may touch:");
+  if (!seedOnly) {
+    console.log("  delete: matching test-* rows in jobs, candidates, curated_links, investments, investment_categories, job_tags, job_roles");
+  }
+  if (!cleanOnly) {
+    console.log(`  insert job_tags: ${testJobTags.length}`);
+    console.log(`  insert job_roles: ${testJobRoles.length}`);
+    console.log(`  insert jobs: ${testJobs.length}`);
+    console.log(`  insert candidates: ${testCandidates.length}`);
+    console.log(`  insert curated_links: ${testCuratedLinks.length}`);
+    console.log(`  insert investment_categories: ${testInvestmentCategories.length}`);
+    console.log(`  insert investments: ${testInvestments.length}`);
+  }
+  console.log("");
+}
 
 const testJobTags = [
   { id: `${TEST_PREFIX}tag-ai`, slug: "ai", label: "AI" },
@@ -176,6 +205,16 @@ const testInvestments = [
   },
 ];
 
+logWritePlan();
+try {
+  assertNotProd(databaseUrl);
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+}
+
+const { db } = await import("../src/db");
+
 async function cleanTestData() {
   console.log("Cleaning existing test data...\n");
 
@@ -245,10 +284,6 @@ async function seedTestData() {
 }
 
 async function main() {
-  const args = process.argv.slice(2);
-  const cleanOnly = args.includes("--clean");
-  const seedOnly = args.includes("--seed");
-
   try {
     if (cleanOnly) {
       await cleanTestData();
