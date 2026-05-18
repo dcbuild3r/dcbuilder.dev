@@ -9,6 +9,13 @@ function createMissingRelevanceError(tableName: string) {
   return error;
 }
 
+function createMissingNewsSourceInvestmentsError() {
+  const error = new Error("Failed query") as Error & { cause?: Error; query?: string };
+  error.cause = new Error('relation "news_source_investments" does not exist');
+  error.query = 'select "source_type", "source_value", "source_kind" from "news_source_investments"';
+  return error;
+}
+
 describe("getAllNews relevance mapping", () => {
   afterEach(() => {
     mock.restore();
@@ -456,6 +463,108 @@ describe("getAllNews relevance mapping", () => {
       jobsUrl: "/jobs?company=Octet",
       jobCount: 3,
       sourceIsCompanyAccount: false,
+    });
+  });
+
+  test("uses starter mappings when the mapping table is missing in the database", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+    const newsSourceInvestments = {
+      __table: "news_source_investments",
+      sourceType: {},
+      sourceValue: {},
+      sourceKind: {},
+      investmentId: {},
+    };
+    const investments = {
+      __table: "investments",
+      id: {},
+      title: {},
+      logo: {},
+      website: {},
+    };
+    const jobs = {
+      __table: "jobs",
+      company: {},
+    };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => [],
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+      newsSourceInvestments,
+      investments,
+      jobs,
+    }));
+
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: () => ({
+          from: (table: { __table: string }) => {
+            if (table.__table === "curated_links") {
+              return {
+                orderBy: async () => [
+                  {
+                    id: "prime-intellect-x-missing-table",
+                    title: "Prime Intellect Lab exits beta",
+                    url: "https://x.com/primeintellect/status/2051576508675350953",
+                    source: "Prime Intellect",
+                    sourceImage: null,
+                    date: new Date("2026-05-07T00:00:00.000Z"),
+                    description: "Curated summary",
+                    category: "ai",
+                    featured: false,
+                    relevance: 8,
+                  },
+                ],
+              };
+            }
+
+            if (table.__table === "announcements") {
+              return { orderBy: async () => [] };
+            }
+
+            if (table.__table === "news_source_investments") {
+              throw createMissingNewsSourceInvestmentsError();
+            }
+
+            if (table.__table === "investments") {
+              return {
+                where: async () => [
+                  {
+                    id: "prime-intellect-id",
+                    title: "Prime Intellect",
+                    logo: "https://r2.example/prime-intellect.jpg",
+                    website: "https://www.primeintellect.ai/",
+                  },
+                ],
+              };
+            }
+
+            return {
+              where: () => ({
+                groupBy: async () => [{ company: "Prime Intellect", count: 4 }],
+              }),
+            };
+          },
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-portfolio-missing-table=${Date.now()}`);
+    const news = await getAllNews();
+
+    expect(news[0].portfolioCompany).toMatchObject({
+      title: "Prime Intellect",
+      logo: "https://r2.example/prime-intellect.jpg",
+      website: "https://www.primeintellect.ai/",
+      jobsUrl: "/jobs?company=Prime%20Intellect",
+      jobCount: 4,
+      sourceIsCompanyAccount: true,
     });
   });
 

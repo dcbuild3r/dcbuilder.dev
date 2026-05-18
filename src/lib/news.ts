@@ -288,17 +288,25 @@ async function getPortfolioCompanyContextsBySource() {
           })
           .from(newsSourceInvestmentsTable);
       } catch (error) {
-        if (isMissingColumnError(error, "source_kind")) {
-          mappings = (
-            await db
-              .select({
-                sourceType: newsSourceInvestmentsTable.sourceType,
-                sourceValue: newsSourceInvestmentsTable.sourceValue,
-                investmentId: newsSourceInvestmentsTable.investmentId,
-              })
-              .from(newsSourceInvestmentsTable)
-          ).map((mapping) => ({ ...mapping, sourceKind: null }));
-        } else if (!isMissingRelationError(error, "news_source_investments")) {
+        if (isMissingRelationError(error, "news_source_investments")) {
+          mappings = [];
+        } else if (isMissingColumnError(error, "source_kind")) {
+          try {
+            mappings = (
+              await db
+                .select({
+                  sourceType: newsSourceInvestmentsTable.sourceType,
+                  sourceValue: newsSourceInvestmentsTable.sourceValue,
+                  investmentId: newsSourceInvestmentsTable.investmentId,
+                })
+                .from(newsSourceInvestmentsTable)
+            ).map((mapping) => ({ ...mapping, sourceKind: null }));
+          } catch (fallbackError) {
+            if (!isMissingRelationError(fallbackError, "news_source_investments")) {
+              console.error("[news] Failed to load portfolio source mappings:", fallbackError);
+            }
+          }
+        } else {
           console.error("[news] Failed to load portfolio source mappings:", error);
         }
       }
