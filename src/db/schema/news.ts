@@ -62,6 +62,7 @@ export const newsSourceInvestments = pgTable(
       .$defaultFn(() => createId()),
     sourceType: text("source_type").notNull(), // x_handle, blog_host
     sourceValue: text("source_value").notNull(),
+    sourceKind: text("source_kind").notNull().default("person"), // person, company
     investmentId: text("investment_id")
       .notNull()
       .references(() => investments.id, { onDelete: "cascade" }),

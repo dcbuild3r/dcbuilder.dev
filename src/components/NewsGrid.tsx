@@ -233,7 +233,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 	const getPortfolioCompanyBadge = (item: AggregatedNewsItem) => {
 		const company = item.portfolioCompany;
-		if (!company?.logo?.trim()) return null;
+		if (!company?.logo?.trim() || company.sourceIsCompanyAccount) return null;
 
 		const imageKey = `${item.id}:portfolio-company`;
 		if (failedImageKeys[imageKey]) return null;
@@ -256,6 +256,51 @@ export function NewsGrid({ news }: NewsGridProps) {
 		if (!company.website) {
 			return (
 				<span className={className} aria-label={company.title}>
+					{logo}
+				</span>
+			);
+		}
+
+		return (
+			<a
+				href={company.website}
+				target="_blank"
+				rel="noopener noreferrer"
+				onClick={(event) => event.stopPropagation()}
+				className={className}
+				aria-label={`Open ${company.title}`}
+				title={company.title}
+			>
+				{logo}
+			</a>
+		);
+	};
+
+	const getPortfolioCompanyTitleLink = (item: AggregatedNewsItem) => {
+		const company = item.portfolioCompany;
+		if (!company?.sourceIsCompanyAccount || !company.logo?.trim()) return null;
+
+		const imageKey = `${item.id}:portfolio-company-title`;
+		if (failedImageKeys[imageKey]) return null;
+
+		const logo = (
+			<Image
+				src={company.logo.trim()}
+				alt={company.title}
+				width={28}
+				height={28}
+				sizes="28px"
+				className="h-full w-full rounded-md bg-white object-contain p-0.5"
+				unoptimized
+				onError={() => markImageFailed(imageKey)}
+			/>
+		);
+		const className =
+			"pointer-events-auto inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-700";
+
+		if (!company.website) {
+			return (
+				<span className={className} aria-label={company.title} title={company.title}>
 					{logo}
 				</span>
 			);
@@ -636,6 +681,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 												</span>
 											)}
 											{getPortfolioHiringLink(item)}
+											{getPortfolioCompanyTitleLink(item)}
 											{clicksLoaded && isPopular(item.id) && (
 												<span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
 													🔥 POPULAR
