@@ -233,7 +233,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 	const getPortfolioCompanyMetaLogo = (item: AggregatedNewsItem) => {
 		const company = item.portfolioCompany;
-		if (!company?.logo?.trim()) return null;
+		if (!company?.logo?.trim() || !company.sourceIsCompanyAccount) return null;
 
 		const imageKey = `${item.id}:portfolio-company-meta`;
 		if (failedImageKeys[imageKey]) return null;
@@ -274,6 +274,58 @@ export function NewsGrid({ news }: NewsGridProps) {
 				{logo}
 			</a>
 		);
+	};
+
+	const getPortfolioCompanyAvatarBadge = (item: AggregatedNewsItem) => {
+		const company = item.portfolioCompany;
+		if (!company?.logo?.trim() || company.sourceIsCompanyAccount) return null;
+
+		const imageKey = `${item.id}:portfolio-company-avatar`;
+		if (failedImageKeys[imageKey]) return null;
+
+		const logo = (
+			<Image
+				src={company.logo.trim()}
+				alt={company.title}
+				width={40}
+				height={40}
+				sizes="40px"
+				className="h-full w-full rounded-md bg-white object-contain p-0.5"
+				unoptimized
+				onError={() => markImageFailed(imageKey)}
+			/>
+		);
+		const className =
+			"pointer-events-auto absolute -bottom-12 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-lg border-2 border-white bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-900";
+
+		if (!company.website) {
+			return (
+				<span className={className} aria-label={company.title} title={company.title}>
+					{logo}
+				</span>
+			);
+		}
+
+		return (
+			<a
+				href={company.website}
+				target="_blank"
+				rel="noopener noreferrer"
+				onClick={(event) => event.stopPropagation()}
+				className={className}
+				aria-label={`Open ${company.title}`}
+				title={company.title}
+			>
+				{logo}
+			</a>
+		);
+	};
+
+	const hasPortfolioCompanyAvatarBadge = (item: AggregatedNewsItem) => {
+		const company = item.portfolioCompany;
+		if (!company?.logo?.trim() || company.sourceIsCompanyAccount) return false;
+
+		return !failedImageKeys[`${item.id}:portfolio-company-avatar`];
 	};
 
 	const getPortfolioHiringLink = (item: AggregatedNewsItem) => {
@@ -336,6 +388,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 							onError={() => markImageFailed(imageKey)}
 						/>
 						<XLogo />
+						{getPortfolioCompanyAvatarBadge(item)}
 					</div>
 				);
 			}
@@ -355,12 +408,14 @@ export function NewsGrid({ news }: NewsGridProps) {
 							onError={() => markImageFailed(imageKey)}
 						/>
 						<XLogo />
+						{getPortfolioCompanyAvatarBadge(item)}
 					</div>
 				);
 			}
 			return (
 				<span className="relative inline-block text-5xl transition-transform duration-150 group-hover:scale-[1.08]">
 					𝕏
+					{getPortfolioCompanyAvatarBadge(item)}
 				</span>
 			);
 		}
@@ -404,12 +459,14 @@ export function NewsGrid({ news }: NewsGridProps) {
 								className="rounded-full w-14 h-14 object-cover"
 								onError={() => markImageFailed(imageKey)}
 							/>
+							{getPortfolioCompanyAvatarBadge(item)}
 						</div>
 					);
 				}
 				return (
 					<span className="relative inline-block text-5xl transition-transform duration-150 group-hover:scale-[1.08]">
 						🔗
+						{getPortfolioCompanyAvatarBadge(item)}
 					</span>
 				);
 			case "announcement":
@@ -601,6 +658,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 				) : (
 					renderedNews.map((item) => {
 						const isDescriptionExpanded = expandedDescriptionIds.has(item.id);
+						const hasAvatarBadge = hasPortfolioCompanyAvatarBadge(item);
 
 						return (
 							<div
@@ -618,7 +676,11 @@ export function NewsGrid({ news }: NewsGridProps) {
 									<span className="sr-only">Open {item.title}</span>
 								</a>
 								<div className="relative z-10 flex items-start gap-4 pointer-events-none">
-									<div className="flex h-14 w-14 flex-shrink-0 items-center justify-center">
+									<div
+										className={`flex w-14 flex-shrink-0 justify-center ${
+											hasAvatarBadge ? "h-28 items-start" : "h-14 items-center"
+										}`}
+									>
 										{getTypeIcon(item)}
 									</div>
 
