@@ -200,6 +200,26 @@ export function NewsGrid({ news }: NewsGridProps) {
 		});
 	};
 
+	const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+	const getSourceWithoutPortfolioCompany = (item: AggregatedNewsItem) => {
+		const source = item.source?.trim();
+		const company = item.portfolioCompany;
+		const companyTitle = company?.title?.trim();
+		if (!source || !company || !companyTitle) return source;
+
+		if (company.sourceIsCompanyAccount && source.toLowerCase() === companyTitle.toLowerCase()) {
+			return undefined;
+		}
+
+		const companySuffix = new RegExp(`\\s*\\(${escapeRegExp(companyTitle)}\\)`, "i");
+		return source
+			.split(",")
+			.map((token) => token.replace(companySuffix, "").trim())
+			.filter(Boolean)
+			.join(", ");
+	};
+
 	// Extract X/Twitter handle from URL
 	const getXHandle = (url: string): string | null => {
 		const match = url.match(/x\.com\/([^/]+)/);
@@ -272,6 +292,36 @@ export function NewsGrid({ news }: NewsGridProps) {
 				title={company.title}
 			>
 				{logo}
+			</a>
+		);
+	};
+
+	const getPortfolioCompanyMetaName = (item: AggregatedNewsItem) => {
+		const company = item.portfolioCompany;
+		if (!company?.title?.trim()) return null;
+
+		const className =
+			"pointer-events-auto inline-flex rounded-sm font-medium text-white underline-offset-4 transition-colors hover:text-neutral-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
+
+		if (!company.website) {
+			return (
+				<span className={className} title={company.title}>
+					{company.title}
+				</span>
+			);
+		}
+
+		return (
+			<a
+				href={company.website}
+				target="_blank"
+				rel="noopener noreferrer"
+				onClick={(event) => event.stopPropagation()}
+				className={className}
+				aria-label={`Open ${company.title}`}
+				title={company.title}
+			>
+				{company.title}
 			</a>
 		);
 	};
@@ -738,8 +788,9 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 										<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
 											<span>Published {formatDate(item.date)}</span>
-											{renderCommaSeparatedTokens(item.source, `${item.id}:source`)}
+											{renderCommaSeparatedTokens(getSourceWithoutPortfolioCompany(item), `${item.id}:source`)}
 											{item.company && <span>{item.company}</span>}
+											{getPortfolioCompanyMetaName(item)}
 											{getPortfolioCompanyMetaLogo(item)}
 											<span
 												className={`px-2 py-0.5 rounded-full ${
