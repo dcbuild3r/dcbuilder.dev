@@ -200,6 +200,26 @@ export function NewsGrid({ news }: NewsGridProps) {
 		});
 	};
 
+	const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+	const getSourceWithoutPortfolioCompany = (item: AggregatedNewsItem) => {
+		const source = item.source?.trim();
+		const company = item.portfolioCompany;
+		const companyTitle = company?.title?.trim();
+		if (!source || !company || !companyTitle) return source;
+
+		if (company.sourceIsCompanyAccount && source.toLowerCase() === companyTitle.toLowerCase()) {
+			return undefined;
+		}
+
+		const companySuffix = new RegExp(`\\s*\\(${escapeRegExp(companyTitle)}\\)`, "i");
+		return source
+			.split(",")
+			.map((token) => token.replace(companySuffix, "").trim())
+			.filter(Boolean)
+			.join(", ");
+	};
+
 	// Extract X/Twitter handle from URL
 	const getXHandle = (url: string): string | null => {
 		const match = url.match(/x\.com\/([^/]+)/);
@@ -231,11 +251,86 @@ export function NewsGrid({ news }: NewsGridProps) {
 		return `${url}${separator}v=${BLOG_IMAGE_CACHE_VERSION}`;
 	}, []);
 
-	const getPortfolioCompanyBadge = (item: AggregatedNewsItem) => {
+	const getPortfolioCompanyMetaLogo = (item: AggregatedNewsItem) => {
+		const company = item.portfolioCompany;
+		if (!company?.logo?.trim() || !company.sourceIsCompanyAccount) return null;
+
+		const imageKey = `${item.id}:portfolio-company-meta`;
+		if (failedImageKeys[imageKey]) return null;
+
+		const logo = (
+			<Image
+				src={company.logo.trim()}
+				alt={company.title}
+				width={24}
+				height={24}
+				sizes="24px"
+				className="h-full w-full rounded-md bg-white object-contain p-0.5"
+				unoptimized
+				onError={() => markImageFailed(imageKey)}
+			/>
+		);
+		const className =
+			"pointer-events-auto inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border border-neutral-200 bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-700";
+
+		if (!company.website) {
+			return (
+				<span className={className} aria-label={company.title} title={company.title}>
+					{logo}
+				</span>
+			);
+		}
+
+		return (
+			<a
+				href={company.website}
+				target="_blank"
+				rel="noopener noreferrer"
+				onClick={(event) => event.stopPropagation()}
+				className={className}
+				aria-label={`Open ${company.title}`}
+				title={company.title}
+			>
+				{logo}
+			</a>
+		);
+	};
+
+	const getPortfolioCompanyMetaName = (item: AggregatedNewsItem) => {
+		const company = item.portfolioCompany;
+		if (!company?.title?.trim()) return null;
+
+		const className =
+			"pointer-events-auto inline-flex rounded-sm font-medium text-white underline-offset-4 transition-colors hover:text-neutral-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
+
+		if (!company.website) {
+			return (
+				<span className={className} title={company.title}>
+					{company.title}
+				</span>
+			);
+		}
+
+		return (
+			<a
+				href={company.website}
+				target="_blank"
+				rel="noopener noreferrer"
+				onClick={(event) => event.stopPropagation()}
+				className={className}
+				aria-label={`Open ${company.title}`}
+				title={company.title}
+			>
+				{company.title}
+			</a>
+		);
+	};
+
+	const getPortfolioCompanyAvatarBadge = (item: AggregatedNewsItem) => {
 		const company = item.portfolioCompany;
 		if (!company?.logo?.trim() || company.sourceIsCompanyAccount) return null;
 
-		const imageKey = `${item.id}:portfolio-company`;
+		const imageKey = `${item.id}:portfolio-company-avatar`;
 		if (failedImageKeys[imageKey]) return null;
 
 		const logo = (
@@ -255,7 +350,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 		if (!company.website) {
 			return (
-				<span className={className} aria-label={company.title}>
+				<span className={className} aria-label={company.title} title={company.title}>
 					{logo}
 				</span>
 			);
@@ -280,52 +375,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 		const company = item.portfolioCompany;
 		if (!company?.logo?.trim() || company.sourceIsCompanyAccount) return false;
 
-		return !failedImageKeys[`${item.id}:portfolio-company`];
-	};
-
-	const getPortfolioCompanyTitleLink = (item: AggregatedNewsItem) => {
-		const company = item.portfolioCompany;
-		if (!company?.sourceIsCompanyAccount || !company.logo?.trim()) return null;
-
-		const imageKey = `${item.id}:portfolio-company-title`;
-		if (failedImageKeys[imageKey]) return null;
-
-		const logo = (
-			<Image
-				src={company.logo.trim()}
-				alt={company.title}
-				width={28}
-				height={28}
-				sizes="28px"
-				className="h-full w-full rounded-md bg-white object-contain p-0.5"
-				unoptimized
-				onError={() => markImageFailed(imageKey)}
-			/>
-		);
-		const className =
-			"pointer-events-auto inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-700";
-
-		if (!company.website) {
-			return (
-				<span className={className} aria-label={company.title} title={company.title}>
-					{logo}
-				</span>
-			);
-		}
-
-		return (
-			<a
-				href={company.website}
-				target="_blank"
-				rel="noopener noreferrer"
-				onClick={(event) => event.stopPropagation()}
-				className={className}
-				aria-label={`Open ${company.title}`}
-				title={company.title}
-			>
-				{logo}
-			</a>
-		);
+		return !failedImageKeys[`${item.id}:portfolio-company-avatar`];
 	};
 
 	const getPortfolioHiringLink = (item: AggregatedNewsItem) => {
@@ -388,7 +438,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 							onError={() => markImageFailed(imageKey)}
 						/>
 						<XLogo />
-						{getPortfolioCompanyBadge(item)}
+						{getPortfolioCompanyAvatarBadge(item)}
 					</div>
 				);
 			}
@@ -408,14 +458,14 @@ export function NewsGrid({ news }: NewsGridProps) {
 							onError={() => markImageFailed(imageKey)}
 						/>
 						<XLogo />
-						{getPortfolioCompanyBadge(item)}
+						{getPortfolioCompanyAvatarBadge(item)}
 					</div>
 				);
 			}
 			return (
 				<span className="relative inline-block text-5xl transition-transform duration-150 group-hover:scale-[1.08]">
 					𝕏
-					{getPortfolioCompanyBadge(item)}
+					{getPortfolioCompanyAvatarBadge(item)}
 				</span>
 			);
 		}
@@ -459,14 +509,14 @@ export function NewsGrid({ news }: NewsGridProps) {
 								className="rounded-full w-14 h-14 object-cover"
 								onError={() => markImageFailed(imageKey)}
 							/>
-							{getPortfolioCompanyBadge(item)}
+							{getPortfolioCompanyAvatarBadge(item)}
 						</div>
 					);
 				}
 				return (
 					<span className="relative inline-block text-5xl transition-transform duration-150 group-hover:scale-[1.08]">
 						🔗
-						{getPortfolioCompanyBadge(item)}
+						{getPortfolioCompanyAvatarBadge(item)}
 					</span>
 				);
 			case "announcement":
@@ -693,7 +743,6 @@ export function NewsGrid({ news }: NewsGridProps) {
 												</span>
 											)}
 											{getPortfolioHiringLink(item)}
-											{getPortfolioCompanyTitleLink(item)}
 											{clicksLoaded && isPopular(item.id) && (
 												<span className="flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
 													🔥 POPULAR
@@ -739,12 +788,10 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 										<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
 											<span>Published {formatDate(item.date)}</span>
-											{clicksLoaded && getClickCount(item.id) > 0 && (
-												<span>{getClickCount(item.id)} clicks</span>
-											)}
-											{renderCommaSeparatedTokens(item.source, `${item.id}:source`)}
+											{renderCommaSeparatedTokens(getSourceWithoutPortfolioCompany(item), `${item.id}:source`)}
 											{item.company && <span>{item.company}</span>}
-											{item.readingTime && <span>{item.readingTime}</span>}
+											{getPortfolioCompanyMetaName(item)}
+											{getPortfolioCompanyMetaLogo(item)}
 											<span
 												className={`px-2 py-0.5 rounded-full ${
 													item.category === "crypto"
@@ -766,6 +813,10 @@ export function NewsGrid({ news }: NewsGridProps) {
 											>
 												{categoryLabels[item.category]}
 											</span>
+											{clicksLoaded && getClickCount(item.id) > 0 && (
+												<span>{getClickCount(item.id)} clicks</span>
+											)}
+											{item.readingTime && <span>{item.readingTime}</span>}
 										</div>
 									</div>
 								</div>

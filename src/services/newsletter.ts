@@ -2890,24 +2890,50 @@ export async function sendDueNewsletterCampaigns() {
 // ---------------------------------------------------------------------------
 
 export async function listSentNewsletterCampaigns(limit: number = 50) {
-  const campaigns = await db
-    .select({
-      id: newsletterCampaigns.id,
-      publicSlug: newsletterCampaigns.publicSlug,
-      subject: newsletterCampaigns.subject,
-      previewText: newsletterCampaigns.previewText,
-      newsletterType: newsletterCampaigns.newsletterType,
-      sentAt: newsletterCampaigns.sentAt,
-      archiveSubject: newsletterCampaigns.archiveSubject,
-      archivePreviewText: newsletterCampaigns.archivePreviewText,
-      archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
-    })
-    .from(newsletterCampaigns)
-    .where(eq(newsletterCampaigns.status, "sent"))
-    .orderBy(desc(newsletterCampaigns.sentAt))
-    .limit(limit);
+  try {
+    const campaigns = await db
+      .select({
+        id: newsletterCampaigns.id,
+        publicSlug: newsletterCampaigns.publicSlug,
+        subject: newsletterCampaigns.subject,
+        previewText: newsletterCampaigns.previewText,
+        newsletterType: newsletterCampaigns.newsletterType,
+        sentAt: newsletterCampaigns.sentAt,
+        archiveSubject: newsletterCampaigns.archiveSubject,
+        archivePreviewText: newsletterCampaigns.archivePreviewText,
+        archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
+      })
+      .from(newsletterCampaigns)
+      .where(eq(newsletterCampaigns.status, "sent"))
+      .orderBy(desc(newsletterCampaigns.sentAt))
+      .limit(limit);
 
-  return campaigns.map(resolveArchiveCampaignSummary);
+    return campaigns.map(resolveArchiveCampaignSummary);
+  } catch (error) {
+    if (!isMissingNewsletterSchemaError(error)) {
+      throw error;
+    }
+
+    const campaigns = await db
+      .select({
+        id: newsletterCampaigns.id,
+        subject: newsletterCampaigns.subject,
+        previewText: newsletterCampaigns.previewText,
+        newsletterType: newsletterCampaigns.newsletterType,
+        sentAt: newsletterCampaigns.sentAt,
+      })
+      .from(newsletterCampaigns)
+      .where(eq(newsletterCampaigns.status, "sent"))
+      .orderBy(desc(newsletterCampaigns.sentAt))
+      .limit(limit);
+
+    return campaigns.map((campaign) =>
+      resolveArchiveCampaignSummary({
+        ...campaign,
+        publicSlug: campaign.id,
+      })
+    );
+  }
 }
 
 export async function getSentNewsletterCampaignForArchive(id: string) {
@@ -2915,28 +2941,36 @@ export async function getSentNewsletterCampaignForArchive(id: string) {
 }
 
 async function getSentNewsletterCampaignForArchiveByPublicSlug(publicSlug: string) {
-  const [campaign] = await db
-    .select({
-      id: newsletterCampaigns.id,
-      publicSlug: newsletterCampaigns.publicSlug,
-      subject: newsletterCampaigns.subject,
-      previewText: newsletterCampaigns.previewText,
-      newsletterType: newsletterCampaigns.newsletterType,
-      sentAt: newsletterCampaigns.sentAt,
-      renderedHtml: newsletterCampaigns.renderedHtml,
-      archiveSubject: newsletterCampaigns.archiveSubject,
-      archivePreviewText: newsletterCampaigns.archivePreviewText,
-      archiveRenderedHtml: newsletterCampaigns.archiveRenderedHtml,
-      archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
-    })
-    .from(newsletterCampaigns)
-    .where(
-      and(
-        eq(newsletterCampaigns.publicSlug, publicSlug),
-        eq(newsletterCampaigns.status, "sent")
+  let campaign;
+  try {
+    [campaign] = await db
+      .select({
+        id: newsletterCampaigns.id,
+        publicSlug: newsletterCampaigns.publicSlug,
+        subject: newsletterCampaigns.subject,
+        previewText: newsletterCampaigns.previewText,
+        newsletterType: newsletterCampaigns.newsletterType,
+        sentAt: newsletterCampaigns.sentAt,
+        renderedHtml: newsletterCampaigns.renderedHtml,
+        archiveSubject: newsletterCampaigns.archiveSubject,
+        archivePreviewText: newsletterCampaigns.archivePreviewText,
+        archiveRenderedHtml: newsletterCampaigns.archiveRenderedHtml,
+        archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
+      })
+      .from(newsletterCampaigns)
+      .where(
+        and(
+          eq(newsletterCampaigns.publicSlug, publicSlug),
+          eq(newsletterCampaigns.status, "sent")
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
+  } catch (error) {
+    if (isMissingNewsletterSchemaError(error)) {
+      return null;
+    }
+    throw error;
+  }
 
   if (!campaign) {
     return null;
@@ -2959,28 +2993,60 @@ export async function findSentNewsletterCampaignForArchive(identifier: string) {
     };
   }
 
-  const [campaign] = await db
-    .select({
-      id: newsletterCampaigns.id,
-      publicSlug: newsletterCampaigns.publicSlug,
-      subject: newsletterCampaigns.subject,
-      previewText: newsletterCampaigns.previewText,
-      newsletterType: newsletterCampaigns.newsletterType,
-      sentAt: newsletterCampaigns.sentAt,
-      renderedHtml: newsletterCampaigns.renderedHtml,
-      archiveSubject: newsletterCampaigns.archiveSubject,
-      archivePreviewText: newsletterCampaigns.archivePreviewText,
-      archiveRenderedHtml: newsletterCampaigns.archiveRenderedHtml,
-      archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
-    })
-    .from(newsletterCampaigns)
-    .where(
-      and(
-        eq(newsletterCampaigns.id, identifier),
-        eq(newsletterCampaigns.status, "sent")
+  let campaign;
+  try {
+    [campaign] = await db
+      .select({
+        id: newsletterCampaigns.id,
+        publicSlug: newsletterCampaigns.publicSlug,
+        subject: newsletterCampaigns.subject,
+        previewText: newsletterCampaigns.previewText,
+        newsletterType: newsletterCampaigns.newsletterType,
+        sentAt: newsletterCampaigns.sentAt,
+        renderedHtml: newsletterCampaigns.renderedHtml,
+        archiveSubject: newsletterCampaigns.archiveSubject,
+        archivePreviewText: newsletterCampaigns.archivePreviewText,
+        archiveRenderedHtml: newsletterCampaigns.archiveRenderedHtml,
+        archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
+      })
+      .from(newsletterCampaigns)
+      .where(
+        and(
+          eq(newsletterCampaigns.id, identifier),
+          eq(newsletterCampaigns.status, "sent")
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
+  } catch (error) {
+    if (!isMissingNewsletterSchemaError(error)) {
+      throw error;
+    }
+
+    [campaign] = await db
+      .select({
+        id: newsletterCampaigns.id,
+        subject: newsletterCampaigns.subject,
+        previewText: newsletterCampaigns.previewText,
+        newsletterType: newsletterCampaigns.newsletterType,
+        sentAt: newsletterCampaigns.sentAt,
+        renderedHtml: newsletterCampaigns.renderedHtml,
+      })
+      .from(newsletterCampaigns)
+      .where(
+        and(
+          eq(newsletterCampaigns.id, identifier),
+          eq(newsletterCampaigns.status, "sent")
+        )
+      )
+      .limit(1);
+
+    if (campaign) {
+      campaign = {
+        ...campaign,
+        publicSlug: campaign.id,
+      };
+    }
+  }
 
   const resolved = campaign ? resolveArchiveCampaignDetail(campaign) : null;
   if (!resolved?.renderedHtml) {
