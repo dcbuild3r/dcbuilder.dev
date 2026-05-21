@@ -7,6 +7,21 @@ type DbMockOptions = {
 };
 
 function makeQueryResult<T>(value: T) {
+  if (value instanceof Error) {
+    return {
+      limit: async () => {
+        throw value;
+      },
+      orderBy: () => ({
+        limit: async () => {
+          throw value;
+        },
+      }),
+      then: (_resolve: (result: T) => unknown, reject?: (reason: unknown) => unknown) =>
+        Promise.reject(value).then(undefined, reject),
+    };
+  }
+
   return {
     limit: async () => value,
     orderBy: () => ({
@@ -52,6 +67,17 @@ async function installNewsletterDbMock({
       }),
     },
   }));
+}
+
+function createMissingPublicSlugError() {
+  const cause = new Error('column "public_slug" does not exist') as Error & {
+    code?: string;
+  };
+  cause.code = "42703";
+
+  const error = new Error("Failed query") as Error & { cause?: Error };
+  error.cause = cause;
+  return error;
 }
 
 describe("newsletter public slug services", () => {
@@ -167,6 +193,35 @@ describe("newsletter public slug services", () => {
     }]);
   });
 
+  test("falls back to legacy ids for archive summaries when public_slug is missing", async () => {
+    await installNewsletterDbMock({
+      selectQueue: [
+        createMissingPublicSlugError(),
+        [{
+          id: "camp_sent_legacy",
+          subject: "Legacy sent campaign",
+          previewText: "Legacy preview",
+          newsletterType: "news",
+          sentAt: new Date("2026-03-10T08:00:00.000Z"),
+        }],
+      ],
+    });
+
+    const { listSentNewsletterCampaigns } = await import(
+      `../src/services/newsletter?newsletter-public-slug-list-fallback=${Date.now()}`
+    );
+
+    await expect(listSentNewsletterCampaigns(10)).resolves.toEqual([{
+      id: "camp_sent_legacy",
+      publicSlug: "camp_sent_legacy",
+      subject: "Legacy sent campaign",
+      previewText: "Legacy preview",
+      newsletterType: "news",
+      sentAt: new Date("2026-03-10T08:00:00.000Z"),
+      archiveCorrectedAt: null,
+    }]);
+  });
+
   test("finds sent archive campaigns by slug first and falls back to legacy ids", async () => {
     await installNewsletterDbMock({
       selectQueue: [
@@ -229,6 +284,41 @@ describe("newsletter public slug services", () => {
         newsletterType: "news",
         sentAt: new Date("2026-03-11T08:00:00.000Z"),
         renderedHtml: "<p>Body</p>",
+        archiveCorrectedAt: null,
+      },
+      matchedByLegacyId: true,
+    });
+  });
+
+  test("loads legacy sent campaign ids when public_slug is missing", async () => {
+    await installNewsletterDbMock({
+      selectQueue: [
+        createMissingPublicSlugError(),
+        createMissingPublicSlugError(),
+        [{
+          id: "camp_sent_legacy",
+          subject: "Legacy sent campaign",
+          previewText: "Legacy preview",
+          newsletterType: "news",
+          sentAt: new Date("2026-03-10T08:00:00.000Z"),
+          renderedHtml: "<p>Legacy body</p>",
+        }],
+      ],
+    });
+
+    const { findSentNewsletterCampaignForArchive } = await import(
+      `../src/services/newsletter?newsletter-public-slug-find-fallback=${Date.now()}`
+    );
+
+    await expect(findSentNewsletterCampaignForArchive("camp_sent_legacy")).resolves.toEqual({
+      campaign: {
+        id: "camp_sent_legacy",
+        publicSlug: "camp_sent_legacy",
+        subject: "Legacy sent campaign",
+        previewText: "Legacy preview",
+        newsletterType: "news",
+        sentAt: new Date("2026-03-10T08:00:00.000Z"),
+        renderedHtml: "<p>Legacy body</p>",
         archiveCorrectedAt: null,
       },
       matchedByLegacyId: true,
