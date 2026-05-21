@@ -42,7 +42,10 @@ import {
   validatePeriodDays as validateSummaryPeriodDays,
   type NewsletterTimeframePreset,
 } from "@/lib/newsletter-summary";
-import { isMissingNewsletterSchemaError } from "@/services/newsletter-schema";
+import {
+  isMissingNewsletterSchemaColumnError,
+  isMissingNewsletterSchemaError,
+} from "@/services/newsletter-schema";
 
 type SendResult = { success: true; messageId: string } | { success: false; error: string };
 
@@ -2913,6 +2916,23 @@ export async function listSentNewsletterCampaigns(limit: number = 50) {
     if (!isMissingNewsletterSchemaError(error)) {
       throw error;
     }
+    if (!isMissingNewsletterSchemaColumnError(error, "public_slug")) {
+      const campaigns = await db
+        .select({
+          id: newsletterCampaigns.id,
+          publicSlug: newsletterCampaigns.publicSlug,
+          subject: newsletterCampaigns.subject,
+          previewText: newsletterCampaigns.previewText,
+          newsletterType: newsletterCampaigns.newsletterType,
+          sentAt: newsletterCampaigns.sentAt,
+        })
+        .from(newsletterCampaigns)
+        .where(eq(newsletterCampaigns.status, "sent"))
+        .orderBy(desc(newsletterCampaigns.sentAt))
+        .limit(limit);
+
+      return campaigns.map(resolveArchiveCampaignSummary);
+    }
 
     const campaigns = await db
       .select({
@@ -2966,10 +2986,31 @@ async function getSentNewsletterCampaignForArchiveByPublicSlug(publicSlug: strin
       )
       .limit(1);
   } catch (error) {
-    if (isMissingNewsletterSchemaError(error)) {
+    if (!isMissingNewsletterSchemaError(error)) {
+      throw error;
+    }
+    if (isMissingNewsletterSchemaColumnError(error, "public_slug")) {
       return null;
     }
-    throw error;
+
+    [campaign] = await db
+      .select({
+        id: newsletterCampaigns.id,
+        publicSlug: newsletterCampaigns.publicSlug,
+        subject: newsletterCampaigns.subject,
+        previewText: newsletterCampaigns.previewText,
+        newsletterType: newsletterCampaigns.newsletterType,
+        sentAt: newsletterCampaigns.sentAt,
+        renderedHtml: newsletterCampaigns.renderedHtml,
+      })
+      .from(newsletterCampaigns)
+      .where(
+        and(
+          eq(newsletterCampaigns.publicSlug, publicSlug),
+          eq(newsletterCampaigns.status, "sent")
+        )
+      )
+      .limit(1);
   }
 
   if (!campaign) {
@@ -3022,29 +3063,50 @@ export async function findSentNewsletterCampaignForArchive(identifier: string) {
       throw error;
     }
 
-    [campaign] = await db
-      .select({
-        id: newsletterCampaigns.id,
-        subject: newsletterCampaigns.subject,
-        previewText: newsletterCampaigns.previewText,
-        newsletterType: newsletterCampaigns.newsletterType,
-        sentAt: newsletterCampaigns.sentAt,
-        renderedHtml: newsletterCampaigns.renderedHtml,
-      })
-      .from(newsletterCampaigns)
-      .where(
-        and(
-          eq(newsletterCampaigns.id, identifier),
-          eq(newsletterCampaigns.status, "sent")
+    if (!isMissingNewsletterSchemaColumnError(error, "public_slug")) {
+      [campaign] = await db
+        .select({
+          id: newsletterCampaigns.id,
+          publicSlug: newsletterCampaigns.publicSlug,
+          subject: newsletterCampaigns.subject,
+          previewText: newsletterCampaigns.previewText,
+          newsletterType: newsletterCampaigns.newsletterType,
+          sentAt: newsletterCampaigns.sentAt,
+          renderedHtml: newsletterCampaigns.renderedHtml,
+        })
+        .from(newsletterCampaigns)
+        .where(
+          and(
+            eq(newsletterCampaigns.id, identifier),
+            eq(newsletterCampaigns.status, "sent")
+          )
         )
-      )
-      .limit(1);
+        .limit(1);
+    } else {
+      [campaign] = await db
+        .select({
+          id: newsletterCampaigns.id,
+          subject: newsletterCampaigns.subject,
+          previewText: newsletterCampaigns.previewText,
+          newsletterType: newsletterCampaigns.newsletterType,
+          sentAt: newsletterCampaigns.sentAt,
+          renderedHtml: newsletterCampaigns.renderedHtml,
+        })
+        .from(newsletterCampaigns)
+        .where(
+          and(
+            eq(newsletterCampaigns.id, identifier),
+            eq(newsletterCampaigns.status, "sent")
+          )
+        )
+        .limit(1);
 
-    if (campaign) {
-      campaign = {
-        ...campaign,
-        publicSlug: campaign.id,
-      };
+      if (campaign) {
+        campaign = {
+          ...campaign,
+          publicSlug: campaign.id,
+        };
+      }
     }
   }
 

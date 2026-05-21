@@ -52,6 +52,21 @@ export function isMissingNewsletterSchemaError(error: unknown): boolean {
     .join("\n")
     .toLowerCase();
 
+  return isMissingNewsletterSchemaMessage(haystack);
+}
+
+export function isMissingNewsletterSchemaColumnError(
+  error: unknown,
+  columnName: string
+): boolean {
+  const haystack = collectErrorMessages(error)
+    .join("\n")
+    .toLowerCase();
+
+  return haystack.includes(columnName.toLowerCase()) && isMissingNewsletterSchemaMessage(haystack);
+}
+
+function isMissingNewsletterSchemaMessage(haystack: string): boolean {
   const mentionsNewsletter =
     haystack.includes("newsletter_") ||
     haystack.includes("newsletter ") ||

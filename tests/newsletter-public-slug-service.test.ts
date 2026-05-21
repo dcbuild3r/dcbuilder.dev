@@ -80,6 +80,17 @@ function createMissingPublicSlugError() {
   return error;
 }
 
+function createMissingArchiveRenderedHtmlError() {
+  const cause = new Error('column "archive_rendered_html" does not exist') as Error & {
+    code?: string;
+  };
+  cause.code = "42703";
+
+  const error = new Error("Failed query") as Error & { cause?: Error };
+  error.cause = cause;
+  return error;
+}
+
 describe("newsletter public slug services", () => {
   afterEach(() => {
     mock.restore();
@@ -222,6 +233,36 @@ describe("newsletter public slug services", () => {
     }]);
   });
 
+  test("keeps public slugs in archive summaries when archive correction columns are missing", async () => {
+    await installNewsletterDbMock({
+      selectQueue: [
+        createMissingArchiveRenderedHtmlError(),
+        [{
+          id: "camp_sent_1",
+          publicSlug: "weekly-news-digest-2026-03-11",
+          subject: "Weekly News Digest",
+          previewText: "Top updates",
+          newsletterType: "news",
+          sentAt: new Date("2026-03-11T08:00:00.000Z"),
+        }],
+      ],
+    });
+
+    const { listSentNewsletterCampaigns } = await import(
+      `../src/services/newsletter?newsletter-public-slug-list-archive-column-fallback=${Date.now()}`
+    );
+
+    await expect(listSentNewsletterCampaigns(10)).resolves.toEqual([{
+      id: "camp_sent_1",
+      publicSlug: "weekly-news-digest-2026-03-11",
+      subject: "Weekly News Digest",
+      previewText: "Top updates",
+      newsletterType: "news",
+      sentAt: new Date("2026-03-11T08:00:00.000Z"),
+      archiveCorrectedAt: null,
+    }]);
+  });
+
   test("finds sent archive campaigns by slug first and falls back to legacy ids", async () => {
     await installNewsletterDbMock({
       selectQueue: [
@@ -322,6 +363,43 @@ describe("newsletter public slug services", () => {
         archiveCorrectedAt: null,
       },
       matchedByLegacyId: true,
+    });
+  });
+
+  test("keeps public slug archive detail working when archive correction columns are missing", async () => {
+    await installNewsletterDbMock({
+      selectQueue: [
+        createMissingArchiveRenderedHtmlError(),
+        [{
+          id: "camp_sent_1",
+          publicSlug: "weekly-news-digest-2026-03-11",
+          subject: "Weekly News Digest",
+          previewText: "Top updates",
+          newsletterType: "news",
+          sentAt: new Date("2026-03-11T08:00:00.000Z"),
+          renderedHtml: "<p>Body</p>",
+        }],
+      ],
+    });
+
+    const { findSentNewsletterCampaignForArchive } = await import(
+      `../src/services/newsletter?newsletter-public-slug-archive-column-fallback=${Date.now()}`
+    );
+
+    await expect(
+      findSentNewsletterCampaignForArchive("weekly-news-digest-2026-03-11")
+    ).resolves.toEqual({
+      campaign: {
+        id: "camp_sent_1",
+        publicSlug: "weekly-news-digest-2026-03-11",
+        subject: "Weekly News Digest",
+        previewText: "Top updates",
+        newsletterType: "news",
+        sentAt: new Date("2026-03-11T08:00:00.000Z"),
+        renderedHtml: "<p>Body</p>",
+        archiveCorrectedAt: null,
+      },
+      matchedByLegacyId: false,
     });
   });
 });

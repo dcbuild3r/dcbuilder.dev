@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { isMissingNewsletterSchemaError } from "../src/services/newsletter-schema";
+import {
+  isMissingNewsletterSchemaColumnError,
+  isMissingNewsletterSchemaError,
+} from "../src/services/newsletter-schema";
 
 describe("isMissingNewsletterSchemaError", () => {
   test("matches missing newsletter table and column errors", () => {
@@ -27,6 +30,21 @@ describe("isMissingNewsletterSchemaError", () => {
     expect(
       isMissingNewsletterSchemaError(new Error('column "public_slug" does not exist'))
     ).toBe(true);
+  });
+
+  test("matches specific missing newsletter columns", () => {
+    expect(
+      isMissingNewsletterSchemaColumnError(
+        new Error('column "archive_rendered_html" does not exist'),
+        "archive_rendered_html"
+      )
+    ).toBe(true);
+    expect(
+      isMissingNewsletterSchemaColumnError(
+        new Error('column "archive_rendered_html" does not exist'),
+        "public_slug"
+      )
+    ).toBe(false);
   });
 
   test("does not treat permission errors as missing schema", () => {
