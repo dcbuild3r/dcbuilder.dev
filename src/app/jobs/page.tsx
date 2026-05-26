@@ -2,9 +2,7 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { JobsGrid } from "@/components/JobsGrid";
-import { getJobsFromDB, getJobById, getBaseUrl } from "@/lib/data";
-import { db, jobTags, jobRoles } from "@/db";
-import { asc } from "drizzle-orm";
+import { getJobsFromDB, getJobById, getBaseUrl, getJobRolesWithFallback, getJobTagsWithFallback } from "@/lib/data";
 import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { JOBS_PAGE } from "@/data/page-content";
 
@@ -62,8 +60,8 @@ function JobsGridFallback() {
 
 async function getTagsAndRoles() {
 	const [tags, roles] = await Promise.all([
-		db.select().from(jobTags).orderBy(asc(jobTags.label)),
-		db.select().from(jobRoles).orderBy(asc(jobRoles.label)),
+		getJobTagsWithFallback(),
+		getJobRolesWithFallback(),
 	]);
 	return { tags, roles };
 }

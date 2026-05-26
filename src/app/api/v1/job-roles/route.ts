@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, jobRoles } from "@/db";
-import { eq, asc } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { requireAuth } from "@/services/auth";
+import { getJobRolesWithFallback } from "@/lib/data";
 
 // GET all job roles
 export async function GET() {
   try {
-    const roles = await db.select().from(jobRoles).orderBy(asc(jobRoles.label));
+    const roles = await getJobRolesWithFallback();
     return NextResponse.json(roles);
   } catch (error) {
     console.error("Error fetching job roles:", error);

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, jobTags } from "@/db";
-import { eq, asc } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { requireAuth } from "@/services/auth";
+import { getJobTagsWithFallback } from "@/lib/data";
 
 // GET all job tags
 export async function GET() {
   try {
-    const tags = await db.select().from(jobTags).orderBy(asc(jobTags.label));
+    const tags = await getJobTagsWithFallback();
     return NextResponse.json(tags);
   } catch (error) {
     console.error("Error fetching job tags:", error);

@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db, jobs, NewJob } from "@/db";
-import { eq, desc, and, SQL } from "drizzle-orm";
 import { requireAuth, parsePaginationParams } from "@/services/auth";
+import { countJobRowsFromDB, getJobRowsFromDB } from "@/lib/data";
 
 // GET /api/v1/jobs - List jobs with optional filters
 export async function GET(request: NextRequest) {
@@ -12,58 +12,25 @@ export async function GET(request: NextRequest) {
   const { limit, offset } = parsePaginationParams(searchParams);
 
   try {
-    const conditions: SQL[] = [];
-
-    if (company) {
-      conditions.push(eq(jobs.company, company));
-    }
-    if (category) {
-      conditions.push(eq(jobs.category, category));
-    }
-    if (featured === "true") {
-      conditions.push(eq(jobs.featured, true));
-    }
-
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-    const [data, countResult] = await Promise.all([
-      db
-        .select({
-          id: jobs.id,
-          title: jobs.title,
-          company: jobs.company,
-          companyLogo: jobs.companyLogo,
-          link: jobs.link,
-          location: jobs.location,
-          remote: jobs.remote,
-          type: jobs.type,
-          salary: jobs.salary,
-          department: jobs.department,
-          tags: jobs.tags,
-          category: jobs.category,
-          featured: jobs.featured,
-          description: jobs.description,
-          companyWebsite: jobs.companyWebsite,
-          companyX: jobs.companyX,
-          companyGithub: jobs.companyGithub,
-          createdAt: jobs.createdAt,
-          updatedAt: jobs.updatedAt,
-        })
-        .from(jobs)
-        .where(whereClause)
-        .orderBy(desc(jobs.featured), desc(jobs.createdAt))
-        .limit(limit)
-        .offset(offset),
-      db
-        .select({ count: jobs.id })
-        .from(jobs)
-        .where(whereClause),
+    const filters = {
+      company,
+      category,
+      featured: featured === "true",
+    };
+    const [data, total] = await Promise.all([
+      getJobRowsFromDB({
+        ...filters,
+        limit,
+        offset,
+        orderBy: "featured",
+      }),
+      countJobRowsFromDB(filters),
     ]);
 
     return Response.json({
       data,
       meta: {
-        total: countResult.length,
+        total,
         limit,
         offset,
       },
