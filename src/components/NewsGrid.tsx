@@ -12,11 +12,12 @@ import { CustomSelect } from "./CustomSelect";
 import { trackNewsClick } from "@/lib/posthog";
 import { useNewsClicks } from "@/hooks/useNewsClicks";
 
-type NewsType = "all" | "blog" | "curated" | "announcement";
+type NewsType = "all" | "portfolio" | "blog" | "curated" | "announcement";
 type NewsSortMode = "posted" | "content";
 
 const typeLabels: Record<NewsType, string> = {
 	all: "All",
+	portfolio: "Portfolio",
 	blog: "Blog Posts",
 	curated: "Curated Links",
 	announcement: "Announcements",
@@ -102,7 +103,11 @@ export function NewsGrid({ news }: NewsGridProps) {
 	const filteredNews = useMemo(() => {
 		return news.filter((item) => {
 			// Type filter
-			if (typeFilter !== "all" && item.type !== typeFilter) {
+			if (typeFilter === "portfolio" && !item.portfolioCompany) {
+				return false;
+			}
+
+			if (typeFilter !== "all" && typeFilter !== "portfolio" && item.type !== typeFilter) {
 				return false;
 			}
 
@@ -301,7 +306,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 		if (!company?.title?.trim()) return null;
 
 		const className =
-			"pointer-events-auto inline-flex rounded-sm font-medium text-white underline-offset-4 transition-colors hover:text-neutral-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
+			"pointer-events-auto inline-flex rounded-sm font-bold text-black underline-offset-4 transition-colors hover:text-neutral-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/30 dark:text-white dark:hover:text-neutral-200 dark:focus-visible:ring-white/70";
 
 		if (!company.website) {
 			return (
