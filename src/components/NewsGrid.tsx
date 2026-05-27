@@ -36,7 +36,7 @@ const INITIAL_RENDERED_NEWS_COUNT = 30;
 const NEWS_RENDER_BATCH_SIZE = 30;
 const MONAD_TWITTER_LOGO_URL = "https://pbs.twimg.com/profile_images/1945153889881243648/CehOdEnT_400x400.jpg";
 const MONAD_LOGO_SRC = "/logos/monad.png";
-const GOOGLE_RESEARCH_LOGO_SRC = "/logos/google-research.svg";
+const GOOGLE_RESEARCH_LOGO_SRC = "/logos/google-research.jpg";
 const DARK_X_LOGO_HANDLES = new Set(["googleresearch"]);
 
 function getNormalizedLogoSrc(src: string): string {
