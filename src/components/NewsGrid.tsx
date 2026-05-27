@@ -276,13 +276,13 @@ export function NewsGrid({ news }: NewsGridProps) {
 				width={24}
 				height={24}
 				sizes="24px"
-				className="h-full w-full rounded-md bg-white object-contain p-0.5 dark:bg-neutral-900"
+				className="h-full w-full rounded-md bg-white object-contain p-0.5"
 				unoptimized
 				onError={() => markImageFailed(imageKey)}
 			/>
 		);
 		const className =
-			"pointer-events-auto inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border border-neutral-200 bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-700 dark:bg-neutral-900";
+			"pointer-events-auto inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border border-neutral-200 bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-700";
 
 		if (!company.website) {
 			return (
@@ -351,13 +351,13 @@ export function NewsGrid({ news }: NewsGridProps) {
 				width={40}
 				height={40}
 				sizes="40px"
-				className="h-full w-full rounded-md bg-white object-contain p-0.5 dark:bg-neutral-900"
+				className="h-full w-full rounded-md bg-white object-contain p-0.5"
 				unoptimized
 				onError={() => markImageFailed(imageKey)}
 			/>
 		);
 		const className =
-			"pointer-events-auto absolute -bottom-12 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-lg border-2 border-white bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-900 dark:bg-neutral-900";
+			"pointer-events-auto absolute -bottom-12 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-lg border-2 border-white bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-900";
 
 		if (!company.website) {
 			return (
