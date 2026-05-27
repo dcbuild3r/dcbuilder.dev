@@ -36,9 +36,26 @@ const INITIAL_RENDERED_NEWS_COUNT = 30;
 const NEWS_RENDER_BATCH_SIZE = 30;
 const MONAD_TWITTER_LOGO_URL = "https://pbs.twimg.com/profile_images/1945153889881243648/CehOdEnT_400x400.jpg";
 const MONAD_LOGO_SRC = "/logos/monad.png";
+const GOOGLE_RESEARCH_LOGO_SRC = "/logos/google-research.svg";
+const DARK_X_LOGO_HANDLES = new Set(["googleresearch"]);
 
 function getNormalizedLogoSrc(src: string): string {
 	return src.trim() === MONAD_TWITTER_LOGO_URL ? MONAD_LOGO_SRC : src.trim();
+}
+
+function getXAvatarClassName(handle?: string | null): string {
+	const normalizedHandle = handle?.trim().toLowerCase();
+	if (normalizedHandle && DARK_X_LOGO_HANDLES.has(normalizedHandle)) {
+		return "h-14 w-14 rounded-full bg-white object-contain p-1.5";
+	}
+
+	return "h-14 w-14 rounded-full object-cover";
+}
+
+function getXAvatarSrc(handle: string): string {
+	return handle.trim().toLowerCase() === "googleresearch"
+		? GOOGLE_RESEARCH_LOGO_SRC
+		: `https://unavatar.io/twitter/${handle}`;
 }
 
 // Check if item is fresh based on platform
@@ -445,7 +462,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 							height={NEWS_THUMBNAIL_SIZE}
 							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
 							quality={NEWS_THUMBNAIL_QUALITY}
-							className="rounded-full w-14 h-14 object-cover"
+							className={getXAvatarClassName(getXHandle(item.url))}
 							onError={() => markImageFailed(imageKey)}
 						/>
 						<XLogo />
@@ -459,13 +476,13 @@ export function NewsGrid({ news }: NewsGridProps) {
 				return (
 					<div className="relative group-hover:scale-[1.08] transition-transform duration-150">
 						<Image
-							src={`https://unavatar.io/twitter/${handle}`}
+							src={getXAvatarSrc(handle)}
 							alt={handle}
 							width={NEWS_THUMBNAIL_SIZE}
 							height={NEWS_THUMBNAIL_SIZE}
 							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
 							quality={NEWS_THUMBNAIL_QUALITY}
-							className="rounded-full w-14 h-14 object-cover"
+							className={getXAvatarClassName(handle)}
 							onError={() => markImageFailed(imageKey)}
 						/>
 						<XLogo />
