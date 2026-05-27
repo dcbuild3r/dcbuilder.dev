@@ -37,16 +37,20 @@ const NEWS_RENDER_BATCH_SIZE = 30;
 const MONAD_TWITTER_LOGO_URL = "https://pbs.twimg.com/profile_images/1945153889881243648/CehOdEnT_400x400.jpg";
 const MONAD_LOGO_SRC = "/logos/monad.png";
 const GOOGLE_RESEARCH_LOGO_SRC = "/logos/google-research.jpg";
-const DARK_X_LOGO_HANDLES = new Set(["googleresearch"]);
+const CUSTOM_X_LOGO_HANDLES = new Set(["googleresearch"]);
 
 function getNormalizedLogoSrc(src: string): string {
 	return src.trim() === MONAD_TWITTER_LOGO_URL ? MONAD_LOGO_SRC : src.trim();
 }
 
-function getXAvatarClassName(handle?: string | null): string {
+function hasCustomXLogo(handle?: string | null): boolean {
 	const normalizedHandle = handle?.trim().toLowerCase();
-	if (normalizedHandle && DARK_X_LOGO_HANDLES.has(normalizedHandle)) {
-		return "h-14 w-14 rounded-full bg-white object-contain p-1.5";
+	return Boolean(normalizedHandle && CUSTOM_X_LOGO_HANDLES.has(normalizedHandle));
+}
+
+function getXAvatarClassName(handle?: string | null): string {
+	if (hasCustomXLogo(handle)) {
+		return "h-14 w-14 object-contain";
 	}
 
 	return "h-14 w-14 rounded-full object-cover";
@@ -452,6 +456,9 @@ export function NewsGrid({ news }: NewsGridProps) {
 		if (item.url.includes("x.com/")) {
 			const imageKey = `${item.id}:x`;
 			const sourceImage = item.sourceImage?.trim();
+			const xHandle = getXHandle(item.url);
+			const showXLogo = !hasCustomXLogo(xHandle);
+
 			if (sourceImage && !failedImageKeys[imageKey]) {
 				return (
 					<div className="relative group-hover:scale-[1.08] transition-transform duration-150">
@@ -462,16 +469,16 @@ export function NewsGrid({ news }: NewsGridProps) {
 							height={NEWS_THUMBNAIL_SIZE}
 							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
 							quality={NEWS_THUMBNAIL_QUALITY}
-							className={getXAvatarClassName(getXHandle(item.url))}
+							className={getXAvatarClassName(xHandle)}
 							onError={() => markImageFailed(imageKey)}
 						/>
-						<XLogo />
+						{showXLogo && <XLogo />}
 						{getPortfolioCompanyAvatarBadge(item)}
 					</div>
 				);
 			}
 
-			const handle = getXHandle(item.url);
+			const handle = xHandle;
 			if (handle && !failedImageKeys[imageKey]) {
 				return (
 					<div className="relative group-hover:scale-[1.08] transition-transform duration-150">
@@ -485,7 +492,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 							className={getXAvatarClassName(handle)}
 							onError={() => markImageFailed(imageKey)}
 						/>
-						<XLogo />
+						{showXLogo && <XLogo />}
 						{getPortfolioCompanyAvatarBadge(item)}
 					</div>
 				);
