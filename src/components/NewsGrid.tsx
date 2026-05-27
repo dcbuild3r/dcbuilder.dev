@@ -34,6 +34,12 @@ const NEWS_THUMBNAIL_QUALITY = 90;
 const BLOG_IMAGE_CACHE_VERSION = "20260206";
 const INITIAL_RENDERED_NEWS_COUNT = 30;
 const NEWS_RENDER_BATCH_SIZE = 30;
+const MONAD_TWITTER_LOGO_URL = "https://pbs.twimg.com/profile_images/1945153889881243648/CehOdEnT_400x400.jpg";
+const MONAD_LOGO_SRC = "/logos/monad.png";
+
+function getNormalizedLogoSrc(src: string): string {
+	return src.trim() === MONAD_TWITTER_LOGO_URL ? MONAD_LOGO_SRC : src.trim();
+}
 
 // Check if item is fresh based on platform
 // X posts: 5 days, everything else: 2 weeks
@@ -265,18 +271,18 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 		const logo = (
 			<Image
-				src={company.logo.trim()}
+				src={getNormalizedLogoSrc(company.logo)}
 				alt={company.title}
 				width={24}
 				height={24}
 				sizes="24px"
-				className="h-full w-full rounded-md bg-white object-contain p-0.5"
+				className="h-full w-full rounded-md bg-white object-contain p-0.5 dark:bg-neutral-900"
 				unoptimized
 				onError={() => markImageFailed(imageKey)}
 			/>
 		);
 		const className =
-			"pointer-events-auto inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border border-neutral-200 bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-700";
+			"pointer-events-auto inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border border-neutral-200 bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-700 dark:bg-neutral-900";
 
 		if (!company.website) {
 			return (
@@ -340,18 +346,18 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 		const logo = (
 			<Image
-				src={company.logo.trim()}
+				src={getNormalizedLogoSrc(company.logo)}
 				alt={company.title}
 				width={40}
 				height={40}
 				sizes="40px"
-				className="h-full w-full rounded-md bg-white object-contain p-0.5"
+				className="h-full w-full rounded-md bg-white object-contain p-0.5 dark:bg-neutral-900"
 				unoptimized
 				onError={() => markImageFailed(imageKey)}
 			/>
 		);
 		const className =
-			"pointer-events-auto absolute -bottom-12 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-lg border-2 border-white bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-900";
+			"pointer-events-auto absolute -bottom-12 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-lg border-2 border-white bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-900 dark:bg-neutral-900";
 
 		if (!company.website) {
 			return (
@@ -530,16 +536,17 @@ export function NewsGrid({ news }: NewsGridProps) {
 					if (failedImageKeys[imageKey]) {
 						return <span className="text-5xl group-hover:scale-[1.08] transition-transform duration-150 inline-block">📢</span>;
 					}
+					const logoSrc = getNormalizedLogoSrc(item.companyLogo);
 					return (
 						<Image
-							src={item.companyLogo.trim()}
+							src={logoSrc}
 							alt={item.company || "Company"}
 							width={NEWS_THUMBNAIL_SIZE}
 							height={NEWS_THUMBNAIL_SIZE}
 							sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
 							quality={NEWS_THUMBNAIL_QUALITY}
 							unoptimized
-							className="rounded w-14 h-14 object-cover group-hover:scale-[1.08] transition-transform duration-150"
+							className="h-14 w-14 rounded-lg object-contain transition-transform duration-150 group-hover:scale-[1.08]"
 							onError={() => markImageFailed(imageKey)}
 						/>
 					);
