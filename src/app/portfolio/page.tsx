@@ -1,6 +1,8 @@
 import { Navbar } from "@/components/Navbar";
 import { PortfolioGrid } from "@/components/PortfolioGrid";
 import { db, investments as investmentsTable, jobs as jobsTable, investmentCategories as categoriesTable } from "@/db";
+import { filterNewsByCompany } from "@/lib/company-news";
+import { getAllNews } from "@/lib/news";
 import { desc, asc, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 
@@ -55,11 +57,18 @@ const getInvestmentCategories = unstable_cache(
 );
 
 export default async function Portfolio() {
-  const [investments, jobCounts, categories] = await Promise.all([
+  const [investments, jobCounts, categories, news] = await Promise.all([
     getInvestments(),
     getJobCountsByCompany(),
     getInvestmentCategories(),
+    getAllNews({ includeCompanyTimelineNews: true }),
   ]);
+  const newsCounts = Object.fromEntries(
+    investments.map((investment) => [
+      investment.title,
+      filterNewsByCompany(news, investment.title).length,
+    ])
+  );
 
   return (
     <>
@@ -82,7 +91,12 @@ export default async function Portfolio() {
           {/* Investments */}
           <section className="space-y-8">
             <h2 className="text-4xl font-bold text-center">Investments</h2>
-            <PortfolioGrid investments={investments} jobCounts={jobCounts} categories={categories} />
+            <PortfolioGrid
+              investments={investments}
+              jobCounts={jobCounts}
+              newsCounts={newsCounts}
+              categories={categories}
+            />
           </section>
         </div>
       </main>

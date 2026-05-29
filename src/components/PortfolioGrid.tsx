@@ -17,12 +17,14 @@ import { getPortfolioNewsUrl } from "@/lib/portfolio-news";
 interface PortfolioGridProps {
   investments: Investment[];
   jobCounts?: Record<string, number>;
+  newsCounts?: Record<string, number>;
   categories?: InvestmentCategory[];
 }
 
 export function PortfolioGrid({
   investments,
   jobCounts = {},
+  newsCounts = {},
   categories = [],
 }: PortfolioGridProps) {
   const [sortBy, setSortBy] = useState<SortOption>("relevance");
@@ -298,7 +300,11 @@ export function PortfolioGrid({
             investment={investment}
             jobCount={getPortfolioJobCount(investment.title, jobCounts)}
             jobsUrl={getPortfolioJobsUrl(investment.title)}
-            newsUrl={getPortfolioNewsUrl(investment.title)}
+            newsUrl={
+              (newsCounts[investment.title] ?? 0) > 0
+                ? getPortfolioNewsUrl(investment.title)
+                : undefined
+            }
           />
         ))}
       </div>
@@ -325,7 +331,11 @@ export function PortfolioGrid({
             <InvestmentCard
               key={investment.title}
               investment={investment}
-              newsUrl={getPortfolioNewsUrl(investment.title)}
+              newsUrl={
+                (newsCounts[investment.title] ?? 0) > 0
+                  ? getPortfolioNewsUrl(investment.title)
+                  : undefined
+              }
             />
           ))}
         </div>
