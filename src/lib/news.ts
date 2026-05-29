@@ -827,6 +827,13 @@ export async function getAllNews(
 
     if (portfolioCompany) {
       item.portfolioCompany = portfolioCompany;
+      if (portfolioCompany.logo?.trim()) {
+        if (item.type === "announcement") {
+          item.companyLogo = portfolioCompany.logo;
+        } else if (item.type === "curated") {
+          item.sourceImage = portfolioCompany.logo;
+        }
+      }
     }
 
     if (isCompanyTimelineNewsItem(item)) {

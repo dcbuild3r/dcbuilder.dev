@@ -458,6 +458,7 @@ describe("getAllNews relevance mapping", () => {
       jobCount: 2,
       sourceIsCompanyAccount: false,
     });
+    expect(news[0].sourceImage).toBe("https://r2.example/octet.svg");
     expect(news[0].postedAt).toBe("2026-05-18T00:00:00.000Z");
   });
 
@@ -1044,6 +1045,109 @@ describe("getAllNews relevance mapping", () => {
       jobCount: 2,
       sourceIsCompanyAccount: false,
     });
+    expect(news[0].sourceImage).toBe("https://r2.example/prime-intellect.svg");
     expect(news[0].postedAt).toBe("2026-05-19T00:00:00.000Z");
+  });
+
+  test("fills announcement logos from matched portfolio companies", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+    const newsSourceInvestments = {
+      __table: "news_source_investments",
+      sourceType: {},
+      sourceValue: {},
+      investmentId: {},
+    };
+    const investments = {
+      __table: "investments",
+      id: {},
+      title: {},
+      logo: {},
+      website: {},
+    };
+    const jobs = {
+      __table: "jobs",
+      company: {},
+    };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => [],
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+      newsSourceInvestments,
+      investments,
+      jobs,
+    }));
+
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: () => ({
+          from: (table: { __table: string }) => {
+            if (table.__table === "curated_links") {
+              return { orderBy: async () => [] };
+            }
+
+            if (table.__table === "announcements") {
+              return {
+                orderBy: async () => [
+                  {
+                    id: "berachain-announcement",
+                    title: "BERA spot listing",
+                    url: "https://example.com/bera",
+                    company: "Berachain",
+                    companyLogo: null,
+                    platform: "blog",
+                    date: new Date("2026-03-25T00:00:00.000Z"),
+                    description: "Listing update",
+                    category: "growth",
+                    featured: false,
+                    relevance: 6,
+                  },
+                ],
+              };
+            }
+
+            if (table.__table === "news_source_investments") {
+              return Promise.resolve([]);
+            }
+
+            if (table.__table === "investments") {
+              return Promise.resolve([
+                {
+                  id: "berachain-id",
+                  title: "Berachain",
+                  logo: "https://r2.example/berachain.png",
+                  website: "https://berachain.com/",
+                },
+              ]);
+            }
+
+            return {
+              where: () => ({
+                groupBy: async () => [],
+              }),
+            };
+          },
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-announcement-logo=${Date.now()}`);
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
+
+    expect(news).toHaveLength(1);
+    expect(news[0]).toMatchObject({
+      id: "berachain-announcement",
+      companyLogo: "https://r2.example/berachain.png",
+      portfolioCompany: {
+        title: "Berachain",
+        logo: "https://r2.example/berachain.png",
+      },
+      postedAt: "2026-03-25T00:00:00.000Z",
+    });
   });
 });

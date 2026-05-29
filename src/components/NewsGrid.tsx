@@ -442,6 +442,31 @@ export function NewsGrid({ news }: NewsGridProps) {
 		);
 	};
 
+	const getPortfolioCompanyIcon = (item: AggregatedNewsItem) => {
+		const company = item.portfolioCompany;
+		if (!company?.logo?.trim()) return null;
+
+		const imageKey = `${item.id}:portfolio-primary`;
+		if (failedImageKeys[imageKey]) return null;
+
+		return (
+			<div className="relative flex h-14 w-14 items-center justify-center rounded-xl border border-neutral-200 bg-white p-1 shadow-sm transition-transform duration-150 group-hover:scale-[1.08] dark:border-neutral-800 dark:bg-neutral-950">
+				<Image
+					src={company.logo.trim()}
+					alt={company.title}
+					width={NEWS_THUMBNAIL_SIZE}
+					height={NEWS_THUMBNAIL_SIZE}
+					sizes={NEWS_THUMBNAIL_REQUEST_SIZE}
+					quality={NEWS_THUMBNAIL_QUALITY}
+					className="h-full w-full object-contain"
+					unoptimized
+					onError={() => markImageFailed(imageKey)}
+				/>
+				{item.url.includes("x.com/") && <XLogo />}
+			</div>
+		);
+	};
+
 	// X logo SVG for overlay
 	const XLogo = () => (
 		<div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full flex items-center justify-center border-2 border-white dark:border-neutral-900">
@@ -453,6 +478,9 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 	// Get icon/image based on news type
 	const getTypeIcon = (item: AggregatedNewsItem) => {
+		const portfolioCompanyIcon = getPortfolioCompanyIcon(item);
+		if (portfolioCompanyIcon) return portfolioCompanyIcon;
+
 		// Check if it's an X post (url contains x.com)
 		if (item.url.includes("x.com/")) {
 			const imageKey = `${item.id}:x`;
