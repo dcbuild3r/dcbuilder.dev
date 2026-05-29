@@ -1150,4 +1150,104 @@ describe("getAllNews relevance mapping", () => {
       postedAt: "2026-03-25T00:00:00.000Z",
     });
   });
+
+  test("keeps explicit curated source images when portfolio context is attached", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+    const newsSourceInvestments = {
+      __table: "news_source_investments",
+      sourceType: {},
+      sourceValue: {},
+      investmentId: {},
+    };
+    const investments = {
+      __table: "investments",
+      id: {},
+      title: {},
+      logo: {},
+      website: {},
+    };
+    const jobs = {
+      __table: "jobs",
+      company: {},
+    };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => [],
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+      newsSourceInvestments,
+      investments,
+      jobs,
+    }));
+
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: () => ({
+          from: (table: { __table: string }) => {
+            if (table.__table === "curated_links") {
+              return {
+                orderBy: async () => [
+                  {
+                    id: "praxis-news",
+                    title: "Praxis update",
+                    url: "https://x.com/praxishq/status/123",
+                    source: "Praxis",
+                    sourceImage: "https://pbs.twimg.com/profile_images/praxis.jpg",
+                    date: new Date("2026-05-18T00:00:00.000Z"),
+                    description: "Praxis summary",
+                    category: "general",
+                    featured: false,
+                    relevance: 7,
+                  },
+                ],
+              };
+            }
+
+            if (table.__table === "announcements") {
+              return { orderBy: async () => [] };
+            }
+
+            if (table.__table === "news_source_investments") {
+              return Promise.resolve([]);
+            }
+
+            if (table.__table === "investments") {
+              return Promise.resolve([
+                {
+                  id: "praxis-id",
+                  title: "Praxis",
+                  logo: "https://r2.example/praxis.png",
+                  website: "https://praxisnation.com/",
+                },
+              ]);
+            }
+
+            return {
+              where: () => ({
+                groupBy: async () => [],
+              }),
+            };
+          },
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-explicit-source-image=${Date.now()}`);
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
+
+    expect(news).toHaveLength(1);
+    expect(news[0]).toMatchObject({
+      id: "praxis-news",
+      sourceImage: "https://pbs.twimg.com/profile_images/praxis.jpg",
+      portfolioCompany: {
+        title: "Praxis",
+        logo: "https://r2.example/praxis.png",
+      },
+    });
+  });
 });
