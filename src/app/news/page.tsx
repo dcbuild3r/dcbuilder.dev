@@ -7,7 +7,7 @@ import { getAllNews } from "@/lib/news";
 export const metadata = {
   title: "News",
   description:
-    "Curated links, blog posts, and announcements from dcbuilder's portfolio companies.",
+    "Curated links, blog posts, and announcements from dcbuilder.",
 };
 
 // Force dynamic rendering since we need database access
@@ -25,8 +25,7 @@ export default async function NewsPage() {
           <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold mb-4">News</h1>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
-              Curated articles, my blog posts, and announcements from portfolio
-              companies.
+              Curated articles, my blog posts, and site announcements.
             </p>
           </div>
 

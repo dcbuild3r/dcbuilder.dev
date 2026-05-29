@@ -245,9 +245,28 @@ export interface AggregatedNewsItem {
   portfolioCompany?: PortfolioCompanyNewsContext;
 }
 
+interface GetAllNewsOptions {
+  includeCompanyTimelineNews?: boolean;
+}
+
 function toIsoDateTime(date: string | Date | null | undefined, fallback?: string | Date | null): string {
   const parsed = new Date(date ?? fallback ?? 0);
   return Number.isNaN(parsed.getTime()) ? new Date(0).toISOString() : parsed.toISOString();
+}
+
+function normalizeNewsCompany(value: string | null | undefined): string {
+  return (value ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+export function isCompanyTimelineCompany(company: string | null | undefined): boolean {
+  const normalizedCompany = normalizeNewsCompany(company);
+  return normalizedCompany.length > 0 && normalizedCompany !== "dcbuilder";
+}
+
+export function isCompanyTimelineNewsItem(item: AggregatedNewsItem): boolean {
+  return Boolean(item.portfolioCompany) || (
+    item.type === "announcement" && isCompanyTimelineCompany(item.company)
+  );
 }
 
 async function getCuratedLinksWithFallback() {
@@ -733,7 +752,11 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
   return contexts;
 }
 
-export async function getAllNews(): Promise<AggregatedNewsItem[]> {
+export async function getAllNews(
+  options: GetAllNewsOptions = {}
+): Promise<AggregatedNewsItem[]> {
+  const includeCompanyTimelineNews = options.includeCompanyTimelineNews ?? false;
+
   // Fetch all data sources in parallel
   const [blogPosts, dbCuratedLinks, dbAnnouncements, portfolioCompanyContexts] = await Promise.all([
     getAllPosts(),
@@ -780,7 +803,10 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     title: ann.title,
     url: ann.url,
     date: ann.date.toISOString().split("T")[0],
-    postedAt: toIsoDateTime(ann.createdAt, ann.date),
+    postedAt: toIsoDateTime(
+      isCompanyTimelineCompany(ann.company) ? ann.date : ann.createdAt,
+      ann.date
+    ),
     description: ann.description || undefined,
     category: ann.category as NewsCategory,
     featured: ann.featured || false,
@@ -802,10 +828,17 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     if (portfolioCompany) {
       item.portfolioCompany = portfolioCompany;
     }
-  });
-  allNews.sort(compareNewsByDateAndRelevance);
 
-  return allNews;
+    if (isCompanyTimelineNewsItem(item)) {
+      item.postedAt = toIsoDateTime(item.date);
+    }
+  });
+  const visibleNews = includeCompanyTimelineNews
+    ? allNews
+    : allNews.filter((item) => !isCompanyTimelineNewsItem(item));
+  visibleNews.sort(compareNewsByDateAndRelevance);
+
+  return visibleNews;
 }
 
 export function filterNewsByType(

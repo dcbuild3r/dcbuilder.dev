@@ -48,11 +48,10 @@ export default async function Image() {
 						lineHeight: 1.25,
 					}}
 				>
-					Curated links, blog posts, and portfolio announcements
+					Curated links, blog posts, and site announcements
 				</div>
 			</div>
 		),
 		{ ...size }
 	);
 }
-

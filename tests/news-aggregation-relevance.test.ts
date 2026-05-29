@@ -94,7 +94,7 @@ describe("getAllNews relevance mapping", () => {
     }));
 
     const { getAllNews } = await import(`../src/lib/news?news-relevance=${Date.now()}`);
-    const news = await getAllNews();
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
 
     expect(news).toHaveLength(3);
     expect(news[0]).toMatchObject({
@@ -108,6 +108,85 @@ describe("getAllNews relevance mapping", () => {
     expect(news[2]).toMatchObject({
       id: "announcement-1",
       relevance: 5,
+    });
+  });
+
+  test("excludes company timeline news from general news by default", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => [],
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+      newsSourceInvestments: null,
+      investments: null,
+      jobs: null,
+    }));
+
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: () => ({
+          from: (table: { __table: string }) => ({
+            orderBy: async () => {
+              if (table.__table === "curated_links") {
+                return [];
+              }
+
+              return [
+                {
+                  id: "morpho-backfill",
+                  title: "Morpho historical milestone",
+                  url: "https://x.com/morpholabs/status/123",
+                  company: "Morpho",
+                  companyLogo: null,
+                  platform: "x",
+                  date: new Date("2025-11-17T00:00:00.000Z"),
+                  description: "Historical company news",
+                  category: "growth",
+                  featured: false,
+                  relevance: 6,
+                  createdAt: new Date("2026-05-29T12:00:00.000Z"),
+                },
+                {
+                  id: "dcbuilder-update",
+                  title: "dcbuilder site update",
+                  url: "https://dcbuilder.dev/news",
+                  company: "dcbuilder",
+                  companyLogo: null,
+                  platform: "blog",
+                  date: new Date("2026-05-20T00:00:00.000Z"),
+                  description: "General site announcement",
+                  category: "general",
+                  featured: false,
+                  relevance: 5,
+                  createdAt: new Date("2026-05-29T13:00:00.000Z"),
+                },
+              ];
+            },
+          }),
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-company-timeline=${Date.now()}`);
+    const generalNews = await getAllNews();
+    const timelineNews = await getAllNews({ includeCompanyTimelineNews: true });
+
+    expect(generalNews.map((item: { id: string }) => item.id)).toEqual([
+      "dcbuilder-update",
+    ]);
+
+    const morphoItem = timelineNews.find(
+      (item: { id: string }) => item.id === "morpho-backfill"
+    );
+    expect(morphoItem).toMatchObject({
+      date: "2025-11-17",
+      postedAt: "2025-11-17T00:00:00.000Z",
     });
   });
 
@@ -186,7 +265,7 @@ describe("getAllNews relevance mapping", () => {
     }));
 
     const { getAllNews } = await import(`../src/lib/news?news-relevance-fallback=${Date.now()}`);
-    const news = await getAllNews();
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
 
     expect(news).toHaveLength(3);
     expect(news.find((item: { id: string }) => item.id === "curated-fallback")).toMatchObject({
@@ -366,8 +445,10 @@ describe("getAllNews relevance mapping", () => {
     }));
 
     const { getAllNews } = await import(`../src/lib/news?news-portfolio=${Date.now()}`);
-    const news = await getAllNews();
+    const generalNews = await getAllNews();
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
 
+    expect(generalNews).toHaveLength(0);
     expect(news).toHaveLength(1);
     expect(news[0].portfolioCompany).toEqual({
       title: "Octet",
@@ -377,6 +458,7 @@ describe("getAllNews relevance mapping", () => {
       jobCount: 2,
       sourceIsCompanyAccount: false,
     });
+    expect(news[0].postedAt).toBe("2026-05-18T00:00:00.000Z");
   });
 
   test("uses the starter Benjamin Fels mapping before the mapping table exists", async () => {
@@ -562,8 +644,11 @@ describe("getAllNews relevance mapping", () => {
     }));
 
     const { getAllNews } = await import(`../src/lib/news?news-portfolio-missing-table=${Date.now()}`);
-    const news = await getAllNews();
+    const generalNews = await getAllNews();
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
 
+    expect(generalNews).toHaveLength(0);
+    expect(news).toHaveLength(1);
     expect(news[0].portfolioCompany).toMatchObject({
       title: "Prime Intellect",
       logo: "https://r2.example/prime-intellect.jpg",
@@ -959,5 +1044,6 @@ describe("getAllNews relevance mapping", () => {
       jobCount: 2,
       sourceIsCompanyAccount: false,
     });
+    expect(news[0].postedAt).toBe("2026-05-19T00:00:00.000Z");
   });
 });

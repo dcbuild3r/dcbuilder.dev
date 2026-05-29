@@ -59,7 +59,7 @@ export const PORTFOLIO_PAGE = {
 export const NEWS_PAGE = {
   title: "News",
   description:
-    "Curated articles, my blog posts, and announcements from portfolio companies.",
+    "Curated articles, my blog posts, and site announcements.",
 };
 
 export const BLOG_PAGE = {

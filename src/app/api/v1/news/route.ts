@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
+import { announcements } from "@/db";
 import { parsePaginationParams } from "@/services/auth";
 import { listAnnouncementsCompat, listCuratedLinksCompat } from "@/lib/editorial-read-compat";
 import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
+import { sql } from "drizzle-orm";
 
 // GET /api/v1/news - Get all news (curated links + announcements) combined
 export async function GET(request: NextRequest) {
@@ -11,7 +13,11 @@ export async function GET(request: NextRequest) {
   try {
     const [curated, announce] = await Promise.all([
       listCuratedLinksCompat({ limit, offset: 0 }),
-      listAnnouncementsCompat({ limit, offset: 0 }),
+      listAnnouncementsCompat({
+        whereClause: sql`lower(${announcements.company}) = 'dcbuilder'`,
+        limit,
+        offset: 0,
+      }),
     ]);
 
     // Transform and combine
@@ -34,7 +40,7 @@ export async function GET(request: NextRequest) {
       meta: {
         total: combined.length,
         curatedCount: curated.length,
-        announcementsCount: announce.length,
+        announcementsCount: announcementItems.length,
       },
     });
   } catch (error) {

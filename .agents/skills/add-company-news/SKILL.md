@@ -18,6 +18,8 @@ Company pages are not separate tables. They are filtered timeline views over the
 - Company matching and timeline sorting: `src/lib/company-news.ts`
 - Timeline UI: `src/components/CompanyTimeline.tsx`
 - Source tables: `announcements` and `curated_links`
+- General `/news` excludes portfolio-company timeline items; company pages call
+  `getAllNews({ includeCompanyTimelineNews: true })` to opt into them.
 
 ## Choose The Record Type
 
@@ -44,7 +46,8 @@ For an announcement:
 - `url`: canonical source URL
 - `company`: exact portfolio company name from `investments.title`
 - `platform`: `x`, `blog`, `github`, `discord`, or `other`
-- `date`: publication/event date as `YYYY-MM-DD`
+- `date`: actual publication/event date as `YYYY-MM-DD`, not the date the item
+  is backfilled into dcbuilder.dev
 - `category`: topical category, not necessarily the source
 - `description`: direct event summary
 
@@ -102,6 +105,8 @@ curl -sS -o /tmp/company-news.html -w '%{http_code}\n' 'http://localhost:3000/ne
 ```
 
 8. Browser-check the timeline card includes the expected badges, date, title, and description.
+9. Confirm the item does not appear on the general `/news` page unless it is a
+   dcbuilder site announcement.
 
 ## Useful Checks
 
@@ -136,6 +141,7 @@ console.log(await db.select().from(announcements).where(eq(announcements.url, ur
 ## Done Criteria
 
 - `/news/<company-slug>` returns `200`
+- Portfolio-company timeline items are hidden from the general `/news` page
 - The item appears in the vertical timeline in reverse chronological order, newest first
 - The card displays source badge plus topical category when relevant
 - The category dropdown contains the topical category

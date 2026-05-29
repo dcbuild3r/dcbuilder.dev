@@ -49,7 +49,7 @@ export default async function CompanyNewsPage({
 }: CompanyNewsPageProps) {
   const { companySlug } = await params;
   const [news, companyProfile] = await Promise.all([
-    getAllNews(),
+    getAllNews({ includeCompanyTimelineNews: true }),
     getCompanyProfile(companySlug),
   ]);
 
