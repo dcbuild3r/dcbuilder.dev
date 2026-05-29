@@ -139,5 +139,7 @@ console.log(await db.select().from(announcements).where(eq(announcements.url, ur
 - The item appears in the vertical timeline in reverse chronological order, newest first
 - The card displays source badge plus topical category when relevant
 - The category dropdown contains the topical category
+- Search can find the item by title or description
+- The newest/oldest sort toggle preserves correct date ordering
 - `bunx tsc --noEmit` passes
 - `bun run lint` passes or only shows known unrelated warnings

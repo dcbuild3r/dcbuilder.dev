@@ -5,6 +5,7 @@ import type { AggregatedNewsItem } from "@/lib/news";
 import { type NewsCategory, categoryLabels } from "@/data/news";
 import { CustomSelect } from "@/components/CustomSelect";
 import { GitHubIcon, WebsiteIcon, XIcon } from "@/components/ui/icons";
+import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
 
 interface CompanyTimelineProps {
   companyName: string;
@@ -14,6 +15,7 @@ interface CompanyTimelineProps {
 
 type SelectedYear = "all" | number;
 type SelectedCategory = "all" | NewsCategory;
+type TimelineSortOrder = "newest" | "oldest";
 
 interface CompanyProfile {
   title: string;
@@ -59,6 +61,25 @@ function getTimelineBadges(event: AggregatedNewsItem) {
   return badges;
 }
 
+function eventMatchesSearch(event: AggregatedNewsItem, query: string) {
+  if (!query) return true;
+
+  const searchableText = [
+    event.title,
+    event.description,
+    event.company,
+    event.source,
+    event.platform,
+    categoryLabels[event.category],
+    ...getTimelineBadges(event),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return searchableText.includes(query);
+}
+
 export function CompanyTimeline({
   companyName,
   events,
@@ -67,6 +88,9 @@ export function CompanyTimeline({
   const [selectedYear, setSelectedYear] = useState<SelectedYear>("all");
   const [selectedCategory, setSelectedCategory] =
     useState<SelectedCategory>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<TimelineSortOrder>("newest");
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
   const categories = useMemo(
     () => Array.from(new Set(events.map((event) => event.category))).sort(),
     [events]
@@ -78,19 +102,36 @@ export function CompanyTimeline({
         : events.filter((event) => event.category === selectedCategory),
     [events, selectedCategory]
   );
+  const searchedEvents = useMemo(
+    () =>
+      categoryEvents.filter((event) =>
+        eventMatchesSearch(event, normalizedSearchQuery)
+      ),
+    [categoryEvents, normalizedSearchQuery]
+  );
   const years = useMemo(
     () =>
-      Array.from(new Set(categoryEvents.map(getEventYear))).sort(
+      Array.from(new Set(searchedEvents.map(getEventYear))).sort(
         (a, b) => b - a
       ),
-    [categoryEvents]
+    [searchedEvents]
   );
   const visibleEvents = useMemo(
-    () =>
-      selectedYear === "all"
-        ? categoryEvents
-        : categoryEvents.filter((event) => getEventYear(event) === selectedYear),
-    [categoryEvents, selectedYear]
+    () => {
+      const filteredEvents =
+        selectedYear === "all"
+          ? searchedEvents
+          : searchedEvents.filter((event) => getEventYear(event) === selectedYear);
+
+      return [...filteredEvents].sort((a, b) =>
+        compareNewsByDateAndRelevance(
+          a,
+          b,
+          sortOrder === "newest" ? "desc" : "asc"
+        )
+      );
+    },
+    [searchedEvents, selectedYear, sortOrder]
   );
   const activeCompany = company?.title || companyName;
 
@@ -185,30 +226,97 @@ export function CompanyTimeline({
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <label
-                htmlFor="timeline-category-filter"
-                className="text-sm text-neutral-600 dark:text-neutral-400"
-              >
-                Category:
-              </label>
-              <CustomSelect
-                id="timeline-category-filter"
-                value={selectedCategory}
-                onChange={(value) => {
-                  setSelectedCategory(value as SelectedCategory);
-                  setSelectedYear("all");
-                }}
-                options={[
-                  { value: "all", label: "All Categories" },
-                  ...categories.map((category) => ({
-                    value: category,
-                    label: categoryLabels[category],
-                  })),
-                ]}
-                className="min-w-[180px]"
-              />
+          <div className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-end">
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="timeline-search"
+                  className="text-sm text-neutral-600 dark:text-neutral-400"
+                >
+                  Search:
+                </label>
+                <div className="relative">
+                  <input
+                    id="timeline-search"
+                    type="search"
+                    value={searchQuery}
+                    onChange={(event) => {
+                      setSearchQuery(event.target.value);
+                      setSelectedYear("all");
+                    }}
+                    placeholder={`Search ${activeCompany} news...`}
+                    className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 pr-9 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:ring-neutral-600"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setSelectedYear("all");
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-1.5 py-0.5 text-sm text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
+                      aria-label="Clear timeline search"
+                    >
+                      x
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="timeline-category-filter"
+                  className="text-sm text-neutral-600 dark:text-neutral-400"
+                >
+                  Category:
+                </label>
+                <CustomSelect
+                  id="timeline-category-filter"
+                  value={selectedCategory}
+                  onChange={(value) => {
+                    setSelectedCategory(value as SelectedCategory);
+                    setSelectedYear("all");
+                  }}
+                  options={[
+                    { value: "all", label: "All Categories" },
+                    ...categories.map((category) => ({
+                      value: category,
+                      label: categoryLabels[category],
+                    })),
+                  ]}
+                  className="min-w-[180px]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="block text-sm text-neutral-600 dark:text-neutral-400">
+                  Sort:
+                </span>
+                <div className="inline-flex rounded-lg border border-neutral-200 bg-white p-1 dark:border-neutral-700 dark:bg-neutral-900">
+                  {[
+                    ["newest", "Newest"],
+                    ["oldest", "Oldest"],
+                  ].map(([value, label]) => {
+                    const isSelected = sortOrder === value;
+
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        aria-pressed={isSelected}
+                        onClick={() => setSortOrder(value as TimelineSortOrder)}
+                        className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                          isSelected
+                            ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-950"
+                            : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             <div className="overflow-x-auto pb-2">
