@@ -16,6 +16,12 @@ function createMissingNewsSourceInvestmentsError() {
   return error;
 }
 
+function rowsWithWhere<T>(rows: T[]) {
+  return Object.assign(Promise.resolve(rows), {
+    where: async () => rows,
+  });
+}
+
 describe("getAllNews relevance mapping", () => {
   afterEach(() => {
     mock.restore();
@@ -338,7 +344,7 @@ describe("getAllNews relevance mapping", () => {
     }));
 
     const { getAllNews } = await import(`../src/lib/news?news-source-fallback=${Date.now()}`);
-    const news = await getAllNews();
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
 
     expect(news).toHaveLength(2);
     expect(news.map((item: { id: string }) => item.id)).toEqual([
@@ -542,7 +548,7 @@ describe("getAllNews relevance mapping", () => {
     }));
 
     const { getAllNews } = await import(`../src/lib/news?news-portfolio-starter=${Date.now()}`);
-    const news = await getAllNews();
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
 
     expect(news[0].portfolioCompany).toMatchObject({
       title: "Octet",
@@ -740,7 +746,7 @@ describe("getAllNews relevance mapping", () => {
     }));
 
     const { getAllNews } = await import(`../src/lib/news?news-portfolio-company-account=${Date.now()}`);
-    const news = await getAllNews();
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
 
     expect(news[0].portfolioCompany).toMatchObject({
       title: "Prime Intellect",
@@ -841,7 +847,7 @@ describe("getAllNews relevance mapping", () => {
     }));
 
     const { getAllNews } = await import(`../src/lib/news?news-portfolio-job-fallback=${Date.now()}`);
-    const news = await getAllNews();
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
 
     expect(news[0].portfolioCompany).toMatchObject({
       title: "Prime Intellect",
@@ -928,7 +934,7 @@ describe("getAllNews relevance mapping", () => {
     }));
 
     const { getAllNews } = await import(`../src/lib/news?news-direct-company=${Date.now()}`);
-    const news = await getAllNews();
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
 
     expect(news[0].portfolioCompany).toMatchObject({
       title: "World",
@@ -1035,7 +1041,7 @@ describe("getAllNews relevance mapping", () => {
     }));
 
     const { getAllNews } = await import(`../src/lib/news?news-affiliation-context=${Date.now()}`);
-    const news = await getAllNews();
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
 
     expect(news[0].portfolioCompany).toMatchObject({
       title: "Bagel",
@@ -1045,8 +1051,8 @@ describe("getAllNews relevance mapping", () => {
       jobCount: 2,
       sourceIsCompanyAccount: false,
     });
-    expect(news[0].sourceImage).toBe("https://r2.example/prime-intellect.svg");
-    expect(news[0].postedAt).toBe("2026-05-19T00:00:00.000Z");
+    expect(news[0].sourceImage).toBe("https://r2.example/bagel.png");
+    expect(news[0].postedAt).toBe("2026-05-29T00:00:00.000Z");
   });
 
   test("fills announcement logos from matched portfolio companies", async () => {
@@ -1079,6 +1085,7 @@ describe("getAllNews relevance mapping", () => {
       announcements,
       newsSourceInvestments,
       investments,
+      affiliations: null,
       jobs,
     }));
 
@@ -1116,7 +1123,7 @@ describe("getAllNews relevance mapping", () => {
             }
 
             if (table.__table === "investments") {
-              return Promise.resolve([
+              return rowsWithWhere([
                 {
                   id: "berachain-id",
                   title: "Berachain",
@@ -1181,6 +1188,7 @@ describe("getAllNews relevance mapping", () => {
       announcements,
       newsSourceInvestments,
       investments,
+      affiliations: null,
       jobs,
     }));
 
@@ -1217,7 +1225,7 @@ describe("getAllNews relevance mapping", () => {
             }
 
             if (table.__table === "investments") {
-              return Promise.resolve([
+              return rowsWithWhere([
                 {
                   id: "praxis-id",
                   title: "Praxis",

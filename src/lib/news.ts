@@ -509,6 +509,16 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
     const starterInvestmentTitles = Array.from(
       new Set(STARTER_SOURCE_INVESTMENT_MAPPINGS.map((mapping) => mapping.investmentTitle))
     );
+    const allInvestmentsResult = await db
+      .select({
+        id: investmentsTable.id,
+        title: investmentsTable.title,
+        logo: investmentsTable.logo,
+        website: investmentsTable.website,
+      })
+      .from(investmentsTable);
+    const allInvestments = Array.isArray(allInvestmentsResult) ? allInvestmentsResult : [];
+
     const [mappedInvestments, starterInvestments] = await Promise.all([
       investmentIds.length > 0
         ? db
@@ -535,7 +545,12 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
     ]);
 
     const investments = Array.from(
-      new Map([...mappedInvestments, ...starterInvestments].map((investment) => [investment.id, investment])).values()
+      new Map(
+        [...allInvestments, ...mappedInvestments, ...starterInvestments].map((investment) => [
+          investment.id,
+          investment,
+        ])
+      ).values()
     );
 
     const investmentsById = new Map(investments.map((investment) => [investment.id, investment]));
@@ -675,6 +690,20 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
       contexts.bySource.set(`${sourceType}:${sourceValue}`, context);
       contexts.byTitle.set(normalizeCompanyTitle(title), context);
     };
+
+    investments.forEach((investment) => {
+      const titleKey = normalizeCompanyTitle(investment.title);
+      if (contexts.byTitle.has(titleKey)) return;
+
+      contexts.byTitle.set(titleKey, {
+        title: investment.title,
+        logo: investment.logo,
+        website: investment.website,
+        jobsUrl: getPortfolioJobsUrl(investment.title),
+        jobCount: getPortfolioJobCount(investment.title, jobCountsByCompany),
+        sourceIsCompanyAccount: true,
+      });
+    });
 
     mappings.forEach((mapping) => {
       if (mapping.companyTitle?.trim()) {
@@ -823,7 +852,13 @@ export async function getAllNews(
       getSourceLookupKeys(item)
         .map((key) => portfolioCompanyContexts.bySource.get(key))
         .find(Boolean) ||
-      (item.company ? portfolioCompanyContexts.byTitle.get(normalizeCompanyTitle(item.company)) : undefined);
+      [item.company, ...(item.source?.split(",") ?? [])]
+        .map((value) =>
+          value
+            ? portfolioCompanyContexts.byTitle.get(normalizeCompanyTitle(value))
+            : undefined
+        )
+        .find(Boolean);
 
     if (portfolioCompany) {
       item.portfolioCompany = portfolioCompany;
