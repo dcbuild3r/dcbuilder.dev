@@ -1,12 +1,6 @@
 import { getAllPosts } from "./blog";
 import { db } from "@/db";
-import {
-  curatedLinks as curatedLinksTable,
-  announcements as announcementsTable,
-  newsSourceInvestments as newsSourceInvestmentsTable,
-  investments as investmentsTable,
-  jobs as jobsTable,
-} from "@/db/schema";
+import * as dbSchema from "@/db/schema";
 import { desc, inArray, sql } from "drizzle-orm";
 import { NewsCategory } from "@/data/news";
 import { isMissingColumnError, isMissingRelationError } from "@/lib/db-schema-compat";
@@ -17,6 +11,15 @@ import {
   getPortfolioJobsUrl,
 } from "@/lib/portfolio-jobs";
 
+const {
+  curatedLinks: curatedLinksTable,
+  announcements: announcementsTable,
+  newsSourceInvestments: newsSourceInvestmentsTable,
+  investments: investmentsTable,
+  affiliations: affiliationsTable,
+  jobs: jobsTable,
+} = dbSchema;
+
 interface PortfolioCompanyNewsContext {
   title: string;
   logo: string | null;
@@ -24,6 +27,11 @@ interface PortfolioCompanyNewsContext {
   jobsUrl: string;
   jobCount: number;
   sourceIsCompanyAccount: boolean;
+}
+
+interface PortfolioCompanyNewsContexts {
+  bySource: Map<string, PortfolioCompanyNewsContext>;
+  byTitle: Map<string, PortfolioCompanyNewsContext>;
 }
 
 const WORLD_COMPANY = {
@@ -335,6 +343,10 @@ function normalizeHost(value: string): string {
   return value.trim().replace(/^www\./, "").toLowerCase();
 }
 
+function normalizeCompanyTitle(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
 function getUrlHost(value: string): string | null {
   try {
     const url = new URL(value);
@@ -376,8 +388,11 @@ function getSourceLookupKeys(item: AggregatedNewsItem): string[] {
   return Array.from(keys);
 }
 
-async function getPortfolioCompanyContextsBySource() {
-  const contexts = new Map<string, PortfolioCompanyNewsContext>();
+async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContexts> {
+  const contexts: PortfolioCompanyNewsContexts = {
+    bySource: new Map(),
+    byTitle: new Map(),
+  };
 
   try {
     if (!investmentsTable) {
@@ -506,6 +521,32 @@ async function getPortfolioCompanyContextsBySource() {
 
     const investmentsById = new Map(investments.map((investment) => [investment.id, investment]));
     const investmentsByTitle = new Map(investments.map((investment) => [investment.title, investment]));
+    let affiliationRows: Array<{
+      title: string;
+      logo: string | null;
+      website: string | null;
+      xHandles: string[] | null;
+    }> = [];
+
+    if (affiliationsTable) {
+      try {
+        affiliationRows = await db
+          .select({
+            title: affiliationsTable.title,
+            logo: affiliationsTable.logo,
+            website: affiliationsTable.website,
+            xHandles: affiliationsTable.xHandles,
+          })
+          .from(affiliationsTable);
+      } catch (error) {
+        if (isMissingRelationError(error, "affiliations") || isMissingColumnError(error, "x_handles")) {
+          affiliationRows = [];
+        } else {
+          console.error("[news] Failed to load affiliation portfolio contexts:", error);
+        }
+      }
+    }
+
     const getDirectJobCompanies = (mapping: { companyTitle: string | null; jobCompanies: string[] | null }) => {
       const jobCompanies = (mapping.jobCompanies || []).map((company) => company.trim()).filter(Boolean);
       if (jobCompanies.length > 0) return jobCompanies;
@@ -518,6 +559,7 @@ async function getPortfolioCompanyContextsBySource() {
       new Set([
         ...investments.flatMap((investment) => getPortfolioJobCompanies(investment.title)),
         ...directCompanyMappings.flatMap((mapping) => getDirectJobCompanies(mapping)),
+        ...affiliationRows.flatMap((affiliation) => getPortfolioJobCompanies(affiliation.title)),
       ])
     );
 
@@ -566,14 +608,17 @@ async function getPortfolioCompanyContextsBySource() {
         sourceType === "x_handle" ? normalizeXHandle(rawSourceValue) : normalizeHost(rawSourceValue);
       const sourceKind = rawSourceKind?.trim().toLowerCase();
 
-      contexts.set(`${sourceType}:${sourceValue}`, {
+      const context = {
         title: investment.title,
         logo: investment.logo,
         website: investment.website,
         jobsUrl: getPortfolioJobsUrl(investment.title),
         jobCount: getPortfolioJobCount(investment.title, jobCountsByCompany),
         sourceIsCompanyAccount: sourceKind === "company",
-      });
+      };
+
+      contexts.bySource.set(`${sourceType}:${sourceValue}`, context);
+      contexts.byTitle.set(normalizeCompanyTitle(investment.title), context);
     };
 
     const setDirectCompanyContext = (
@@ -599,14 +644,17 @@ async function getPortfolioCompanyContextsBySource() {
         .map((entity) => `company=${encodeURIComponent(entity)}`)
         .join("&");
 
-      contexts.set(`${sourceType}:${sourceValue}`, {
+      const context = {
         title,
         logo: company.companyLogo?.trim() || null,
         website: company.companyWebsite?.trim() || null,
         jobsUrl: `/jobs?${jobsUrl}`,
         jobCount: companiesForJobs.reduce((sum, entity) => sum + (jobCountsByCompany[entity] || 0), 0),
         sourceIsCompanyAccount: sourceKind === "company",
-      });
+      };
+
+      contexts.bySource.set(`${sourceType}:${sourceValue}`, context);
+      contexts.byTitle.set(normalizeCompanyTitle(title), context);
     };
 
     mappings.forEach((mapping) => {
@@ -629,7 +677,7 @@ async function getPortfolioCompanyContextsBySource() {
           ? normalizeXHandle(mapping.sourceValue)
           : normalizeHost(mapping.sourceValue);
       const key = `${mapping.sourceType}:${sourceValue}`;
-      if (contexts.has(key)) return;
+      if (contexts.bySource.has(key)) return;
 
       setContext(
         mapping.sourceType,
@@ -645,9 +693,38 @@ async function getPortfolioCompanyContextsBySource() {
           ? normalizeXHandle(mapping.sourceValue)
           : normalizeHost(mapping.sourceValue);
       const key = `${mapping.sourceType}:${sourceValue}`;
-      if (contexts.has(key)) return;
+      if (contexts.bySource.has(key)) return;
 
       setDirectCompanyContext(mapping.sourceType, mapping.sourceValue, mapping, mapping.sourceKind);
+    });
+
+    affiliationRows.forEach((affiliation) => {
+      const title = affiliation.title.trim();
+      if (!title) return;
+
+      const context = {
+        title,
+        logo: affiliation.logo?.trim() || null,
+        website: affiliation.website?.trim() || null,
+        jobsUrl: getPortfolioJobsUrl(title),
+        jobCount: getPortfolioJobCount(title, jobCountsByCompany),
+        sourceIsCompanyAccount: false,
+      };
+      const titleKey = normalizeCompanyTitle(title);
+
+      if (!contexts.byTitle.has(titleKey)) {
+        contexts.byTitle.set(titleKey, context);
+      }
+
+      (affiliation.xHandles ?? []).forEach((handle) => {
+        const normalizedHandle = normalizeXHandle(handle);
+        if (!normalizedHandle) return;
+
+        const sourceKey = `x_handle:${normalizedHandle}`;
+        if (!contexts.bySource.has(sourceKey)) {
+          contexts.bySource.set(sourceKey, context);
+        }
+      });
     });
   } catch (error) {
     console.error("[news] Failed to load portfolio source mappings:", error);
@@ -662,7 +739,7 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
     getAllPosts(),
     getCuratedLinksWithFallback(),
     getAnnouncementsWithFallback(),
-    getPortfolioCompanyContextsBySource(),
+    getPortfolioCompanyContexts(),
   ]);
 
   // Map blog posts
@@ -716,9 +793,11 @@ export async function getAllNews(): Promise<AggregatedNewsItem[]> {
   // Combine and sort by date, then relevance for same-day items.
   const allNews = [...blogItems, ...curatedItems, ...announcementItems];
   allNews.forEach((item) => {
-    const portfolioCompany = getSourceLookupKeys(item)
-      .map((key) => portfolioCompanyContexts.get(key))
-      .find(Boolean);
+    const portfolioCompany =
+      getSourceLookupKeys(item)
+        .map((key) => portfolioCompanyContexts.bySource.get(key))
+        .find(Boolean) ||
+      (item.company ? portfolioCompanyContexts.byTitle.get(normalizeCompanyTitle(item.company)) : undefined);
 
     if (portfolioCompany) {
       item.portfolioCompany = portfolioCompany;

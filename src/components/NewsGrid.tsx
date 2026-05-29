@@ -11,6 +11,7 @@ import { NewsCategory, categoryLabels } from "@/data/news";
 import { CustomSelect } from "./CustomSelect";
 import { trackNewsClick } from "@/lib/posthog";
 import { useNewsClicks } from "@/hooks/useNewsClicks";
+import { renderInlineNewsMarkdown } from "./news-inline-markdown";
 
 type NewsType = "all" | "portfolio" | "blog" | "curated" | "announcement";
 type NewsSortMode = "posted" | "content";
@@ -807,7 +808,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 													isDescriptionExpanded ? "" : "line-clamp-3 sm:line-clamp-2"
 												}`}
 											>
-												{item.description}
+												{renderInlineNewsMarkdown(item.description)}
 											</p>
 										)}
 

@@ -45,6 +45,7 @@ describe("getAllNews relevance mapping", () => {
       announcements,
       newsSourceInvestments: null,
       investments: null,
+      affiliations: null,
       jobs: null,
     }));
 
@@ -134,6 +135,7 @@ describe("getAllNews relevance mapping", () => {
       announcements,
       newsSourceInvestments: null,
       investments: null,
+      affiliations: null,
       jobs: null,
     }));
 
@@ -222,6 +224,7 @@ describe("getAllNews relevance mapping", () => {
       announcements,
       newsSourceInvestments: null,
       investments: null,
+      affiliations: null,
       jobs: null,
     }));
 
@@ -296,6 +299,7 @@ describe("getAllNews relevance mapping", () => {
       announcements,
       newsSourceInvestments,
       investments,
+      affiliations: null,
       jobs,
     }));
 
@@ -399,6 +403,7 @@ describe("getAllNews relevance mapping", () => {
       announcements,
       newsSourceInvestments: null,
       investments,
+      affiliations: null,
       jobs,
     }));
 
@@ -497,6 +502,7 @@ describe("getAllNews relevance mapping", () => {
       announcements,
       newsSourceInvestments,
       investments,
+      affiliations: null,
       jobs,
     }));
 
@@ -592,6 +598,7 @@ describe("getAllNews relevance mapping", () => {
       announcements,
       newsSourceInvestments: null,
       investments,
+      affiliations: null,
       jobs,
     }));
 
@@ -681,6 +688,7 @@ describe("getAllNews relevance mapping", () => {
       announcements,
       newsSourceInvestments: null,
       investments,
+      affiliations: null,
       jobs,
     }));
 
@@ -781,6 +789,7 @@ describe("getAllNews relevance mapping", () => {
       announcements,
       newsSourceInvestments: null,
       investments,
+      affiliations: null,
       jobs,
     }));
 
@@ -842,6 +851,113 @@ describe("getAllNews relevance mapping", () => {
       jobsUrl: "/jobs?company=World",
       jobCount: 78,
       sourceIsCompanyAccount: true,
+    });
+  });
+
+  test("attaches affiliation company context from X handles", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+    const affiliations = {
+      __table: "affiliations",
+      title: {},
+      logo: {},
+      website: {},
+      xHandles: {},
+    };
+    const investments = {
+      __table: "investments",
+      id: {},
+      title: {},
+      logo: {},
+      website: {},
+    };
+    const jobs = {
+      __table: "jobs",
+      company: {},
+    };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => [],
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+      newsSourceInvestments: null,
+      investments,
+      affiliations,
+      jobs,
+    }));
+
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: (selection?: { count?: unknown }) => ({
+          from: (table: { __table: string }) => {
+            if (table.__table === "curated_links") {
+              return {
+                orderBy: async () => [
+                  {
+                    id: "paris-2",
+                    title: "Paris 2.0",
+                    url: "https://x.com/bidhan/status/2060043273545429503",
+                    source: "bidhan",
+                    sourceImage: null,
+                    date: new Date("2026-05-29T00:00:00.000Z"),
+                    description: "**Bagel** releases Paris 2.0.",
+                    category: "ai",
+                    featured: false,
+                    relevance: 8,
+                  },
+                ],
+              };
+            }
+
+            if (table.__table === "announcements") {
+              return { orderBy: async () => [] };
+            }
+
+            if (table.__table === "investments") {
+              return { where: async () => [] };
+            }
+
+            if (table.__table === "affiliations") {
+              return Promise.resolve([
+                {
+                  title: "Bagel",
+                  logo: "https://r2.example/bagel.png",
+                  website: "https://www.bagel.net/",
+                  xHandles: ["@bidhan"],
+                },
+              ]);
+            }
+
+            if (selection?.count) {
+              return {
+                where: () => ({
+                  groupBy: async () => [{ company: "Bagel", count: 2 }],
+                }),
+              };
+            }
+
+            return {
+              where: async () => [{ company: "Bagel" }, { company: "Bagel" }],
+            };
+          },
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-affiliation-context=${Date.now()}`);
+    const news = await getAllNews();
+
+    expect(news[0].portfolioCompany).toMatchObject({
+      title: "Bagel",
+      logo: "https://r2.example/bagel.png",
+      website: "https://www.bagel.net/",
+      jobsUrl: "/jobs?company=Bagel",
+      jobCount: 2,
+      sourceIsCompanyAccount: false,
     });
   });
 });
