@@ -3,17 +3,20 @@
 import Image from "next/image";
 import { Investment } from "@/types/investments";
 import { isNew } from "@/lib/shuffle";
+import { DocumentIcon } from "@/components/ui/icons";
 
 interface InvestmentCardProps {
   investment: Investment;
   jobCount?: number;
   jobsUrl?: string;
+  newsUrl?: string;
 }
 
 export function InvestmentCard({
   investment,
   jobCount = 0,
   jobsUrl,
+  newsUrl,
 }: InvestmentCardProps) {
   const isDefunct = investment.status === "defunct";
 
@@ -145,6 +148,18 @@ export function InvestmentCard({
           </a>
         )}
       </div>
+      {/* News Button */}
+      {newsUrl && (
+        <a
+          href={newsUrl}
+          className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-[transform,box-shadow,background-color] duration-150 hover:scale-105 hover:bg-black hover:shadow-md active:scale-100 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
+          aria-label={`View news for ${investment.title}`}
+        >
+          <DocumentIcon className="size-3.5" aria-hidden="true" />
+          <span>News</span>
+        </a>
+      )}
+
       {/* Join Button */}
       {jobCount > 0 && jobsUrl && (
         <a

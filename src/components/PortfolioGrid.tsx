@@ -12,6 +12,7 @@ import {
 } from "@/types/investments";
 import { hashString, seededRandom, shuffleArray } from "@/lib/shuffle";
 import { getPortfolioJobCount, getPortfolioJobsUrl } from "@/lib/portfolio-jobs";
+import { getPortfolioNewsUrl } from "@/lib/portfolio-news";
 
 interface PortfolioGridProps {
   investments: Investment[];
@@ -37,6 +38,12 @@ export function PortfolioGrid({
     () => investments.filter((i) => i.featured).length,
     [investments]
   );
+  const hiringCount = useMemo(
+    () =>
+      investments.filter((i) => getPortfolioJobCount(i.title, jobCounts) > 0)
+        .length,
+    [investments, jobCounts]
+  );
   const tier4Count = investments.length - mainCount;
 
   // Get categories with their investment counts
@@ -61,6 +68,10 @@ export function PortfolioGrid({
     // Apply tier/featured filter
     if (filter === "featured") {
       result = result.filter((i) => i.featured);
+    } else if (filter === "hiring") {
+      result = result.filter(
+        (i) => getPortfolioJobCount(i.title, jobCounts) > 0
+      );
     } else if (filter === "main") {
       result = result.filter((i) => i.tier <= 3);
     }
@@ -73,7 +84,7 @@ export function PortfolioGrid({
     }
 
     return result;
-  }, [investments, filter, selectedCategories]);
+  }, [investments, filter, selectedCategories, jobCounts]);
 
   // Deterministic sort (no shuffle - that happens in useEffect)
   // Deterministic display order (stable between server/client)
@@ -157,7 +168,7 @@ export function PortfolioGrid({
     <div className="space-y-6" data-testid="portfolio-grid">
       {/* Controls */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <label
             htmlFor="sort-select"
             className="text-sm text-neutral-600 dark:text-neutral-400"
@@ -176,10 +187,10 @@ export function PortfolioGrid({
           </select>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <button
             onClick={() => setFilter("main")}
-            className={`px-4 py-1.5 text-sm rounded-lg border transition-colors ${
+            className={`shrink-0 whitespace-nowrap px-4 py-1.5 text-sm rounded-lg border transition-colors ${
               filter === "main"
                 ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
                 : "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -189,7 +200,7 @@ export function PortfolioGrid({
           </button>
           <button
             onClick={() => setFilter("featured")}
-            className={`px-4 py-1.5 text-sm rounded-lg border transition-colors ${
+            className={`shrink-0 whitespace-nowrap px-4 py-1.5 text-sm rounded-lg border transition-colors ${
               filter === "featured"
                 ? "bg-amber-500 text-white border-transparent"
                 : "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -197,10 +208,36 @@ export function PortfolioGrid({
           >
             ★ Featured ({featuredCount})
           </button>
+          <button
+            onClick={() => setFilter("hiring")}
+            className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-4 py-1.5 text-sm rounded-lg border transition-colors ${
+              filter === "hiring"
+                ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
+                : "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            }`}
+          >
+            <span className="relative flex h-2 w-2">
+              <span
+                className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${
+                  filter === "hiring"
+                    ? "bg-white dark:bg-neutral-900"
+                    : "bg-neutral-900 dark:bg-white"
+                }`}
+              />
+              <span
+                className={`relative inline-flex h-2 w-2 rounded-full ${
+                  filter === "hiring"
+                    ? "bg-white dark:bg-neutral-900"
+                    : "bg-neutral-900 dark:bg-white"
+                }`}
+              />
+            </span>
+            Hiring ({hiringCount})
+          </button>
           {tier4Count > 0 && (
             <button
               onClick={() => setFilter("all")}
-              className={`px-4 py-1.5 text-sm rounded-lg border transition-colors ${
+              className={`shrink-0 whitespace-nowrap px-4 py-1.5 text-sm rounded-lg border transition-colors ${
                 filter === "all"
                   ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
                   : "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -261,6 +298,7 @@ export function PortfolioGrid({
             investment={investment}
             jobCount={getPortfolioJobCount(investment.title, jobCounts)}
             jobsUrl={getPortfolioJobsUrl(investment.title)}
+            newsUrl={getPortfolioNewsUrl(investment.title)}
           />
         ))}
       </div>
@@ -287,6 +325,7 @@ export function PortfolioGrid({
             <InvestmentCard
               key={investment.title}
               investment={investment}
+              newsUrl={getPortfolioNewsUrl(investment.title)}
             />
           ))}
         </div>

@@ -12,6 +12,7 @@ export type NewsCategory =
 	| "defi"
 	| "research"
 	| "product"
+	| "growth"
 	| "funding"
 	| "general"
 	| "x_post";
@@ -64,6 +65,7 @@ export const categoryLabels: Record<NewsCategory, string> = {
 	defi: "DeFi",
 	research: "Research",
 	product: "Product",
+	growth: "Growth",
 	funding: "Funding",
 	general: "General",
 	x_post: "X Post",

@@ -30,4 +30,4 @@ export interface InvestmentCategory {
 
 export type SortOption = "relevance" | "alphabetical" | "alphabetical-desc";
 
-export type FilterOption = "main" | "featured" | "all";
+export type FilterOption = "main" | "featured" | "hiring" | "all";

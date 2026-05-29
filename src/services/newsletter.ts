@@ -82,7 +82,7 @@ function newsletterLabel(cat: string): string {
   return newsletterCategoryLabels[cat as NewsCategory] || categoryLabels[cat as NewsCategory] || cat;
 }
 
-const NEWSLETTER_CATEGORY_ORDER: string[] = ["x_post", "general", "product", "cool_product"];
+const NEWSLETTER_CATEGORY_ORDER: string[] = ["x_post", "general", "growth", "product", "cool_product"];
 
 function sortGroupsByCategory<T extends { category?: string }>(groups: T[]): T[] {
   return [...groups].sort((a, b) => {
@@ -208,6 +208,7 @@ const FEATURED_CATEGORIES: Array<{ key: string; label: string }> = [
   { key: "research", label: "Research" },
   { key: "infrastructure", label: "Infrastructure" },
   { key: "developer_tooling", label: "Dev Tooling" },
+  { key: "growth", label: "Growth" },
   { key: "product", label: "Product" },
 ];
 
