@@ -48,6 +48,13 @@ interface CandidatesGridProps {
 
 type AvailabilityFilter = "all" | "active" | AvailabilityStatus;
 
+function getCandidateLocationParts(location: string): string[] {
+	return location
+		.split(/[\/()]| or /i)
+		.map((part) => part.trim())
+		.filter(Boolean);
+}
+
 export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	const searchParams = useSearchParams();
 	const [availabilityFilter, setAvailabilityFilter] = useState<
@@ -57,6 +64,9 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		"all" | ExperienceLevel
 	>("all");
 	const [roleFilter, setRoleFilter] = useState<"all" | RoleType>("all");
+	const [selectedLocation, setSelectedLocation] = useState(
+		searchParams.get("location") || "all"
+	);
 	const [selectedTags, setSelectedTags] = useState<SkillTag[]>([]);
 	const [tagsExpanded, setTagsExpanded] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -115,6 +125,11 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		updateUrlParams({ candidate: null });
 	}, [updateUrlParams]);
 
+	const handleLocationChange = useCallback((value: string) => {
+		setSelectedLocation(value);
+		updateUrlParams({ location: value === "all" ? null : value });
+	}, [updateUrlParams]);
+
 	// Close expanded view on escape key
 	useEffect(() => {
 		if (!expandedCandidate) return;
@@ -160,7 +175,7 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 	useEffect(() => {
 		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setDisplayCount(12);
-	}, [availabilityFilter, experienceFilter, roleFilter, searchQuery, selectedTags]);
+	}, [availabilityFilter, experienceFilter, roleFilter, selectedLocation, searchQuery, selectedTags]);
 
 	// Get all unique tags from candidates
 	const allTags = useMemo(() => {
@@ -174,6 +189,16 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 		const roles = new Set<RoleType>();
 		candidates.forEach((c) => c.lookingFor?.forEach((role) => roles.add(role)));
 		return Array.from(roles).sort();
+	}, [candidates]);
+
+	const allLocations = useMemo(() => {
+		const locations = new Set<string>();
+		candidates.forEach((candidate) => {
+			getCandidateLocationParts(candidate.location).forEach((location) => {
+				locations.add(location);
+			});
+		});
+		return Array.from(locations).sort();
 	}, [candidates]);
 
 	const toggleTag = (tag: SkillTag) => {
@@ -230,6 +255,14 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 				}
 			}
 
+			// Location filter
+			if (selectedLocation !== "all") {
+				const candidateLocations = getCandidateLocationParts(candidate.location);
+				if (!candidateLocations.some((location) => location === selectedLocation)) {
+					return false;
+				}
+			}
+
 			// Tag filter (candidate must have ALL selected tags)
 			if (selectedTags.length > 0) {
 				if (
@@ -251,7 +284,16 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 
 			return true;
 		});
-	}, [candidates, availabilityFilter, experienceFilter, roleFilter, deferredSearchQuery, selectedTags, candidateSearchIndex]);
+	}, [
+		candidates,
+		availabilityFilter,
+		experienceFilter,
+		roleFilter,
+		selectedLocation,
+		deferredSearchQuery,
+		selectedTags,
+		candidateSearchIndex,
+	]);
 
 	// Include today's date so shuffle changes daily (stable after hydration)
 	const [shuffleSeed] = useState(() => new Date().toISOString().split("T")[0]);
@@ -262,11 +304,12 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 					availabilityFilter,
 					experienceFilter,
 					roleFilter,
+					selectedLocation,
 					deferredSearchQuery,
 					selectedTags.join(","),
 					shuffleSeed,
 				].join("|"),
-		[availabilityFilter, experienceFilter, roleFilter, deferredSearchQuery, selectedTags, shuffleSeed]
+		[availabilityFilter, experienceFilter, roleFilter, selectedLocation, deferredSearchQuery, selectedTags, shuffleSeed]
 	);
 
 	// Deterministic shuffle: featured+hot, featured, hot, top, verified, then unverified
@@ -370,17 +413,38 @@ export function CandidatesGrid({ candidates }: CandidatesGridProps) {
 					</div>
 				</div>
 
-				{/* Row 2: Search */}
+				{/* Row 2: Location and Search */}
 				<div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-						<div className="flex-1 relative">
-							<input
-								type="text"
-								aria-label="Search candidates"
-								placeholder="Search candidates..."
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-							/>
+					{/* Location Filter */}
+					<div className="flex items-center gap-2">
+						<label
+							htmlFor="candidate-location-filter"
+							className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"
+						>
+							Location:
+						</label>
+						<CustomSelect
+							id="candidate-location-filter"
+							value={selectedLocation}
+							onChange={handleLocationChange}
+							options={[
+								{ value: "all", label: "All Locations" },
+								...allLocations.map((location) => ({ value: location, label: location })),
+							]}
+							className="flex-1 sm:flex-none sm:min-w-[170px]"
+							searchable
+						/>
+					</div>
+
+					<div className="flex-1 relative">
+						<input
+							type="text"
+							aria-label="Search candidates"
+							placeholder="Search candidates..."
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+						/>
 						{searchQuery && (
 							<button
 								type="button"
