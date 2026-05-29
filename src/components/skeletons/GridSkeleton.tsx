@@ -216,8 +216,9 @@ export function CandidatesFiltersStatic() {
         <StaticSelect label="Looking For:" placeholder="All Roles" className="sm:min-w-[140px]" />
       </div>
 
-      {/* Row 2: Search */}
+      {/* Row 2: Location and Search */}
       <div className="flex flex-col sm:flex-row gap-3 items-center">
+        <StaticSelect label="Location:" placeholder="All Locations" className="sm:min-w-[170px]" />
         <StaticSearchInput placeholder="Search candidates..." />
         <span className="text-sm text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
           Loading candidates...

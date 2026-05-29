@@ -20,6 +20,7 @@ test.describe("Candidates Page", () => {
   test("should display filter controls", async ({ page }) => {
     await expect(page.getByText("Status:")).toBeVisible();
     await expect(page.getByText("Experience:")).toBeVisible();
+    await expect(page.getByText("Location:")).toBeVisible();
   });
 
   test("should have search functionality", async ({ page }) => {
@@ -73,6 +74,21 @@ test.describe("Candidates Page", () => {
 
     // Search should be empty
     await expect(searchInput).toHaveValue("");
+  });
+
+  test("should filter candidates by location", async ({ page }) => {
+    await page.locator("#candidate-location-filter").click();
+    await page.getByRole("option", { name: "Remote" }).click();
+
+    await expect(page).toHaveURL(/location=Remote/);
+    await expect(page.getByText(/\d+ candidates?/)).toBeVisible();
+
+    const cards = candidateCards(page);
+    const count = await cards.count();
+
+    for (let i = 0; i < Math.min(count, 3); i++) {
+      await expect(cards.nth(i)).toContainText("Remote");
+    }
   });
 });
 
