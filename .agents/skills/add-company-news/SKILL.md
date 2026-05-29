@@ -28,7 +28,7 @@ Use an **announcement** when the news is official company communication:
 - Official X post from the company
 - Company blog post
 - GitHub release or official repo announcement
-- Product, growth, funding, launch, or roadmap announcement
+- Product, adoption, funding, launch, or roadmap announcement
 
 Use a **curated link** when the source is not official company communication:
 
@@ -67,7 +67,6 @@ Use these current news categories:
 | Value | Label | Use For |
 | --- | --- | --- |
 | `x_post` | X Post | The item itself is mainly an X post with no better topical category |
-| `growth` | Growth | Adoption, usage, ecosystem expansion, partnerships, integrations |
 | `product` | Product | Product launches, new features, app releases |
 | `defi` | DeFi | DeFi protocol mechanics, markets, lending, trading |
 | `crypto` | Crypto | Broad crypto/network/token news |
@@ -78,7 +77,7 @@ Use these current news categories:
 | `general` | General | Fallback only |
 
 Timeline cards can show multiple badges. For example, an announcement with
-`platform: "x"` and `category: "growth"` displays `X Post` and `Growth`.
+`platform: "x"` and `category: "product"` displays `X Post` and `Product`.
 Do not force every X-sourced announcement to `category: "x_post"` if a better
 topical category exists.
 

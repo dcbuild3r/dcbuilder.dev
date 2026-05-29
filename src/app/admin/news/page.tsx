@@ -57,7 +57,7 @@ const emptyAnnouncement: Partial<Announcement> = {
   platform: "x",
   date: new Date().toISOString().split("T")[0],
   description: "",
-  category: "growth",
+  category: "general",
   featured: false,
   relevance: 5,
 };
@@ -375,7 +375,7 @@ export default function AdminNews() {
                   setEditingItem({ ...editingItem, category: value })
                 }
                 field="newsCategory"
-                placeholder="e.g., crypto, growth, defi, x_post"
+                placeholder="e.g., crypto, product, defi, x_post"
               />
             </div>
             <div className="flex items-center gap-2">
