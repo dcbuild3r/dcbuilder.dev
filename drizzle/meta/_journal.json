@@ -99,6 +99,13 @@
       "when": 1779141000000,
       "tag": "0013_news_source_company_contexts",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1780049115356,
+      "tag": "0014_motionless_power_man",
+      "breakpoints": true
     }
   ]
 }

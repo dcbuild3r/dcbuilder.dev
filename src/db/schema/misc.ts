@@ -16,6 +16,7 @@ export const affiliations = pgTable(
     imageUrl: text("image_url"),
     logo: text("logo"),
     website: text("website"),
+    xHandles: text("x_handles").array(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
