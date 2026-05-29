@@ -81,7 +81,7 @@ export function CompanyTimeline({
   const years = useMemo(
     () =>
       Array.from(new Set(categoryEvents.map(getEventYear))).sort(
-        (a, b) => a - b
+        (a, b) => b - a
       ),
     [categoryEvents]
   );
@@ -271,7 +271,7 @@ export function CompanyTimeline({
               <li key={event.id} className="relative">
                 <span
                   className={`absolute -left-[29px] top-1.5 size-3 rounded-full border-2 border-white dark:border-neutral-950 ${
-                    index === visibleEvents.length - 1
+                    index === 0
                       ? "bg-neutral-900 dark:bg-white"
                       : "bg-neutral-300 dark:bg-neutral-700"
                   }`}

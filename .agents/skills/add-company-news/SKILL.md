@@ -136,7 +136,7 @@ console.log(await db.select().from(announcements).where(eq(announcements.url, ur
 ## Done Criteria
 
 - `/news/<company-slug>` returns `200`
-- The item appears in the vertical timeline in chronological order
+- The item appears in the vertical timeline in reverse chronological order, newest first
 - The card displays source badge plus topical category when relevant
 - The category dropdown contains the topical category
 - `bunx tsc --noEmit` passes

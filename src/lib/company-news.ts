@@ -37,12 +37,12 @@ export function getCompanyTimelineEvents(
   limit?: number
 ) {
   const sortedEvents = [...filterNewsByCompany(news, companyName)].sort((a, b) =>
-    compareNewsByDateAndRelevance(a, b, "asc")
+    compareNewsByDateAndRelevance(a, b, "desc")
   );
 
   if (!limit || !Number.isFinite(limit)) {
     return sortedEvents;
   }
 
-  return sortedEvents.slice(-limit);
+  return sortedEvents.slice(0, limit);
 }
