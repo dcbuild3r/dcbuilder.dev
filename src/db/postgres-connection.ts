@@ -26,6 +26,38 @@ type ConnectedSocket = net.Socket & {
   port: number;
 };
 
+type DatabaseEnv = Record<string, string | undefined>;
+
+function getNonEmptyEnv(env: DatabaseEnv, name: string): string | undefined {
+  const value = env[name]?.trim();
+  return value ? value : undefined;
+}
+
+export function resolveDatabaseUrl(env: DatabaseEnv = process.env): string {
+  const primaryUrl = getNonEmptyEnv(env, "DATABASE_URL");
+  if (primaryUrl) return primaryUrl;
+
+  const vercelEnv = getNonEmptyEnv(env, "VERCEL_ENV");
+  const nodeEnv = getNonEmptyEnv(env, "NODE_ENV");
+  const fallbackNames =
+    vercelEnv === "production" || (!vercelEnv && nodeEnv === "production")
+      ? ["DATABASE_URL_PROD"]
+      : vercelEnv === "preview"
+        ? ["DATABASE_URL_STAGING"]
+        : ["DATABASE_URL_DEV"];
+
+  for (const name of fallbackNames) {
+    const fallbackUrl = getNonEmptyEnv(env, name);
+    if (fallbackUrl) return fallbackUrl;
+  }
+
+  throw new Error(
+    `Missing database connection string. Configure DATABASE_URL or ${fallbackNames.join(
+      " / "
+    )}.`
+  );
+}
+
 export async function resolvePreferredPostgresTarget(
   databaseUrl: string,
   lookup: LookupFn = dns.lookup

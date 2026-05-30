@@ -1,5 +1,42 @@
 import { describe, expect, test } from "bun:test";
-import { getPostgresClientOptions } from "../src/db/postgres-connection";
+import {
+  getPostgresClientOptions,
+  resolveDatabaseUrl,
+} from "../src/db/postgres-connection";
+
+describe("resolveDatabaseUrl", () => {
+  test("prefers DATABASE_URL when it is configured", () => {
+    expect(
+      resolveDatabaseUrl({
+        DATABASE_URL: "postgresql://primary.example/app",
+        DATABASE_URL_PROD: "postgresql://prod.example/app",
+      })
+    ).toBe("postgresql://primary.example/app");
+  });
+
+  test("falls back to DATABASE_URL_PROD for Vercel production runtime", () => {
+    expect(
+      resolveDatabaseUrl({
+        VERCEL_ENV: "production",
+        DATABASE_URL_PROD: "postgresql://prod.example/app",
+      })
+    ).toBe("postgresql://prod.example/app");
+  });
+
+  test("falls back to DATABASE_URL_STAGING for Vercel preview runtime", () => {
+    expect(
+      resolveDatabaseUrl({
+        VERCEL_ENV: "preview",
+        DATABASE_URL_STAGING: "postgresql://staging.example/app",
+        DATABASE_URL_PROD: "postgresql://prod.example/app",
+      })
+    ).toBe("postgresql://staging.example/app");
+  });
+
+  test("fails with a clear message when no database URL is configured", () => {
+    expect(() => resolveDatabaseUrl({})).toThrow(/DATABASE_URL/);
+  });
+});
 
 describe("getPostgresClientOptions", () => {
   test("keeps localhost connections direct", () => {
