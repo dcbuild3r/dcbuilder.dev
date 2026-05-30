@@ -50,4 +50,11 @@ describe("getPostgresClientOptions", () => {
 
     expect(typeof options.socket).toBe("function");
   });
+
+  test("keeps hosted runtime pools inside Supabase session pool limits", () => {
+    const options = getPostgresClientOptions("postgresql://user:pass@db.example.com:5432/app");
+
+    expect(options.max).toBe(2);
+    expect(options.prepare).toBe(false);
+  });
 });

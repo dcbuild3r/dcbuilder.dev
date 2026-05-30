@@ -18,6 +18,10 @@ export type PreferredPostgresTarget = {
 };
 
 type PostgresClientOptions = {
+  max?: number;
+  idle_timeout?: number;
+  connect_timeout?: number;
+  prepare?: boolean;
   socket?: () => Promise<ConnectedSocket>;
 };
 
@@ -146,6 +150,10 @@ export function getPostgresClientOptions(
   }
 
   return {
+    max: 2,
+    idle_timeout: 10,
+    connect_timeout: 10,
+    prepare: false,
     socket: () => createPreferredPostgresSocket(databaseUrl),
   };
 }
