@@ -117,6 +117,56 @@ describe("getAllNews relevance mapping", () => {
     });
   });
 
+  test("preserves blog source so news search can index authors", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => ([
+        {
+          slug: "author-indexed-post",
+          title: "Protocol notes",
+          date: "2026-04-09",
+          description: "A technical writeup",
+          content: "word ".repeat(300),
+          source: "Ada Lovelace",
+          sourceUrl: "https://example.com/ada",
+          readingTime: 2,
+          image: null,
+          relevance: 8,
+        },
+      ]),
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+      newsSourceInvestments: null,
+      investments: null,
+      jobs: null,
+    }));
+
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: () => ({
+          from: () => ({
+            orderBy: async () => [],
+          }),
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-blog-author=${Date.now()}`);
+    const news = await getAllNews();
+
+    expect(news).toHaveLength(1);
+    expect(news[0]).toMatchObject({
+      id: "blog-author-indexed-post",
+      source: "Ada Lovelace",
+    });
+  });
+
   test("excludes company timeline news from general news by default", async () => {
     const curatedLinks = { __table: "curated_links" };
     const announcements = { __table: "announcements" };

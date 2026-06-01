@@ -235,7 +235,7 @@ export interface AggregatedNewsItem {
   featured?: boolean;
   relevance: number;
   // Type-specific fields
-  source?: string; // For curated links
+  source?: string; // For curated links and blog authors/sources
   sourceImage?: string; // For curated links
   company?: string; // For announcements
   companyLogo?: string; // For announcements
@@ -807,6 +807,7 @@ export async function getAllNews(
     readingTime: `${post.readingTime} min read`,
     image: post.image,
     relevance: post.relevance,
+    source: post.source,
   }));
 
   // Map curated links
