@@ -14,7 +14,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function NewsPage() {
-  const news = await getAllNews();
+  const news = await getAllNews({ includeCompanyTimelineNews: true });
 
   return (
     <>
