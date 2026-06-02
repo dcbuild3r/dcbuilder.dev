@@ -17,7 +17,7 @@ function makeAwaitable<T>(value: T) {
 }
 
 type MockSubscriberStatus = "pending" | "active" | "unsubscribed";
-type MockNewsletterType = "news" | "jobs" | "candidates";
+type MockNewsletterType = "news" | "portfolio" | "jobs" | "candidates";
 
 type MockState = {
   subscriber: {
@@ -57,7 +57,7 @@ function resetState(
     createdAt: now,
     updatedAt: now,
   };
-  state.preferences = (["news", "jobs", "candidates"] as const).map((newsletterType, index) => ({
+  state.preferences = (["news", "portfolio", "jobs", "candidates"] as const).map((newsletterType, index) => ({
     id: `pref_${index + 1}`,
     subscriberId: "sub_123",
     newsletterType,

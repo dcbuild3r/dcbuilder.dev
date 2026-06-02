@@ -32,6 +32,10 @@ interface PortfolioCompanyNewsContext {
 interface PortfolioCompanyNewsContexts {
   bySource: Map<string, PortfolioCompanyNewsContext>;
   byTitle: Map<string, PortfolioCompanyNewsContext>;
+  titleMentions: Array<{
+    key: string;
+    company: PortfolioCompanyNewsContext;
+  }>;
 }
 
 const WORLD_COMPANY = {
@@ -362,8 +366,23 @@ function normalizeHost(value: string): string {
   return value.trim().replace(/^www\./, "").toLowerCase();
 }
 
-function normalizeCompanyTitle(value: string): string {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
+function normalizeCompanyTitle(value: string | null | undefined): string {
+  return (value ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function normalizeTitleMention(value: string): string {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ");
+}
+
+function getTitleMentionCompany(
+  item: AggregatedNewsItem,
+  titleMentions: PortfolioCompanyNewsContexts["titleMentions"]
+): PortfolioCompanyNewsContext | undefined {
+  const title = normalizeTitleMention(item.title);
+  if (!title) return undefined;
+
+  const haystack = ` ${title} `;
+  return titleMentions.find(({ key }) => haystack.includes(` ${key} `))?.company;
 }
 
 function getUrlHost(value: string): string | null {
@@ -411,6 +430,18 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
   const contexts: PortfolioCompanyNewsContexts = {
     bySource: new Map(),
     byTitle: new Map(),
+    titleMentions: [],
+  };
+
+  const addTitleMentionContext = (
+    title: string,
+    company: PortfolioCompanyNewsContext
+  ) => {
+    const key = normalizeTitleMention(title);
+    if (key.replace(/\s/g, "").length < 5) return;
+    if (contexts.titleMentions.some((mention) => mention.key === key)) return;
+
+    contexts.titleMentions.push({ key, company });
   };
 
   try {
@@ -431,7 +462,7 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
 
     if (newsSourceInvestmentsTable) {
       try {
-        mappings = await db
+        const mappingRows = await db
           .select({
             sourceType: newsSourceInvestmentsTable.sourceType,
             sourceValue: newsSourceInvestmentsTable.sourceValue,
@@ -443,27 +474,29 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
             jobCompanies: newsSourceInvestmentsTable.jobCompanies,
           })
           .from(newsSourceInvestmentsTable);
+        mappings = Array.isArray(mappingRows) ? mappingRows : [];
       } catch (error) {
         if (isMissingRelationError(error, "news_source_investments")) {
           mappings = [];
         } else if (isMissingColumnError(error, "source_kind")) {
           try {
-            mappings = (
-              await db
+            const fallbackMappings = await db
                 .select({
                   sourceType: newsSourceInvestmentsTable.sourceType,
                   sourceValue: newsSourceInvestmentsTable.sourceValue,
                   investmentId: newsSourceInvestmentsTable.investmentId,
                 })
-                .from(newsSourceInvestmentsTable)
-            ).map((mapping) => ({
-              ...mapping,
-              sourceKind: null,
-              companyTitle: null,
-              companyLogo: null,
-              companyWebsite: null,
-              jobCompanies: null,
-            }));
+                .from(newsSourceInvestmentsTable);
+            mappings = Array.isArray(fallbackMappings)
+              ? fallbackMappings.map((mapping) => ({
+                  ...mapping,
+                  sourceKind: null,
+                  companyTitle: null,
+                  companyLogo: null,
+                  companyWebsite: null,
+                  jobCompanies: null,
+                }))
+              : [];
           } catch (fallbackError) {
             if (!isMissingRelationError(fallbackError, "news_source_investments")) {
               console.error("[news] Failed to load portfolio source mappings:", fallbackError);
@@ -476,22 +509,23 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
           isMissingColumnError(error, "job_companies")
         ) {
           try {
-            mappings = (
-              await db
+            const fallbackMappings = await db
                 .select({
                   sourceType: newsSourceInvestmentsTable.sourceType,
                   sourceValue: newsSourceInvestmentsTable.sourceValue,
                   sourceKind: newsSourceInvestmentsTable.sourceKind,
                   investmentId: newsSourceInvestmentsTable.investmentId,
                 })
-                .from(newsSourceInvestmentsTable)
-            ).map((mapping) => ({
-              ...mapping,
-              companyTitle: null,
-              companyLogo: null,
-              companyWebsite: null,
-              jobCompanies: null,
-            }));
+                .from(newsSourceInvestmentsTable);
+            mappings = Array.isArray(fallbackMappings)
+              ? fallbackMappings.map((mapping) => ({
+                  ...mapping,
+                  companyTitle: null,
+                  companyLogo: null,
+                  companyWebsite: null,
+                  jobCompanies: null,
+                }))
+              : [];
           } catch (fallbackError) {
             if (!isMissingRelationError(fallbackError, "news_source_investments")) {
               console.error("[news] Failed to load portfolio source mappings:", fallbackError);
@@ -509,47 +543,61 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
     const starterInvestmentTitles = Array.from(
       new Set(STARTER_SOURCE_INVESTMENT_MAPPINGS.map((mapping) => mapping.investmentTitle))
     );
-    const allInvestmentsResult = await db
-      .select({
-        id: investmentsTable.id,
-        title: investmentsTable.title,
-        logo: investmentsTable.logo,
-        website: investmentsTable.website,
-      })
-      .from(investmentsTable);
-    const allInvestments = Array.isArray(allInvestmentsResult) ? allInvestmentsResult : [];
 
-    const [mappedInvestments, starterInvestments] = await Promise.all([
+    const selectInvestments = async (
+      filter?: "id" | "title",
+      values: string[] = []
+    ) => {
+      try {
+        const query = db
+          .select({
+            id: investmentsTable.id,
+            title: investmentsTable.title,
+            logo: investmentsTable.logo,
+            website: investmentsTable.website,
+          })
+          .from(investmentsTable);
+
+        if (filter === "id" && values.length > 0) {
+          if (typeof query.where !== "function") return [];
+          const rows = await query.where(inArray(investmentsTable.id, values));
+          return Array.isArray(rows) ? rows : [];
+        }
+
+        if (filter === "title" && values.length > 0) {
+          if (typeof query.where !== "function") return [];
+          const rows = await query.where(inArray(investmentsTable.title, values));
+          return Array.isArray(rows) ? rows : [];
+        }
+
+        const rows = await query;
+        return Array.isArray(rows) ? rows : [];
+      } catch (error) {
+        if (!isMissingRelationError(error, "investments")) {
+          console.error("[news] Failed to load investment portfolio contexts:", error);
+        }
+        return [];
+      }
+    };
+
+    const [allInvestments, mappedInvestments, starterInvestments] = await Promise.all([
+      selectInvestments(),
       investmentIds.length > 0
-        ? db
-            .select({
-              id: investmentsTable.id,
-              title: investmentsTable.title,
-              logo: investmentsTable.logo,
-              website: investmentsTable.website,
-            })
-            .from(investmentsTable)
-            .where(inArray(investmentsTable.id, investmentIds))
+        ? selectInvestments("id", investmentIds)
         : Promise.resolve([]),
       starterInvestmentTitles.length > 0
-        ? db
-            .select({
-              id: investmentsTable.id,
-              title: investmentsTable.title,
-              logo: investmentsTable.logo,
-              website: investmentsTable.website,
-            })
-            .from(investmentsTable)
-            .where(inArray(investmentsTable.title, starterInvestmentTitles))
+        ? selectInvestments("title", starterInvestmentTitles)
         : Promise.resolve([]),
     ]);
 
     const investments = Array.from(
       new Map(
-        [...allInvestments, ...mappedInvestments, ...starterInvestments].map((investment) => [
-          investment.id,
-          investment,
-        ])
+        [...allInvestments, ...mappedInvestments, ...starterInvestments]
+          .filter((investment) => investment?.id && investment.title)
+          .map((investment) => [
+            investment.id,
+            investment,
+          ])
       ).values()
     );
 
@@ -564,7 +612,7 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
 
     if (affiliationsTable) {
       try {
-        affiliationRows = await db
+        const rows = await db
           .select({
             title: affiliationsTable.title,
             logo: affiliationsTable.logo,
@@ -572,6 +620,7 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
             xHandles: affiliationsTable.xHandles,
           })
           .from(affiliationsTable);
+        affiliationRows = Array.isArray(rows) ? rows : [];
       } catch (error) {
         if (isMissingRelationError(error, "affiliations") || isMissingColumnError(error, "x_handles")) {
           affiliationRows = [];
@@ -600,27 +649,40 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
     let jobCountsByCompany: Record<string, number> = {};
     if (jobsTable && jobCompanies.length > 0) {
       try {
+        const query = db
+          .select({
+            company: jobsTable.company,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(jobsTable);
+
+        if (typeof query.where !== "function") {
+          throw new Error("Job count query does not support where()");
+        }
+
+        const filteredQuery = query.where(inArray(jobsTable.company, jobCompanies));
+        if (typeof filteredQuery.groupBy !== "function") {
+          throw new Error("Job count query does not support groupBy()");
+        }
+
         jobCountsByCompany = Object.fromEntries(
-          (
-            await db
-              .select({
-                company: jobsTable.company,
-                count: sql<number>`count(*)::int`,
-              })
-              .from(jobsTable)
-              .where(inArray(jobsTable.company, jobCompanies))
-              .groupBy(jobsTable.company)
-          ).map((row) => [row.company, row.count])
+          (await filteredQuery.groupBy(jobsTable.company)).map((row) => [row.company, row.count])
         );
       } catch (error) {
         console.error("[news] Failed to load portfolio job counts:", error);
         try {
-          const jobRows = await db
+          const query = db
             .select({ company: jobsTable.company })
-            .from(jobsTable)
-            .where(inArray(jobsTable.company, jobCompanies));
+            .from(jobsTable);
 
-          jobCountsByCompany = jobRows.reduce<Record<string, number>>((counts, row) => {
+          if (typeof query.where !== "function") {
+            throw new Error("Portfolio job count fallback does not support where()");
+          }
+
+          const jobRows = await query.where(inArray(jobsTable.company, jobCompanies));
+
+          jobCountsByCompany = (Array.isArray(jobRows) ? jobRows : []).reduce<Record<string, number>>((counts, row) => {
+            if (!row.company) return counts;
             counts[row.company] = (counts[row.company] || 0) + 1;
             return counts;
           }, {});
@@ -653,6 +715,7 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
 
       contexts.bySource.set(`${sourceType}:${sourceValue}`, context);
       contexts.byTitle.set(normalizeCompanyTitle(investment.title), context);
+      addTitleMentionContext(investment.title, context);
     };
 
     const setDirectCompanyContext = (
@@ -689,20 +752,24 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
 
       contexts.bySource.set(`${sourceType}:${sourceValue}`, context);
       contexts.byTitle.set(normalizeCompanyTitle(title), context);
+      addTitleMentionContext(title, context);
     };
 
     investments.forEach((investment) => {
       const titleKey = normalizeCompanyTitle(investment.title);
       if (contexts.byTitle.has(titleKey)) return;
 
-      contexts.byTitle.set(titleKey, {
+      const context = {
         title: investment.title,
         logo: investment.logo,
         website: investment.website,
         jobsUrl: getPortfolioJobsUrl(investment.title),
         jobCount: getPortfolioJobCount(investment.title, jobCountsByCompany),
         sourceIsCompanyAccount: true,
-      });
+      };
+
+      contexts.byTitle.set(titleKey, context);
+      addTitleMentionContext(investment.title, context);
     });
 
     mappings.forEach((mapping) => {
@@ -762,6 +829,7 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
 
       if (!contexts.byTitle.has(titleKey)) {
         contexts.byTitle.set(titleKey, context);
+        addTitleMentionContext(title, context);
       }
 
       (affiliation.xHandles ?? []).forEach((handle) => {
@@ -859,7 +927,8 @@ export async function getAllNews(
             ? portfolioCompanyContexts.byTitle.get(normalizeCompanyTitle(value))
             : undefined
         )
-        .find(Boolean);
+        .find(Boolean) ||
+      getTitleMentionCompany(item, portfolioCompanyContexts.titleMentions);
 
     if (portfolioCompany) {
       item.portfolioCompany = portfolioCompany;

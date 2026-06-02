@@ -12,6 +12,7 @@ import { CustomSelect } from "./CustomSelect";
 import { trackNewsClick } from "@/lib/posthog";
 import { useNewsClicks } from "@/hooks/useNewsClicks";
 import { renderInlineNewsMarkdown } from "./news-inline-markdown";
+import { newsItemMatchesCompany, normalizeCompanyFilterValue } from "@/lib/company-news";
 
 type NewsType = "all" | "portfolio" | "blog" | "curated" | "announcement";
 type NewsSortMode = "posted" | "content";
@@ -39,6 +40,17 @@ const MONAD_TWITTER_LOGO_URL = "https://pbs.twimg.com/profile_images/19451538898
 const MONAD_LOGO_SRC = "/logos/monad.png";
 const GOOGLE_RESEARCH_LOGO_SRC = "/logos/google-research.jpg";
 const CUSTOM_X_LOGO_HANDLES = new Set(["googleresearch"]);
+const PORTFOLIO_COMPANY_TEXT_CLASS = "font-bold text-black dark:text-white";
+const DCBUILDER_X_HANDLE = "dcbuilder";
+
+function isPortfolioUpdateItem(item: AggregatedNewsItem): boolean {
+	const normalizedCompany = (item.company ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+	return Boolean(item.portfolioCompany) || (
+		item.type === "announcement" &&
+		normalizedCompany.length > 0 &&
+		normalizedCompany !== DCBUILDER_X_HANDLE
+	);
+}
 
 function getNormalizedLogoSrc(src: string): string {
 	return src.trim() === MONAD_TWITTER_LOGO_URL ? MONAD_LOGO_SRC : src.trim();
@@ -80,14 +92,22 @@ const isFreshItem = (dateString: string | Date | undefined, platform?: string): 
 
 interface NewsGridProps {
 	news: AggregatedNewsItem[];
+	companyFilter?: string;
+	companyClearHref?: string;
 }
 
-export function NewsGrid({ news }: NewsGridProps) {
+export function NewsGrid({
+	news,
+	companyFilter: initialCompanyFilter = "",
+	companyClearHref = "/news/company",
+}: NewsGridProps) {
 	const [typeFilter, setTypeFilter] = useState<NewsType>("all");
 	const [categoryFilter, setCategoryFilter] = useState<"all" | NewsCategory>("all");
 	const [sortMode, setSortMode] = useState<NewsSortMode>("posted");
 	const [minimumRelevance, setMinimumRelevance] = useState(0);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [hidePortfolioUpdates, setHidePortfolioUpdates] = useState(false);
+	const companyFilter = initialCompanyFilter.trim();
 	const [expandedDescriptionIds, setExpandedDescriptionIds] = useState<Set<string>>(() => new Set());
 	const [failedImageKeys, setFailedImageKeys] = useState<Record<string, true>>({});
 	const [newsRenderWindow, setNewsRenderWindow] = useState({
@@ -97,6 +117,10 @@ export function NewsGrid({ news }: NewsGridProps) {
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 	const { getClickCount, isPopular, loaded: clicksLoaded } = useNewsClicks();
 	const deferredSearchQuery = useDeferredValue(searchQuery);
+	const companyFilterKey = useMemo(
+		() => normalizeCompanyFilterValue(companyFilter),
+		[companyFilter],
+	);
 	const dateFormatter = useMemo(
 		() =>
 			new Intl.DateTimeFormat("en-US", {
@@ -118,8 +142,8 @@ export function NewsGrid({ news }: NewsGridProps) {
 		const index = new Map<string, string>();
 		news.forEach((item) => {
 			index.set(
-				item.id,
-				[item.title, item.description, item.source, item.company]
+					item.id,
+					[item.title, item.description, item.source, item.company, item.portfolioCompany?.title]
 					.filter(Boolean)
 					.join(" ")
 					.toLowerCase(),
@@ -130,12 +154,24 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 	const filteredNews = useMemo(() => {
 		return news.filter((item) => {
-			// Type filter
-			if (typeFilter === "portfolio" && !item.portfolioCompany) {
-				return false;
+			if (companyFilterKey) {
+				if (!newsItemMatchesCompany(item, companyFilter)) {
+					return false;
+				}
 			}
 
-			if (typeFilter !== "all" && typeFilter !== "portfolio" && item.type !== typeFilter) {
+			// Type filter
+			if (typeFilter === "portfolio") {
+				if (!isPortfolioUpdateItem(item)) {
+					return false;
+				}
+			} else if (hidePortfolioUpdates && isPortfolioUpdateItem(item)) {
+				return false;
+			} else if (typeFilter === "announcement") {
+				if (item.type !== "announcement" || item.company?.toLowerCase() !== DCBUILDER_X_HANDLE) {
+					return false;
+				}
+			} else if (typeFilter !== "all" && item.type !== typeFilter) {
 				return false;
 			}
 
@@ -158,7 +194,7 @@ export function NewsGrid({ news }: NewsGridProps) {
 
 			return true;
 		});
-	}, [news, typeFilter, categoryFilter, minimumRelevance, deferredSearchQuery, newsSearchIndex]);
+	}, [news, typeFilter, hidePortfolioUpdates, categoryFilter, minimumRelevance, deferredSearchQuery, newsSearchIndex, companyFilter, companyFilterKey]);
 
 	const sortedNews = useMemo(() => {
 		const comparator =
@@ -167,8 +203,8 @@ export function NewsGrid({ news }: NewsGridProps) {
 	}, [filteredNews, sortMode]);
 
 	const renderWindowKey = useMemo(
-		() => JSON.stringify([typeFilter, categoryFilter, minimumRelevance, deferredSearchQuery, sortMode]),
-		[typeFilter, categoryFilter, minimumRelevance, deferredSearchQuery, sortMode],
+		() => JSON.stringify([typeFilter, hidePortfolioUpdates, categoryFilter, minimumRelevance, deferredSearchQuery, sortMode, companyFilterKey]),
+		[typeFilter, hidePortfolioUpdates, categoryFilter, minimumRelevance, deferredSearchQuery, sortMode, companyFilterKey],
 	);
 	const renderedNewsCount =
 		newsRenderWindow.key === renderWindowKey ? newsRenderWindow.count : INITIAL_RENDERED_NEWS_COUNT;
@@ -724,45 +760,72 @@ export function NewsGrid({ news }: NewsGridProps) {
 					</div>
 				</div>
 
-				{/* Row 2: Search */}
-				<div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-					<div className="flex-1 relative">
-						<input
-							type="text"
-							aria-label="Search news"
-							placeholder="Search news..."
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-						/>
-						{searchQuery && (
-							<button
-								type="button"
-								onClick={() => setSearchQuery("")}
-								className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-								aria-label="Clear search"
-							>
-								<svg
-									className="w-4 h-4"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<line x1="18" y1="6" x2="6" y2="18" />
-									<line x1="6" y1="6" x2="18" y2="18" />
-								</svg>
-							</button>
-						)}
+					{/* Row 2: Search */}
+					<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+						<div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:max-w-4xl">
+							<div className="relative min-w-0 flex-1 sm:max-w-xl">
+								<input
+									type="text"
+									aria-label="Search news"
+									placeholder="Search news..."
+									value={searchQuery}
+									onChange={(e) => setSearchQuery(e.target.value)}
+									className="w-full px-3 py-2 pr-9 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+								/>
+								{searchQuery && (
+									<button
+										type="button"
+										onClick={() => setSearchQuery("")}
+										className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+										aria-label="Clear search"
+									>
+										<svg
+											className="w-4 h-4"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											strokeWidth="2"
+											strokeLinecap="round"
+											strokeLinejoin="round"
+										>
+											<line x1="18" y1="6" x2="6" y2="18" />
+											<line x1="6" y1="6" x2="18" y2="18" />
+										</svg>
+									</button>
+								)}
+							</div>
+							<span className="shrink-0 text-center text-sm text-neutral-500 sm:text-left">
+								{filteredNews.length} {filteredNews.length === 1 ? "item" : "items"}
+							</span>
+							<label className="inline-flex min-h-9 shrink-0 cursor-pointer items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 sm:justify-start">
+								<span className="whitespace-nowrap">Hide portfolio updates</span>
+								<input
+									type="checkbox"
+									checked={hidePortfolioUpdates}
+									onChange={(event) => setHidePortfolioUpdates(event.target.checked)}
+									className="peer sr-only"
+								/>
+								<span
+									aria-hidden="true"
+									className="relative h-5 w-9 rounded-full bg-neutral-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-neutral-900 peer-checked:after:translate-x-4 dark:bg-neutral-700 dark:peer-checked:bg-white dark:peer-checked:after:bg-neutral-900"
+								/>
+							</label>
+						</div>
 					</div>
-					{/* Results count */}
-					<span className="text-sm text-neutral-500 text-center sm:text-left">
-						{filteredNews.length} {filteredNews.length === 1 ? "item" : "items"}
-					</span>
+					{companyFilter && (
+						<div className="flex flex-wrap items-center gap-2">
+							<span className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
+								Company: {companyFilter}
+							</span>
+							<a
+								href={companyClearHref}
+								className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-500 transition-colors hover:border-neutral-400 hover:text-neutral-900 dark:border-neutral-800 dark:hover:border-neutral-600 dark:hover:text-white"
+							>
+								Clear
+							</a>
+						</div>
+					)}
 				</div>
-			</div>
 
 			{/* News Grid */}
 			<div className="space-y-4">
@@ -854,7 +917,11 @@ export function NewsGrid({ news }: NewsGridProps) {
 										<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
 											<span>Published {formatDate(item.date)}</span>
 											{renderCommaSeparatedTokens(getSourceWithoutPortfolioCompany(item), `${item.id}:source`)}
-											{item.company && <span>{item.company}</span>}
+												{item.company && (
+													<span className={isPortfolioUpdateItem(item) ? PORTFOLIO_COMPANY_TEXT_CLASS : undefined}>
+														{item.company}
+													</span>
+												)}
 											{getPortfolioCompanyMetaName(item)}
 											{getPortfolioCompanyMetaLogo(item)}
 											<span

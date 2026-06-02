@@ -1,11 +1,13 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
+import { CompanyNewsIconGrid } from "@/components/CompanyNewsIconGrid";
 import { CompanyTimeline } from "@/components/CompanyTimeline";
 import { db, investments as investmentsTable } from "@/db";
 import { getPortfolioNewsSlug } from "@/lib/portfolio-news";
 import { getAllNews } from "@/lib/news";
 import { getCompanyTimelineEvents } from "@/lib/company-news";
+import { getCompanyNewsIconCompanies } from "@/lib/company-news-navigation";
 
 export const metadata = {
   title: "Company News",
@@ -58,6 +60,7 @@ export default async function CompanyNewsPage({
   }
 
   const timelineEvents = getCompanyTimelineEvents(news, companyProfile.title);
+  const companyNewsCompanies = await getCompanyNewsIconCompanies(news);
 
   return (
     <>
@@ -109,6 +112,14 @@ export default async function CompanyNewsPage({
               </p>
             </div>
             <div aria-hidden="true" />
+          </div>
+
+          <div className="mb-6 sm:mb-8">
+            <CompanyNewsIconGrid
+              activeCompanyName={companyProfile.title}
+              companies={companyNewsCompanies}
+              variant="compact"
+            />
           </div>
 
           <CompanyTimeline

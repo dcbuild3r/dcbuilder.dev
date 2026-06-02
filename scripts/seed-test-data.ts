@@ -6,6 +6,9 @@
  * Use TEST_MODE=true environment variable to only seed when appropriate.
  */
 
+import { drizzle } from "drizzle-orm/postgres-js";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import {
   jobs,
   jobTags,
@@ -15,41 +18,15 @@ import {
   investments,
   investmentCategories,
 } from "../src/db/schema";
+import * as dbSchema from "../src/db/schema";
 import { sql } from "drizzle-orm";
-import { assertNotProd, formatDatabaseTarget } from "../src/lib/prod-db-guard";
-import { TEST_ID_PREFIX } from "../src/lib/test-data-cleanup";
+import { getPostgresClientOptions } from "../src/db/postgres-connection";
+import { assertSafeTestDataTarget, TEST_ID_PREFIX } from "../src/lib/test-data-cleanup";
+
+type TestDb = PostgresJsDatabase<typeof dbSchema>;
 
 // Deterministic test IDs for reliable test assertions
 const TEST_PREFIX = TEST_ID_PREFIX;
-
-const databaseUrl = process.env.DATABASE_URL || "";
-const args = process.argv.slice(2);
-const cleanOnly = args.includes("--clean");
-const seedOnly = args.includes("--seed");
-
-function logWritePlan() {
-  console.log("\n🚧 Test data seed target");
-  try {
-    console.log(`Database: ${formatDatabaseTarget(databaseUrl)}`);
-  } catch {
-    console.log(`Database: malformed URL (${databaseUrl || "empty"})`);
-  }
-
-  console.log("Rows this script may touch:");
-  if (!seedOnly) {
-    console.log("  delete: matching test-* rows in jobs, candidates, curated_links, investments, investment_categories, job_tags, job_roles");
-  }
-  if (!cleanOnly) {
-    console.log(`  insert job_tags: ${testJobTags.length}`);
-    console.log(`  insert job_roles: ${testJobRoles.length}`);
-    console.log(`  insert jobs: ${testJobs.length}`);
-    console.log(`  insert candidates: ${testCandidates.length}`);
-    console.log(`  insert curated_links: ${testCuratedLinks.length}`);
-    console.log(`  insert investment_categories: ${testInvestmentCategories.length}`);
-    console.log(`  insert investments: ${testInvestments.length}`);
-  }
-  console.log("");
-}
 
 const testJobTags = [
   { id: `${TEST_PREFIX}tag-ai`, slug: "ai", label: "AI" },
@@ -205,17 +182,7 @@ const testInvestments = [
   },
 ];
 
-logWritePlan();
-try {
-  assertNotProd(databaseUrl);
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error);
-  process.exit(1);
-}
-
-const { db } = await import("../src/db");
-
-async function cleanTestData() {
+async function cleanTestData(db: TestDb) {
   console.log("Cleaning existing test data...\n");
 
   // Delete test data using the prefix pattern
@@ -230,7 +197,7 @@ async function cleanTestData() {
   console.log("  ✓ Cleaned test data\n");
 }
 
-async function seedTestData() {
+async function seedTestData(db: TestDb) {
   console.log("Seeding test data...\n");
 
   // Seed job tags
@@ -284,22 +251,36 @@ async function seedTestData() {
 }
 
 async function main() {
+  const args = process.argv.slice(2);
+  const cleanOnly = args.includes("--clean");
+  const seedOnly = args.includes("--seed");
+  const connectionString = process.env.DATABASE_URL;
+
+  assertSafeTestDataTarget(connectionString, "seed-test-data");
+
+  const queryClient = postgres(
+    connectionString,
+    getPostgresClientOptions(connectionString) as Parameters<typeof postgres>[1]
+  );
+  const db = drizzle(queryClient, { schema: dbSchema });
+
   try {
     if (cleanOnly) {
-      await cleanTestData();
+      await cleanTestData(db);
     } else if (seedOnly) {
-      await seedTestData();
+      await seedTestData(db);
     } else {
       // Default: clean then seed
-      await cleanTestData();
-      await seedTestData();
+      await cleanTestData(db);
+      await seedTestData(db);
     }
 
     console.log("\n✅ Test data seeding complete!");
-    process.exit(0);
   } catch (error) {
     console.error("\n❌ Error seeding test data:", error);
     process.exit(1);
+  } finally {
+    await queryClient.end({ timeout: 5 });
   }
 }
 

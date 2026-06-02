@@ -25,6 +25,7 @@ import { isMissingNewsletterSchemaError } from "../../src/services/newsletter-sc
 type TargetEnv = "dev" | "staging" | "prod";
 
 const VALID_ENVS: TargetEnv[] = ["dev", "staging", "prod"];
+const PROD_CONFIRM_ARG = "--confirm-prod-cleanup";
 const TEST_PREFIXES = ["test ", "demo ", "qa ", "e2e "];
 const TEST_SUBSTRINGS = [
   TEST_ID_PREFIX,
@@ -67,6 +68,14 @@ function parseEnvArg(argv: string[]): TargetEnv {
   return value as TargetEnv;
 }
 
+function assertCleanupTargetAllowed(targetEnv: TargetEnv, argv: string[]) {
+  if (targetEnv !== "prod") return;
+
+  if (argv.includes(PROD_CONFIRM_ARG)) return;
+
+  throw new Error(`Production cleanup requires ${PROD_CONFIRM_ARG}.`);
+}
+
 function resolveUrl(targetEnv: TargetEnv): string {
   if (targetEnv === "dev") {
     const devUrl = process.env.DATABASE_URL_DEV || process.env.DATABASE_URL;
@@ -107,7 +116,9 @@ function testLike(column: unknown) {
 }
 
 async function run() {
-  const targetEnv = parseEnvArg(process.argv.slice(2));
+  const args = process.argv.slice(2);
+  const targetEnv = parseEnvArg(args);
+  assertCleanupTargetAllowed(targetEnv, args);
   const databaseUrl = resolveUrl(targetEnv);
   console.log(`[db:cleanup-test-data] Cleaning ${targetEnv}`);
   try {

@@ -25,7 +25,7 @@ export const newsletterPreferences = pgTable(
       .primaryKey()
       .$defaultFn(() => createId()),
     subscriberId: text("subscriber_id").notNull(),
-    newsletterType: text("newsletter_type").notNull(), // news | jobs | candidates
+    newsletterType: text("newsletter_type").notNull(), // news | portfolio | jobs | candidates
     enabled: boolean("enabled").notNull().default(true),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -47,7 +47,7 @@ export const newsletterCampaigns = pgTable(
       .primaryKey()
       .$defaultFn(() => createId()),
     publicSlug: text("public_slug").notNull(),
-    newsletterType: text("newsletter_type").notNull(), // news | jobs | candidates
+    newsletterType: text("newsletter_type").notNull(), // news | portfolio | jobs | candidates
     subject: text("subject").notNull(),
     previewText: text("preview_text"),
     contentMode: text("content_mode").notNull().default("template"), // template | markdown | manual
@@ -91,7 +91,7 @@ export const newsletterTemplates = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => createId()),
-    newsletterType: text("newsletter_type").notNull().unique(), // news | jobs | candidates
+    newsletterType: text("newsletter_type").notNull().unique(), // news | portfolio | jobs | candidates
     subjectTemplate: text("subject_template").notNull(),
     htmlTemplate: text("html_template").notNull(),
     textTemplate: text("text_template").notNull(),

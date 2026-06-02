@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { requireAuth } from "@/services/auth";
 import { validateEditorialRelevance } from "@/lib/news-relevance";
 import { getAnnouncementByIdCompat } from "@/lib/editorial-read-compat";
+import { isManagedImage, rehostCompanyLogo } from "@/lib/r2-rehost";
 
 // GET /api/v1/news/announcements/[id] - Get an announcement by ID
 export async function GET(
@@ -50,7 +51,27 @@ export async function PUT(
     if (body.title !== undefined) updateData.title = body.title;
     if (body.url !== undefined) updateData.url = body.url;
     if (body.company !== undefined) updateData.company = body.company;
-    if (body.companyLogo !== undefined) updateData.companyLogo = body.companyLogo;
+    if (body.companyLogo !== undefined) {
+      let companyLogo = body.companyLogo;
+      if (companyLogo && !isManagedImage(companyLogo)) {
+        try {
+          const rehosted = await rehostCompanyLogo({
+            company: body.company ?? "company",
+            sourceLogo: companyLogo,
+          });
+          companyLogo = rehosted.url;
+        } catch (err) {
+          return Response.json(
+            {
+              error: `companyLogo must be hosted on R2 or /images/. Auto-rehost failed: ${(err as Error).message}`,
+              code: "IMAGE_REHOST_FAILED",
+            },
+            { status: 422 },
+          );
+        }
+      }
+      updateData.companyLogo = companyLogo;
+    }
     if (body.platform !== undefined) updateData.platform = body.platform;
     if (body.date !== undefined) updateData.date = new Date(body.date);
     if (body.description !== undefined) updateData.description = body.description;

@@ -2,6 +2,7 @@ import { getPreferenceContext, updatePreferencesByToken } from "@/services/newsl
 
 const NEWSLETTER_LABELS: Record<string, string> = {
   news: "News digest",
+  portfolio: "Portfolio news",
   jobs: "Jobs updates",
   candidates: "Candidate updates",
 };

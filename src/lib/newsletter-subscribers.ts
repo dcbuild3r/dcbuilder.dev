@@ -1,4 +1,4 @@
-export type NewsletterType = "news" | "jobs" | "candidates";
+export type NewsletterType = "news" | "portfolio" | "jobs" | "candidates";
 
 export type PreferenceFlags = Record<NewsletterType, boolean>;
 
@@ -30,7 +30,7 @@ export type NewsletterSubscriberRowDraft = {
   error: string | null;
 };
 
-export const NEWSLETTER_TYPES: NewsletterType[] = ["news", "jobs", "candidates"];
+export const NEWSLETTER_TYPES: NewsletterType[] = ["news", "portfolio", "jobs", "candidates"];
 
 export function toPreferenceFlags(preferences: NewsletterSubscriberPreference[]): PreferenceFlags {
   const enabledTypes = new Set(
@@ -39,6 +39,7 @@ export function toPreferenceFlags(preferences: NewsletterSubscriberPreference[])
 
   return {
     news: enabledTypes.has("news"),
+    portfolio: enabledTypes.has("portfolio"),
     jobs: enabledTypes.has("jobs"),
     candidates: enabledTypes.has("candidates"),
   };

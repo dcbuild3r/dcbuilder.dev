@@ -1,5 +1,12 @@
-export const NEWSLETTER_TYPES = ["news", "jobs", "candidates"] as const;
+export const NEWSLETTER_TYPES = ["news", "portfolio", "jobs", "candidates"] as const;
 export type NewsletterType = (typeof NEWSLETTER_TYPES)[number];
+
+export const NEWSLETTER_TYPE_LABELS: Record<NewsletterType, string> = {
+  news: "News digest",
+  portfolio: "Portfolio news",
+  jobs: "Jobs updates",
+  candidates: "Candidate updates",
+};
 
 export const NEWSLETTER_CONTENT_MODES = ["template", "markdown", "manual"] as const;
 export type NewsletterContentMode = (typeof NEWSLETTER_CONTENT_MODES)[number];

@@ -4,6 +4,7 @@ import { eq, and, SQL } from "drizzle-orm";
 import { requireAuth, parsePaginationParams } from "@/services/auth";
 import { validateEditorialRelevance } from "@/lib/news-relevance";
 import { listAnnouncementsCompat } from "@/lib/editorial-read-compat";
+import { isManagedImage, rehostCompanyLogo } from "@/lib/r2-rehost";
 
 // GET /api/v1/news/announcements - List announcements
 export async function GET(request: NextRequest) {
@@ -75,10 +76,27 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: relevanceValidation.error, code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
+    let companyLogo = body.companyLogo ?? null;
+    if (companyLogo && !isManagedImage(companyLogo)) {
+      try {
+        const rehosted = await rehostCompanyLogo({ company: body.company, sourceLogo: companyLogo });
+        companyLogo = rehosted.url;
+      } catch (err) {
+        return Response.json(
+          {
+            error: `companyLogo must be hosted on R2 or /images/. Auto-rehost failed: ${(err as Error).message}`,
+            code: "IMAGE_REHOST_FAILED",
+          },
+          { status: 422 },
+        );
+      }
+    }
+
     const [newAnnouncement] = await db
       .insert(announcements)
       .values({
         ...body,
+        companyLogo,
         date: new Date(body.date),
         relevance: relevanceValidation.data ?? 5,
       })

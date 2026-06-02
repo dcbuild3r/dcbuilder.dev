@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
+import { CompanyNewsIconGrid } from "@/components/CompanyNewsIconGrid";
 import { NewsGrid } from "@/components/NewsGrid";
 import { NewsTools } from "@/components/NewsTools";
+import { getCompanyNewsIconCompanies } from "@/lib/company-news-navigation";
 import { getAllNews } from "@/lib/news";
 
 export const metadata = {
@@ -14,7 +16,8 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function NewsPage() {
-  const news = await getAllNews({ includeCompanyTimelineNews: true });
+  const allNews = await getAllNews({ includeCompanyTimelineNews: true });
+  const companyNewsCompanies = await getCompanyNewsIconCompanies(allNews);
 
   return (
     <>
@@ -29,8 +32,9 @@ export default async function NewsPage() {
             </p>
           </div>
 
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-6 grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(18rem,0.75fr)] lg:items-start">
             <NewsTools />
+            <CompanyNewsIconGrid companies={companyNewsCompanies} />
           </div>
 
           {/* News Grid */}
@@ -41,7 +45,7 @@ export default async function NewsPage() {
               </div>
             }
           >
-            <NewsGrid news={news} />
+            <NewsGrid news={allNews} />
           </Suspense>
         </div>
       </main>

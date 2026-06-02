@@ -25,11 +25,12 @@ describe("newsletter template fallbacks", () => {
     const templates: Awaited<ReturnType<typeof listNewsletterTemplates>> =
       await listNewsletterTemplates();
 
-    expect(templates).toHaveLength(3);
+    expect(templates).toHaveLength(4);
     expect(
       templates.map((template: { newsletterType: string }) => template.newsletterType)
     ).toEqual([
       "news",
+      "portfolio",
       "jobs",
       "candidates",
     ]);

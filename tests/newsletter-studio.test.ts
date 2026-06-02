@@ -197,4 +197,14 @@ describe("canAutoRenderComposePreview", () => {
       })
     ).toBe("Quarterly News Digest (2026-01-11 to 2026-04-10)");
   });
+
+  test("suggests portfolio-only subjects for portfolio campaigns", () => {
+    expect(
+      getSuggestedNewsletterSubject({
+        newsletterType: "portfolio",
+        periodDays: 30,
+        now: new Date("2026-04-10T12:00:00Z"),
+      })
+    ).toBe("Monthly Portfolio News Digest (2026-03-12 to 2026-04-10)");
+  });
 });

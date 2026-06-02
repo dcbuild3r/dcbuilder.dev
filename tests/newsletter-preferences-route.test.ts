@@ -13,6 +13,7 @@ describe("GET /api/v1/newsletter/preferences", () => {
         email: "reader@example.com",
         preferences: [
           { type: "news", enabled: true },
+          { type: "portfolio", enabled: true },
           { type: "jobs", enabled: false },
           { type: "candidates", enabled: true },
         ],
@@ -33,6 +34,8 @@ describe("GET /api/v1/newsletter/preferences", () => {
     expect(body).toContain("reader@example.com");
     expect(body).toContain("Manage your newsletter preferences");
     expect(body).toContain('value="news"');
+    expect(body).toContain('value="portfolio"');
+    expect(body).toContain("Portfolio news");
     expect(body).toContain('value="candidates"');
     expect(body).toContain("checked");
   });

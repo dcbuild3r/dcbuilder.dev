@@ -18,11 +18,12 @@ import {
   getJobApplyClicksForWindow,
   getNewsClicksForWindow,
 } from "@/services/posthog";
-import { getAllNews } from "@/lib/news";
+import { getAllNews, isCompanyTimelineNewsItem } from "@/lib/news";
 import { categoryLabels, type NewsCategory } from "@/data/news";
 import {
   NEWSLETTER_TYPES,
   NEWSLETTER_CONTENT_MODES,
+  NEWSLETTER_TYPE_LABELS,
   type NewsletterContentMode,
   type NewsletterType,
   dedupeNewsletterTypes,
@@ -139,6 +140,13 @@ export const NEWSLETTER_TEMPLATE_PLACEHOLDERS = [
 const DEFAULT_NEWSLETTER_TEMPLATES: Record<NewsletterType, NewsletterTemplatePayload> = {
   news: {
     newsletterType: "news",
+    subjectTemplate: "{{campaign_subject}}",
+    htmlTemplate: "{{default_html_body}}",
+    textTemplate: "{{default_text_body}}",
+    markdownTemplate: "{{default_markdown_body}}",
+  },
+  portfolio: {
+    newsletterType: "portfolio",
     subjectTemplate: "{{campaign_subject}}",
     htmlTemplate: "{{default_html_body}}",
     textTemplate: "{{default_text_body}}",
@@ -434,12 +442,7 @@ export async function subscribeToNewsletters(input: {
   const confirmUrl = `${getBaseUrl()}/api/v1/newsletter/confirm?token=${confirmToken}`;
 
   const subject = "Confirm your newsletter subscription";
-  const typeLabels: Record<string, string> = {
-    news: "News Digest",
-    jobs: "Jobs Updates",
-    candidates: "Candidates Updates",
-  };
-  const formattedTypes = selectedTypes.map((t) => typeLabels[t] || t).join(", ");
+  const formattedTypes = selectedTypes.map((t) => NEWSLETTER_TYPE_LABELS[t] || t).join(", ");
   const html = `
     <div style="max-width:560px;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#171717;line-height:1.6">
       <div style="padding:32px 0 20px">
@@ -936,7 +939,61 @@ async function buildNewsDigest(filters: NewsletterSummaryFilters): Promise<Campa
   };
 }
 
+async function buildPortfolioDigest(filters: NewsletterSummaryFilters): Promise<CampaignDigest> {
+  const cutoff = new Date(Date.now() - filters.periodDays * 24 * 60 * 60 * 1000);
+  const [allNews, clicksResult] = await Promise.all([
+    getAllNews({ includeCompanyTimelineNews: true }),
+    getNewsClicksForWindow(filters.periodDays, 0),
+  ]);
+  const clickMap = new Map((clicksResult.success ? clicksResult.data : []).map((row) => [row.id, row.count]));
+
+  const filtered = allNews.filter((item) => {
+    return (
+      isCompanyTimelineNewsItem(item) &&
+      new Date(item.date) > cutoff &&
+      (item.relevance ?? 5) >= filters.minimumRelevance
+    );
+  });
+
+  const items: DigestItem[] = filtered.slice(0, 20).map((item) => {
+    const company = item.portfolioCompany?.title || item.company || item.source || "Portfolio company";
+    return {
+      title: item.title,
+      subtitle: [company, item.description].filter(Boolean).join(" · "),
+      url: item.url,
+      currentViews: clickMap.get(item.id) || 0,
+      category: company,
+    };
+  });
+
+  const groupMap = new Map<string, DigestItem[]>();
+  for (const item of items) {
+    const company = item.category || "Portfolio";
+    if (!groupMap.has(company)) groupMap.set(company, []);
+    groupMap.get(company)!.push(item);
+  }
+
+  const groups: DigestGroup[] = Array.from(groupMap.entries())
+    .map(([company, companyItems]) => ({
+      category: company,
+      label: company,
+      items: companyItems,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  return {
+    heading: "Portfolio news digest",
+    summary: `${buildNewsDigestSummary(filters)} Portfolio company updates only.`,
+    periodDays: filters.periodDays,
+    items,
+    groups,
+  };
+}
+
 async function buildDigest(newsletterType: NewsletterType, summaryFilters: NewsletterSummaryFilters): Promise<CampaignDigest> {
+  if (newsletterType === "portfolio") {
+    return buildPortfolioDigest(summaryFilters);
+  }
   if (newsletterType === "jobs") {
     return buildJobsDigest(summaryFilters.periodDays);
   }
@@ -3014,6 +3071,38 @@ async function getSentNewsletterCampaignForArchiveByPublicSlug(publicSlug: strin
   }
 
   if (!campaign) {
+    const archiveCampaigns = await listSentNewsletterCampaigns(250);
+    const matchingCampaign = archiveCampaigns.find(
+      (archiveCampaign) => archiveCampaign.publicSlug === publicSlug
+    );
+
+    if (matchingCampaign) {
+      [campaign] = await db
+        .select({
+          id: newsletterCampaigns.id,
+          publicSlug: newsletterCampaigns.publicSlug,
+          subject: newsletterCampaigns.subject,
+          previewText: newsletterCampaigns.previewText,
+          newsletterType: newsletterCampaigns.newsletterType,
+          sentAt: newsletterCampaigns.sentAt,
+          renderedHtml: newsletterCampaigns.renderedHtml,
+          archiveSubject: newsletterCampaigns.archiveSubject,
+          archivePreviewText: newsletterCampaigns.archivePreviewText,
+          archiveRenderedHtml: newsletterCampaigns.archiveRenderedHtml,
+          archiveCorrectedAt: newsletterCampaigns.archiveCorrectedAt,
+        })
+        .from(newsletterCampaigns)
+        .where(
+          and(
+            eq(newsletterCampaigns.id, matchingCampaign.id),
+            eq(newsletterCampaigns.status, "sent")
+          )
+        )
+        .limit(1);
+    }
+  }
+
+  if (!campaign) {
     return null;
   }
 
@@ -3135,10 +3224,12 @@ function resolveArchiveCampaignSummary(campaign: {
   archivePreviewText?: string | null;
   archiveCorrectedAt?: Date | null;
 }) {
+  const subject = campaign.archiveSubject || campaign.subject;
+
   return {
     id: campaign.id,
     publicSlug: campaign.publicSlug,
-    subject: campaign.archiveSubject || campaign.subject,
+    subject,
     previewText: campaign.archivePreviewText ?? campaign.previewText,
     newsletterType: campaign.newsletterType,
     sentAt: campaign.sentAt,
@@ -3159,10 +3250,12 @@ function resolveArchiveCampaignDetail(campaign: {
   archiveRenderedHtml?: string | null;
   archiveCorrectedAt?: Date | null;
 }) {
+  const subject = campaign.archiveSubject || campaign.subject;
+
   return {
     id: campaign.id,
     publicSlug: campaign.publicSlug,
-    subject: campaign.archiveSubject || campaign.subject,
+    subject,
     previewText: campaign.archivePreviewText ?? campaign.previewText,
     newsletterType: campaign.newsletterType,
     sentAt: campaign.sentAt,

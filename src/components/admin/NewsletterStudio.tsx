@@ -24,7 +24,7 @@ import {
   type NewsletterSummaryTimeframePreset,
 } from "@/lib/newsletter-studio";
 
-type NewsletterType = "news" | "jobs" | "candidates";
+type NewsletterType = "news" | "portfolio" | "jobs" | "candidates";
 type NewsletterContentMode = "template" | "markdown" | "manual";
 type CampaignStatus = "draft" | "scheduled" | "sending" | "sent" | "failed";
 type WorkspaceView = "editor" | "split" | "preview";
@@ -143,7 +143,13 @@ type CampaignDraft = {
 
 type CampaignEditMode = "campaign" | "archive";
 
-const NEWSLETTER_TYPES: NewsletterType[] = ["news", "jobs", "candidates"];
+const NEWSLETTER_TYPES: NewsletterType[] = ["news", "portfolio", "jobs", "candidates"];
+const NEWSLETTER_TYPE_LABELS: Record<NewsletterType, string> = {
+  news: "News",
+  portfolio: "Portfolio",
+  jobs: "Jobs",
+  candidates: "Candidates",
+};
 const MUTABLE_STATUSES = new Set<CampaignStatus>(["draft", "scheduled"]);
 type MarkdownFormatKind = "h2" | "bold" | "italic" | "link" | "list" | "quote" | "code" | "divider";
 
@@ -2095,7 +2101,7 @@ export function NewsletterStudio() {
             <div>
               <h2 className="text-lg font-semibold">Subscribers</h2>
               <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                One row per subscriber with local toggle drafts for News, Jobs, and Candidates.
+                One row per subscriber with local toggle drafts for News, Portfolio, Jobs, and Candidates.
               </p>
             </div>
             <div className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-semibold text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
@@ -2117,14 +2123,16 @@ export function NewsletterStudio() {
 
           {subscribers.length > 0 && (
             <div className="mt-5 overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800">
-              <table className="w-full min-w-[1180px] text-sm">
+              <table className="w-full min-w-[1260px] text-sm">
                 <thead className="bg-neutral-50 dark:bg-neutral-950">
                   <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-center">News</th>
-                    <th className="px-4 py-3 text-center">Jobs</th>
-                    <th className="px-4 py-3 text-center">Candidates</th>
+                    {NEWSLETTER_TYPES.map((newsletterType) => (
+                      <th key={newsletterType} className="px-4 py-3 text-center">
+                        {NEWSLETTER_TYPE_LABELS[newsletterType]}
+                      </th>
+                    ))}
                     <th className="px-4 py-3">Clicks 7d</th>
                     <th className="px-4 py-3">Last clicked</th>
                     <th className="px-4 py-3">Created</th>

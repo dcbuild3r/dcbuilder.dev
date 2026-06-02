@@ -89,6 +89,7 @@ describe("newsletter archive corrections", () => {
     );
     mock.module("@/lib/news", () => ({
       getAllNews: async () => [],
+      isCompanyTimelineNewsItem: () => false,
     }));
 
     const sentCampaign: NewsletterCampaignRecord = {

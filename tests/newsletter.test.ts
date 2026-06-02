@@ -3,8 +3,8 @@ import { computeViewTotals, dedupeNewsletterTypes } from "../src/lib/newsletter-
 
 describe("newsletter helpers", () => {
   test("dedupes and validates newsletter types", () => {
-    const types = dedupeNewsletterTypes(["jobs", "news", "jobs", "invalid", "candidates"]);
-    expect(types).toEqual(["jobs", "news", "candidates"]);
+    const types = dedupeNewsletterTypes(["jobs", "portfolio", "news", "jobs", "invalid", "candidates"]);
+    expect(types).toEqual(["jobs", "portfolio", "news", "candidates"]);
   });
 
   test("computes totals and period delta", () => {

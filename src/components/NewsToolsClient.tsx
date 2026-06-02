@@ -42,18 +42,21 @@ const TAB_LABELS: Record<NewsToolsTab, { title: string; blurb: string }> = {
 
 const NEWSLETTER_OPTIONS = [
   { value: "news", label: "News digest" },
+  { value: "portfolio", label: "Portfolio news" },
   { value: "jobs", label: "Jobs updates" },
   { value: "candidates", label: "Candidate updates" },
 ] as const;
 
 const TYPE_LABELS: Record<string, string> = {
   news: "News",
+  portfolio: "Portfolio",
   jobs: "Jobs",
   candidates: "Candidates",
 };
 
 const TYPE_ACCENTS: Record<string, string> = {
   news: "bg-blue-500/10 text-blue-700 ring-blue-500/20 dark:bg-blue-400/10 dark:text-blue-200 dark:ring-blue-400/20",
+  portfolio: "bg-violet-500/10 text-violet-700 ring-violet-500/20 dark:bg-violet-400/10 dark:text-violet-200 dark:ring-violet-400/20",
   jobs: "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:bg-emerald-400/10 dark:text-emerald-200 dark:ring-emerald-400/20",
   candidates: "bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:bg-amber-400/10 dark:text-amber-200 dark:ring-amber-400/20",
 };
@@ -99,7 +102,7 @@ function ArchivePanel({
     <div className="grid gap-3 lg:grid-cols-[minmax(0,1.45fr)_minmax(16rem,0.95fr)]">
       <Link
         href={`/newsletters/${lead.publicSlug}`}
-        className="group rounded-[1.5rem] border border-neutral-900 bg-neutral-950 px-4 py-4 text-white transition-transform duration-200 hover:-translate-y-0.5 dark:border-neutral-200 dark:bg-white dark:text-neutral-950"
+        className="group flex h-full flex-col rounded-[1.5rem] border border-neutral-900 bg-neutral-950 px-4 py-4 text-white transition-transform duration-200 hover:-translate-y-0.5 dark:border-neutral-200 dark:bg-white dark:text-neutral-950"
       >
         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60 dark:text-neutral-500">
           <span>Lead issue</span>
@@ -107,11 +110,11 @@ function ArchivePanel({
         </div>
         <h3 className="mt-3 text-lg font-semibold leading-tight">{lead.subject}</h3>
         {lead.previewText && (
-          <p className="mt-2 line-clamp-2 text-sm text-white/72 dark:text-neutral-600">
+          <p className="mt-2 flex-1 text-sm text-white/72 dark:text-neutral-600">
             {lead.previewText}
           </p>
         )}
-        <div className="mt-4 inline-flex items-center gap-2 text-sm font-medium">
+        <div className="mt-4 inline-flex items-center gap-2 self-start text-sm font-medium">
           Read issue
           <span aria-hidden="true">/</span>
         </div>

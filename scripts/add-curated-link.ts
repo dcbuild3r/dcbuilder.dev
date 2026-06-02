@@ -15,6 +15,7 @@ import {
   resolveMevLetterDescription,
   shouldRefreshMevLetterDescription,
 } from "../src/lib/news-description-style";
+import { isManagedImage, rehostAvatar } from "../src/lib/r2-rehost";
 
 type Args = {
   title?: string;
@@ -159,11 +160,18 @@ async function main() {
     html,
   });
 
+  let sourceImage = args.sourceImage;
+  if (sourceImage && !isManagedImage(sourceImage) && !args.dryRun) {
+    const rehosted = await rehostAvatar({ postUrl: args.url, sourceImage });
+    sourceImage = rehosted.url;
+    console.log(`rehosted avatar → ${rehosted.key}${rehosted.skipped ? ` (skip:${rehosted.reason})` : " (upload)"}`);
+  }
+
   const payload = {
     title: args.title,
     url: args.url,
     source: args.source,
-    sourceImage: args.sourceImage,
+    sourceImage,
     date: new Date(date),
     description,
     category,

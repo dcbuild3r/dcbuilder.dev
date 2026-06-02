@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { requireAuth } from "@/services/auth";
 import { validateEditorialRelevance } from "@/lib/news-relevance";
 import { getCuratedLinkByIdCompat } from "@/lib/editorial-read-compat";
+import { isManagedImage, rehostAvatar } from "@/lib/r2-rehost";
 
 // GET /api/v1/news/curated/[id] - Get a curated link by ID
 export async function GET(
@@ -50,7 +51,27 @@ export async function PUT(
     if (body.title !== undefined) updateData.title = body.title;
     if (body.url !== undefined) updateData.url = body.url;
     if (body.source !== undefined) updateData.source = body.source;
-    if (body.sourceImage !== undefined) updateData.sourceImage = body.sourceImage;
+    if (body.sourceImage !== undefined) {
+      let sourceImage = body.sourceImage;
+      if (sourceImage && !isManagedImage(sourceImage)) {
+        try {
+          const rehosted = await rehostAvatar({
+            postUrl: body.url ?? undefined,
+            sourceImage,
+          });
+          sourceImage = rehosted.url;
+        } catch (err) {
+          return Response.json(
+            {
+              error: `sourceImage must be hosted on R2 or /images/. Auto-rehost failed: ${(err as Error).message}`,
+              code: "IMAGE_REHOST_FAILED",
+            },
+            { status: 422 },
+          );
+        }
+      }
+      updateData.sourceImage = sourceImage;
+    }
     if (body.date !== undefined) updateData.date = new Date(body.date);
     if (body.description !== undefined) updateData.description = body.description;
     if (body.category !== undefined) updateData.category = body.category;

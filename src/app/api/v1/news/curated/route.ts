@@ -4,6 +4,7 @@ import { eq, and, SQL } from "drizzle-orm";
 import { requireAuth, parsePaginationParams } from "@/services/auth";
 import { validateEditorialRelevance } from "@/lib/news-relevance";
 import { listCuratedLinksCompat } from "@/lib/editorial-read-compat";
+import { isManagedImage, rehostAvatar } from "@/lib/r2-rehost";
 
 // GET /api/v1/news/curated - List curated links
 export async function GET(request: NextRequest) {
@@ -60,10 +61,27 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: relevanceValidation.error, code: "VALIDATION_ERROR" }, { status: 400 });
     }
 
+    let sourceImage = body.sourceImage ?? null;
+    if (sourceImage && !isManagedImage(sourceImage)) {
+      try {
+        const rehosted = await rehostAvatar({ postUrl: body.url, sourceImage });
+        sourceImage = rehosted.url;
+      } catch (err) {
+        return Response.json(
+          {
+            error: `sourceImage must be hosted on R2 or /images/. Auto-rehost failed: ${(err as Error).message}`,
+            code: "IMAGE_REHOST_FAILED",
+          },
+          { status: 422 },
+        );
+      }
+    }
+
     const [newLink] = await db
       .insert(curatedLinks)
       .values({
         ...body,
+        sourceImage,
         date: new Date(body.date),
         relevance: relevanceValidation.data ?? 5,
       })

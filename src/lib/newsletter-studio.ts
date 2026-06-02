@@ -1,5 +1,5 @@
 export type NewsletterStudioMode = "compose" | "queue" | "subscribers" | "templates";
-export type NewsletterStudioNewsletterType = "news" | "jobs" | "candidates";
+export type NewsletterStudioNewsletterType = "news" | "portfolio" | "jobs" | "candidates";
 export type NewsletterSummaryTimeframePreset = "weekly" | "monthly" | "quarterly" | "custom";
 
 export type NewsletterSummaryControls = {
@@ -143,15 +143,16 @@ export function getSuggestedNewsletterSubject(input: {
   const timeframePreset = input.timeframePreset ?? inferNewsletterSummaryPreset(input.periodDays);
 
   let label: string;
-  if (input.newsletterType === "news") {
+  if (input.newsletterType === "news" || input.newsletterType === "portfolio") {
+    const subjectNoun = input.newsletterType === "portfolio" ? "Portfolio News" : "News";
     if (timeframePreset === "monthly") {
-      label = "Monthly News Digest";
+      label = `Monthly ${subjectNoun} Digest`;
     } else if (timeframePreset === "quarterly") {
-      label = "Quarterly News Digest";
+      label = `Quarterly ${subjectNoun} Digest`;
     } else if (timeframePreset === "custom") {
-      label = "News Digest";
+      label = `${subjectNoun} Digest`;
     } else {
-      label = "Weekly News Digest";
+      label = `Weekly ${subjectNoun} Digest`;
     }
   } else {
     label = `${input.newsletterType[0].toUpperCase()}${input.newsletterType.slice(1)} Digest`;
