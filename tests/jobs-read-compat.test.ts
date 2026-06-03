@@ -37,13 +37,21 @@ describe("jobs read compatibility", () => {
       ...actualDb,
       db: {
         select: () => ({
-          from: () => ({
-            $dynamic: () => ({
-              orderBy: () => {
-                throw createMissingColumnError("company_website");
-              },
-            }),
-          }),
+          from: (table: unknown) => {
+            if (table === actualDb.investments) {
+              return {
+                where: async () => [{ title: "Monad", featured: true }],
+              };
+            }
+
+            return {
+              $dynamic: () => ({
+                orderBy: () => {
+                  throw createMissingColumnError("company_website");
+                },
+              }),
+            };
+          },
         }),
         execute: async () => {
           executeCall += 1;
@@ -64,11 +72,11 @@ describe("jobs read compatibility", () => {
 
           return [
             {
-              id: "morpho-protocol-engineer",
+              id: "monad-foundation-protocol-engineer",
               title: "Protocol Engineer",
-              company: "Morpho",
+              company: "Monad Foundation",
               companyLogo: null,
-              link: "https://example.com/morpho",
+              link: "https://example.com/monad",
               location: "Remote",
               remote: "Remote",
               type: "full-time",
@@ -93,8 +101,9 @@ describe("jobs read compatibility", () => {
     const jobs = await getJobsFromDB();
 
     expect(jobs).toHaveLength(1);
-    expect(jobs[0].company.name).toBe("Morpho");
-    expect(jobs[0].link).toBe("https://example.com/morpho");
+    expect(jobs[0].company.name).toBe("Monad Foundation");
+    expect(jobs[0].link).toBe("https://example.com/monad");
+    expect(jobs[0].featured).toBe(true);
     expect(jobs[0].tags).toEqual([]);
   });
 

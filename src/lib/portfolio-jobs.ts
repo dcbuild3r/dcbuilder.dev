@@ -2,8 +2,29 @@ const HIRING_ENTITIES: Record<string, string[]> = {
   Monad: ["Monad Foundation", "Category Labs"],
 };
 
+type PortfolioJobInvestment = {
+  title: string;
+  featured?: boolean | null;
+};
+
 export function getPortfolioJobCompanies(companyTitle: string): string[] {
   return HIRING_ENTITIES[companyTitle] || [companyTitle];
+}
+
+export function getFeaturedPortfolioJobCompanies(
+  investments: PortfolioJobInvestment[]
+): Set<string> {
+  const companies = new Set<string>();
+
+  investments.forEach((investment) => {
+    if (!investment.featured) return;
+
+    getPortfolioJobCompanies(investment.title).forEach((company) => {
+      companies.add(company);
+    });
+  });
+
+  return companies;
 }
 
 export function getPortfolioJobCount(

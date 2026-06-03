@@ -3,6 +3,7 @@ import {
   jobs as jobsTable,
   jobTags,
   jobRoles,
+  investments as investmentsTable,
   candidates as candidatesTable,
   curatedLinks as curatedLinksTable,
   candidateRedirects,
@@ -10,6 +11,7 @@ import {
 import { asc, desc, eq, sql } from "drizzle-orm";
 import type { Job, Company, RelationshipCategory, JobTag, JobTier } from "@/data/jobs";
 import { normalizeJobTags } from "@/lib/job-tags";
+import { getFeaturedPortfolioJobCompanies } from "@/lib/portfolio-jobs";
 import { isMissingColumnError, isMissingRelationError } from "@/lib/db-schema-compat";
 import type {
   Candidate,
@@ -25,8 +27,9 @@ import type { CuratedLink } from "@/data/news";
 // Fetch all jobs from database and transform to component format
 export async function getJobsFromDB(): Promise<Job[]> {
   const dbJobs = await getJobRowsFromDB({ orderBy: "created" });
+  const featuredPortfolioJobCompanies = await getFeaturedPortfolioJobCompanyNames();
 
-  return dbJobs.map(mapJobRowToJob);
+  return dbJobs.map((job) => mapJobRowToJob(job, featuredPortfolioJobCompanies));
 }
 
 type JobRow = {
@@ -94,32 +97,62 @@ const optionalJobColumnFallbacks = {
 
 const requiredJobColumns = ["id", "title", "company", "link", "category"] as const;
 
-function mapJobRowToJob(job: JobRow): Job {
-    const company: Company = {
-      name: job.company,
-      logo: job.companyLogo || undefined,
-      website: job.companyWebsite || "",
-      category: job.category as RelationshipCategory,
-      x: job.companyX || undefined,
-      github: job.companyGithub || undefined,
-    };
+function mapJobRowToJob(
+  job: JobRow,
+  featuredPortfolioJobCompanies: Set<string> = new Set(),
+): Job {
+  const company: Company = {
+    name: job.company,
+    logo: job.companyLogo || undefined,
+    website: job.companyWebsite || "",
+    category: job.category as RelationshipCategory,
+    x: job.companyX || undefined,
+    github: job.companyGithub || undefined,
+  };
 
-    return {
-      id: job.id,
-      title: job.title,
-      company,
-      location: job.location || "",
-      remote: job.remote === "Remote",
-      type: job.type as Job["type"],
-      department: job.department || undefined,
-      salary: job.salary || undefined,
-      link: job.link,
-      featured: job.featured || false,
-      tags: normalizeJobTags(job.tags) as JobTag[],
-      tier: 3 as JobTier, // Default tier
-      description: job.description || undefined,
-      createdAt: job.createdAt,
-    };
+  return {
+    id: job.id,
+    title: job.title,
+    company,
+    location: job.location || "",
+    remote: job.remote === "Remote",
+    type: job.type as Job["type"],
+    department: job.department || undefined,
+    salary: job.salary || undefined,
+    link: job.link,
+    featured: Boolean(job.featured) || featuredPortfolioJobCompanies.has(job.company),
+    tags: normalizeJobTags(job.tags) as JobTag[],
+    tier: 3 as JobTier, // Default tier
+    description: job.description || undefined,
+    createdAt: job.createdAt,
+  };
+}
+
+async function getFeaturedPortfolioJobCompanyNames() {
+  try {
+    const featuredInvestments = await db
+      .select({
+        title: investmentsTable.title,
+        featured: investmentsTable.featured,
+      })
+      .from(investmentsTable)
+      .where(eq(investmentsTable.featured, true));
+
+    return getFeaturedPortfolioJobCompanies(featuredInvestments);
+  } catch (error) {
+    if (
+      isMissingRelationError(error, "investments") ||
+      isMissingColumnError(error, "featured")
+    ) {
+      console.error(
+        "[jobs-read-compat] investments featured state unavailable, using job flags only",
+        error,
+      );
+      return new Set<string>();
+    }
+
+    throw error;
+  }
 }
 
 export async function getJobRowsFromDB(options: JobReadOptions = {}): Promise<JobRow[]> {
