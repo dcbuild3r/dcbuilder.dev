@@ -935,7 +935,11 @@ export async function getAllNews(
       if (portfolioCompany.logo?.trim()) {
         if (item.type === "announcement" && !item.companyLogo?.trim()) {
           item.companyLogo = portfolioCompany.logo;
-        } else if (item.type === "curated" && !item.sourceImage?.trim()) {
+        } else if (
+          item.type === "curated" &&
+          portfolioCompany.sourceIsCompanyAccount &&
+          !item.sourceImage?.trim()
+        ) {
           item.sourceImage = portfolioCompany.logo;
         }
       }
