@@ -20,7 +20,7 @@
 
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { eq, inArray } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { jobs } from "../src/db/schema/jobs";
 import { createPreferredPostgresSocket } from "../src/db/postgres-connection";
 
