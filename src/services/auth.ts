@@ -30,14 +30,20 @@ export function parsePaginationParams(
 }
 
 export type AuthResult =
-  | { valid: true; keyId: string; name: string }
+  | { valid: true; keyId: string; name: string; permissions: string[] }
   | { valid: false; error: string };
+
+export function extractRequestToken(request: NextRequest | Request): string | null {
+  const bearerToken = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim();
+  const apiKey = request.headers.get("x-api-key")?.trim();
+  return bearerToken || apiKey || null;
+}
 
 export async function validateApiKey(
   request: NextRequest,
   requiredPermission?: string
 ): Promise<AuthResult> {
-  const apiKey = request.headers.get("x-api-key");
+  const apiKey = extractRequestToken(request);
 
   if (!apiKey) {
     return { valid: false, error: "Missing API key" };
@@ -79,7 +85,7 @@ export async function validateApiKey(
       console.warn("[api-auth] Failed to update API key lastUsedAt:", error);
     });
 
-  return { valid: true, keyId: key.id, name: key.name };
+  return { valid: true, keyId: key.id, name: key.name, permissions: key.permissions ?? [] };
 }
 
 // Helper to create unauthorized response

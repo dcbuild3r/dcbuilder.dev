@@ -5,3 +5,4 @@ export * from "./investments";
 export * from "./blog";
 export * from "./misc";
 export * from "./newsletter";
+export * from "./agent";

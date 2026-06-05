@@ -100,8 +100,9 @@ async function objectExists(client: S3Client, key: string): Promise<boolean> {
   try {
     await client.send(new HeadObjectCommand({ Bucket: BUCKET, Key: key }));
     return true;
-  } catch (err: any) {
-    if (err?.$metadata?.httpStatusCode === 404 || err?.name === "NotFound") return false;
+  } catch (err: unknown) {
+    const error = err as { $metadata?: { httpStatusCode?: number }; name?: string };
+    if (error.$metadata?.httpStatusCode === 404 || error.name === "NotFound") return false;
     throw err;
   }
 }
