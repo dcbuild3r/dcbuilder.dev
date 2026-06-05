@@ -42,6 +42,23 @@ const GOOGLE_RESEARCH_LOGO_SRC = "/logos/google-research.jpg";
 const CUSTOM_X_LOGO_HANDLES = new Set(["googleresearch"]);
 const PORTFOLIO_COMPANY_TEXT_CLASS = "font-bold text-black dark:text-white";
 const DCBUILDER_X_HANDLE = "dcbuilder";
+const DCBUILDER_AVATAR_SRC = "/logos/dcbuilder.jpg";
+const LIGHT_MARK_COMPANIES = new Set([
+	"Accountable",
+	"Agora",
+	"Aligned Layer",
+	"Fabric Cryptography",
+	"Giza",
+	"Lighter",
+	"Lucis",
+	"Praxis",
+	"Prime Intellect",
+	"Rhinestone",
+	"Sorella",
+	"Succinct",
+	"Wildcat",
+]);
+const DARK_MARK_COMPANIES = new Set(["Octet", "World"]);
 
 function isPortfolioUpdateItem(item: AggregatedNewsItem): boolean {
 	const normalizedCompany = (item.company ?? "").trim().replace(/\s+/g, " ").toLowerCase();
@@ -70,9 +87,26 @@ function getXAvatarClassName(handle?: string | null): string {
 }
 
 function getXAvatarSrc(handle: string): string {
-	return handle.trim().toLowerCase() === "googleresearch"
-		? GOOGLE_RESEARCH_LOGO_SRC
-		: `https://unavatar.io/twitter/${handle}`;
+	const normalized = handle.trim().toLowerCase();
+	if (normalized === "googleresearch") return GOOGLE_RESEARCH_LOGO_SRC;
+	if (normalized === DCBUILDER_X_HANDLE) return DCBUILDER_AVATAR_SRC;
+	return `https://unavatar.io/twitter/${handle}`;
+}
+
+function getCompanyLogoFrameClassName(companyTitle?: string | null): string {
+	const title = companyTitle?.trim();
+	if (title && LIGHT_MARK_COMPANIES.has(title)) {
+		return "border-neutral-900 bg-neutral-950 dark:border-neutral-700 dark:bg-neutral-950";
+	}
+	if (title && DARK_MARK_COMPANIES.has(title)) {
+		return "border-neutral-200 bg-white dark:border-neutral-700 dark:bg-white";
+	}
+
+	return "border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-950";
+}
+
+function normalizeImageUrlForComparison(src?: string | null): string {
+	return (src ?? "").trim().replace(/^https?:\/\//, "").replace(/\/$/, "").toLowerCase();
 }
 
 // Check if item is fresh based on platform
@@ -322,7 +356,7 @@ export function NewsGrid({
 
 	const getPortfolioCompanyMetaLogo = (item: AggregatedNewsItem) => {
 		const company = item.portfolioCompany;
-		if (!company?.logo?.trim() || !company.sourceIsCompanyAccount) return null;
+		if (!company?.logo?.trim()) return null;
 
 		const imageKey = `${item.id}:portfolio-company-meta`;
 		if (failedImageKeys[imageKey]) return null;
@@ -334,13 +368,13 @@ export function NewsGrid({
 				width={24}
 				height={24}
 				sizes="24px"
-				className="h-full w-full rounded-md bg-white object-contain p-0.5"
+				className="h-full w-full rounded-md object-contain p-0.5"
 				unoptimized
 				onError={() => markImageFailed(imageKey)}
 			/>
 		);
 		const className =
-			"pointer-events-auto inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border border-neutral-200 bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-700";
+			`pointer-events-auto inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border shadow-sm transition-transform duration-150 hover:scale-110 ${getCompanyLogoFrameClassName(company.title)}`;
 
 		if (!company.website) {
 			return (
@@ -395,58 +429,6 @@ export function NewsGrid({
 		);
 	};
 
-	const getPortfolioCompanyAvatarBadge = (item: AggregatedNewsItem) => {
-		const company = item.portfolioCompany;
-		if (!company?.logo?.trim() || company.sourceIsCompanyAccount) return null;
-
-		const imageKey = `${item.id}:portfolio-company-avatar`;
-		if (failedImageKeys[imageKey]) return null;
-
-		const logo = (
-			<Image
-				src={getNormalizedLogoSrc(company.logo)}
-				alt={company.title}
-				width={40}
-				height={40}
-				sizes="40px"
-				className="h-full w-full rounded-md bg-white object-contain p-0.5"
-				unoptimized
-				onError={() => markImageFailed(imageKey)}
-			/>
-		);
-		const className =
-			"pointer-events-auto absolute -bottom-12 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-lg border-2 border-white bg-white shadow-sm transition-transform duration-150 hover:scale-110 dark:border-neutral-900";
-
-		if (!company.website) {
-			return (
-				<span className={className} aria-label={company.title} title={company.title}>
-					{logo}
-				</span>
-			);
-		}
-
-		return (
-			<a
-				href={company.website}
-				target="_blank"
-				rel="noopener noreferrer"
-				onClick={(event) => event.stopPropagation()}
-				className={className}
-				aria-label={`Open ${company.title}`}
-				title={company.title}
-			>
-				{logo}
-			</a>
-		);
-	};
-
-	const hasPortfolioCompanyAvatarBadge = (item: AggregatedNewsItem) => {
-		const company = item.portfolioCompany;
-		if (!company?.logo?.trim() || company.sourceIsCompanyAccount) return false;
-
-		return !failedImageKeys[`${item.id}:portfolio-company-avatar`];
-	};
-
 	const getPortfolioHiringLink = (item: AggregatedNewsItem) => {
 		const company = item.portfolioCompany;
 		if (!company?.jobsUrl || company.jobCount <= 0) return null;
@@ -486,9 +468,9 @@ export function NewsGrid({
 		if (failedImageKeys[imageKey]) return null;
 
 		return (
-			<div className="relative flex h-14 w-14 items-center justify-center rounded-xl border border-neutral-200 bg-white p-1 shadow-sm transition-transform duration-150 group-hover:scale-[1.08] dark:border-neutral-800 dark:bg-neutral-950">
+			<div className={`relative flex h-14 w-14 items-center justify-center rounded-xl border p-1 shadow-sm transition-transform duration-150 group-hover:scale-[1.08] ${getCompanyLogoFrameClassName(company.title)}`}>
 				<Image
-					src={company.logo.trim()}
+					src={getNormalizedLogoSrc(company.logo)}
 					alt={company.title}
 					width={NEWS_THUMBNAIL_SIZE}
 					height={NEWS_THUMBNAIL_SIZE}
@@ -514,17 +496,24 @@ export function NewsGrid({
 
 	// Get icon/image based on news type
 	const getTypeIcon = (item: AggregatedNewsItem) => {
-		const portfolioCompanyIcon = getPortfolioCompanyIcon(item);
+		const isXPost = item.url.includes("x.com/");
+		const shouldUseCompanyPrimaryIcon =
+			!isXPost || item.portfolioCompany?.sourceIsCompanyAccount !== false;
+		const portfolioCompanyIcon = shouldUseCompanyPrimaryIcon ? getPortfolioCompanyIcon(item) : null;
 		if (portfolioCompanyIcon) return portfolioCompanyIcon;
 
 		// Check if it's an X post (url contains x.com)
-		if (item.url.includes("x.com/")) {
+		if (isXPost) {
 			const imageKey = `${item.id}:x`;
 			const sourceImage = item.sourceImage?.trim();
 			const xHandle = getXHandle(item.url);
 			const showXLogo = !hasCustomXLogo(xHandle);
+			const sourceImageMatchesCompanyLogo =
+				item.portfolioCompany?.sourceIsCompanyAccount === false &&
+				normalizeImageUrlForComparison(sourceImage) ===
+					normalizeImageUrlForComparison(item.portfolioCompany.logo);
 
-			if (sourceImage && !failedImageKeys[imageKey]) {
+			if (sourceImage && !sourceImageMatchesCompanyLogo && !failedImageKeys[imageKey]) {
 				return (
 					<div className="relative group-hover:scale-[1.08] transition-transform duration-150">
 						<Image
@@ -538,7 +527,6 @@ export function NewsGrid({
 							onError={() => markImageFailed(imageKey)}
 						/>
 						{showXLogo && <XLogo />}
-						{getPortfolioCompanyAvatarBadge(item)}
 					</div>
 				);
 			}
@@ -558,14 +546,12 @@ export function NewsGrid({
 							onError={() => markImageFailed(imageKey)}
 						/>
 						{showXLogo && <XLogo />}
-						{getPortfolioCompanyAvatarBadge(item)}
 					</div>
 				);
 			}
 			return (
 				<span className="relative inline-block text-5xl transition-transform duration-150 group-hover:scale-[1.08]">
 					𝕏
-					{getPortfolioCompanyAvatarBadge(item)}
 				</span>
 			);
 		}
@@ -609,14 +595,12 @@ export function NewsGrid({
 								className="rounded-full w-14 h-14 object-cover"
 								onError={() => markImageFailed(imageKey)}
 							/>
-							{getPortfolioCompanyAvatarBadge(item)}
 						</div>
 					);
 				}
 				return (
 					<span className="relative inline-block text-5xl transition-transform duration-150 group-hover:scale-[1.08]">
 						🔗
-						{getPortfolioCompanyAvatarBadge(item)}
 					</span>
 				);
 			case "announcement":
@@ -836,7 +820,6 @@ export function NewsGrid({
 				) : (
 					renderedNews.map((item) => {
 						const isDescriptionExpanded = expandedDescriptionIds.has(item.id);
-						const hasAvatarBadge = hasPortfolioCompanyAvatarBadge(item);
 
 						return (
 							<div
@@ -854,11 +837,7 @@ export function NewsGrid({
 									<span className="sr-only">Open {item.title}</span>
 								</a>
 								<div className="relative z-10 flex items-start gap-4 pointer-events-none">
-									<div
-										className={`flex w-14 flex-shrink-0 justify-center ${
-											hasAvatarBadge ? "h-28 items-start" : "h-14 items-center"
-										}`}
-									>
+									<div className="flex h-14 w-14 flex-shrink-0 items-center justify-center">
 										{getTypeIcon(item)}
 									</div>
 
@@ -922,8 +901,8 @@ export function NewsGrid({
 														{item.company}
 													</span>
 												)}
-											{getPortfolioCompanyMetaName(item)}
 											{getPortfolioCompanyMetaLogo(item)}
+											{getPortfolioCompanyMetaName(item)}
 											<span
 												className={`px-2 py-0.5 rounded-full ${
 													item.category === "crypto"
