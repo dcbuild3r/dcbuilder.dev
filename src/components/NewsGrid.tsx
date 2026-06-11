@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useDeferredValue, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
-import { AggregatedNewsItem } from "@/lib/news";
+import type { AggregatedNewsItem } from "@/lib/news";
 import {
 	compareNewsByDateAndRelevance,
 	compareNewsByPostedAtAndRelevance,
@@ -107,6 +107,45 @@ function getCompanyLogoFrameClassName(companyTitle?: string | null): string {
 
 function normalizeImageUrlForComparison(src?: string | null): string {
 	return (src ?? "").trim().replace(/^https?:\/\//, "").replace(/\/$/, "").toLowerCase();
+}
+
+function normalizeDisplayName(value: string | null | undefined): string {
+	return (value ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function escapeRegExp(value: string) {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function getNewsDisplaySource(
+	item: Pick<AggregatedNewsItem, "source" | "portfolioCompany">,
+): string | undefined {
+	const source = item.source?.trim();
+	const companyTitle = item.portfolioCompany?.title?.trim();
+	if (!source || !companyTitle) return source;
+
+	const normalizedCompanyTitle = normalizeDisplayName(companyTitle);
+	const companySuffix = new RegExp(`\\s*\\(${escapeRegExp(companyTitle)}\\)`, "i");
+	const displaySource = source
+		.split(",")
+		.map((token) => token.replace(companySuffix, "").trim())
+		.filter((token) => normalizeDisplayName(token) !== normalizedCompanyTitle)
+		.filter(Boolean)
+		.join(", ");
+
+	return displaySource || undefined;
+}
+
+export function getNewsDisplayCompany(
+	item: Pick<AggregatedNewsItem, "company" | "portfolioCompany">,
+): string | undefined {
+	const company = item.company?.trim();
+	const companyTitle = item.portfolioCompany?.title?.trim();
+	if (!company) return undefined;
+
+	return companyTitle && normalizeDisplayName(company) === normalizeDisplayName(companyTitle)
+		? undefined
+		: company;
 }
 
 // Check if item is fresh based on platform
@@ -301,26 +340,6 @@ export function NewsGrid({
 			parts.push(<span key={`${keyPrefix}:${idx}`}>{token}</span>);
 			return parts;
 		});
-	};
-
-	const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-	const getSourceWithoutPortfolioCompany = (item: AggregatedNewsItem) => {
-		const source = item.source?.trim();
-		const company = item.portfolioCompany;
-		const companyTitle = company?.title?.trim();
-		if (!source || !company || !companyTitle) return source;
-
-		if (company.sourceIsCompanyAccount && source.toLowerCase() === companyTitle.toLowerCase()) {
-			return undefined;
-		}
-
-		const companySuffix = new RegExp(`\\s*\\(${escapeRegExp(companyTitle)}\\)`, "i");
-		return source
-			.split(",")
-			.map((token) => token.replace(companySuffix, "").trim())
-			.filter(Boolean)
-			.join(", ");
 	};
 
 	// Extract X/Twitter handle from URL
@@ -820,6 +839,7 @@ export function NewsGrid({
 				) : (
 					renderedNews.map((item) => {
 						const isDescriptionExpanded = expandedDescriptionIds.has(item.id);
+						const displayCompany = getNewsDisplayCompany(item);
 
 						return (
 							<div
@@ -895,12 +915,12 @@ export function NewsGrid({
 
 										<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
 											<span>Published {formatDate(item.date)}</span>
-											{renderCommaSeparatedTokens(getSourceWithoutPortfolioCompany(item), `${item.id}:source`)}
-												{item.company && (
-													<span className={isPortfolioUpdateItem(item) ? PORTFOLIO_COMPANY_TEXT_CLASS : undefined}>
-														{item.company}
-													</span>
-												)}
+											{renderCommaSeparatedTokens(getNewsDisplaySource(item), `${item.id}:source`)}
+											{displayCompany && (
+												<span className={isPortfolioUpdateItem(item) ? PORTFOLIO_COMPANY_TEXT_CLASS : undefined}>
+													{displayCompany}
+												</span>
+											)}
 											{getPortfolioCompanyMetaLogo(item)}
 											{getPortfolioCompanyMetaName(item)}
 											<span
