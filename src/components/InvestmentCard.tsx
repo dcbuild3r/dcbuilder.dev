@@ -19,6 +19,10 @@ export function InvestmentCard({
   newsUrl,
 }: InvestmentCardProps) {
   const isDefunct = investment.status === "defunct";
+  const isUnlink = investment.title.toLowerCase() === "unlink";
+  const logoClassName = `w-28 h-28 sm:w-20 sm:h-20 object-contain rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150 ${
+    isDefunct ? "grayscale opacity-80" : ""
+  }`;
 
   return (
     <article
@@ -34,21 +38,44 @@ export function InvestmentCard({
       }`}
     >
       <div className="w-32 h-32 sm:w-24 sm:h-24 mb-4 flex items-center justify-center">
-        {investment.logo && (
+        {isUnlink ? (
+          <>
+            <Image
+              src="/logos/unlink-dark.jpg"
+              alt={investment.title}
+              width={120}
+              height={120}
+              className={`${logoClassName} bg-black dark:hidden`}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.style.display = "none";
+              }}
+            />
+            <Image
+              src="/logos/unlink-light.jpg"
+              alt={investment.title}
+              width={120}
+              height={120}
+              className={`${logoClassName} hidden bg-white dark:block`}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          </>
+        ) : investment.logo ? (
           <Image
             src={investment.logo}
             alt={investment.title}
             width={120}
             height={120}
-            className={`w-28 h-28 sm:w-20 sm:h-20 object-contain bg-white rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150 ${
-              isDefunct ? "grayscale opacity-80" : ""
-            }`}
+            className={`${logoClassName} bg-white`}
             onError={(e) => {
               e.currentTarget.onerror = null;
               e.currentTarget.style.display = "none";
             }}
           />
-        )}
+        ) : null}
       </div>
       <h3 className="font-semibold mb-2">
         {investment.website ? (
