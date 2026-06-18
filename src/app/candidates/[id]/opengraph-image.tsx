@@ -17,6 +17,15 @@ const MAX_SKILLS = 5;
 const SKILL_HORIZONTAL_PADDING = 72;
 const ESTIMATED_SKILL_CHAR_WIDTH = 18;
 
+function roundImageStyle(size: number) {
+	return {
+		width: size,
+		height: size,
+		borderRadius: size / 2,
+		objectFit: "cover" as const,
+	};
+}
+
 function estimateSkillWidth(skill: string) {
 	return SKILL_HORIZONTAL_PADDING + skill.length * ESTIMATED_SKILL_CHAR_WIDTH;
 }
@@ -99,7 +108,7 @@ export default async function Image({ params }: Props) {
 								alt="dcbuilder"
 								width={88}
 								height={88}
-								style={{ objectFit: "cover" }}
+								style={roundImageStyle(88)}
 							/>
 						</div>
 						<div style={{ display: "flex", flexDirection: "column" }}>
@@ -187,7 +196,7 @@ export default async function Image({ params }: Props) {
 								alt={name}
 								width={240}
 								height={240}
-								style={{ objectFit: "cover" }}
+								style={roundImageStyle(240)}
 							/>
 						</div>
 					) : (
