@@ -76,7 +76,7 @@ export default async function CompanyNewsPage({
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Visit ${companyProfile.title} website`}
-                    className="flex size-20 items-center justify-center rounded-2xl border border-neutral-200 bg-white p-3 transition-transform hover:scale-105 dark:border-neutral-800 dark:bg-neutral-950 sm:size-24"
+                    className="flex size-20 items-center justify-center transition-transform hover:scale-105 sm:size-24"
                   >
                     <Image
                       src={companyProfile.logo}
@@ -89,7 +89,7 @@ export default async function CompanyNewsPage({
                     />
                   </a>
                 ) : (
-                  <div className="flex size-20 items-center justify-center rounded-2xl border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-950 sm:size-24">
+                  <div className="flex size-20 items-center justify-center sm:size-24">
                     <Image
                       src={companyProfile.logo}
                       alt={`${companyProfile.title} logo`}
