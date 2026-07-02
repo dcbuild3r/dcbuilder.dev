@@ -43,7 +43,12 @@ const CUSTOM_X_LOGO_HANDLES = new Set(["googleresearch"]);
 const PORTFOLIO_COMPANY_TEXT_CLASS = "font-bold text-black dark:text-white";
 const DCBUILDER_X_HANDLE = "dcbuilder";
 const DCBUILDER_AVATAR_SRC = "/logos/dcbuilder.jpg";
-const UNFRAMED_LOGO_COMPANIES = new Set(["Praxis", "Succinct", "Unlink"]);
+const UNFRAMED_LOGO_COMPANIES = new Set([
+	"Praxis",
+	"Succinct",
+	"Unlink",
+	"Zenith",
+]);
 const LIGHT_MARK_COMPANIES = new Set([
 	"Accountable",
 	"Agora",
