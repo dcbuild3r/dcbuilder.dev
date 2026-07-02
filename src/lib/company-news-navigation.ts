@@ -12,7 +12,7 @@ export interface CompanyNewsIconCompany {
   newsCount: number;
 }
 
-const UNFRAMED_LOGO_COMPANIES = new Set(['Succinct', 'Unlink']);
+const UNFRAMED_LOGO_COMPANIES = new Set(['Praxis', 'Succinct', 'Unlink']);
 const LIGHT_LOGO_COMPANIES = new Set([
   'Accountable',
   'Agora',
@@ -21,7 +21,6 @@ const LIGHT_LOGO_COMPANIES = new Set([
   'Giza',
   'Lighter',
   'Lucis',
-  'Praxis',
   'Prime Intellect',
   'Rhinestone',
   'Sorella',
