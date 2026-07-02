@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import ReactMarkdown, { type Components } from "react-markdown";
 import {
   Candidate,
   tagLabels,
@@ -10,6 +11,20 @@ import {
   DCBUILDER_TELEGRAM,
 } from "@/data/candidates";
 import { isNew } from "@/lib/shuffle";
+
+const bioMarkdownComponents: Components = {
+	a: ({ children, href }) => (
+		<a
+			href={href}
+			target="_blank"
+			rel="noopener noreferrer"
+			className="font-medium text-neutral-900 underline underline-offset-4 hover:text-neutral-600 dark:text-white dark:hover:text-neutral-300"
+		>
+			{children}
+		</a>
+	),
+	p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
+};
 
 export function ExpandedCandidateView({
 	candidate,
@@ -334,12 +349,14 @@ export function ExpandedCandidateView({
 					{/* Bio */}
 					<div>
 						<h3 className="text-lg font-semibold mb-3">About</h3>
-						<p
+						<div
 							id={descriptionId}
 							className="text-neutral-600 dark:text-neutral-400 leading-relaxed"
 						>
-							{candidate.bio}
-						</p>
+							<ReactMarkdown components={bioMarkdownComponents}>
+								{candidate.bio}
+							</ReactMarkdown>
+						</div>
 					</div>
 
 					{/* Skills */}

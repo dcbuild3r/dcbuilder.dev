@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import ReactMarkdown, { type Components } from "react-markdown";
 import { useState, useMemo, useEffect, useRef, useCallback, memo, useDeferredValue } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -41,6 +42,21 @@ const ExpandedCandidateView = dynamic(
 	() => import("./ExpandedCandidateView").then((mod) => mod.ExpandedCandidateView),
 	{ ssr: false }
 );
+
+const cardBioMarkdownComponents: Components = {
+	a: ({ children, href }) => (
+		<a
+			href={href}
+			target="_blank"
+			rel="noopener noreferrer"
+			onClick={(event) => event.stopPropagation()}
+			className="font-medium text-neutral-900 underline underline-offset-4 hover:text-neutral-600 dark:text-white dark:hover:text-neutral-300"
+		>
+			{children}
+		</a>
+	),
+	p: ({ children }) => <span>{children}</span>,
+};
 
 interface CandidatesGridProps {
 	candidates: Candidate[];
@@ -714,9 +730,11 @@ const CandidateCard = memo(function CandidateCard({
 			</div>
 
 			{/* Bio */}
-			<p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 text-center">
-				{candidate.bio}
-			</p>
+			<div className="mt-3 text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 text-center">
+				<ReactMarkdown components={cardBioMarkdownComponents}>
+					{candidate.bio}
+				</ReactMarkdown>
+			</div>
 
 			{/* Meta info */}
 			<div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-neutral-500">
