@@ -8,29 +8,8 @@ export interface CompanyNewsIconCompany {
   name: string;
   logo: string;
   href: string;
-  logoBackground: 'light' | 'dark' | 'none';
   newsCount: number;
 }
-
-const UNFRAMED_LOGO_COMPANIES = new Set([
-  'Praxis',
-  'Succinct',
-  'Unlink',
-  'Zenith',
-]);
-const LIGHT_LOGO_COMPANIES = new Set([
-  'Accountable',
-  'Agora',
-  'Aligned Layer',
-  'Fabric Cryptography',
-  'Giza',
-  'Lighter',
-  'Lucis',
-  'Prime Intellect',
-  'Rhinestone',
-  'Sorella',
-  'Wildcat',
-]);
 
 export async function getCompanyNewsIconCompanies(
   news: AggregatedNewsItem[]
@@ -60,11 +39,6 @@ export async function getCompanyNewsIconCompanies(
         name: investment.title,
         logo,
         href: getPortfolioNewsUrl(investment.title),
-        logoBackground: UNFRAMED_LOGO_COMPANIES.has(investment.title)
-          ? 'none'
-          : LIGHT_LOGO_COMPANIES.has(investment.title)
-            ? 'dark'
-            : 'light',
         newsCount,
       };
     })

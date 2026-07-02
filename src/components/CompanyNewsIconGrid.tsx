@@ -59,12 +59,6 @@ export function CompanyNewsIconGrid({
         <div className={gridClassName}>
           {companies.map((company) => {
             const isActive = activeCompanyName === company.name;
-            const logoBackgroundClass =
-              company.logoBackground === 'none'
-                ? ''
-                : company.logoBackground === 'dark'
-                  ? 'bg-black'
-                  : 'bg-white';
 
             return (
               <Link
@@ -81,7 +75,7 @@ export function CompanyNewsIconGrid({
                   width={imageSize}
                   height={imageSize}
                   sizes={imageSizes}
-                  className={`${logoSizeClassName} object-contain transition-transform duration-150 group-hover:scale-105 ${logoBackgroundClass}`}
+                  className={`${logoSizeClassName} object-contain transition-transform duration-150 group-hover:scale-105`}
                   unoptimized
                 />
                 <span className={labelClassName}>{company.name}</span>

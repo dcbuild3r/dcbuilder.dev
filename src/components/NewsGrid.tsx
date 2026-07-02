@@ -43,26 +43,6 @@ const CUSTOM_X_LOGO_HANDLES = new Set(["googleresearch"]);
 const PORTFOLIO_COMPANY_TEXT_CLASS = "font-bold text-black dark:text-white";
 const DCBUILDER_X_HANDLE = "dcbuilder";
 const DCBUILDER_AVATAR_SRC = "/logos/dcbuilder.jpg";
-const UNFRAMED_LOGO_COMPANIES = new Set([
-	"Praxis",
-	"Succinct",
-	"Unlink",
-	"Zenith",
-]);
-const LIGHT_MARK_COMPANIES = new Set([
-	"Accountable",
-	"Agora",
-	"Aligned Layer",
-	"Fabric Cryptography",
-	"Giza",
-	"Lighter",
-	"Lucis",
-	"Prime Intellect",
-	"Rhinestone",
-	"Sorella",
-	"Wildcat",
-]);
-const DARK_MARK_COMPANIES = new Set(["Octet", "World"]);
 
 function isPortfolioUpdateItem(item: AggregatedNewsItem): boolean {
 	const normalizedCompany = (item.company ?? "").trim().replace(/\s+/g, " ").toLowerCase();
@@ -95,23 +75,6 @@ function getXAvatarSrc(handle: string): string {
 	if (normalized === "googleresearch") return GOOGLE_RESEARCH_LOGO_SRC;
 	if (normalized === DCBUILDER_X_HANDLE) return DCBUILDER_AVATAR_SRC;
 	return `https://unavatar.io/twitter/${handle}`;
-}
-
-function getCompanyLogoFrameClassName(companyTitle?: string | null): string {
-	const title = companyTitle?.trim();
-	if (title && LIGHT_MARK_COMPANIES.has(title)) {
-		return "border-neutral-900 bg-neutral-950 dark:border-neutral-700 dark:bg-neutral-950";
-	}
-	if (title && DARK_MARK_COMPANIES.has(title)) {
-		return "border-neutral-200 bg-white dark:border-neutral-700 dark:bg-white";
-	}
-
-	return "border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-950";
-}
-
-function shouldRenderUnframedCompanyLogo(companyTitle?: string | null): boolean {
-	const title = companyTitle?.trim();
-	return Boolean(title && UNFRAMED_LOGO_COMPANIES.has(title));
 }
 
 function normalizeImageUrlForComparison(src?: string | null): string {
@@ -389,7 +352,6 @@ export function NewsGrid({
 		const imageKey = `${item.id}:portfolio-company-meta`;
 		if (failedImageKeys[imageKey]) return null;
 
-		const isUnframedLogo = shouldRenderUnframedCompanyLogo(company.title);
 		const logo = (
 			<Image
 				src={getNormalizedLogoSrc(company.logo)}
@@ -397,14 +359,13 @@ export function NewsGrid({
 				width={24}
 				height={24}
 				sizes="24px"
-				className={`h-full w-full object-contain ${isUnframedLogo ? "" : "rounded-md p-0.5"}`}
+				className="h-full w-full object-contain"
 				unoptimized
 				onError={() => markImageFailed(imageKey)}
 			/>
 		);
-		const className = isUnframedLogo
-			? "pointer-events-auto inline-flex h-6 w-6 flex-shrink-0 items-center justify-center transition-transform duration-150 hover:scale-110"
-			: `pointer-events-auto inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border shadow-sm transition-transform duration-150 hover:scale-110 ${getCompanyLogoFrameClassName(company.title)}`;
+		const className =
+			"pointer-events-auto inline-flex h-6 w-6 flex-shrink-0 items-center justify-center transition-transform duration-150 hover:scale-110";
 
 		if (!company.website) {
 			return (
@@ -496,16 +457,9 @@ export function NewsGrid({
 
 		const imageKey = `${item.id}:portfolio-primary`;
 		if (failedImageKeys[imageKey]) return null;
-		const isUnframedLogo = shouldRenderUnframedCompanyLogo(company.title);
 
 		return (
-			<div
-				className={
-					isUnframedLogo
-						? "relative flex h-14 w-14 items-center justify-center transition-transform duration-150 group-hover:scale-[1.08]"
-						: `relative flex h-14 w-14 items-center justify-center rounded-xl border p-1 shadow-sm transition-transform duration-150 group-hover:scale-[1.08] ${getCompanyLogoFrameClassName(company.title)}`
-				}
-			>
+			<div className="relative flex h-14 w-14 items-center justify-center transition-transform duration-150 group-hover:scale-[1.08]">
 				<Image
 					src={getNormalizedLogoSrc(company.logo)}
 					alt={company.title}
@@ -854,10 +808,11 @@ export function NewsGrid({
 					<p className="text-center py-8 text-neutral-500">
 						No news found matching your criteria.
 					</p>
-				) : (
-					renderedNews.map((item) => {
-						const isDescriptionExpanded = expandedDescriptionIds.has(item.id);
-						const displayCompany = getNewsDisplayCompany(item);
+			) : (
+				renderedNews.map((item) => {
+					const isDescriptionExpanded = expandedDescriptionIds.has(item.id);
+					const isPortfolioItem = isPortfolioUpdateItem(item);
+					const displayCompany = getNewsDisplayCompany(item);
 
 						return (
 							<div
@@ -935,12 +890,17 @@ export function NewsGrid({
 											<span>Published {formatDate(item.date)}</span>
 											{renderCommaSeparatedTokens(getNewsDisplaySource(item), `${item.id}:source`)}
 											{displayCompany && (
-												<span className={isPortfolioUpdateItem(item) ? PORTFOLIO_COMPANY_TEXT_CLASS : undefined}>
+												<span className={isPortfolioItem ? PORTFOLIO_COMPANY_TEXT_CLASS : undefined}>
 													{displayCompany}
 												</span>
 											)}
 											{getPortfolioCompanyMetaLogo(item)}
 											{getPortfolioCompanyMetaName(item)}
+											{isPortfolioItem && (
+												<span className="rounded-full bg-neutral-900 px-2 py-0.5 font-medium text-white dark:bg-white dark:text-neutral-900">
+													Portfolio
+												</span>
+											)}
 											<span
 												className={`px-2 py-0.5 rounded-full ${
 													item.category === "crypto"
