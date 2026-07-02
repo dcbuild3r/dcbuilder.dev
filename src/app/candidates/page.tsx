@@ -72,7 +72,7 @@ export default async function Candidates() {
 									<strong>Anonymous profiles:</strong> Request an introduction
 									through me on{" "}
 									<a
-										href="https://t.me/dcbuilder"
+										href="https://t.me/dc_builder"
 										target="_blank"
 										rel="noopener noreferrer"
 										className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"

@@ -301,4 +301,4 @@ Want to create your own version? See [CLONE.md](./CLONE.md) for a complete setup
 
 ## Contact
 
-Telegram: [@dcbuilder](https://t.me/dcbuilder)
+Telegram: [@dc_builder](https://t.me/dc_builder)

@@ -9,7 +9,7 @@ export const JOBS_PAGE = {
     "Open positions at companies I've invested in, advise, work with, or am friends with. These are teams I believe in building products that matter.",
   helpText:
     "Am I missing any job openings from these companies or are any no longer available? Please let me know on",
-  telegramUrl: "https://t.me/dcbuilder",
+  telegramUrl: "https://t.me/dc_builder",
 };
 
 export const CANDIDATES_PAGE = {
@@ -28,7 +28,7 @@ export const CANDIDATES_PAGE = {
         type: "anonymous" as const,
         label: "Anonymous profiles:",
         text: "Request an introduction through me on",
-        telegramUrl: "https://t.me/dcbuilder",
+        telegramUrl: "https://t.me/dc_builder",
       },
       {
         type: "vouched" as const,
