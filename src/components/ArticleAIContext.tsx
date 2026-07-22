@@ -3,6 +3,8 @@
 import { CaretDown, ChatCircleDots, Check, CopySimple } from "@phosphor-icons/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+	buildAIProviderPrompt,
+	buildAIProviderShareData,
 	buildAIProviderUrl,
 	buildArticleMarkdownUrl,
 	type AIProvider,
@@ -19,6 +21,7 @@ const providers: Array<{ id: AIProvider; label: string }> = [
 export function ArticleAIContext({ title }: { title: string }) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [copyState, setCopyState] = useState<"idle" | "copying" | "copied" | "error">("idle");
+	const [handoffMessage, setHandoffMessage] = useState<string | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const triggerRef = useRef<HTMLButtonElement>(null);
 	const closeMenu = useCallback(() => setIsOpen(false), []);
@@ -57,9 +60,55 @@ export function ArticleAIContext({ title }: { title: string }) {
 			setCopyState("error");
 		}
 	};
-	const openProvider = (provider: AIProvider) => {
-		window.open(buildAIProviderUrl(provider, pageUrl(), title), "_blank", "noopener,noreferrer");
-		closeMenu();
+	const isMobileDevice = () => window.matchMedia("(pointer: coarse)").matches;
+	const openProviderDestination = (provider: AIProvider) => {
+		const destination = buildAIProviderUrl(provider, pageUrl(), title);
+		if (isMobileDevice()) {
+			window.location.assign(destination);
+			return;
+		}
+		window.open(destination, "_blank", "noopener,noreferrer");
+	};
+	const openProvider = async (provider: AIProvider) => {
+		if (provider !== "gemini" && provider !== "notebooklm") {
+			openProviderDestination(provider);
+			closeMenu();
+			return;
+		}
+
+		const clipboardText =
+			provider === "gemini" ? buildAIProviderPrompt(pageUrl(), title) : pageUrl();
+		const copiedMessage =
+			provider === "gemini"
+				? "Prompt copied. Paste it if Gemini opens with an empty chat."
+				: "Article link copied. Paste it as a Website source if needed.";
+
+		const copyPromise = navigator.clipboard
+			.writeText(clipboardText)
+			.then(() => true)
+			.catch(() => false);
+
+		if (isMobileDevice() && typeof navigator.share === "function") {
+			setHandoffMessage(
+				provider === "gemini"
+					? "Choose Gemini in the share sheet."
+					: "Choose NotebookLM in the share sheet.",
+			);
+			try {
+				await navigator.share(buildAIProviderShareData(provider, pageUrl(), title));
+			} catch (error) {
+				if (error instanceof DOMException && error.name === "AbortError") {
+					setHandoffMessage((await copyPromise) ? copiedMessage : null);
+					return;
+				}
+				openProviderDestination(provider);
+			}
+			setHandoffMessage((await copyPromise) ? copiedMessage : null);
+			return;
+		}
+
+		openProviderDestination(provider);
+		setHandoffMessage((await copyPromise) ? copiedMessage : null);
 	};
 
 	return (
@@ -136,6 +185,14 @@ export function ArticleAIContext({ title }: { title: string }) {
 								</button>
 							))}
 						</div>
+						{handoffMessage && (
+							<p
+								className="mt-3 text-xs leading-5 text-neutral-600 dark:text-neutral-400"
+								aria-live="polite"
+							>
+								{handoffMessage}
+							</p>
+						)}
 					</div>
 				</div>
 			)}

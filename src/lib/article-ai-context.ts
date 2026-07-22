@@ -10,6 +10,12 @@ export interface ArticleMarkdownInput {
 
 export type AIProvider = "chatgpt" | "claude" | "gemini" | "grok" | "notebooklm";
 
+export interface AIShareData {
+	title: string;
+	text: string;
+	url?: string;
+}
+
 export function buildArticleMarkdown(article: ArticleMarkdownInput): string {
 	const metadata = [
 		`Published: ${article.date}`,
@@ -39,17 +45,36 @@ export function buildArticleMarkdownUrl(pageUrl: string): string {
 	return url.toString();
 }
 
-export function buildAIProviderUrl(provider: AIProvider, pageUrl: string, title: string): string {
+export function buildAIProviderPrompt(pageUrl: string, title: string): string {
 	const markdownUrl = buildArticleMarkdownUrl(pageUrl);
+	return `Read the Markdown source for "${title}" at ${markdownUrl}. Use it as context so I can ask questions about the article or build from its ideas.`;
+}
 
+export function buildAIProviderShareData(
+	provider: "gemini" | "notebooklm",
+	pageUrl: string,
+	title: string,
+): AIShareData {
 	if (provider === "notebooklm") {
-		const url = new URL("https://notebooklm.google.com/");
-		url.searchParams.set("addSource", "true");
-		url.searchParams.set("url", markdownUrl);
-		return url.toString();
+		return {
+			title,
+			text: "Add this article to NotebookLM as a website source.",
+			url: pageUrl,
+		};
 	}
 
-	const prompt = `Read the Markdown source for "${title}" at ${markdownUrl}. Use it as context so I can ask questions about the article or build from its ideas.`;
+	return {
+		title: `Ask Gemini about ${title}`,
+		text: buildAIProviderPrompt(pageUrl, title),
+	};
+}
+
+export function buildAIProviderUrl(provider: AIProvider, pageUrl: string, title: string): string {
+	if (provider === "notebooklm") {
+		return "https://notebooklm.google.com/";
+	}
+
+	const prompt = buildAIProviderPrompt(pageUrl, title);
 	const encodedPrompt = encodeURIComponent(prompt);
 
 	switch (provider) {
@@ -58,7 +83,7 @@ export function buildAIProviderUrl(provider: AIProvider, pageUrl: string, title:
 		case "claude":
 			return `https://claude.ai/new?q=${encodedPrompt}`;
 		case "gemini":
-			return `https://gemini.google.com/app?q=${encodedPrompt}`;
+			return "https://gemini.google.com/app";
 		case "grok":
 			return `https://x.com/i/grok?text=${encodedPrompt}`;
 	}
