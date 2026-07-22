@@ -10,12 +10,6 @@ export interface ArticleMarkdownInput {
 
 export type AIProvider = "chatgpt" | "claude" | "gemini" | "grok" | "notebooklm";
 
-export interface AIShareData {
-	title: string;
-	text: string;
-	url?: string;
-}
-
 export function buildArticleMarkdown(article: ArticleMarkdownInput): string {
 	const metadata = [
 		`Published: ${article.date}`,
@@ -50,23 +44,18 @@ export function buildAIProviderPrompt(pageUrl: string, title: string): string {
 	return `Read the Markdown source for "${title}" at ${markdownUrl}. Use it as context so I can ask questions about the article or build from its ideas.`;
 }
 
-export function buildAIProviderShareData(
-	provider: "gemini" | "notebooklm",
+export function buildAIClipboardPrompt(
 	pageUrl: string,
 	title: string,
-): AIShareData {
-	if (provider === "notebooklm") {
-		return {
-			title,
-			text: "Add this article to NotebookLM as a website source.",
-			url: pageUrl,
-		};
-	}
-
-	return {
-		title: `Ask Gemini about ${title}`,
-		text: buildAIProviderPrompt(pageUrl, title),
-	};
+	markdown: string,
+): string {
+	return [
+		`Use the following article, "${title}", as context so I can ask questions about it or build from its ideas.`,
+		`Source: ${pageUrl}`,
+		markdown.trim(),
+	]
+		.join("\n\n")
+		.concat("\n");
 }
 
 export function buildAIProviderUrl(provider: AIProvider, pageUrl: string, title: string): string {

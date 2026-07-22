@@ -3,8 +3,7 @@
 import { CaretDown, ChatCircleDots, Check, CopySimple } from "@phosphor-icons/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-	buildAIProviderPrompt,
-	buildAIProviderShareData,
+	buildAIClipboardPrompt,
 	buildAIProviderUrl,
 	buildArticleMarkdownUrl,
 	type AIProvider,
@@ -18,10 +17,16 @@ const providers: Array<{ id: AIProvider; label: string }> = [
 	{ id: "notebooklm", label: "NotebookLM" },
 ];
 
+type GoogleProvider = "gemini" | "notebooklm";
+type HandoffState = {
+	provider: GoogleProvider;
+	status: "copying" | "ready" | "error";
+};
+
 export function ArticleAIContext({ title }: { title: string }) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [copyState, setCopyState] = useState<"idle" | "copying" | "copied" | "error">("idle");
-	const [handoffMessage, setHandoffMessage] = useState<string | null>(null);
+	const [handoff, setHandoff] = useState<HandoffState | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const triggerRef = useRef<HTMLButtonElement>(null);
 	const closeMenu = useCallback(() => setIsOpen(false), []);
@@ -69,6 +74,23 @@ export function ArticleAIContext({ title }: { title: string }) {
 		}
 		window.open(destination, "_blank", "noopener,noreferrer");
 	};
+	const prepareGoogleHandoff = async (provider: GoogleProvider) => {
+		setHandoff({ provider, status: "copying" });
+		try {
+			let clipboardText = pageUrl();
+			if (provider === "gemini") {
+				const response = await fetch(buildArticleMarkdownUrl(pageUrl()), {
+					headers: { Accept: "text/markdown" },
+				});
+				if (!response.ok) throw new Error("Markdown request failed");
+				clipboardText = buildAIClipboardPrompt(pageUrl(), title, await response.text());
+			}
+			await navigator.clipboard.writeText(clipboardText);
+			setHandoff({ provider, status: "ready" });
+		} catch {
+			setHandoff({ provider, status: "error" });
+		}
+	};
 	const openProvider = async (provider: AIProvider) => {
 		if (provider !== "gemini" && provider !== "notebooklm") {
 			openProviderDestination(provider);
@@ -76,39 +98,7 @@ export function ArticleAIContext({ title }: { title: string }) {
 			return;
 		}
 
-		const clipboardText =
-			provider === "gemini" ? buildAIProviderPrompt(pageUrl(), title) : pageUrl();
-		const copiedMessage =
-			provider === "gemini"
-				? "Prompt copied. Paste it if Gemini opens with an empty chat."
-				: "Article link copied. Paste it as a Website source if needed.";
-
-		const copyPromise = navigator.clipboard
-			.writeText(clipboardText)
-			.then(() => true)
-			.catch(() => false);
-
-		if (isMobileDevice() && typeof navigator.share === "function") {
-			setHandoffMessage(
-				provider === "gemini"
-					? "Choose Gemini in the share sheet."
-					: "Choose NotebookLM in the share sheet.",
-			);
-			try {
-				await navigator.share(buildAIProviderShareData(provider, pageUrl(), title));
-			} catch (error) {
-				if (error instanceof DOMException && error.name === "AbortError") {
-					setHandoffMessage((await copyPromise) ? copiedMessage : null);
-					return;
-				}
-				openProviderDestination(provider);
-			}
-			setHandoffMessage((await copyPromise) ? copiedMessage : null);
-			return;
-		}
-
-		openProviderDestination(provider);
-		setHandoffMessage((await copyPromise) ? copiedMessage : null);
+		await prepareGoogleHandoff(provider);
 	};
 
 	return (
@@ -185,13 +175,50 @@ export function ArticleAIContext({ title }: { title: string }) {
 								</button>
 							))}
 						</div>
-						{handoffMessage && (
-							<p
-								className="mt-3 text-xs leading-5 text-neutral-600 dark:text-neutral-400"
+						{handoff && (
+							<div
+								className="mt-3 rounded-lg bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
 								aria-live="polite"
 							>
-								{handoffMessage}
-							</p>
+								{handoff.status === "copying" && <p>Preparing article context...</p>}
+								{handoff.status === "error" && (
+									<>
+										<p>Could not copy the article context. Try again.</p>
+										<button
+											type="button"
+											onClick={() => prepareGoogleHandoff(handoff.provider)}
+											className="mt-2 font-semibold text-neutral-950 underline underline-offset-2 dark:text-white"
+										>
+											Try again
+										</button>
+									</>
+								)}
+								{handoff.status === "ready" && (
+									<>
+										<p>
+											{handoff.provider === "gemini"
+												? "Full article and prompt copied. Gemini does not support prefilled links—open it, then paste."
+												: "Article link copied. NotebookLM does not support prefilled sources—open it, choose Add source → Website, then paste."}
+										</p>
+										<div className="mt-2 flex gap-3">
+											<button
+												type="button"
+												onClick={() => openProviderDestination(handoff.provider)}
+												className="font-semibold text-neutral-950 underline underline-offset-2 dark:text-white"
+											>
+												Open {handoff.provider === "gemini" ? "Gemini" : "NotebookLM"}
+											</button>
+											<button
+												type="button"
+												onClick={() => prepareGoogleHandoff(handoff.provider)}
+												className="font-semibold text-neutral-950 underline underline-offset-2 dark:text-white"
+											>
+												Copy again
+											</button>
+										</div>
+									</>
+								)}
+							</div>
 						)}
 					</div>
 				</div>
