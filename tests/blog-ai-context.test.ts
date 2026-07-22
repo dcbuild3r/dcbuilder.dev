@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
+	buildAIClipboardPrompt,
 	buildAIProviderPrompt,
-	buildAIProviderShareData,
 	buildAIProviderUrl,
 	buildArticleMarkdown,
 	buildArticleMarkdownUrl,
@@ -53,19 +53,22 @@ describe("blog AI context actions", () => {
 		}
 	});
 
-	test("builds clipboard and mobile share handoffs for Google apps", () => {
+	test("builds a prompt that points assistants to the Markdown endpoint", () => {
 		const pageUrl = "https://dcbuilder.dev/blog/a-useful-system";
 		const prompt = buildAIProviderPrompt(pageUrl, "A useful system");
 		expect(prompt).toContain(`${pageUrl}/markdown`);
+	});
 
-		expect(buildAIProviderShareData("gemini", pageUrl, "A useful system")).toEqual({
-			title: "Ask Gemini about A useful system",
-			text: prompt,
-		});
-		expect(buildAIProviderShareData("notebooklm", pageUrl, "A useful system")).toEqual({
-			title: "A useful system",
-			text: "Add this article to NotebookLM as a website source.",
-			url: pageUrl,
-		});
+	test("builds a self-contained Gemini clipboard prompt with full Markdown", () => {
+		const prompt = buildAIClipboardPrompt(
+			"https://dcbuilder.dev/blog/a-useful-system",
+			"A useful system",
+			"# A useful system\n\nBuild the smallest useful version.\n",
+		);
+
+		expect(prompt).toContain('Use the following article, "A useful system", as context');
+		expect(prompt).toContain("Source: https://dcbuilder.dev/blog/a-useful-system");
+		expect(prompt).toContain("# A useful system");
+		expect(prompt).toContain("Build the smallest useful version.");
 	});
 });
