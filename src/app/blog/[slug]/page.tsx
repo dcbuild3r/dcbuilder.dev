@@ -4,6 +4,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import { Navbar } from "@/components/Navbar";
 import { formatBlogDate, getPostBySlug } from "@/lib/blog";
 import { mdxComponents } from "@/components/MDXComponents";
+import remarkGfm from "remark-gfm";
 
 // Force dynamic rendering since we need database access
 export const dynamic = "force-dynamic";
@@ -74,7 +75,14 @@ export default async function BlogPostPage({ params }: Props) {
 					</header>
 
 					<div className="prose-custom">
-						<MDXRemote source={post.content} components={mdxComponents} />
+						<MDXRemote
+							source={post.content}
+							components={mdxComponents}
+							options={{
+								blockJS: true,
+								mdxOptions: { remarkPlugins: [remarkGfm] },
+							}}
+						/>
 					</div>
 				</article>
 			</main>
