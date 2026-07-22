@@ -4,6 +4,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import { Navbar } from "@/components/Navbar";
 import { formatBlogDate, getPostBySlug } from "@/lib/blog";
 import { mdxComponents } from "@/components/MDXComponents";
+import { ArticleAIContext } from "@/components/ArticleAIContext";
 import remarkGfm from "remark-gfm";
 
 // Force dynamic rendering since we need database access
@@ -40,12 +41,15 @@ export default async function BlogPostPage({ params }: Props) {
 			<Navbar />
 			<main id="main-content" className="min-h-screen pt-20 sm:pt-24 px-4 sm:px-[7.5vw] overflow-x-hidden">
 				<article className="max-w-3xl mx-auto py-12">
-					<Link
-						href="/blog"
-						className="text-neutral-500 hover:opacity-70 transition-opacity cursor-pointer mb-8 inline-block"
-					>
-						← Back to blog
-					</Link>
+					<div className="mb-8 flex items-center justify-between gap-4">
+						<Link
+							href="/blog"
+							className="text-neutral-500 hover:opacity-70 transition-opacity cursor-pointer"
+						>
+							← Back to blog
+						</Link>
+						<ArticleAIContext title={post.title} />
+					</div>
 
 					<header className="mb-8">
 						<div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-500">
