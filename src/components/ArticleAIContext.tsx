@@ -89,7 +89,7 @@ export function ArticleAIContext({ title }: { title: string }) {
 						disabled={copyState === "copying"}
 						className="flex w-full items-start gap-3 bg-neutral-50 px-5 py-4 text-left transition-[background-color,transform] hover:bg-neutral-100 active:translate-y-px disabled:cursor-wait disabled:opacity-70 dark:bg-neutral-800/70 dark:hover:bg-neutral-800"
 					>
-						<span className="mt-0.5 text-red-500" aria-hidden="true">
+						<span className="mt-0.5 text-black dark:text-white" aria-hidden="true">
 							{copyState === "copied" ? <Check size={22} weight="bold" /> : <CopySimple size={22} />}
 						</span>
 						<span aria-live="polite">
@@ -112,7 +112,11 @@ export function ArticleAIContext({ title }: { title: string }) {
 
 					<div className="border-t border-neutral-200 px-5 py-4 dark:border-neutral-700">
 						<div className="flex items-start gap-3">
-							<ChatCircleDots size={22} className="mt-0.5 shrink-0 text-red-500" aria-hidden="true" />
+							<ChatCircleDots
+								size={22}
+								className="mt-0.5 shrink-0 text-black dark:text-white"
+								aria-hidden="true"
+							/>
 							<div>
 								<p className="font-semibold text-neutral-900 dark:text-neutral-100">Ask with context</p>
 								<p className="mt-0.5 text-sm text-neutral-600 dark:text-neutral-400">
