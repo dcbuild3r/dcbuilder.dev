@@ -293,7 +293,7 @@ code, pre, .font-mono {
 
 @media (min-width: 768px) {
   .prose-custom .mermaid-diagram-wide {
-    width: min(90vw, 96rem);
+    width: min(calc(100% + 8rem), calc(100vw - 3rem), 56rem);
     max-width: none;
     margin-left: 50%;
     transform: translateX(-50%);
