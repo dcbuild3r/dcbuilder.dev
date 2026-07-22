@@ -112,7 +112,7 @@ export function ArticleAIContext({ title }: { title: string }) {
 	};
 
 	return (
-		<div ref={containerRef} className="relative flex justify-end mb-8">
+		<div ref={containerRef} className="relative flex justify-end">
 			<button
 				ref={triggerRef}
 				type="button"
