@@ -16,6 +16,7 @@ import {
   newsSourceInvestments,
 } from '@/db';
 import { isMissingRelationError } from '@/lib/db-schema-compat';
+import { isMissingNewsletterSchemaColumnError } from '@/services/newsletter-schema';
 import {
   buildPortalPublicSitePayload,
   type PortalPublicSiteRows,
@@ -258,30 +259,7 @@ export async function loadPortalPublicSite(): Promise<PublicSitePayload> {
       .from(blogPosts)
       .where(eq(blogPosts.published, true))
       .orderBy(desc(blogPosts.date), desc(blogPosts.relevance), asc(blogPosts.title)),
-    db
-      .select({
-        id: newsletterCampaigns.id,
-        publicSlug: newsletterCampaigns.publicSlug,
-        newsletterType: newsletterCampaigns.newsletterType,
-        subject: newsletterCampaigns.subject,
-        previewText: newsletterCampaigns.previewText,
-        contentMode: newsletterCampaigns.contentMode,
-        markdownContent: newsletterCampaigns.markdownContent,
-        archiveSubject: newsletterCampaigns.archiveSubject,
-        archivePreviewText: newsletterCampaigns.archivePreviewText,
-        archiveMarkdownContent: newsletterCampaigns.archiveMarkdownContent,
-        status: newsletterCampaigns.status,
-        periodDays: newsletterCampaigns.periodDays,
-        timeframePreset: newsletterCampaigns.timeframePreset,
-        minimumRelevance: newsletterCampaigns.minimumRelevance,
-        scheduledAt: newsletterCampaigns.scheduledAt,
-        sentAt: newsletterCampaigns.sentAt,
-        createdAt: newsletterCampaigns.createdAt,
-        updatedAt: newsletterCampaigns.updatedAt,
-      })
-      .from(newsletterCampaigns)
-      .where(eq(newsletterCampaigns.status, 'sent'))
-      .orderBy(desc(newsletterCampaigns.createdAt)),
+    loadNewsletterCampaignRows(),
   ]);
 
   const rows: PortalPublicSiteRows = {
@@ -301,6 +279,46 @@ export async function loadPortalPublicSite(): Promise<PublicSitePayload> {
   };
 
   return buildPortalPublicSitePayload(rows);
+}
+
+async function loadNewsletterCampaignRows(): Promise<PortalPublicSiteRows['newsletterCampaigns']> {
+  const selectSharedFields = {
+    id: newsletterCampaigns.id,
+    newsletterType: newsletterCampaigns.newsletterType,
+    subject: newsletterCampaigns.subject,
+    previewText: newsletterCampaigns.previewText,
+    contentMode: newsletterCampaigns.contentMode,
+    markdownContent: newsletterCampaigns.markdownContent,
+    archiveSubject: newsletterCampaigns.archiveSubject,
+    archivePreviewText: newsletterCampaigns.archivePreviewText,
+    archiveMarkdownContent: newsletterCampaigns.archiveMarkdownContent,
+    status: newsletterCampaigns.status,
+    periodDays: newsletterCampaigns.periodDays,
+    timeframePreset: newsletterCampaigns.timeframePreset,
+    minimumRelevance: newsletterCampaigns.minimumRelevance,
+    scheduledAt: newsletterCampaigns.scheduledAt,
+    sentAt: newsletterCampaigns.sentAt,
+    createdAt: newsletterCampaigns.createdAt,
+    updatedAt: newsletterCampaigns.updatedAt,
+  };
+
+  try {
+    return await db
+      .select({ publicSlug: newsletterCampaigns.publicSlug, ...selectSharedFields })
+      .from(newsletterCampaigns)
+      .where(eq(newsletterCampaigns.status, 'sent'))
+      .orderBy(desc(newsletterCampaigns.createdAt));
+  } catch (error) {
+    if (!isMissingNewsletterSchemaColumnError(error, 'public_slug')) throw error;
+
+    const campaigns = await db
+      .select(selectSharedFields)
+      .from(newsletterCampaigns)
+      .where(eq(newsletterCampaigns.status, 'sent'))
+      .orderBy(desc(newsletterCampaigns.createdAt));
+
+    return campaigns.map((campaign) => ({ ...campaign, publicSlug: campaign.id }));
+  }
 }
 
 async function optionalRows<T>(relationName: string, query: () => Promise<T[]>): Promise<T[]> {
