@@ -4,6 +4,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import { Navbar } from "@/components/Navbar";
 import { formatBlogDate, getPostBySlug } from "@/lib/blog";
 import { mdxComponents } from "@/components/MDXComponents";
+import { ArticleAIContext } from "@/components/ArticleAIContext";
 import remarkGfm from "remark-gfm";
 
 // Force dynamic rendering since we need database access
@@ -73,6 +74,8 @@ export default async function BlogPostPage({ params }: Props) {
 							</p>
 						)}
 					</header>
+
+					<ArticleAIContext title={post.title} />
 
 					<div className="prose-custom">
 						<MDXRemote
