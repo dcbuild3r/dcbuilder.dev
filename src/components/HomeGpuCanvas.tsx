@@ -68,22 +68,43 @@ fn rotate(p: vec2f, angle: f32) -> vec2f {
   let liquidDisplacement = params.velocity * wake * 0.28 + swirl + radial * ripple * 0.065;
   let pointerPull = (pointer - p) * exp(-pointerDistance * 2.8) * params.energy * 0.12;
   let t = params.time * 0.11;
-  let drift = vec2f(
-    sin(params.time * 0.24) * 0.42 + sin(params.time * 0.09) * 0.16,
-    cos(params.time * 0.19) * 0.26 + sin(params.time * 0.13) * 0.1
-  );
-  var flow = rotate(p - drift + pointerPull + liquidDisplacement, 0.2 * sin(t * 0.9));
+  var flow = rotate(p + pointerPull + liquidDisplacement, 0.16 * sin(t * 0.9));
 
   let warpA = fbm(flow * 1.35 + vec2f(t * 0.21, -t * 0.13));
   let warpB = fbm(flow * 1.7 + vec2f(-t * 0.17, t * 0.19) + warpA);
   flow += (vec2f(warpA, warpB) - 0.5) * 0.58;
 
-  let radius = length(flow * vec2f(0.82, 1.08));
-  let angle = atan2(flow.y, flow.x);
+  let acrossScreen = fract(params.time * 0.026);
+  let downScreen = fract(params.time * 0.019 + 0.36);
+  let diagonal = fract(params.time * 0.016 + 0.7);
+  let sourceA = vec2f(
+    mix(-params.aspect * 1.45, params.aspect * 1.45, acrossScreen),
+    sin(params.time * 0.17) * 0.58
+  );
+  let sourceB = vec2f(
+    cos(params.time * 0.14 + 1.7) * params.aspect * 0.62,
+    mix(1.45, -1.45, downScreen)
+  );
+  let sourceC = vec2f(
+    mix(params.aspect * 1.35, -params.aspect * 1.35, diagonal),
+    mix(-1.18, 1.18, diagonal) + sin(params.time * 0.2) * 0.22
+  );
+
+  let localA = flow - sourceA;
+  let localB = flow - sourceB;
+  let localC = flow - sourceC;
+  let distanceA = length(localA * vec2f(0.58, 1.15));
+  let distanceB = length(localB * vec2f(0.82, 0.62));
+  let distanceC = length(localC * vec2f(0.68, 0.9));
+  let radius = min(distanceA, min(distanceB, distanceC));
+  let angle = atan2(localA.y + localB.y * 0.35, localA.x + localB.x * 0.35);
   let spiral = angle * 1.75 - radius * 8.2 + t * 1.4 + warpB * 4.3;
   let folds = sin(spiral) * 0.5 + 0.5;
   let turbulent = fbm(flow * 3.7 - vec2f(t * 0.12, t * 0.08));
-  let body = max(smoothstep(0.92, 0.16, radius + turbulent * 0.42 - folds * 0.18), wake * 0.72);
+  let plumeA = smoothstep(1.02, 0.18, distanceA + turbulent * 0.4 - folds * 0.16);
+  let plumeB = smoothstep(0.92, 0.16, distanceB + warpA * 0.38 - folds * 0.12);
+  let plumeC = smoothstep(0.8, 0.12, distanceC + turbulent * 0.3 - folds * 0.14);
+  let body = max(max(plumeA, plumeB * 0.88), max(plumeC * 0.74, wake * 0.72));
   let feather = smoothstep(0.22, 0.82, turbulent + folds * 0.28) * body;
 
   let paperLight = vec3f(0.955, 0.938, 0.9);
