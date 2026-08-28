@@ -68,7 +68,11 @@ fn rotate(p: vec2f, angle: f32) -> vec2f {
   let liquidDisplacement = params.velocity * wake * 0.28 + swirl + radial * ripple * 0.065;
   let pointerPull = (pointer - p) * exp(-pointerDistance * 2.8) * params.energy * 0.12;
   let t = params.time * 0.11;
-  var flow = rotate(p + pointerPull + liquidDisplacement, 0.16 * sin(t * 0.7));
+  let drift = vec2f(
+    sin(params.time * 0.24) * 0.42 + sin(params.time * 0.09) * 0.16,
+    cos(params.time * 0.19) * 0.26 + sin(params.time * 0.13) * 0.1
+  );
+  var flow = rotate(p - drift + pointerPull + liquidDisplacement, 0.2 * sin(t * 0.9));
 
   let warpA = fbm(flow * 1.35 + vec2f(t * 0.21, -t * 0.13));
   let warpB = fbm(flow * 1.7 + vec2f(-t * 0.17, t * 0.19) + warpA);

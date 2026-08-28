@@ -13,13 +13,13 @@ export default function Home() {
         <div className="relative z-[1] mx-auto flex h-full max-w-[1700px] flex-col-reverse items-center justify-center gap-3 py-3 sm:gap-5 sm:py-5 lg:flex-row lg:gap-[clamp(3rem,4vw,5rem)] lg:py-3">
           {/* Image */}
           <div className="home-kaneki-shell flex justify-center">
-            <div className="home-kaneki-frame bg-white dark:bg-[radial-gradient(circle,_#d9d9d9_0%,_#d9d9d9_50%,_#161616_100%)] rounded-2xl sm:rounded-[2.5rem] p-3 sm:p-5 lg:p-8 overflow-hidden hover:scale-[1.03] transition-transform duration-150">
+            <div className="home-kaneki-frame transition-transform duration-300 hover:scale-[1.03]">
               <Image
                 src={HERO.image}
                 alt={HERO.alt}
                 width={800}
                 height={800}
-                className="w-full h-auto"
+                className="h-auto w-full drop-shadow-[0_18px_36px_rgba(55,15,10,0.18)] dark:drop-shadow-[0_18px_36px_rgba(0,0,0,0.38)]"
                 priority
               />
             </div>
