@@ -6,6 +6,8 @@ test.describe("Homepage", () => {
     await expect(page).toHaveTitle(/dcbuilder.eth/);
     const heroImage = page.locator('img[alt="dcbuilder.eth"]');
     await expect(heroImage).toBeVisible();
+    await expect(page.locator(".home-gpu-field")).toBeAttached();
+    await expect(page.locator("canvas.home-gpu-canvas")).toBeAttached();
   });
 
   test("should render content sections", async ({ page }) => {
