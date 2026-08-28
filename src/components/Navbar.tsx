@@ -65,7 +65,7 @@ export function Navbar() {
 	}, [closeMenu]);
 
 	return (
-		<nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
+		<nav className="fixed top-0 left-0 right-0 z-50 border-b border-neutral-200/45 bg-white/45 shadow-[0_1px_0_rgba(255,255,255,0.28)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-neutral-950/35 dark:shadow-[0_1px_0_rgba(255,255,255,0.04)]">
 			<div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
 				{/* Logo */}
 				<Link
