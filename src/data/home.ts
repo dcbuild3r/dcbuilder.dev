@@ -1,5 +1,5 @@
 export const HERO = {
-  image: "/kaneki-silver.png",
+  image: "/kaneki-refined-2x.png",
   alt: "dcbuilder.eth",
 };
 
