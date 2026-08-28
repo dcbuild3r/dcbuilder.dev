@@ -13,43 +13,83 @@ struct Params {
 
 @group(0) @binding(0) var<uniform> params: Params;
 
-fn palette(t: f32, theme: f32) -> vec3f {
-  let darkA = vec3f(0.035, 0.045, 0.075);
-  let darkB = vec3f(0.08, 0.34, 0.38);
-  let darkC = vec3f(0.72, 0.24, 0.16);
-  let lightA = vec3f(0.965, 0.97, 0.955);
-  let lightB = vec3f(0.48, 0.76, 0.72);
-  let lightC = vec3f(0.9, 0.46, 0.3);
-  let base = mix(lightA, darkA, theme);
-  let cool = mix(lightB, darkB, theme);
-  let warm = mix(lightC, darkC, theme);
-  return mix(mix(base, cool, smoothstep(0.08, 0.7, t)), warm, smoothstep(0.68, 1.0, t));
+fn hash21(p: vec2f) -> f32 {
+  let q = fract(p * vec2f(123.34, 456.21));
+  return fract((q.x + 45.32) * (q.y + 45.32) * (q.x + q.y));
+}
+
+fn noise(p: vec2f) -> f32 {
+  let i = floor(p);
+  let f = fract(p);
+  let u = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(hash21(i), hash21(i + vec2f(1.0, 0.0)), u.x),
+    mix(hash21(i + vec2f(0.0, 1.0)), hash21(i + vec2f(1.0, 1.0)), u.x),
+    u.y
+  );
+}
+
+fn fbm(input: vec2f) -> f32 {
+  var p = input;
+  var value = 0.0;
+  var amplitude = 0.5;
+  for (var octave = 0; octave < 5; octave += 1) {
+    value += amplitude * noise(p);
+    p = mat2x2f(1.62, 1.18, -1.18, 1.62) * p + vec2f(0.17, 0.31);
+    amplitude *= 0.5;
+  }
+  return value;
+}
+
+fn rotate(p: vec2f, angle: f32) -> vec2f {
+  let c = cos(angle);
+  let s = sin(angle);
+  return mat2x2f(c, -s, s, c) * p;
 }
 
 @fragment fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
   var p = uv * 2.0 - 1.0;
   p.x *= params.aspect;
 
-  let pointer = vec2f(
-    (params.pointer.x * 2.0 - 1.0) * params.aspect,
-    params.pointer.y * 2.0 - 1.0
-  );
-  let pointerDistance = distance(p, pointer);
-  let pull = exp(-pointerDistance * 2.6) * params.energy;
+  let pointer = (vec2f(params.pointer.x, params.pointer.y) * 2.0 - 1.0) * vec2f(params.aspect, 1.0);
+  let pointerPull = (pointer - p) * exp(-distance(p, pointer) * 3.0) * params.energy * 0.1;
+  let t = params.time * 0.11;
+  var flow = rotate(p + pointerPull, 0.16 * sin(t * 0.7));
 
-  let t = params.time * 0.16;
-  let waveA = sin(p.x * 2.35 + sin(p.y * 1.65 - t) + t * 1.2);
-  let waveB = cos(p.y * 2.7 - cos(p.x * 1.4 + t) - t * 0.75);
-  let waveC = sin(length(p - vec2f(0.72, -0.14)) * 4.1 - t * 1.4);
-  let field = 0.5 + 0.18 * waveA + 0.16 * waveB + 0.1 * waveC + pull * 0.22;
+  let warpA = fbm(flow * 1.35 + vec2f(t * 0.21, -t * 0.13));
+  let warpB = fbm(flow * 1.7 + vec2f(-t * 0.17, t * 0.19) + warpA);
+  flow += (vec2f(warpA, warpB) - 0.5) * 0.58;
 
-  let contour = pow(1.0 - abs(fract(field * 5.0) * 2.0 - 1.0), 8.0);
-  let halo = exp(-pointerDistance * 3.4) * params.energy;
-  var color = palette(clamp(field + halo * 0.16, 0.0, 1.0), params.theme);
-  color += contour * mix(vec3f(0.08, 0.12, 0.1), vec3f(0.18, 0.25, 0.22), params.theme) * 0.34;
+  let radius = length(flow * vec2f(0.82, 1.08));
+  let angle = atan2(flow.y, flow.x);
+  let spiral = angle * 1.75 - radius * 8.2 + t * 1.4 + warpB * 4.3;
+  let folds = sin(spiral) * 0.5 + 0.5;
+  let turbulent = fbm(flow * 3.7 - vec2f(t * 0.12, t * 0.08));
+  let body = smoothstep(0.92, 0.16, radius + turbulent * 0.42 - folds * 0.18);
+  let feather = smoothstep(0.22, 0.82, turbulent + folds * 0.28) * body;
 
-  let vignette = smoothstep(1.35, 0.18, length((uv - 0.5) * vec2f(1.0, 0.78)));
-  color *= mix(0.82, 1.06, vignette);
+  let paperLight = vec3f(0.955, 0.938, 0.9);
+  let paperDark = vec3f(0.045, 0.043, 0.04);
+  let paper = mix(paperLight, paperDark, params.theme);
+  let soot = mix(vec3f(0.055, 0.048, 0.043), vec3f(0.72, 0.69, 0.63), params.theme);
+  let ochre = vec3f(0.67, 0.36, 0.1);
+  let vermilion = vec3f(0.64, 0.055, 0.025);
+
+  let redCore = body * smoothstep(0.34, 0.78, folds + turbulent * 0.44) * smoothstep(0.92, 0.14, radius);
+  let goldEdge = feather * (1.0 - redCore) * smoothstep(0.23, 0.72, folds);
+  let blackWash = body * smoothstep(0.42, 0.82, 1.0 - folds + warpA * 0.25);
+  let contour = pow(1.0 - abs(fract((turbulent + folds * 0.48 - radius * 0.18) * 16.0) * 2.0 - 1.0), 18.0) * body;
+
+  var color = paper;
+  color = mix(color, ochre, goldEdge * 0.78);
+  color = mix(color, vermilion, redCore * 0.92);
+  color = mix(color, soot, blackWash * 0.9);
+  color = mix(color, soot, contour * 0.46);
+
+  let grain = hash21(uv * vec2f(1900.0, 1100.0) + floor(params.time * 12.0));
+  color += (grain - 0.5) * mix(0.035, 0.018, params.theme);
+  let paperVignette = smoothstep(1.32, 0.18, length((uv - 0.5) * vec2f(1.0, 0.76)));
+  color *= mix(0.94, 1.025, paperVignette);
   return vec4f(color, 1.0);
 }
 `;
@@ -99,7 +139,7 @@ export function HomeGpuCanvas() {
         const output = surface(gpu, canvas, { dpr: [1, 1.5] });
         const getTheme = () => (document.documentElement.classList.contains("dark") ? 1 : 0);
         const field = effect(gpu, SHADER, {
-          label: "home-credible-field",
+          label: "home-ink-on-paper",
           set: {
             params: {
               time: 0,
