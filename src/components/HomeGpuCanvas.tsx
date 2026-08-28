@@ -7,6 +7,7 @@ struct Params {
   time: f32,
   aspect: f32,
   pointer: vec2f,
+  velocity: vec2f,
   energy: f32,
   theme: f32,
 }
@@ -52,9 +53,22 @@ fn rotate(p: vec2f, angle: f32) -> vec2f {
   p.x *= params.aspect;
 
   let pointer = (vec2f(params.pointer.x, params.pointer.y) * 2.0 - 1.0) * vec2f(params.aspect, 1.0);
-  let pointerPull = (pointer - p) * exp(-distance(p, pointer) * 3.0) * params.energy * 0.1;
+  let pointerDelta = p - pointer;
+  let pointerDistance = length(pointerDelta);
+  let speed = min(length(params.velocity) * 2.2, 1.0);
+  let velocityDirection = normalize(params.velocity + vec2f(0.0001, 0.0));
+  let perpendicular = vec2f(-velocityDirection.y, velocityDirection.x);
+  let alongWake = dot(pointerDelta, velocityDirection);
+  let acrossWake = dot(pointerDelta, perpendicular);
+  let behindPointer = 1.0 - smoothstep(-0.08, 0.48, alongWake);
+  let wake = exp(-abs(acrossWake) * 7.5) * exp(-abs(alongWake) * 2.1) * behindPointer * params.energy * speed;
+  let swirl = perpendicular * exp(-pointerDistance * 3.4) * params.energy * speed * 0.2;
+  let ripple = sin(pointerDistance * 34.0 - params.time * 5.2) * exp(-pointerDistance * 3.7) * params.energy;
+  let radial = pointerDelta / max(pointerDistance, 0.025);
+  let liquidDisplacement = params.velocity * wake * 0.28 + swirl + radial * ripple * 0.065;
+  let pointerPull = (pointer - p) * exp(-pointerDistance * 2.8) * params.energy * 0.12;
   let t = params.time * 0.11;
-  var flow = rotate(p + pointerPull, 0.16 * sin(t * 0.7));
+  var flow = rotate(p + pointerPull + liquidDisplacement, 0.16 * sin(t * 0.7));
 
   let warpA = fbm(flow * 1.35 + vec2f(t * 0.21, -t * 0.13));
   let warpB = fbm(flow * 1.7 + vec2f(-t * 0.17, t * 0.19) + warpA);
@@ -65,7 +79,7 @@ fn rotate(p: vec2f, angle: f32) -> vec2f {
   let spiral = angle * 1.75 - radius * 8.2 + t * 1.4 + warpB * 4.3;
   let folds = sin(spiral) * 0.5 + 0.5;
   let turbulent = fbm(flow * 3.7 - vec2f(t * 0.12, t * 0.08));
-  let body = smoothstep(0.92, 0.16, radius + turbulent * 0.42 - folds * 0.18);
+  let body = max(smoothstep(0.92, 0.16, radius + turbulent * 0.42 - folds * 0.18), wake * 0.72);
   let feather = smoothstep(0.22, 0.82, turbulent + folds * 0.28) * body;
 
   let paperLight = vec3f(0.955, 0.938, 0.9);
@@ -104,17 +118,26 @@ export function HomeGpuCanvas() {
 
     let disposed = false;
     let isVisible = true;
-    let pointer = { x: 0.68, y: 0.42, energy: 0 };
+    let pointer = { x: 0.68, y: 0.42, velocityX: 0, velocityY: 0, energy: 0 };
+    let previousPointer = { x: pointer.x, y: pointer.y, time: performance.now() };
     let cleanupGpu: (() => void) | undefined;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const onPointerMove = (event: PointerEvent) => {
       const bounds = canvas.getBoundingClientRect();
+      const x = (event.clientX - bounds.left) / bounds.width;
+      const y = (event.clientY - bounds.top) / bounds.height;
+      const elapsed = Math.max(event.timeStamp - previousPointer.time, 8);
+      const velocityX = Math.max(-1, Math.min(1, ((x - previousPointer.x) / elapsed) * 28));
+      const velocityY = Math.max(-1, Math.min(1, ((y - previousPointer.y) / elapsed) * 28));
       pointer = {
-        x: (event.clientX - bounds.left) / bounds.width,
-        y: (event.clientY - bounds.top) / bounds.height,
-        energy: event.pointerType === "touch" ? 0.65 : 1,
+        x,
+        y,
+        velocityX: pointer.velocityX * 0.35 + velocityX * 0.65,
+        velocityY: pointer.velocityY * 0.35 + velocityY * 0.65,
+        energy: event.pointerType === "touch" ? 0.8 : 1,
       };
+      previousPointer = { x, y, time: event.timeStamp };
     };
     const onPointerLeave = () => {
       pointer = { ...pointer, energy: 0 };
@@ -124,8 +147,8 @@ export function HomeGpuCanvas() {
       isVisible = entry?.isIntersecting ?? false;
     });
     observer.observe(canvas);
-    canvas.addEventListener("pointermove", onPointerMove, { passive: true });
-    canvas.addEventListener("pointerleave", onPointerLeave, { passive: true });
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    document.documentElement.addEventListener("pointerleave", onPointerLeave, { passive: true });
 
     void (async () => {
       try {
@@ -145,6 +168,7 @@ export function HomeGpuCanvas() {
               time: 0,
               aspect: output.size[0] / Math.max(output.size[1], 1),
               pointer: [pointer.x, pointer.y],
+              velocity: [0, 0],
               energy: 0,
               theme: getTheme(),
             },
@@ -168,11 +192,14 @@ export function HomeGpuCanvas() {
           ? undefined
           : frameLoop(gpu, (currentFrame) => {
               if (!isVisible || document.hidden) return;
-              pointer.energy += (0 - pointer.energy) * 0.018;
+              pointer.energy *= 0.975;
+              pointer.velocityX *= 0.94;
+              pointer.velocityY *= 0.94;
               field.set({
                 params: {
                   time: gpuClock.time,
                   pointer: [pointer.x, pointer.y],
+                  velocity: [pointer.velocityX, pointer.velocityY],
                   energy: pointer.energy,
                 },
               });
@@ -194,8 +221,8 @@ export function HomeGpuCanvas() {
     return () => {
       disposed = true;
       observer.disconnect();
-      canvas.removeEventListener("pointermove", onPointerMove);
-      canvas.removeEventListener("pointerleave", onPointerLeave);
+      window.removeEventListener("pointermove", onPointerMove);
+      document.documentElement.removeEventListener("pointerleave", onPointerLeave);
       cleanupGpu?.();
     };
   }, []);
