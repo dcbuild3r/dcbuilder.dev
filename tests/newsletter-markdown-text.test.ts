@@ -40,6 +40,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
       })
     );
     mock.module("@/lib/news", () => ({
+      isCompanyTimelineNewsItem: () => false,
       getAllNews: async () => ([
         {
           id: "ai-story",
@@ -102,6 +103,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
       })
     );
     mock.module("@/lib/news", () => ({
+      isCompanyTimelineNewsItem: () => false,
       getAllNews: async () => ([
         {
           id: "high-signal-quarterly",
@@ -155,6 +157,7 @@ describe("previewNewsletterCampaignDraft markdown text output", () => {
     );
     mock.module("@/lib/news", () => ({
       getAllNews: async () => [],
+      isCompanyTimelineNewsItem: () => false,
     }));
 
     const { previewNewsletterCampaignDraft } = await import(
