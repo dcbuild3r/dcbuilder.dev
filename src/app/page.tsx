@@ -18,7 +18,8 @@ export default function Home() {
                 src={HERO.image}
                 alt={HERO.alt}
                 width={800}
-                height={800}
+                height={832}
+                sizes="(min-width: 1024px) 50vw, (min-width: 640px) 48vw, 64vw"
                 className="h-auto w-full drop-shadow-[0_18px_36px_rgba(55,15,10,0.18)] dark:drop-shadow-[0_18px_36px_rgba(0,0,0,0.38)]"
                 priority
               />
