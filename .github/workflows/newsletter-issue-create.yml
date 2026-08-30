@@ -1,5 +1,8 @@
 name: Newsletter Issue Create (Weekly)
 
+permissions:
+  contents: read
+
 on:
   schedule:
     # Monday 14:00 UTC
@@ -10,8 +13,6 @@ jobs:
   create-weekly-newsletter-issue:
     runs-on: ubuntu-latest
     environment: production
-    permissions:
-      contents: read
     timeout-minutes: 10
     concurrency:
       group: newsletter-issue-create
@@ -32,7 +33,11 @@ jobs:
           ENDPOINT="${BASE_URL%/}/api/cron/newsletter-issue-create"
           RESPONSE_FILE="$(mktemp)"
 
-          STATUS_CODE="$(curl -sS \
+          STATUS_CODE="$(curl --silent --show-error \
+            --retry 3 \
+            --retry-all-errors \
+            --connect-timeout 10 \
+            --max-time 60 \
             -X POST \
             -H "Authorization: Bearer ${CRON_SECRET}" \
             -o "${RESPONSE_FILE}" \
