@@ -280,6 +280,7 @@ describe("newsletter public slug services", () => {
           archiveCorrectedAt: null,
         }],
         [],
+        [],
         [{
           id: "camp_sent_1",
           publicSlug: "weekly-news-digest-2026-03-11",

@@ -25,3 +25,22 @@ describe("next image config", () => {
     );
   });
 });
+
+describe("production response hardening", () => {
+  test("disables the framework signature and applies baseline security headers", async () => {
+    expect(nextConfig.poweredByHeader).toBe(false);
+
+    const rules = await nextConfig.headers?.();
+    const globalRule = rules?.find((rule) => rule.source === "/:path*");
+    const headerNames = globalRule?.headers.map((header) => header.key);
+
+    expect(headerNames).toEqual(
+      expect.arrayContaining([
+        "X-Content-Type-Options",
+        "X-Frame-Options",
+        "Referrer-Policy",
+        "Permissions-Policy",
+      ]),
+    );
+  });
+});

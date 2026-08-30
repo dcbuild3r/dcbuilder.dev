@@ -28,6 +28,61 @@ body {
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+.home-landing {
+  position: relative;
+  isolation: isolate;
+  background: #f5f6f3;
+}
+
+.dark .home-landing {
+  background: #111311;
+}
+
+.home-gpu-field,
+.home-gpu-canvas,
+.home-gpu-fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.home-gpu-field {
+  z-index: 0;
+  overflow: hidden;
+}
+
+.home-gpu-canvas {
+  display: block;
+  opacity: 0;
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.home-gpu-field[data-ready="true"] .home-gpu-canvas {
+  opacity: 0.84;
+}
+
+.home-gpu-fallback {
+  background:
+    radial-gradient(ellipse at 67% 48%, rgb(117 15 7 / 0.78), transparent 16%),
+    radial-gradient(ellipse at 72% 51%, rgb(172 94 25 / 0.54), transparent 28%),
+    radial-gradient(ellipse at 59% 43%, rgb(28 24 21 / 0.48), transparent 34%),
+    linear-gradient(120deg, #f4efe5, #e9e0d1);
+  transition: opacity 1s ease;
+}
+
+.dark .home-gpu-fallback {
+  background:
+    radial-gradient(ellipse at 67% 48%, rgb(135 18 8 / 0.66), transparent 16%),
+    radial-gradient(ellipse at 72% 51%, rgb(163 82 19 / 0.38), transparent 28%),
+    radial-gradient(ellipse at 59% 43%, rgb(188 178 161 / 0.26), transparent 34%),
+    linear-gradient(120deg, #11100e, #211914);
+}
+
+.home-gpu-field[data-ready="true"] .home-gpu-fallback {
+  opacity: 0;
+}
+
 .home-kaneki-shell {
   width: 100%;
 }
@@ -51,6 +106,16 @@ body {
 
   .home-kaneki-frame {
     max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-gpu-canvas {
+    transition: none;
+  }
+
+  .home-gpu-field[data-ready="true"] .home-gpu-canvas {
+    opacity: 0.46;
   }
 }
 
