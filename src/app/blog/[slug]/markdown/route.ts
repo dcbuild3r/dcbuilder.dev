@@ -1,5 +1,6 @@
 import { getPostBySlug } from "@/lib/blog";
 import { buildArticleMarkdown } from "@/lib/article-ai-context";
+import { withDataFallback } from "@/lib/resilient-data";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ interface RouteContext {
 
 export async function GET(request: Request, { params }: RouteContext) {
 	const { slug } = await params;
-	const post = await getPostBySlug(slug);
+	const post = await withDataFallback("blog.markdown", getPostBySlug(slug), null);
 
 	if (!post) {
 		return new Response("Article not found\n", {
