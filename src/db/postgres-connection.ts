@@ -30,6 +30,13 @@ type ConnectedSocket = net.Socket & {
   port: number;
 };
 
+type PostgresSocketOptions = {
+  timeoutMs?: number;
+  socketFactory?: () => net.Socket;
+};
+
+const DEFAULT_CONNECT_TIMEOUT_MS = 2_000;
+
 type DatabaseEnv = Record<string, string | undefined>;
 
 function getNonEmptyEnv(env: DatabaseEnv, name: string): string | undefined {
@@ -103,23 +110,48 @@ export async function resolvePreferredPostgresTarget(
 
 export async function createPreferredPostgresSocket(
   databaseUrl: string,
-  lookup?: LookupFn
+  lookup?: LookupFn,
+  options: PostgresSocketOptions = {}
 ): Promise<ConnectedSocket> {
-  const target = await resolvePreferredPostgresTarget(databaseUrl, lookup);
-  const socket = new net.Socket() as ConnectedSocket;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_CONNECT_TIMEOUT_MS;
+  let socket: ConnectedSocket | undefined;
 
-  await new Promise<void>((resolve, reject) => {
-    socket.once("error", reject);
-    socket.connect(target.port, target.connectHost, () => {
-      socket.off("error", reject);
-      resolve();
-    });
+  return new Promise<ConnectedSocket>((resolve, reject) => {
+    let settled = false;
+    const finish = (error?: Error, connectedSocket?: ConnectedSocket) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (error) reject(error);
+      else resolve(connectedSocket!);
+    };
+    const timer = setTimeout(() => {
+      const error = new Error(
+        `PostgreSQL connection timed out after ${timeoutMs}ms`
+      ) as Error & { code?: string };
+      error.code = "ETIMEDOUT";
+      socket?.destroy();
+      finish(error);
+    }, timeoutMs);
+
+    void resolvePreferredPostgresTarget(databaseUrl, lookup)
+      .then((target) => {
+        if (settled) return;
+        socket = (options.socketFactory?.() ?? new net.Socket()) as ConnectedSocket;
+        const onError = (error: Error) => finish(error);
+        socket.once("error", onError);
+        socket.connect(target.port, target.connectHost, () => {
+          socket?.off("error", onError);
+          if (!socket) return;
+          socket.host = target.tlsServername ?? target.connectHost;
+          socket.port = target.port;
+          finish(undefined, socket);
+        });
+      })
+      .catch((error: unknown) =>
+        finish(error instanceof Error ? error : new Error(String(error)))
+      );
   });
-
-  socket.host = target.tlsServername ?? target.connectHost;
-  socket.port = target.port;
-
-  return socket;
 }
 
 function isLoopbackHostname(hostname: string) {
@@ -152,7 +184,7 @@ export function getPostgresClientOptions(
   return {
     max: 2,
     idle_timeout: 10,
-    connect_timeout: 10,
+    connect_timeout: DEFAULT_CONNECT_TIMEOUT_MS / 1_000,
     prepare: false,
     socket: () => createPreferredPostgresSocket(databaseUrl),
   };

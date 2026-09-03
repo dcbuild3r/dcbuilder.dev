@@ -5,6 +5,7 @@ import { JobsGrid } from "@/components/JobsGrid";
 import { getJobsFromDB, getJobById, getBaseUrl, getJobRolesWithFallback, getJobTagsWithFallback } from "@/lib/data";
 import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { JOBS_PAGE } from "@/data/page-content";
+import { withDataFallback } from "@/lib/resilient-data";
 
 // Force dynamic rendering since we need database access
 export const dynamic = "force-dynamic";
@@ -68,8 +69,8 @@ async function getTagsAndRoles() {
 
 export default async function Jobs() {
 	const [jobs, { tags, roles }] = await Promise.all([
-		getJobsFromDB(),
-		getTagsAndRoles(),
+		withDataFallback("jobs.list", getJobsFromDB(), []),
+		withDataFallback("jobs.taxonomy", getTagsAndRoles(), { tags: [], roles: [] }),
 	]);
 
 	return (
