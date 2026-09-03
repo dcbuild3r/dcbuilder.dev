@@ -18,7 +18,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 	const { job: jobId } = await searchParams;
 
 	if (jobId) {
-		const job = await getJobById(jobId);
+		const job = await withDataFallback("jobs.metadata", getJobById(jobId), null);
 		if (job) {
 			const baseUrl = getBaseUrl();
 			const description = job.description || `${job.title} position at ${job.company}`;

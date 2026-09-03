@@ -2,6 +2,7 @@ import {
   findSentNewsletterCampaignForArchive,
   listSentNewsletterCampaigns,
 } from "@/services/newsletter";
+import { withDataFallback } from "@/lib/resilient-data";
 
 type PublicNewsletterArchiveResult = {
   available: boolean;
@@ -14,47 +15,48 @@ type PublicNewsletterCampaignResult = {
   redirectTo: string | null;
 };
 
-function logArchiveFailure(operation: string, error: unknown) {
-  console.error(`[newsletter-archive] ${operation} failed`, error);
-}
-
 export async function loadPublicNewsletterArchive(
   limit: number = 50
 ): Promise<PublicNewsletterArchiveResult> {
-  try {
-    return {
-      available: true,
-      campaigns: await listSentNewsletterCampaigns(limit),
-    };
-  } catch (error) {
-    logArchiveFailure("list archive campaigns", error);
+  const campaigns = await withDataFallback(
+    "newsletter-archive.list",
+    listSentNewsletterCampaigns(limit),
+    null
+  );
+
+  if (!campaigns) {
     return {
       available: false,
       campaigns: [],
     };
   }
+
+  return { available: true, campaigns };
 }
 
 export async function loadPublicNewsletterCampaign(
   id: string
 ): Promise<PublicNewsletterCampaignResult> {
-  try {
-    const result = await findSentNewsletterCampaignForArchive(id);
+  const result = await withDataFallback(
+    `newsletter-archive.campaign.${id}`,
+    findSentNewsletterCampaignForArchive(id),
+    null
+  );
 
-    return {
-      available: true,
-      campaign: result.campaign,
-      redirectTo:
-        result.campaign && result.matchedByLegacyId
-          ? `/newsletters/${result.campaign.publicSlug}`
-          : null,
-    };
-  } catch (error) {
-    logArchiveFailure(`load archive campaign ${id}`, error);
+  if (!result) {
     return {
       available: false,
       campaign: null,
       redirectTo: null,
     };
   }
+
+  return {
+    available: true,
+    campaign: result.campaign,
+    redirectTo:
+      result.campaign && result.matchedByLegacyId
+        ? `/newsletters/${result.campaign.publicSlug}`
+        : null,
+  };
 }

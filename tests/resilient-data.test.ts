@@ -20,4 +20,21 @@ describe("withDataFallback", () => {
       console.error = originalError;
     }
   });
+
+  test("returns a safe fallback when the source never settles", async () => {
+    const originalError = console.error;
+    console.error = () => {};
+
+    try {
+      const startedAt = Date.now();
+      await expect(
+        withDataFallback("test", new Promise<string[]>(() => {}), [], {
+          timeoutMs: 20,
+        })
+      ).resolves.toEqual([]);
+      expect(Date.now() - startedAt).toBeLessThan(100);
+    } finally {
+      console.error = originalError;
+    }
+  });
 });

@@ -36,6 +36,8 @@ type PostgresSocketOptions = {
 };
 
 const DEFAULT_CONNECT_TIMEOUT_MS = 2_000;
+const CONNECTION_RETRY_BACKOFF_MS = 15_000;
+const retryAfterByTarget = new Map<string, number>();
 
 type DatabaseEnv = Record<string, string | undefined>;
 
@@ -114,6 +116,18 @@ export async function createPreferredPostgresSocket(
   options: PostgresSocketOptions = {}
 ): Promise<ConnectedSocket> {
   const timeoutMs = options.timeoutMs ?? DEFAULT_CONNECT_TIMEOUT_MS;
+  const parsedUrl = new URL(databaseUrl);
+  const targetKey = `${parsedUrl.hostname}:${parsedUrl.port || "5432"}`;
+  const retryAfter = retryAfterByTarget.get(targetKey) ?? 0;
+
+  if (retryAfter > Date.now()) {
+    const error = new Error(
+      "PostgreSQL connection temporarily unavailable after a recent failure"
+    ) as Error & { code?: string };
+    error.code = "ECONNREFUSED";
+    throw error;
+  }
+
   let socket: ConnectedSocket | undefined;
 
   return new Promise<ConnectedSocket>((resolve, reject) => {
@@ -122,8 +136,13 @@ export async function createPreferredPostgresSocket(
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      if (error) reject(error);
-      else resolve(connectedSocket!);
+      if (error) {
+        retryAfterByTarget.set(targetKey, Date.now() + CONNECTION_RETRY_BACKOFF_MS);
+        reject(error);
+      } else {
+        retryAfterByTarget.delete(targetKey);
+        resolve(connectedSocket!);
+      }
     };
     const timer = setTimeout(() => {
       const error = new Error(

@@ -40,6 +40,40 @@ describe("createPreferredPostgresSocket", () => {
     await expect(connection).rejects.toMatchObject({ code: "ETIMEDOUT" });
     expect(destroyed).toBe(true);
   });
+
+  test("fails repeated attempts immediately during the retry backoff", async () => {
+    const socket = new net.Socket();
+    socket.connect = (() => socket) as typeof socket.connect;
+    socket.destroy = (() => socket) as typeof socket.destroy;
+    let socketsCreated = 0;
+    const databaseUrl =
+      "postgresql://user:pass@circuit-breaker.example.com:5432/app";
+    const lookup = async () => [{ address: "203.0.113.2", family: 4 }];
+
+    await expect(
+      createPreferredPostgresSocket(databaseUrl, lookup, {
+        timeoutMs: 20,
+        socketFactory: () => {
+          socketsCreated += 1;
+          return socket;
+        },
+      })
+    ).rejects.toMatchObject({ code: "ETIMEDOUT" });
+
+    const startedAt = Date.now();
+    await expect(
+      createPreferredPostgresSocket(databaseUrl, lookup, {
+        timeoutMs: 20,
+        socketFactory: () => {
+          socketsCreated += 1;
+          return socket;
+        },
+      })
+    ).rejects.toMatchObject({ code: "ECONNREFUSED" });
+
+    expect(Date.now() - startedAt).toBeLessThan(10);
+    expect(socketsCreated).toBe(1);
+  });
 });
 
 describe("getPostgresClientOptions", () => {
