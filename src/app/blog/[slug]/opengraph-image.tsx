@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { formatBlogDate, getPostBySlug } from "@/lib/blog";
+import { withDataFallback } from "@/lib/resilient-data";
 
 export const runtime = "nodejs";
 
@@ -16,7 +17,7 @@ interface Props {
 
 export default async function Image({ params }: Props) {
 	const { slug } = await params;
-	const post = await getPostBySlug(slug);
+	const post = await withDataFallback("blog.opengraph", getPostBySlug(slug), null);
 
 	const title = post?.title || "Blog Post";
 	const date = post?.date ? formatBlogDate(post.date) : "";

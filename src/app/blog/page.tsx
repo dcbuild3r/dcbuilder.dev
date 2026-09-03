@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { formatBlogDate, getAllPosts } from "@/lib/blog";
+import { withDataFallback } from "@/lib/resilient-data";
 
 export const metadata = {
 	title: "Blog",
@@ -11,7 +12,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function BlogPage() {
-	const posts = await getAllPosts();
+	const posts = await withDataFallback("blog.list", getAllPosts(), []);
 
 	return (
 		<>

@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { formatBlogDate, getPostBySlug } from "@/lib/blog";
 import { mdxComponents } from "@/components/MDXComponents";
 import { ArticleAIContext } from "@/components/ArticleAIContext";
+import { withDataFallback } from "@/lib/resilient-data";
 import remarkGfm from "remark-gfm";
 
 // Force dynamic rendering since we need database access
@@ -16,7 +17,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
 	const { slug } = await params;
-	const post = await getPostBySlug(slug);
+	const post = await withDataFallback("blog.post-metadata", getPostBySlug(slug), null);
 
 	if (!post) {
 		return { title: "Post Not Found" };
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function BlogPostPage({ params }: Props) {
 	const { slug } = await params;
-	const post = await getPostBySlug(slug);
+	const post = await withDataFallback("blog.post", getPostBySlug(slug), null);
 
 	if (!post) {
 		notFound();
