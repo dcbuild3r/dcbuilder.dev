@@ -5,6 +5,7 @@ import { filterNewsByCompany } from "@/lib/company-news";
 import { getAllNews } from "@/lib/news";
 import { desc, asc, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
+import { withDataFallback } from "@/lib/resilient-data";
 
 export const metadata = {
   title: "Portfolio",
@@ -58,10 +59,14 @@ const getInvestmentCategories = unstable_cache(
 
 export default async function Portfolio() {
   const [investments, jobCounts, categories, news] = await Promise.all([
-    getInvestments(),
-    getJobCountsByCompany(),
-    getInvestmentCategories(),
-    getAllNews({ includeCompanyTimelineNews: true }),
+    withDataFallback("portfolio.investments", getInvestments(), []),
+    withDataFallback("portfolio.job-counts", getJobCountsByCompany(), {}),
+    withDataFallback("portfolio.categories", getInvestmentCategories(), []),
+    withDataFallback(
+      "portfolio.news",
+      getAllNews({ includeCompanyTimelineNews: true }),
+      []
+    ),
   ]);
   const newsCounts = Object.fromEntries(
     investments.map((investment) => [

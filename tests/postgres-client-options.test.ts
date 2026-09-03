@@ -55,6 +55,7 @@ describe("getPostgresClientOptions", () => {
     const options = getPostgresClientOptions("postgresql://user:pass@db.example.com:5432/app");
 
     expect(options.max).toBe(2);
+    expect(options.connect_timeout).toBe(2);
     expect(options.prepare).toBe(false);
   });
 });
