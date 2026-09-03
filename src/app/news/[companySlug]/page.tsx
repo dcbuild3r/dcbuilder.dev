@@ -8,6 +8,7 @@ import { getPortfolioNewsSlug } from "@/lib/portfolio-news";
 import { getAllNews } from "@/lib/news";
 import { getCompanyTimelineEvents } from "@/lib/company-news";
 import { getCompanyNewsIconCompanies } from "@/lib/company-news-navigation";
+import { withDataFallback } from "@/lib/resilient-data";
 
 export const metadata = {
   title: "Company News",
@@ -51,8 +52,12 @@ export default async function CompanyNewsPage({
 }: CompanyNewsPageProps) {
   const { companySlug } = await params;
   const [news, companyProfile] = await Promise.all([
-    getAllNews({ includeCompanyTimelineNews: true }),
-    getCompanyProfile(companySlug),
+    withDataFallback(
+      "company-news.items",
+      getAllNews({ includeCompanyTimelineNews: true }),
+      []
+    ),
+    withDataFallback("company-news.profile", getCompanyProfile(companySlug), null),
   ]);
 
   if (!companyProfile) {
@@ -60,7 +65,11 @@ export default async function CompanyNewsPage({
   }
 
   const timelineEvents = getCompanyTimelineEvents(news, companyProfile.title);
-  const companyNewsCompanies = await getCompanyNewsIconCompanies(news);
+  const companyNewsCompanies = await withDataFallback(
+    "company-news.companies",
+    getCompanyNewsIconCompanies(news),
+    []
+  );
 
   return (
     <>

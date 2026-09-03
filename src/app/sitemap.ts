@@ -2,6 +2,7 @@ import { MetadataRoute } from "next";
 import { db } from "@/db";
 import { blogPosts } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
+import { withDataFallback } from "@/lib/resilient-data";
 
 export const baseUrl = "https://dcbuilder.dev";
 export const dynamic = "force-dynamic";
@@ -22,14 +23,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === "" ? 1 : 0.8,
   }));
 
-  const posts = await db
-    .select({
-      slug: blogPosts.slug,
-      date: blogPosts.date,
-    })
-    .from(blogPosts)
-    .where(eq(blogPosts.published, true))
-    .orderBy(desc(blogPosts.date));
+  const posts = await withDataFallback(
+    "sitemap.blog-posts",
+    db
+      .select({
+        slug: blogPosts.slug,
+        date: blogPosts.date,
+      })
+      .from(blogPosts)
+      .where(eq(blogPosts.published, true))
+      .orderBy(desc(blogPosts.date)),
+    []
+  );
 
   const blogRoutes = posts.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,

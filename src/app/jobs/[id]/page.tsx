@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getJobById, getBaseUrl } from "@/lib/data";
+import { withDataFallback } from "@/lib/resilient-data";
 
 interface Props {
 	params: Promise<{ id: string }>;
@@ -7,7 +8,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
 	const { id } = await params;
-	const job = await getJobById(id);
+	const job = await withDataFallback("job-detail.metadata", getJobById(id), null);
 
 	if (!job) {
 		return { title: "Job Not Found" };
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function JobPage({ params }: Props) {
 	const { id } = await params;
-	const job = await getJobById(id);
+	const job = await withDataFallback("job-detail.redirect", getJobById(id), null);
 
 	if (!job) {
 		redirect("/jobs");

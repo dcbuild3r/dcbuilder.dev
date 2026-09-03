@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { CandidatesGrid } from "@/components/CandidatesGrid";
 import { getCandidatesFromDB, getCandidateById, getBaseUrl } from "@/lib/data";
+import { withDataFallback } from "@/lib/resilient-data";
 
 // Force dynamic rendering (uses useSearchParams in CandidatesGrid)
 export const dynamic = "force-dynamic";
@@ -14,7 +15,11 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 	const { candidate: candidateId } = await searchParams;
 
 	if (candidateId) {
-		const candidate = await getCandidateById(candidateId);
+		const candidate = await withDataFallback(
+			"candidates.metadata",
+			getCandidateById(candidateId),
+			null
+		);
 		if (candidate) {
 			const baseUrl = getBaseUrl();
 			return {
@@ -42,7 +47,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function Candidates() {
-	const candidates = await getCandidatesFromDB();
+	const candidates = await withDataFallback("candidates.list", getCandidatesFromDB(), []);
 
 	return (
 		<>

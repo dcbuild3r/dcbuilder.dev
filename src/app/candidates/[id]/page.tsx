@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCandidateById, getBaseUrl } from "@/lib/data";
+import { withDataFallback } from "@/lib/resilient-data";
 
 interface Props {
 	params: Promise<{ id: string }>;
@@ -7,7 +8,11 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
 	const { id } = await params;
-	const candidate = await getCandidateById(id);
+	const candidate = await withDataFallback(
+		"candidate-detail.metadata",
+		getCandidateById(id),
+		null
+	);
 
 	if (!candidate) {
 		return { title: "Candidate Not Found" };
@@ -35,7 +40,11 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function CandidatePage({ params }: Props) {
 	const { id } = await params;
-	const candidate = await getCandidateById(id);
+	const candidate = await withDataFallback(
+		"candidate-detail.redirect",
+		getCandidateById(id),
+		null
+	);
 
 	if (!candidate) {
 		redirect("/candidates");
