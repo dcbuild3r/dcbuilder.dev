@@ -70,4 +70,43 @@ describe("GET /api/hot-candidates", () => {
     );
     expect(where).toHaveBeenCalledTimes(1);
   });
+
+  test("fails closed when candidate availability cannot be loaded", async () => {
+    const actualPosthog = await import("../src/services/posthog");
+    const originalError = console.error;
+    console.error = () => {};
+
+    mock.module("@/services/posthog", () => ({
+      ...actualPosthog,
+      getCandidateViewsLast7Days: async () => ({
+        success: true as const,
+        data: [{ id: "unknown-candidate", count: 12 }],
+      }),
+      determineHotCandidates: () => ["unknown-candidate"],
+    }));
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: () => ({
+          from: () => ({
+            where: async () => {
+              throw new Error("database unavailable");
+            },
+          }),
+        }),
+      },
+      candidates: { id: "id", availability: "availability" },
+    }));
+
+    try {
+      const { GET } = await import("../src/app/api/hot-candidates/route");
+      const response = await GET();
+      const payload = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(payload.hotCandidateIds).toEqual([]);
+    } finally {
+      console.error = originalError;
+    }
+  });
 });
