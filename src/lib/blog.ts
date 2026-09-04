@@ -10,6 +10,7 @@ export interface BlogPostView {
   title: string;
   date: string;
   createdAt: string;
+  updatedAt: string;
   description: string;
   content: string;
   source?: string;
@@ -24,6 +25,7 @@ export interface BlogPostMeta {
   title: string;
   date: string;
   createdAt: string;
+  updatedAt: string;
   description: string;
   source?: string;
   sourceUrl?: string;
@@ -86,6 +88,7 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
       title: post.title,
       date: formatDateString(post.date, post.slug),
       createdAt: formatDateTimeString(post.createdAt, post.date),
+      updatedAt: formatDateTimeString(post.updatedAt, post.createdAt ?? post.date),
       description: post.description || "",
       source: post.source || undefined,
       sourceUrl: post.sourceUrl || undefined,
@@ -109,6 +112,7 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
             sourceUrl: blogPosts.sourceUrl,
             image: blogPosts.image,
             createdAt: blogPosts.createdAt,
+            updatedAt: blogPosts.updatedAt,
           })
           .from(blogPosts)
           .where(eq(blogPosts.published, true))
@@ -119,6 +123,7 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
           title: post.title,
           date: formatDateString(post.date, post.slug),
           createdAt: formatDateTimeString(post.createdAt, post.date),
+          updatedAt: formatDateTimeString(post.updatedAt, post.createdAt ?? post.date),
           description: post.description || "",
           source: post.source || undefined,
           sourceUrl: post.sourceUrl || undefined,
@@ -152,6 +157,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
       title: post.title,
       date: formatDateString(post.date, post.slug),
       createdAt: formatDateTimeString(post.createdAt, post.date),
+      updatedAt: formatDateTimeString(post.updatedAt, post.createdAt ?? post.date),
       description: post.description || "",
       content: post.content,
       source: post.source || undefined,

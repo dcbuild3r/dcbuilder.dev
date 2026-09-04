@@ -6,6 +6,13 @@ import { withDataFallback } from "@/lib/resilient-data";
 export const metadata = {
 	title: "Blog",
 	description: "Thoughts on Ethereum, cryptography, and distributed systems.",
+	alternates: { canonical: "/blog" },
+	openGraph: {
+		type: "website" as const,
+		url: "/blog",
+		title: "Blog",
+		description: "Thoughts on Ethereum, cryptography, and distributed systems.",
+	},
 };
 
 // Force dynamic rendering since we need database access

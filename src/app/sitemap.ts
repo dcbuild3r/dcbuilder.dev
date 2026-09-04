@@ -29,6 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .select({
         slug: blogPosts.slug,
         date: blogPosts.date,
+        updatedAt: blogPosts.updatedAt,
       })
       .from(blogPosts)
       .where(eq(blogPosts.published, true))
@@ -38,7 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const blogRoutes = posts.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: post.date,
+    lastModified: post.updatedAt ?? post.date,
     changeFrequency: "monthly" as const,
     priority: 0.7,
   }));
