@@ -161,7 +161,7 @@ export function Navbar() {
 					aria-modal="true"
 					aria-label="Navigation menu"
 					onKeyDown={handleMenuKeyDown}
-					className="md:hidden fixed inset-0 top-[var(--navbar-height)] bg-white dark:bg-neutral-900 z-[var(--z-sticky)]"
+					className="mobile-nav-overlay md:hidden fixed inset-x-0 top-[var(--navbar-height)] h-[calc(100dvh-var(--navbar-height))] z-[var(--z-sticky)] overflow-y-auto overscroll-contain"
 				>
 					<div className="flex flex-col items-center p-6 space-y-6">
 						{/* Nav Links - centered for easy thumb reach */}
