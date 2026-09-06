@@ -1,7 +1,8 @@
 import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { CandidatesGrid } from "@/components/CandidatesGrid";
-import { getCandidatesFromDB, getCandidateById, getBaseUrl } from "@/lib/data";
+import { getCandidatesFromDB, getBaseUrl } from "@/lib/data";
+import { getCandidateOpenGraphData } from "@/lib/candidate-open-graph";
 import { withDataFallback } from "@/lib/resilient-data";
 
 // Force dynamic rendering (uses useSearchParams in CandidatesGrid)
@@ -15,11 +16,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 	const { candidate: candidateId } = await searchParams;
 
 	if (candidateId) {
-		const candidate = await withDataFallback(
-			"candidates.metadata",
-			getCandidateById(candidateId),
-			null
-		);
+		const candidate = await getCandidateOpenGraphData(candidateId);
 		if (candidate) {
 			const baseUrl = getBaseUrl();
 			return {
