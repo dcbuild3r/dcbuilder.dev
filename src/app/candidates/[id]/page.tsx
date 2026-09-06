@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCandidateById, getBaseUrl } from "@/lib/data";
+import { getCandidateOpenGraphData } from "@/lib/candidate-open-graph";
 import { withDataFallback } from "@/lib/resilient-data";
 
 interface Props {
@@ -8,11 +9,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
 	const { id } = await params;
-	const candidate = await withDataFallback(
-		"candidate-detail.metadata",
-		getCandidateById(id),
-		null
-	);
+	const candidate = await getCandidateOpenGraphData(id);
 
 	if (!candidate) {
 		return { title: "Candidate Not Found" };

@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getCandidateById } from "@/lib/data";
+import { getCandidateOpenGraphData } from "@/lib/candidate-open-graph";
 import { isNew } from "@/lib/shuffle";
 
 export const runtime = "nodejs";
@@ -62,7 +62,7 @@ interface Props {
 
 export default async function Image({ params }: Props) {
 	const { id } = await params;
-	const candidate = await getCandidateById(id);
+	const candidate = await getCandidateOpenGraphData(id);
 
 	const name = candidate?.name || "Candidate";
 	const title = candidate?.title || "";
