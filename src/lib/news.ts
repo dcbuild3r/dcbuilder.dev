@@ -142,7 +142,7 @@ const STARTER_SOURCE_INVESTMENT_MAPPINGS = [
     sourceType: "x_handle",
     sourceValue: "eito_miyamura",
     sourceKind: "person",
-    investmentTitle: "Edison",
+    investmentTitle: "Sealgate",
   },
 ];
 

@@ -20,7 +20,7 @@ const categoryAssignments: Record<string, string[]> = {
   // Tier 1
   "Accountable": ["DeFi", "ZK"],
   "Dria": ["AI"],
-  "Edison": ["AI", "Security", "Agents"],
+  "Sealgate": ["AI", "Security", "Agents"],
   "Friend": ["AI", "Social"],
   "Octet": ["ZK", "Crypto"],
   "OWN": ["DeFi", "Crypto"],

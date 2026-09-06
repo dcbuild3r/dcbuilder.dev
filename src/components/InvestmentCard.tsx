@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Investment } from "@/types/investments";
 import { isNew } from "@/lib/shuffle";
+import { getInvestmentLogoVariants } from "@/lib/investment-branding";
 import { DocumentIcon } from "@/components/ui/icons";
 
 interface InvestmentCardProps {
@@ -19,6 +20,13 @@ export function InvestmentCard({
   newsUrl,
 }: InvestmentCardProps) {
   const isDefunct = investment.status === "defunct";
+  const logoVariants = getInvestmentLogoVariants(
+    investment.title,
+    investment.logo
+  );
+  const logoClassName = `w-28 h-28 sm:w-20 sm:h-20 object-contain bg-white rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150 ${
+    isDefunct ? "grayscale opacity-80" : ""
+  }`;
 
   return (
     <article
@@ -34,15 +42,26 @@ export function InvestmentCard({
       }`}
     >
       <div className="w-32 h-32 sm:w-24 sm:h-24 mb-4 flex items-center justify-center">
-        {investment.logo && (
+        {logoVariants && (
           <Image
-            src={investment.logo}
+            src={logoVariants.light}
             alt={investment.title}
             width={120}
             height={120}
-            className={`w-28 h-28 sm:w-20 sm:h-20 object-contain bg-white rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150 ${
-              isDefunct ? "grayscale opacity-80" : ""
-            }`}
+            className={`${logoClassName} ${logoVariants.dark ? "dark:hidden" : ""}`}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        )}
+        {logoVariants?.dark && (
+          <Image
+            src={logoVariants.dark}
+            alt={investment.title}
+            width={120}
+            height={120}
+            className={`${logoClassName} hidden dark:block`}
             onError={(e) => {
               e.currentTarget.onerror = null;
               e.currentTarget.style.display = "none";
