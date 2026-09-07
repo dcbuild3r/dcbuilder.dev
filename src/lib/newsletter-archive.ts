@@ -9,11 +9,93 @@ type PublicNewsletterArchiveResult = {
   campaigns: Awaited<ReturnType<typeof listSentNewsletterCampaigns>>;
 };
 
+type PublicNewsletterCampaign = PublicNewsletterArchiveResult["campaigns"][number];
+type CachedNewsletterCampaign = Omit<PublicNewsletterCampaign, "sentAt" | "archiveCorrectedAt"> & {
+  sentAt: string | null;
+  archiveCorrectedAt: string | null;
+};
+type CachedNewsletterArchiveResult = {
+  available: boolean;
+  campaigns: CachedNewsletterCampaign[];
+};
+
 type PublicNewsletterCampaignResult = {
   available: boolean;
   campaign: Awaited<ReturnType<typeof findSentNewsletterCampaignForArchive>>["campaign"];
   redirectTo: string | null;
 };
+
+type PublicNewsletterCampaignDetail = NonNullable<PublicNewsletterCampaignResult["campaign"]>;
+type CachedNewsletterCampaignDetail = Omit<
+  PublicNewsletterCampaignDetail,
+  "sentAt" | "archiveCorrectedAt"
+> & {
+  sentAt: string | null;
+  archiveCorrectedAt: string | null;
+};
+type CachedNewsletterCampaignResult = {
+  available: boolean;
+  campaign: CachedNewsletterCampaignDetail | null;
+  redirectTo: string | null;
+};
+
+function serializeDate(value: Date | string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function hydrateDate(value: Date | string | null | undefined): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return value;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function serializeCampaign(campaign: PublicNewsletterCampaign): CachedNewsletterCampaign {
+  return {
+    ...campaign,
+    sentAt: serializeDate(campaign.sentAt),
+    archiveCorrectedAt: serializeDate(campaign.archiveCorrectedAt),
+  };
+}
+
+function hydrateCampaign(campaign: CachedNewsletterCampaign): PublicNewsletterCampaign {
+  return {
+    ...campaign,
+    sentAt: hydrateDate(campaign.sentAt),
+    archiveCorrectedAt: hydrateDate(campaign.archiveCorrectedAt),
+  };
+}
+
+function serializeCampaignDetail(
+  campaign: PublicNewsletterCampaignDetail,
+): CachedNewsletterCampaignDetail {
+  return {
+    ...campaign,
+    sentAt: serializeDate(campaign.sentAt),
+    archiveCorrectedAt: serializeDate(campaign.archiveCorrectedAt),
+  };
+}
+
+function hydrateCampaignDetail(
+  campaign: CachedNewsletterCampaignDetail,
+): PublicNewsletterCampaignDetail {
+  return {
+    ...campaign,
+    sentAt: hydrateDate(campaign.sentAt),
+    archiveCorrectedAt: hydrateDate(campaign.archiveCorrectedAt),
+  };
+}
 
 function logArchiveFailure(operation: string, error: unknown) {
   console.error(`[newsletter-archive] ${operation} failed`, error);
@@ -36,11 +118,31 @@ async function loadPublicNewsletterArchiveUncached(
   }
 }
 
-export const loadPublicNewsletterArchive = cachePublicData(
+const loadPublicNewsletterArchiveCached = cachePublicData(
   ["newsletter-archive"],
-  loadPublicNewsletterArchiveUncached,
+  async (limit: number = 50): Promise<CachedNewsletterArchiveResult> => {
+    const result = await loadPublicNewsletterArchiveUncached(limit);
+    return {
+      available: result.available,
+      campaigns: result.campaigns.map(serializeCampaign),
+    };
+  },
   ["newsletter"],
 );
+
+export async function loadPublicNewsletterArchive(
+  limit: number = 50,
+): Promise<PublicNewsletterArchiveResult> {
+  if (process.env.NODE_ENV === "test") {
+    return loadPublicNewsletterArchiveUncached(limit);
+  }
+
+  const result = await loadPublicNewsletterArchiveCached(limit);
+  return {
+    available: result.available,
+    campaigns: result.campaigns.map(hydrateCampaign),
+  };
+}
 
 async function loadPublicNewsletterCampaignUncached(
   id: string
@@ -66,8 +168,30 @@ async function loadPublicNewsletterCampaignUncached(
   }
 }
 
-export const loadPublicNewsletterCampaign = cachePublicData(
+const loadPublicNewsletterCampaignCached = cachePublicData(
   ["newsletter-campaign"],
-  loadPublicNewsletterCampaignUncached,
+  async (id: string): Promise<CachedNewsletterCampaignResult> => {
+    const result = await loadPublicNewsletterCampaignUncached(id);
+    return {
+      available: result.available,
+      campaign: result.campaign ? serializeCampaignDetail(result.campaign) : null,
+      redirectTo: result.redirectTo,
+    };
+  },
   ["newsletter"],
 );
+
+export async function loadPublicNewsletterCampaign(
+  id: string,
+): Promise<PublicNewsletterCampaignResult> {
+  if (process.env.NODE_ENV === "test") {
+    return loadPublicNewsletterCampaignUncached(id);
+  }
+
+  const result = await loadPublicNewsletterCampaignCached(id);
+  return {
+    available: result.available,
+    campaign: result.campaign ? hydrateCampaignDetail(result.campaign) : null,
+    redirectTo: result.redirectTo,
+  };
+}
