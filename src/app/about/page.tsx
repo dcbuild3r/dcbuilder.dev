@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { db, affiliations as affiliationsTable } from "@/db";
+import { cachePublicData } from "@/lib/public-cache";
 import { R2_PUBLIC_URL } from "@/services/r2";
 import { withDataFallback } from "@/lib/resilient-data";
 
@@ -108,10 +109,14 @@ const sortAffiliations = <T extends { title: string; role: string; dateEnd: stri
 	});
 };
 
-async function getAffiliations() {
-	const affiliations = await db.select().from(affiliationsTable);
-	return sortAffiliations(affiliations);
-}
+const getAffiliations = cachePublicData(
+	["affiliations"],
+	async () => {
+		const affiliations = await db.select().from(affiliationsTable);
+		return sortAffiliations(affiliations);
+	},
+	["affiliations"],
+);
 
 export default async function About() {
 	const affiliations = await withDataFallback("about.affiliations", getAffiliations(), []);

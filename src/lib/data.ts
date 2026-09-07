@@ -13,6 +13,7 @@ import type { Job, Company, RelationshipCategory, JobTag, JobTier } from "@/data
 import { normalizeJobTags } from "@/lib/job-tags";
 import { getFeaturedPortfolioJobCompanies } from "@/lib/portfolio-jobs";
 import { isMissingColumnError, isMissingRelationError } from "@/lib/db-schema-compat";
+import { cachePublicData } from "@/lib/public-cache";
 import type {
   Candidate,
   VisibilityMode,
@@ -31,6 +32,12 @@ export async function getJobsFromDB(): Promise<Job[]> {
 
   return dbJobs.map((job) => mapJobRowToJob(job, featuredPortfolioJobCompanies));
 }
+
+export const getPublicJobsFromDB = cachePublicData(
+  ["jobs"],
+  getJobsFromDB,
+  ["jobs"],
+);
 
 type JobRow = {
   id: string;
@@ -443,6 +450,12 @@ export async function getCandidatesFromDB(): Promise<Candidate[]> {
   }));
 }
 
+export const getPublicCandidatesFromDB = cachePublicData(
+  ["candidates"],
+  getCandidatesFromDB,
+  ["candidates"],
+);
+
 // Fetch curated links from database
 export async function getCuratedLinksFromDB(): Promise<CuratedLink[]> {
   const dbLinks = await db
@@ -496,6 +509,12 @@ export async function getCandidateById(id: string) {
   return candidate;
 }
 
+export const getPublicCandidateById = cachePublicData(
+  ["candidate"],
+  getCandidateById,
+  ["candidates"],
+);
+
 // Get a single job by ID
 export async function getJobById(id: string) {
   const [job] = await db
@@ -505,6 +524,12 @@ export async function getJobById(id: string) {
     .limit(1);
   return job;
 }
+
+export const getPublicJobById = cachePublicData(
+  ["job"],
+  getJobById,
+  ["jobs"],
+);
 
 // Get the base URL for the current environment (handles Vercel preview deployments)
 export function getBaseUrl() {

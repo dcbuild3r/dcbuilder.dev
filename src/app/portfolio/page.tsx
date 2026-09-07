@@ -1,18 +1,23 @@
-import { Navbar } from "@/components/Navbar";
-import { PortfolioGrid } from "@/components/PortfolioGrid";
-import { db, investments as investmentsTable, jobs as jobsTable, investmentCategories as categoriesTable } from "@/db";
-import { filterNewsByCompany } from "@/lib/company-news";
-import { getAllNews } from "@/lib/news";
-import { desc, asc, sql } from "drizzle-orm";
-import { unstable_cache } from "next/cache";
-import { withDataFallback } from "@/lib/resilient-data";
+import { Navbar } from '@/components/Navbar';
+import { PortfolioGrid } from '@/components/PortfolioGrid';
+import {
+  db,
+  investments as investmentsTable,
+  jobs as jobsTable,
+  investmentCategories as categoriesTable,
+} from '@/db';
+import { filterNewsByCompany } from '@/lib/company-news';
+import { getPublicAllNews } from '@/lib/news';
+import { desc, asc, sql } from 'drizzle-orm';
+import { unstable_cache } from 'next/cache';
+import { withDataFallback } from '@/lib/resilient-data';
 
 export const metadata = {
-  title: "Portfolio",
+  title: 'Portfolio',
 };
 
 // Force runtime rendering since this page reads directly from Postgres.
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 const getInvestments = unstable_cache(
   async () => {
@@ -22,15 +27,15 @@ const getInvestments = unstable_cache(
       .orderBy(asc(investmentsTable.tier), desc(investmentsTable.featured));
 
     // Map to expected format with tier as number
-    return data.map(inv => ({
+    return data.map((inv) => ({
       ...inv,
-      tier: (parseInt(inv.tier || "2") || 2) as 1 | 2 | 3 | 4,
+      tier: (parseInt(inv.tier || '2') || 2) as 1 | 2 | 3 | 4,
       featured: inv.featured ?? false,
       categories: inv.categories ?? [],
     }));
   },
-  ["investments"],
-  { revalidate: 300, tags: ["investments"] }
+  ['investments'],
+  { revalidate: 300, tags: ['investments'] }
 );
 
 const getJobCountsByCompany = unstable_cache(
@@ -43,30 +48,26 @@ const getJobCountsByCompany = unstable_cache(
       .from(jobsTable)
       .groupBy(jobsTable.company);
 
-    return Object.fromEntries(results.map(r => [r.company, r.count]));
+    return Object.fromEntries(results.map((r) => [r.company, r.count]));
   },
-  ["job-counts-by-company"],
-  { revalidate: 300, tags: ["jobs"] }
+  ['job-counts-by-company'],
+  { revalidate: 300, tags: ['jobs'] }
 );
 
 const getInvestmentCategories = unstable_cache(
   async () => {
     return db.select().from(categoriesTable).orderBy(asc(categoriesTable.label));
   },
-  ["investment-categories"],
-  { revalidate: 300, tags: ["investment-categories"] }
+  ['investment-categories'],
+  { revalidate: 300, tags: ['investment-categories'] }
 );
 
 export default async function Portfolio() {
   const [investments, jobCounts, categories, news] = await Promise.all([
-    withDataFallback("portfolio.investments", getInvestments(), []),
-    withDataFallback("portfolio.job-counts", getJobCountsByCompany(), {}),
-    withDataFallback("portfolio.categories", getInvestmentCategories(), []),
-    withDataFallback(
-      "portfolio.news",
-      getAllNews({ includeCompanyTimelineNews: true }),
-      []
-    ),
+    withDataFallback('portfolio.investments', getInvestments(), []),
+    withDataFallback('portfolio.job-counts', getJobCountsByCompany(), {}),
+    withDataFallback('portfolio.categories', getInvestmentCategories(), []),
+    withDataFallback('portfolio.news', getPublicAllNews({ includeCompanyTimelineNews: true }), []),
   ]);
   const newsCounts = Object.fromEntries(
     investments.map((investment) => [
@@ -84,12 +85,12 @@ export default async function Portfolio() {
           <section className="text-center space-y-6">
             <h1 className="text-4xl font-bold">Disclaimer</h1>
             <p className="max-w-3xl mx-auto text-lg text-neutral-700 dark:text-neutral-300">
-              All information and opinions presented on this website reflect only my
-              personal views and experiences. They are not intended to represent or
-              imply the views, policies, or endorsements of any organization, entity,
-              or other individuals. The investments, strategies, and opinions expressed
-              are solely my own and should not be considered financial advice. Please
-              consult a qualified financial advisor before making any investment decisions.
+              All information and opinions presented on this website reflect only my personal views
+              and experiences. They are not intended to represent or imply the views, policies, or
+              endorsements of any organization, entity, or other individuals. The investments,
+              strategies, and opinions expressed are solely my own and should not be considered
+              financial advice. Please consult a qualified financial advisor before making any
+              investment decisions.
             </p>
           </section>
 

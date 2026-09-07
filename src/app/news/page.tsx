@@ -1,35 +1,30 @@
-import { Suspense } from "react";
-import { Navbar } from "@/components/Navbar";
-import { CompanyNewsIconGrid } from "@/components/CompanyNewsIconGrid";
-import { NewsGrid } from "@/components/NewsGrid";
-import { NewsTools } from "@/components/NewsTools";
-import { getCompanyNewsIconCompanies } from "@/lib/company-news-navigation";
-import { getAllNews } from "@/lib/news";
-import { withDataFallback } from "@/lib/resilient-data";
+import { Suspense } from 'react';
+import { Navbar } from '@/components/Navbar';
+import { CompanyNewsIconGrid } from '@/components/CompanyNewsIconGrid';
+import { NewsGrid } from '@/components/NewsGrid';
+import { NewsTools } from '@/components/NewsTools';
+import { getCompanyNewsIconCompanies } from '@/lib/company-news-navigation';
+import { getPublicAllNews } from '@/lib/news';
+import { withDataFallback } from '@/lib/resilient-data';
 
 export const metadata = {
-  title: "News",
-  description:
-    "Curated links, blog posts, and announcements from dcbuilder.",
+  title: 'News',
+  description: 'Curated links, blog posts, and announcements from dcbuilder.',
 };
 
 // Force dynamic rendering since we need database access
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function NewsPage() {
   const allNews = await withDataFallback(
-    "news.items",
-    getAllNews({ includeCompanyTimelineNews: true }),
+    'news.items',
+    getPublicAllNews({ includeCompanyTimelineNews: true }),
     []
   );
   const companyNewsCompanies =
     allNews.length === 0
       ? []
-      : await withDataFallback(
-          "news.companies",
-          getCompanyNewsIconCompanies(allNews),
-          []
-        );
+      : await withDataFallback('news.companies', getCompanyNewsIconCompanies(allNews), []);
 
   return (
     <>
@@ -51,11 +46,7 @@ export default async function NewsPage() {
 
           {/* News Grid */}
           <Suspense
-            fallback={
-              <div className="text-center py-8 text-neutral-500">
-                Loading news...
-              </div>
-            }
+            fallback={<div className="text-center py-8 text-neutral-500">Loading news...</div>}
           >
             <NewsGrid news={allNews} />
           </Suspense>

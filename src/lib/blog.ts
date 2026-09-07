@@ -1,6 +1,7 @@
 import { db, blogPosts } from "@/db";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { isMissingColumnError } from "@/lib/db-schema-compat";
+import { cachePublicData } from "@/lib/public-cache";
 
 const FALLBACK_DATE = "1970-01-01";
 
@@ -142,6 +143,12 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
   }
 }
 
+export const getPublicAllPosts = cachePublicData(
+  ["blog-posts"],
+  getAllPosts,
+  ["blog"],
+);
+
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
     const [post] = await db
@@ -171,6 +178,12 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     return null;
   }
 }
+
+export const getPublicPostBySlug = cachePublicData(
+  ["blog-post"],
+  getPostBySlug,
+  ["blog"],
+);
 
 export async function getAllSlugs(): Promise<string[]> {
   try {
