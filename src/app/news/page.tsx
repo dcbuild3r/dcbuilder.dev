@@ -4,7 +4,7 @@ import { CompanyNewsIconGrid } from "@/components/CompanyNewsIconGrid";
 import { NewsGrid } from "@/components/NewsGrid";
 import { NewsTools } from "@/components/NewsTools";
 import { getCompanyNewsIconCompanies } from "@/lib/company-news-navigation";
-import { getAllNews } from "@/lib/news";
+import { getPublicAllNews } from "@/lib/news";
 
 export const metadata = {
   title: "News",
@@ -16,7 +16,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function NewsPage() {
-  const allNews = await getAllNews({ includeCompanyTimelineNews: true });
+  const allNews = await getPublicAllNews({ includeCompanyTimelineNews: true });
   const companyNewsCompanies = await getCompanyNewsIconCompanies(allNews);
 
   return (

@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { formatBlogDate, getPostBySlug } from "@/lib/blog";
+import { formatBlogDate, getPublicPostBySlug } from "@/lib/blog";
 
 export const runtime = "nodejs";
 
@@ -16,7 +16,7 @@ interface Props {
 
 export default async function Image({ params }: Props) {
 	const { slug } = await params;
-	const post = await getPostBySlug(slug);
+	const post = await getPublicPostBySlug(slug);
 
 	const title = post?.title || "Blog Post";
 	const date = post?.date ? formatBlogDate(post.date) : "";

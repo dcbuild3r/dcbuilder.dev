@@ -2,7 +2,7 @@ import { Navbar } from "@/components/Navbar";
 import { PortfolioGrid } from "@/components/PortfolioGrid";
 import { db, investments as investmentsTable, jobs as jobsTable, investmentCategories as categoriesTable } from "@/db";
 import { filterNewsByCompany } from "@/lib/company-news";
-import { getAllNews } from "@/lib/news";
+import { getPublicAllNews } from "@/lib/news";
 import { desc, asc, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 
@@ -61,7 +61,7 @@ export default async function Portfolio() {
     getInvestments(),
     getJobCountsByCompany(),
     getInvestmentCategories(),
-    getAllNews({ includeCompanyTimelineNews: true }),
+    getPublicAllNews({ includeCompanyTimelineNews: true }),
   ]);
   const newsCounts = Object.fromEntries(
     investments.map((investment) => [

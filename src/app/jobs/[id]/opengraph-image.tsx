@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getJobById } from "@/lib/data";
+import { getPublicJobById } from "@/lib/data";
 import { isNew } from "@/lib/shuffle";
 
 export const runtime = "nodejs";
@@ -17,7 +17,7 @@ interface Props {
 
 export default async function Image({ params }: Props) {
 	const { id } = await params;
-	const job = await getJobById(id);
+	const job = await getPublicJobById(id);
 
 	const title = job?.title || "Job Opening";
 	const company = job?.company || "";

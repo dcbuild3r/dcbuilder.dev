@@ -2,6 +2,7 @@ import {
   findSentNewsletterCampaignForArchive,
   listSentNewsletterCampaigns,
 } from "@/services/newsletter";
+import { cachePublicData } from "@/lib/public-cache";
 
 type PublicNewsletterArchiveResult = {
   available: boolean;
@@ -18,7 +19,7 @@ function logArchiveFailure(operation: string, error: unknown) {
   console.error(`[newsletter-archive] ${operation} failed`, error);
 }
 
-export async function loadPublicNewsletterArchive(
+async function loadPublicNewsletterArchiveUncached(
   limit: number = 50
 ): Promise<PublicNewsletterArchiveResult> {
   try {
@@ -35,7 +36,13 @@ export async function loadPublicNewsletterArchive(
   }
 }
 
-export async function loadPublicNewsletterCampaign(
+export const loadPublicNewsletterArchive = cachePublicData(
+  ["newsletter-archive"],
+  loadPublicNewsletterArchiveUncached,
+  ["newsletter"],
+);
+
+async function loadPublicNewsletterCampaignUncached(
   id: string
 ): Promise<PublicNewsletterCampaignResult> {
   try {
@@ -58,3 +65,9 @@ export async function loadPublicNewsletterCampaign(
     };
   }
 }
+
+export const loadPublicNewsletterCampaign = cachePublicData(
+  ["newsletter-campaign"],
+  loadPublicNewsletterCampaignUncached,
+  ["newsletter"],
+);

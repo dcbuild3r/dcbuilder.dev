@@ -5,9 +5,10 @@ import { CompanyNewsIconGrid } from "@/components/CompanyNewsIconGrid";
 import { CompanyTimeline } from "@/components/CompanyTimeline";
 import { db, investments as investmentsTable } from "@/db";
 import { getPortfolioNewsSlug } from "@/lib/portfolio-news";
-import { getAllNews } from "@/lib/news";
+import { getPublicAllNews } from "@/lib/news";
 import { getCompanyTimelineEvents } from "@/lib/company-news";
 import { getCompanyNewsIconCompanies } from "@/lib/company-news-navigation";
+import { cachePublicData } from "@/lib/public-cache";
 
 export const metadata = {
   title: "Company News",
@@ -21,20 +22,26 @@ interface CompanyNewsPageProps {
   params: Promise<{ companySlug: string }>;
 }
 
+const getPublicCompanyProfiles = cachePublicData(
+	["company-news-profiles"],
+	async () => db
+		.select({
+			title: investmentsTable.title,
+			description: investmentsTable.description,
+			logo: investmentsTable.logo,
+			categories: investmentsTable.categories,
+			website: investmentsTable.website,
+			x: investmentsTable.x,
+			github: investmentsTable.github,
+		})
+		.from(investmentsTable),
+	["investments", "news"],
+);
+
 async function getCompanyProfile(companySlug: string) {
-  const normalizedCompanySlug = companySlug.toLowerCase();
-  const investments = await db
-    .select({
-      title: investmentsTable.title,
-      description: investmentsTable.description,
-      logo: investmentsTable.logo,
-      categories: investmentsTable.categories,
-      website: investmentsTable.website,
-      x: investmentsTable.x,
-      github: investmentsTable.github,
-    })
-    .from(investmentsTable);
-  const investment = investments.find(
+	const normalizedCompanySlug = companySlug.toLowerCase();
+	const investments = await getPublicCompanyProfiles();
+	const investment = investments.find(
     (item) => getPortfolioNewsSlug(item.title) === normalizedCompanySlug
   );
 
@@ -51,7 +58,7 @@ export default async function CompanyNewsPage({
 }: CompanyNewsPageProps) {
   const { companySlug } = await params;
   const [news, companyProfile] = await Promise.all([
-    getAllNews({ includeCompanyTimelineNews: true }),
+    getPublicAllNews({ includeCompanyTimelineNews: true }),
     getCompanyProfile(companySlug),
   ]);
 

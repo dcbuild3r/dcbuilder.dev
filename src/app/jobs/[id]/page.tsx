@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getJobById, getBaseUrl } from "@/lib/data";
+import { getPublicJobById, getBaseUrl } from "@/lib/data";
 
 interface Props {
 	params: Promise<{ id: string }>;
@@ -7,7 +7,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
 	const { id } = await params;
-	const job = await getJobById(id);
+	const job = await getPublicJobById(id);
 
 	if (!job) {
 		return { title: "Job Not Found" };
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function JobPage({ params }: Props) {
 	const { id } = await params;
-	const job = await getJobById(id);
+	const job = await getPublicJobById(id);
 
 	if (!job) {
 		redirect("/jobs");

@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getCandidateById } from "@/lib/data";
+import { getPublicCandidateById } from "@/lib/data";
 import { isNew } from "@/lib/shuffle";
 
 export const runtime = "nodejs";
@@ -53,7 +53,7 @@ interface Props {
 
 export default async function Image({ params }: Props) {
 	const { id } = await params;
-	const candidate = await getCandidateById(id);
+	const candidate = await getPublicCandidateById(id);
 
 	const name = candidate?.name || "Candidate";
 	const title = candidate?.title || "";

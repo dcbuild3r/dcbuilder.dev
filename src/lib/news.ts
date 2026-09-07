@@ -5,6 +5,7 @@ import { desc, inArray, sql } from "drizzle-orm";
 import { NewsCategory } from "@/data/news";
 import { isMissingColumnError, isMissingRelationError } from "@/lib/db-schema-compat";
 import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
+import { cachePublicData } from "@/lib/public-cache";
 import {
   getPortfolioJobCompanies,
   getPortfolioJobCount,
@@ -952,6 +953,15 @@ export async function getAllNews(
 
   return visibleNews;
 }
+
+// News aggregation is shared by several public pages. Keep the uncached
+// function above for newsletter generation and other freshness-sensitive
+// callers, while public pages reuse the same computed result for one minute.
+export const getPublicAllNews = cachePublicData(
+  ["news"],
+  async (options: GetAllNewsOptions = {}) => getAllNews(options),
+  ["news", "investments", "jobs", "blog"],
+);
 
 export function filterNewsByType(
   news: AggregatedNewsItem[],

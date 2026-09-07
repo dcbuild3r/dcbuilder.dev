@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCandidateById, getBaseUrl } from "@/lib/data";
+import { getPublicCandidateById, getBaseUrl } from "@/lib/data";
 
 interface Props {
 	params: Promise<{ id: string }>;
@@ -7,7 +7,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
 	const { id } = await params;
-	const candidate = await getCandidateById(id);
+	const candidate = await getPublicCandidateById(id);
 
 	if (!candidate) {
 		return { title: "Candidate Not Found" };
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function CandidatePage({ params }: Props) {
 	const { id } = await params;
-	const candidate = await getCandidateById(id);
+	const candidate = await getPublicCandidateById(id);
 
 	if (!candidate) {
 		redirect("/candidates");

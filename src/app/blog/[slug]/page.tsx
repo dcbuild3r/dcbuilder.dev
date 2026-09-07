@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { Navbar } from "@/components/Navbar";
-import { formatBlogDate, getPostBySlug } from "@/lib/blog";
+import { formatBlogDate, getPublicPostBySlug } from "@/lib/blog";
 import { mdxComponents } from "@/components/MDXComponents";
 
 // Force dynamic rendering since we need database access
@@ -14,7 +14,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
 	const { slug } = await params;
-	const post = await getPostBySlug(slug);
+	const post = await getPublicPostBySlug(slug);
 
 	if (!post) {
 		return { title: "Post Not Found" };
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function BlogPostPage({ params }: Props) {
 	const { slug } = await params;
-	const post = await getPostBySlug(slug);
+	const post = await getPublicPostBySlug(slug);
 
 	if (!post) {
 		notFound();

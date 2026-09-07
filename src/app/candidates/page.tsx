@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { CandidatesGrid } from "@/components/CandidatesGrid";
-import { getCandidatesFromDB, getCandidateById, getBaseUrl } from "@/lib/data";
+import { getPublicCandidatesFromDB, getPublicCandidateById, getBaseUrl } from "@/lib/data";
 
 // Force dynamic rendering (uses useSearchParams in CandidatesGrid)
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 	const { candidate: candidateId } = await searchParams;
 
 	if (candidateId) {
-		const candidate = await getCandidateById(candidateId);
+		const candidate = await getPublicCandidateById(candidateId);
 		if (candidate) {
 			const baseUrl = getBaseUrl();
 			return {
@@ -42,7 +42,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function Candidates() {
-	const candidates = await getCandidatesFromDB();
+	const candidates = await getPublicCandidatesFromDB();
 
 	return (
 		<>

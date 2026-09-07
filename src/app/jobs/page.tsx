@@ -2,9 +2,16 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { Navbar } from "@/components/Navbar";
 import { JobsGrid } from "@/components/JobsGrid";
-import { getJobsFromDB, getJobById, getBaseUrl, getJobRolesWithFallback, getJobTagsWithFallback } from "@/lib/data";
+import {
+	getPublicJobsFromDB,
+	getPublicJobById,
+	getBaseUrl,
+	getJobRolesWithFallback,
+	getJobTagsWithFallback,
+} from "@/lib/data";
 import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { JOBS_PAGE } from "@/data/page-content";
+import { cachePublicData } from "@/lib/public-cache";
 
 // Force dynamic rendering since we need database access
 export const dynamic = "force-dynamic";
@@ -17,7 +24,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 	const { job: jobId } = await searchParams;
 
 	if (jobId) {
-		const job = await getJobById(jobId);
+		const job = await getPublicJobById(jobId);
 		if (job) {
 			const baseUrl = getBaseUrl();
 			const description = job.description || `${job.title} position at ${job.company}`;
@@ -58,18 +65,22 @@ function JobsGridFallback() {
 	);
 }
 
-async function getTagsAndRoles() {
-	const [tags, roles] = await Promise.all([
-		getJobTagsWithFallback(),
-		getJobRolesWithFallback(),
-	]);
-	return { tags, roles };
-}
+const getPublicJobTaxonomy = cachePublicData(
+	["job-taxonomy"],
+	async () => {
+		const [tags, roles] = await Promise.all([
+			getJobTagsWithFallback(),
+			getJobRolesWithFallback(),
+		]);
+		return { tags, roles };
+	},
+	["jobs"],
+);
 
 export default async function Jobs() {
 	const [jobs, { tags, roles }] = await Promise.all([
-		getJobsFromDB(),
-		getTagsAndRoles(),
+		getPublicJobsFromDB(),
+		getPublicJobTaxonomy(),
 	]);
 
 	return (
