@@ -1,16 +1,17 @@
 import {
   findSentNewsletterCampaignForArchive,
   listSentNewsletterCampaigns,
-} from "@/services/newsletter";
-import { cachePublicData } from "@/lib/public-cache";
+} from '@/services/newsletter';
+import { cachePublicData } from '@/lib/public-cache';
+import { withDataFallback } from '@/lib/resilient-data';
 
 type PublicNewsletterArchiveResult = {
   available: boolean;
   campaigns: Awaited<ReturnType<typeof listSentNewsletterCampaigns>>;
 };
 
-type PublicNewsletterCampaign = PublicNewsletterArchiveResult["campaigns"][number];
-type CachedNewsletterCampaign = Omit<PublicNewsletterCampaign, "sentAt" | "archiveCorrectedAt"> & {
+type PublicNewsletterCampaign = PublicNewsletterArchiveResult['campaigns'][number];
+type CachedNewsletterCampaign = Omit<PublicNewsletterCampaign, 'sentAt' | 'archiveCorrectedAt'> & {
   sentAt: string | null;
   archiveCorrectedAt: string | null;
 };
@@ -21,14 +22,14 @@ type CachedNewsletterArchiveResult = {
 
 type PublicNewsletterCampaignResult = {
   available: boolean;
-  campaign: Awaited<ReturnType<typeof findSentNewsletterCampaignForArchive>>["campaign"];
+  campaign: Awaited<ReturnType<typeof findSentNewsletterCampaignForArchive>>['campaign'];
   redirectTo: string | null;
 };
 
-type PublicNewsletterCampaignDetail = NonNullable<PublicNewsletterCampaignResult["campaign"]>;
+type PublicNewsletterCampaignDetail = NonNullable<PublicNewsletterCampaignResult['campaign']>;
 type CachedNewsletterCampaignDetail = Omit<
   PublicNewsletterCampaignDetail,
-  "sentAt" | "archiveCorrectedAt"
+  'sentAt' | 'archiveCorrectedAt'
 > & {
   sentAt: string | null;
   archiveCorrectedAt: string | null;
@@ -78,7 +79,7 @@ function hydrateCampaign(campaign: CachedNewsletterCampaign): PublicNewsletterCa
 }
 
 function serializeCampaignDetail(
-  campaign: PublicNewsletterCampaignDetail,
+  campaign: PublicNewsletterCampaignDetail
 ): CachedNewsletterCampaignDetail {
   return {
     ...campaign,
@@ -88,7 +89,7 @@ function serializeCampaignDetail(
 }
 
 function hydrateCampaignDetail(
-  campaign: CachedNewsletterCampaignDetail,
+  campaign: CachedNewsletterCampaignDetail
 ): PublicNewsletterCampaignDetail {
   return {
     ...campaign,
@@ -97,29 +98,27 @@ function hydrateCampaignDetail(
   };
 }
 
-function logArchiveFailure(operation: string, error: unknown) {
-  console.error(`[newsletter-archive] ${operation} failed`, error);
-}
-
 async function loadPublicNewsletterArchiveUncached(
   limit: number = 50
 ): Promise<PublicNewsletterArchiveResult> {
-  try {
-    return {
-      available: true,
-      campaigns: await listSentNewsletterCampaigns(limit),
-    };
-  } catch (error) {
-    logArchiveFailure("list archive campaigns", error);
+  const campaigns = await withDataFallback(
+    'newsletter-archive.list',
+    listSentNewsletterCampaigns(limit),
+    null
+  );
+
+  if (!campaigns) {
     return {
       available: false,
       campaigns: [],
     };
   }
+
+  return { available: true, campaigns };
 }
 
 const loadPublicNewsletterArchiveCached = cachePublicData(
-  ["newsletter-archive"],
+  ['newsletter-archive'],
   async (limit: number = 50): Promise<CachedNewsletterArchiveResult> => {
     const result = await loadPublicNewsletterArchiveUncached(limit);
     return {
@@ -127,13 +126,13 @@ const loadPublicNewsletterArchiveCached = cachePublicData(
       campaigns: result.campaigns.map(serializeCampaign),
     };
   },
-  ["newsletter"],
+  ['newsletter']
 );
 
 export async function loadPublicNewsletterArchive(
-  limit: number = 50,
+  limit: number = 50
 ): Promise<PublicNewsletterArchiveResult> {
-  if (process.env.NODE_ENV === "test") {
+  if (process.env.NODE_ENV === 'test') {
     return loadPublicNewsletterArchiveUncached(limit);
   }
 
@@ -147,29 +146,32 @@ export async function loadPublicNewsletterArchive(
 async function loadPublicNewsletterCampaignUncached(
   id: string
 ): Promise<PublicNewsletterCampaignResult> {
-  try {
-    const result = await findSentNewsletterCampaignForArchive(id);
+  const result = await withDataFallback(
+    `newsletter-archive.campaign.${id}`,
+    findSentNewsletterCampaignForArchive(id),
+    null
+  );
 
-    return {
-      available: true,
-      campaign: result.campaign,
-      redirectTo:
-        result.campaign && result.matchedByLegacyId
-          ? `/newsletters/${result.campaign.publicSlug}`
-          : null,
-    };
-  } catch (error) {
-    logArchiveFailure(`load archive campaign ${id}`, error);
+  if (!result) {
     return {
       available: false,
       campaign: null,
       redirectTo: null,
     };
   }
+
+  return {
+    available: true,
+    campaign: result.campaign,
+    redirectTo:
+      result.campaign && result.matchedByLegacyId
+        ? `/newsletters/${result.campaign.publicSlug}`
+        : null,
+  };
 }
 
 const loadPublicNewsletterCampaignCached = cachePublicData(
-  ["newsletter-campaign"],
+  ['newsletter-campaign'],
   async (id: string): Promise<CachedNewsletterCampaignResult> => {
     const result = await loadPublicNewsletterCampaignUncached(id);
     return {
@@ -178,13 +180,13 @@ const loadPublicNewsletterCampaignCached = cachePublicData(
       redirectTo: result.redirectTo,
     };
   },
-  ["newsletter"],
+  ['newsletter']
 );
 
 export async function loadPublicNewsletterCampaign(
-  id: string,
+  id: string
 ): Promise<PublicNewsletterCampaignResult> {
-  if (process.env.NODE_ENV === "test") {
+  if (process.env.NODE_ENV === 'test') {
     return loadPublicNewsletterCampaignUncached(id);
   }
 

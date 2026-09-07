@@ -28,6 +28,12 @@ export const metadata: Metadata = {
 	description:
 		"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
 	metadataBase: new URL("https://dcbuilder.dev"),
+	manifest: "/manifest.webmanifest",
+	appleWebApp: {
+		capable: true,
+		title: "dcbuilder.eth",
+		statusBarStyle: "black-translucent",
+	},
 	openGraph: {
 		title: "dcbuilder.eth",
 		description:

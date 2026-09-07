@@ -26,13 +26,26 @@ export async function GET() {
     });
   }
 
-  const hotCandidates = await db
-    .select({
-      id: candidates.id,
-      availability: candidates.availability,
-    })
-    .from(candidates)
-    .where(inArray(candidates.id, hotCandidateIds));
+  let hotCandidates: Array<{ id: string; availability: string | null }>;
+  try {
+    hotCandidates = await db
+      .select({
+        id: candidates.id,
+        availability: candidates.availability,
+      })
+      .from(candidates)
+      .where(inArray(candidates.id, hotCandidateIds));
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        level: "error",
+        message: "Candidate availability unavailable",
+        operation: "hot-candidates.availability",
+        error: error instanceof Error ? error.message : String(error),
+      })
+    );
+    hotCandidates = [];
+  }
 
   const availableHotCandidateIds = new Set(
     hotCandidates

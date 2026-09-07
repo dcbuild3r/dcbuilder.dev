@@ -128,16 +128,16 @@ See [API Documentation](./docs/API.md) for full endpoint documentation.
 
 ### Quick Reference
 
-| Resource | Endpoint | Auth |
-|----------|----------|------|
-| Jobs | `/api/v1/jobs` | Read: Public, Write: API Key |
-| Candidates | `/api/v1/candidates` | Read: Public, Write: API Key |
-| Investments | `/api/v1/investments` | Read: Public, Write: API Key |
-| Blog | `/api/v1/blog` | Read: Public, Write: API Key |
-| News (Curated) | `/api/v1/news/curated` | Read: Public, Write: API Key |
+| Resource             | Endpoint                     | Auth                         |
+| -------------------- | ---------------------------- | ---------------------------- |
+| Jobs                 | `/api/v1/jobs`               | Read: Public, Write: API Key |
+| Candidates           | `/api/v1/candidates`         | Read: Public, Write: API Key |
+| Investments          | `/api/v1/investments`        | Read: Public, Write: API Key |
+| Blog                 | `/api/v1/blog`               | Read: Public, Write: API Key |
+| News (Curated)       | `/api/v1/news/curated`       | Read: Public, Write: API Key |
 | News (Announcements) | `/api/v1/news/announcements` | Read: Public, Write: API Key |
-| Affiliations | `/api/v1/affiliations` | Read: Public, Write: API Key |
-| Analytics | `/api/v1/admin/analytics` | API Key |
+| Affiliations         | `/api/v1/affiliations`       | Read: Public, Write: API Key |
+| Analytics            | `/api/v1/admin/analytics`    | API Key                      |
 
 ## Commands (Bun)
 
@@ -263,6 +263,10 @@ curl -X POST https://dcbuilder.dev/api/v1/jobs \
   -H "x-api-key: YOUR_API_KEY" \
   -d '{"title": "...", "company": "...", "link": "..."}'
 ```
+
+### Portal live public-data export
+
+Portal reads the current production-backed public projection from `GET /api/v1/portal/public-site`. Create a dedicated API key with only the `portal:read` permission and provide it to Portal as a server-side credential. Do not put the key, `DATABASE_URL`, or any production database credential in Portal client code or generated data. The exact response contract and exclusions are documented in [docs/API.md](./docs/API.md#portal-public-site-export).
 
 ### Blog Posts
 

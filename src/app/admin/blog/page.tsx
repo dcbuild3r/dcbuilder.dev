@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { getSourceColor, getSourceDisplay } from "@/lib/source-colors";
 import { TableSkeleton } from "@/components/admin/TableSkeleton";
 import { getAdminApiKey, adminFetch, withMinDelay } from "@/lib/admin-utils";
@@ -392,7 +393,9 @@ export default function AdminBlog() {
                 </div>
                 {/* Preview Content */}
                 <div className="prose-custom max-w-none">
-                  <Markdown>{editingPost.content || "*No content yet...*"}</Markdown>
+                  <Markdown remarkPlugins={[remarkGfm]}>
+                    {editingPost.content || "*No content yet...*"}
+                  </Markdown>
                 </div>
               </div>
             </div>

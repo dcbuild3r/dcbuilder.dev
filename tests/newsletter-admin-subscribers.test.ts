@@ -139,6 +139,7 @@ describe("adminUpdateSubscriberPreferences", () => {
     );
     mock.module("@/lib/news", () => ({
       getAllNews: async () => [],
+      isCompanyTimelineNewsItem: () => false,
     }));
 
     const { adminUpdateSubscriberPreferences } = await import("../src/services/newsletter");

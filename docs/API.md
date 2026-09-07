@@ -16,15 +16,16 @@ API keys are stored in the `api_keys` database table with associated permissions
 
 ### Permission Scopes
 
-| Scope | Description |
-|-------|-------------|
-| `admin:read` | Read admin data (analytics, unpublished posts) |
-| `admin:write` | Upload files, manage all content |
-| `jobs:write` | Create/update/delete jobs |
-| `candidates:write` | Create/update/delete candidates |
-| `investments:write` | Create/update/delete investments |
-| `affiliations:write` | Create/update/delete affiliations |
-| `news:write` | Create/update/delete news items |
+| Scope                | Description                                        |
+| -------------------- | -------------------------------------------------- |
+| `admin:read`         | Read admin data (analytics, unpublished posts)     |
+| `admin:write`        | Upload files, manage all content                   |
+| `portal:read`        | Read the bounded public-site export used by Portal |
+| `jobs:write`         | Create/update/delete jobs                          |
+| `candidates:write`   | Create/update/delete candidates                    |
+| `investments:write`  | Create/update/delete investments                   |
+| `affiliations:write` | Create/update/delete affiliations                  |
+| `news:write`         | Create/update/delete news items                    |
 
 ## Response Format
 
@@ -41,6 +42,24 @@ API keys are stored in the `api_keys` database table with associated permissions
 }
 ```
 
+## Portal Public-Site Export
+
+```http
+GET /api/v1/portal/public-site
+Authorization: Bearer <API key with portal:read>
+```
+
+This server-to-server route returns `{ "data": PublicSitePayload }` with `Cache-Control: private, no-store`. It is not an anonymous browser API and does not accept query parameters. The projection is built from explicit columns in current production PostgreSQL and contains:
+
+- jobs, job tags and roles;
+- candidates and candidate redirects;
+- curated links, announcements, and approved news-to-investment mappings;
+- investments, investment categories, and affiliations;
+- published blog posts only;
+- newsletter campaigns whose status is `sent` only.
+
+It does not query or serialize API-key rows, newsletter subscribers/recipients/templates/send events/tokens, agent tables, or unpublished blog content. Portal should use a dedicated key carrying only `portal:read`; never reuse a database URL or an admin/write-capable key.
+
 ### Error Response
 
 ```json
@@ -52,29 +71,29 @@ API keys are stored in the `api_keys` database table with associated permissions
 
 ### Error Codes
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| `VALIDATION_ERROR` | 400 | Missing or invalid fields |
-| `INVALID_JSON` | 400 | Malformed JSON body |
-| `UNAUTHORIZED` | 401 | Missing or invalid API key |
-| `FORBIDDEN` | 403 | Insufficient permissions |
-| `NOT_FOUND` | 404 | Resource not found |
-| `DUPLICATE_KEY` | 409 | Resource already exists |
-| `SLUG_EXISTS` | 409 | Blog slug already exists |
-| `FK_CONSTRAINT` | 409 | Foreign key constraint violation |
-| `DB_QUERY_ERROR` | 500 | Database query failed |
-| `DB_INSERT_ERROR` | 500 | Database insert failed |
-| `DB_UPDATE_ERROR` | 500 | Database update failed |
-| `DB_DELETE_ERROR` | 500 | Database delete failed |
+| Code               | HTTP Status | Description                      |
+| ------------------ | ----------- | -------------------------------- |
+| `VALIDATION_ERROR` | 400         | Missing or invalid fields        |
+| `INVALID_JSON`     | 400         | Malformed JSON body              |
+| `UNAUTHORIZED`     | 401         | Missing or invalid API key       |
+| `FORBIDDEN`        | 403         | Insufficient permissions         |
+| `NOT_FOUND`        | 404         | Resource not found               |
+| `DUPLICATE_KEY`    | 409         | Resource already exists          |
+| `SLUG_EXISTS`      | 409         | Blog slug already exists         |
+| `FK_CONSTRAINT`    | 409         | Foreign key constraint violation |
+| `DB_QUERY_ERROR`   | 500         | Database query failed            |
+| `DB_INSERT_ERROR`  | 500         | Database insert failed           |
+| `DB_UPDATE_ERROR`  | 500         | Database update failed           |
+| `DB_DELETE_ERROR`  | 500         | Database delete failed           |
 
 ## Pagination
 
 List endpoints support pagination via query parameters:
 
-| Parameter | Default | Max | Description |
-|-----------|---------|-----|-------------|
-| `limit` | 100 | 500 | Number of items to return |
-| `offset` | 0 | - | Number of items to skip |
+| Parameter | Default | Max | Description               |
+| --------- | ------- | --- | ------------------------- |
+| `limit`   | 100     | 500 | Number of items to return |
+| `offset`  | 0       | -   | Number of items to skip   |
 
 Example: `/api/v1/jobs?limit=20&offset=40`
 
@@ -91,6 +110,7 @@ GET /api/v1/jobs
 ```
 
 **Query Parameters:**
+
 - `company` - Filter by company name
 - `category` - Filter by category (`portfolio` | `network`)
 - `featured` - Filter featured jobs (`true`)
@@ -115,15 +135,16 @@ POST /api/v1/jobs
 **Auth Required:** `jobs:write`
 
 **Body:**
+
 ```json
 {
-  "title": "Senior Engineer",        // required
-  "company": "Acme Corp",            // required
-  "link": "https://...",             // required
-  "category": "portfolio",           // required: "portfolio" | "network"
+  "title": "Senior Engineer", // required
+  "company": "Acme Corp", // required
+  "link": "https://...", // required
+  "category": "portfolio", // required: "portfolio" | "network"
   "location": "New York",
-  "remote": "Remote",                // "Remote" | "Hybrid" | "On-site"
-  "type": "Full-time",               // "Full-time" | "Part-time" | "Contract"
+  "remote": "Remote", // "Remote" | "Hybrid" | "On-site"
+  "type": "Full-time", // "Full-time" | "Part-time" | "Contract"
   "salary": "$150k-200k",
   "department": "Engineering",
   "tags": ["Solidity", "TypeScript"],
@@ -167,6 +188,7 @@ GET /api/v1/candidates
 ```
 
 **Query Parameters:**
+
 - `available` - Filter by availability (`true` | `false`)
 - `featured` - Filter featured candidates (`true`)
 - `limit` / `offset` - Pagination
@@ -186,9 +208,10 @@ POST /api/v1/candidates
 **Auth Required:** `candidates:write`
 
 **Body:**
+
 ```json
 {
-  "name": "Jane Doe",               // required
+  "name": "Jane Doe", // required
   "title": "Smart Contract Developer",
   "location": "Remote",
   "summary": "5+ years experience...",
@@ -238,6 +261,7 @@ GET /api/v1/investments
 ```
 
 **Query Parameters:**
+
 - `tier` - Filter by tier (`1` | `2` | `3` | `4`)
 - `status` - Filter by status (`active` | `inactive` | `acquired`)
 - `featured` - Filter featured (`true`)
@@ -258,15 +282,16 @@ POST /api/v1/investments
 **Auth Required:** `investments:write`
 
 **Body:**
+
 ```json
 {
-  "title": "Protocol Name",          // required
+  "title": "Protocol Name", // required
   "description": "Description...",
   "logo": "https://...",
   "imageUrl": "https://...",
-  "tier": "1",                       // "1" | "2" | "3" | "4"
+  "tier": "1", // "1" | "2" | "3" | "4"
   "featured": false,
-  "status": "active",                // "active" | "inactive" | "acquired"
+  "status": "active", // "active" | "inactive" | "acquired"
   "website": "https://...",
   "x": "https://x.com/...",
   "github": "https://github.com/..."
@@ -302,6 +327,7 @@ GET /api/v1/affiliations
 ```
 
 **Query Parameters:**
+
 - `limit` / `offset` - Pagination
 
 ### Get Affiliation
@@ -319,12 +345,13 @@ POST /api/v1/affiliations
 **Auth Required:** `affiliations:write`
 
 **Body:**
+
 ```json
 {
-  "title": "Company Name",           // required
-  "role": "Senior Engineer",         // required
+  "title": "Company Name", // required
+  "role": "Senior Engineer", // required
   "dateBegin": "2020-01",
-  "dateEnd": "2023-06",              // null for current
+  "dateEnd": "2023-06", // null for current
   "description": "Description...",
   "logo": "https://...",
   "imageUrl": "https://...",
@@ -378,14 +405,15 @@ POST /api/v1/blog
 **Auth Required:** `admin:write`
 
 **Body:**
+
 ```json
 {
-  "slug": "my-blog-post",            // required, lowercase alphanumeric + hyphens
-  "title": "My Blog Post",           // required
+  "slug": "my-blog-post", // required, lowercase alphanumeric + hyphens
+  "title": "My Blog Post", // required
   "content": "# Heading\n\nContent...", // required, MDX format
   "date": "2024-01-15",
   "description": "Brief description...",
-  "source": "Mirror",                // optional source attribution
+  "source": "Mirror", // optional source attribution
   "sourceUrl": "https://...",
   "image": "https://...",
   "published": true
@@ -423,6 +451,7 @@ GET /api/v1/news/curated
 ```
 
 **Query Parameters:**
+
 - `category` - Filter by category
 - `featured` - Filter featured (`true`)
 - `limit` / `offset` - Pagination (default limit: 50, max: 200)
@@ -442,13 +471,14 @@ POST /api/v1/news/curated
 **Auth Required:** `news:write`
 
 **Body:**
+
 ```json
 {
-  "title": "Article Title",          // required
-  "url": "https://...",              // required
-  "source": "Vitalik Buterin",       // required
-  "date": "2024-01-15T00:00:00Z",    // required
-  "category": "crypto",              // required
+  "title": "Article Title", // required
+  "url": "https://...", // required
+  "source": "Vitalik Buterin", // required
+  "date": "2024-01-15T00:00:00Z", // required
+  "category": "crypto", // required
   "description": "Brief summary...",
   "featured": false
 }
@@ -479,6 +509,7 @@ GET /api/v1/news/announcements
 ```
 
 **Query Parameters:**
+
 - `company` - Filter by company name
 - `category` - Filter by category
 - `featured` - Filter featured (`true`)
@@ -499,14 +530,15 @@ POST /api/v1/news/announcements
 **Auth Required:** `news:write`
 
 **Body:**
+
 ```json
 {
-  "title": "Announcement Title",     // required
-  "url": "https://...",              // required
-  "company": "Acme Protocol",        // required
-  "platform": "x",                   // required: "x" | "blog" | "discord" | "github" | "other"
-  "date": "2024-01-15T00:00:00Z",    // required
-  "category": "crypto",              // required
+  "title": "Announcement Title", // required
+  "url": "https://...", // required
+  "company": "Acme Protocol", // required
+  "platform": "x", // required: "x" | "blog" | "discord" | "github" | "other"
+  "date": "2024-01-15T00:00:00Z", // required
+  "category": "crypto", // required
   "companyLogo": "https://...",
   "description": "Brief summary...",
   "featured": false
@@ -542,14 +574,17 @@ POST /api/upload
 **Auth Required:** `admin:write`
 
 **Body:** `multipart/form-data`
+
 - `file` - Image file (JPEG, PNG, GIF, WebP, SVG)
 - `folder` - Target folder (default: "uploads")
 
 **Limits:**
+
 - Max size: 5MB
 - Allowed types: `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/svg+xml`
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -570,6 +605,7 @@ GET /api/v1/autocomplete
 Returns unique values for filtering (companies, locations, tags, etc.)
 
 **Query Parameters:**
+
 - `type` - Field to autocomplete (`company` | `location` | `tag` | etc.)
 
 ### Admin Analytics
@@ -581,9 +617,11 @@ GET /api/v1/admin/analytics
 **Auth Required:** `admin:read`
 
 **Query Parameters:**
+
 - `type` - Specific analytics type (`jobs` | `candidates` | `blog` | `site`)
 
 Returns PostHog analytics data including:
+
 - Job apply clicks (7 days)
 - Candidate profile views (7 days)
 - Blog post views (7 days)

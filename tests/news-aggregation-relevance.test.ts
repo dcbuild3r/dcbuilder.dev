@@ -514,7 +514,7 @@ describe("getAllNews relevance mapping", () => {
       jobCount: 2,
       sourceIsCompanyAccount: false,
     });
-    expect(news[0].sourceImage).toBe("https://r2.example/octet.svg");
+    expect(news[0].sourceImage).toBeUndefined();
     expect(news[0].postedAt).toBe("2026-05-18T00:00:00.000Z");
   });
 
@@ -1101,7 +1101,7 @@ describe("getAllNews relevance mapping", () => {
       jobCount: 2,
       sourceIsCompanyAccount: false,
     });
-    expect(news[0].sourceImage).toBe("https://r2.example/bagel.png");
+    expect(news[0].sourceImage).toBeUndefined();
     expect(news[0].postedAt).toBe("2026-05-29T00:00:00.000Z");
   });
 

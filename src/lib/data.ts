@@ -533,8 +533,14 @@ export const getPublicJobById = cachePublicData(
 
 // Get the base URL for the current environment (handles Vercel preview deployments)
 export function getBaseUrl() {
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return process.env.NEXT_PUBLIC_BASE_URL;
+  }
+  if (process.env.VERCEL_ENV === "production") {
+    return "https://dcbuilder.dev";
+  }
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-  return process.env.NEXT_PUBLIC_BASE_URL || "https://dcbuilder.dev";
+  return "https://dcbuilder.dev";
 }

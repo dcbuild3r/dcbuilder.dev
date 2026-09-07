@@ -1,47 +1,48 @@
-import Image from "next/image";
-import { notFound } from "next/navigation";
-import { Navbar } from "@/components/Navbar";
-import { CompanyNewsIconGrid } from "@/components/CompanyNewsIconGrid";
-import { CompanyTimeline } from "@/components/CompanyTimeline";
-import { db, investments as investmentsTable } from "@/db";
-import { getPortfolioNewsSlug } from "@/lib/portfolio-news";
-import { getPublicAllNews } from "@/lib/news";
-import { getCompanyTimelineEvents } from "@/lib/company-news";
-import { getCompanyNewsIconCompanies } from "@/lib/company-news-navigation";
-import { cachePublicData } from "@/lib/public-cache";
+import Image from 'next/image';
+import { notFound } from 'next/navigation';
+import { Navbar } from '@/components/Navbar';
+import { CompanyNewsIconGrid } from '@/components/CompanyNewsIconGrid';
+import { CompanyTimeline } from '@/components/CompanyTimeline';
+import { db, investments as investmentsTable } from '@/db';
+import { getPortfolioNewsSlug } from '@/lib/portfolio-news';
+import { getPublicAllNews } from '@/lib/news';
+import { getCompanyTimelineEvents } from '@/lib/company-news';
+import { getCompanyNewsIconCompanies } from '@/lib/company-news-navigation';
+import { cachePublicData } from '@/lib/public-cache';
+import { withDataFallback } from '@/lib/resilient-data';
 
 export const metadata = {
-  title: "Company News",
-  description:
-    "Company-specific announcements and updates from dcbuilder's portfolio.",
+  title: 'Company News',
+  description: "Company-specific announcements and updates from dcbuilder's portfolio.",
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 interface CompanyNewsPageProps {
   params: Promise<{ companySlug: string }>;
 }
 
 const getPublicCompanyProfiles = cachePublicData(
-	["company-news-profiles"],
-	async () => db
-		.select({
-			title: investmentsTable.title,
-			description: investmentsTable.description,
-			logo: investmentsTable.logo,
-			categories: investmentsTable.categories,
-			website: investmentsTable.website,
-			x: investmentsTable.x,
-			github: investmentsTable.github,
-		})
-		.from(investmentsTable),
-	["investments", "news"],
+  ['company-news-profiles'],
+  async () =>
+    db
+      .select({
+        title: investmentsTable.title,
+        description: investmentsTable.description,
+        logo: investmentsTable.logo,
+        categories: investmentsTable.categories,
+        website: investmentsTable.website,
+        x: investmentsTable.x,
+        github: investmentsTable.github,
+      })
+      .from(investmentsTable),
+  ['investments', 'news']
 );
 
 async function getCompanyProfile(companySlug: string) {
-	const normalizedCompanySlug = companySlug.toLowerCase();
-	const investments = await getPublicCompanyProfiles();
-	const investment = investments.find(
+  const normalizedCompanySlug = companySlug.toLowerCase();
+  const investments = await getPublicCompanyProfiles();
+  const investment = investments.find(
     (item) => getPortfolioNewsSlug(item.title) === normalizedCompanySlug
   );
 
@@ -53,13 +54,15 @@ async function getCompanyProfile(companySlug: string) {
   };
 }
 
-export default async function CompanyNewsPage({
-  params,
-}: CompanyNewsPageProps) {
+export default async function CompanyNewsPage({ params }: CompanyNewsPageProps) {
   const { companySlug } = await params;
   const [news, companyProfile] = await Promise.all([
-    getPublicAllNews({ includeCompanyTimelineNews: true }),
-    getCompanyProfile(companySlug),
+    withDataFallback(
+      'company-news.items',
+      getPublicAllNews({ includeCompanyTimelineNews: true }),
+      []
+    ),
+    withDataFallback('company-news.profile', getCompanyProfile(companySlug), null),
   ]);
 
   if (!companyProfile) {
@@ -67,7 +70,11 @@ export default async function CompanyNewsPage({
   }
 
   const timelineEvents = getCompanyTimelineEvents(news, companyProfile.title);
-  const companyNewsCompanies = await getCompanyNewsIconCompanies(news);
+  const companyNewsCompanies = await withDataFallback(
+    'company-news.companies',
+    getCompanyNewsIconCompanies(news),
+    []
+  );
 
   return (
     <>
@@ -110,12 +117,9 @@ export default async function CompanyNewsPage({
                 ))}
             </div>
             <div className="text-center">
-              <h1 className="mb-4 text-3xl font-bold sm:text-4xl">
-                {companyProfile.title} News
-              </h1>
+              <h1 className="mb-4 text-3xl font-bold sm:text-4xl">{companyProfile.title} News</h1>
               <p className="mx-auto max-w-2xl text-neutral-600 dark:text-neutral-400">
-                Company-specific announcements, X posts, and blog updates from the
-                portfolio.
+                Company-specific announcements, X posts, and blog updates from the portfolio.
               </p>
             </div>
             <div aria-hidden="true" />

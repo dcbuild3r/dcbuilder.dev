@@ -1,9 +1,25 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { isValidElement, type ReactNode } from "react";
+import { MermaidDiagram } from "./MermaidDiagram";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MDXComponents = Record<string, (props: any) => ReactNode>;
+
+export function getMermaidSource(children: ReactNode): string | null {
+	if (!isValidElement<{ className?: string; children?: ReactNode }>(children)) {
+		return null;
+	}
+
+	const languageClasses = children.props.className?.split(/\s+/) ?? [];
+	if (!languageClasses.includes("language-mermaid")) {
+		return null;
+	}
+
+	return typeof children.props.children === "string"
+		? children.props.children.trim()
+		: null;
+}
 
 export const mdxComponents: MDXComponents = {
 	// Replace img with Next.js optimized Image
@@ -115,14 +131,21 @@ export const mdxComponents: MDXComponents = {
 	),
 
 	// Style code blocks
-	pre: ({ children, ...props }) => (
-		<pre
-			className="my-6 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-x-auto"
-			{...props}
-		>
-			{children}
-		</pre>
-	),
+	pre: ({ children, ...props }) => {
+		const mermaidSource = getMermaidSource(children);
+		if (mermaidSource) {
+			return <MermaidDiagram source={mermaidSource} />;
+		}
+
+		return (
+			<pre
+				className="my-6 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-x-auto"
+				{...props}
+			>
+				{children}
+			</pre>
+		);
+	},
 	code: ({ children, ...props }) => {
 		// Check if inline code (no className from syntax highlighter)
 		const isInline = !props.className;
@@ -148,6 +171,19 @@ export const mdxComponents: MDXComponents = {
 			{children}
 		</blockquote>
 	),
+
+	// GFM tables
+	table: ({ children, ...props }) => (
+		<div className="markdown-table-wrapper">
+			<table {...props}>{children}</table>
+		</div>
+	),
+	thead: ({ children, ...props }) => <thead {...props}>{children}</thead>,
+	tbody: ({ children, ...props }) => <tbody {...props}>{children}</tbody>,
+	tr: ({ children, ...props }) => <tr {...props}>{children}</tr>,
+	th: ({ children, ...props }) => <th {...props}>{children}</th>,
+	td: ({ children, ...props }) => <td {...props}>{children}</td>,
+	del: ({ children, ...props }) => <del {...props}>{children}</del>,
 
 	// Style horizontal rules
 	hr: (props) => (

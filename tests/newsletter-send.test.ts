@@ -100,6 +100,7 @@ describe("sendDueNewsletterCampaigns", () => {
     );
     mock.module("@/lib/news", () => ({
       getAllNews: async () => [],
+      isCompanyTimelineNewsItem: () => false,
     }));
 
     const { sendDueNewsletterCampaigns } = await import(

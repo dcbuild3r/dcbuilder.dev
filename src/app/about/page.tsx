@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { db, affiliations as affiliationsTable } from "@/db";
 import { cachePublicData } from "@/lib/public-cache";
 import { R2_PUBLIC_URL } from "@/services/r2";
+import { withDataFallback } from "@/lib/resilient-data";
 
 export const metadata = {
 	title: "About",
@@ -118,7 +119,7 @@ const getAffiliations = cachePublicData(
 );
 
 export default async function About() {
-	const affiliations = await getAffiliations();
+	const affiliations = await withDataFallback("about.affiliations", getAffiliations(), []);
 	return (
 		<>
 			<Navbar />
