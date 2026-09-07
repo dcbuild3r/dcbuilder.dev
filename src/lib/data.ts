@@ -27,10 +27,8 @@ import type { CuratedLink } from "@/data/news";
 
 // Fetch all jobs from database and transform to component format
 export async function getJobsFromDB(): Promise<Job[]> {
-  const [dbJobs, featuredPortfolioJobCompanies] = await Promise.all([
-    getJobRowsFromDB({ orderBy: "created" }),
-    getFeaturedPortfolioJobCompanyNames(),
-  ]);
+  const dbJobs = await getJobRowsFromDB({ orderBy: "created" });
+  const featuredPortfolioJobCompanies = await getFeaturedPortfolioJobCompanyNames();
 
   return dbJobs.map((job) => mapJobRowToJob(job, featuredPortfolioJobCompanies));
 }
