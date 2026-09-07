@@ -2,6 +2,28 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
+  async headers() {
+    const publicPageHeaders = [
+      {
+        key: "Cache-Control",
+        value: "public, max-age=0, s-maxage=60, stale-while-revalidate=300",
+      },
+      {
+        key: "Vercel-CDN-Cache-Control",
+        value: "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    ];
+
+    return [
+      { source: "/news/:path*", headers: publicPageHeaders },
+      { source: "/jobs/:path*", headers: publicPageHeaders },
+      { source: "/portfolio/:path*", headers: publicPageHeaders },
+      { source: "/candidates/:path*", headers: publicPageHeaders },
+      { source: "/blog/:path*", headers: publicPageHeaders },
+      { source: "/about/:path*", headers: publicPageHeaders },
+      { source: "/newsletters/:path*", headers: publicPageHeaders },
+    ];
+  },
   images: {
     qualities: [75, 90],
     remotePatterns: [
