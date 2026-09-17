@@ -43,4 +43,15 @@ describe("production response hardening", () => {
       ]),
     );
   });
+
+  test("does not cache transient jobs page failures as valid empty boards", async () => {
+    const rules = await nextConfig.headers?.();
+    const jobsRule = rules?.find((rule) => rule.source === "/jobs/:path*");
+    const headers = new Map(
+      jobsRule?.headers.map((header) => [header.key, header.value]),
+    );
+
+    expect(headers.get("Cache-Control")).toBe("private, no-store");
+    expect(headers.get("Vercel-CDN-Cache-Control")).toBe("no-store");
+  });
 });

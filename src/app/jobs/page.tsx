@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { JobsGrid } from '@/components/JobsGrid';
 import {
@@ -74,7 +75,11 @@ const getPublicJobTaxonomy = cachePublicData(
 
 export default async function Jobs() {
   const [jobs, { tags, roles }] = await Promise.all([
-    withDataFallback('jobs.list', getPublicJobsFromDB(), []),
+    withDataFallback<Awaited<ReturnType<typeof getPublicJobsFromDB>> | null>(
+      'jobs.list',
+      getPublicJobsFromDB(),
+      null,
+    ),
     withDataFallback('jobs.taxonomy', getPublicJobTaxonomy(), { tags: [], roles: [] }),
   ]);
 
@@ -104,9 +109,24 @@ export default async function Jobs() {
           </section>
 
           {/* Jobs Grid */}
-          <Suspense fallback={<JobsGridFallback />}>
-            <JobsGrid jobs={jobs} tagDefinitions={tags} roleDefinitions={roles} />
-          </Suspense>
+          {jobs === null ? (
+            <div
+              role="alert"
+              className="space-y-3 text-center text-neutral-600 dark:text-neutral-400"
+            >
+              <p>Jobs are temporarily unavailable.</p>
+              <Link
+                href="/jobs?retry=1"
+                className="inline-block text-neutral-900 underline dark:text-neutral-100"
+              >
+                Try again
+              </Link>
+            </div>
+          ) : (
+            <Suspense fallback={<JobsGridFallback />}>
+              <JobsGrid jobs={jobs} tagDefinitions={tags} roleDefinitions={roles} />
+            </Suspense>
+          )}
         </div>
       </main>
     </>
