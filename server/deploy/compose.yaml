@@ -1,0 +1,18 @@
+services:
+  dcbuilder-public-mcp:
+    build:
+      context: ../..
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3088:3088"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "3088"
+      MCP_PUBLIC_HOST: mcp.dcbuilder.dev
+    healthcheck:
+      test: ["CMD", "bun", "-e", "const r = await fetch('http://127.0.0.1:3088/healthz'); if (!r.ok) process.exit(1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
