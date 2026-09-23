@@ -76,7 +76,7 @@ function allowRequest(request: Request) {
   if (host !== MCP_HOST && host !== "localhost" && host !== "127.0.0.1") return new Response("Invalid host", { status: 403 });
   const origin = request.headers.get("origin");
   if (origin && origin !== `https://${MCP_HOST}` && origin !== SITE_ORIGIN) return new Response("Invalid origin", { status: 403 });
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim();
   const key = forwarded || "local";
   const now = Date.now();
   const window = windows.get(key);

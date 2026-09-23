@@ -31,6 +31,7 @@ const text = (value: unknown) => typeof value === "string" ? value.toLowerCase()
 const array = (value: unknown): string[] => Array.isArray(value) ? value.map(text) : [];
 const eq = (value: unknown, filter: string | undefined) => !filter || text(value) === filter.toLowerCase();
 const includes = (value: unknown, filter: string | undefined) => !filter || text(value).includes(filter.toLowerCase());
+const matchesNewsCompany = (record: PublicMcpRecord, company: string | undefined) => !company || [record.company, record.portfolioCompany, ...text(record.source).split(",")].some((value) => text(value).trim() === company.trim().toLowerCase());
 
 export function parsePublicMcpFilters(params: URLSearchParams): PublicMcpFilters {
   const filters: PublicMcpFilters = {};
@@ -78,7 +79,7 @@ export function filterPublicMcpRecords(collection: PublicMcpCollection, records:
       if (filters.type === "portfolio" && !record.isPortfolioUpdate) return false;
       if (filters.hidePortfolioUpdates && record.isPortfolioUpdate) return false;
       if (filters.type !== "portfolio" && !eq(record.type, filters.type)) return false;
-      if (!includes(record.company ?? record.portfolioCompany, filters.company)) return false;
+      if (!matchesNewsCompany(record, filters.company)) return false;
       if ((record.relevance as number ?? 0) < (filters.minRelevance ?? 0)) return false;
     }
     if (collection === "blog" && (!eq(record.source, filters.source) || (record.relevance as number ?? 0) < (filters.minRelevance ?? 0))) return false;

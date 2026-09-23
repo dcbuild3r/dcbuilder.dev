@@ -5,6 +5,7 @@ import { getAllPosts, getPostBySlug } from "@/lib/blog";
 import { getCandidatesFromDB, getJobsFromDB } from "@/lib/data";
 import { HERO, SECTIONS } from "@/data/home";
 import { ABOUT_BIO } from "@/data/about";
+import { getPortfolioJobCount } from "@/lib/portfolio-jobs";
 import { PUBLIC_MCP_COLLECTIONS, filterPublicMcpRecords, parsePublicMcpFilters, type PublicMcpCollection, type PublicMcpRecord } from "@/lib/public-mcp";
 
 export const runtime = "nodejs";
@@ -40,11 +41,15 @@ async function list(collection: PublicMcpCollection): Promise<PublicMcpRecord[]>
   }
   if (collection === "portfolio") {
     const [rows, jobs] = await Promise.all([db.select().from(investments), getJobsFromDB()]);
+    const jobCounts = jobs.reduce<Record<string, number>>((counts, job) => {
+      counts[job.company.name] = (counts[job.company.name] ?? 0) + 1;
+      return counts;
+    }, {});
     return rows.map((row) => ({
       id: row.id, url: absolute("/portfolio"), title: row.title,
       description: row.description, website: row.website, image: row.logo,
       tier: Number(row.tier ?? 2), status: row.status, featured: row.featured ?? false,
-      categories: row.categories ?? [], hiring: jobs.some((job) => job.company.name.toLowerCase() === row.title.toLowerCase()),
+      categories: row.categories ?? [], hiring: getPortfolioJobCount(row.title, jobCounts) > 0,
       createdAt: row.createdAt,
     }));
   }
