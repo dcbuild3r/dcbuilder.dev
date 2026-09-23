@@ -74,8 +74,6 @@ function makeServer() {
 function allowRequest(request: Request) {
   const host = request.headers.get("host")?.split(":")[0];
   if (host !== MCP_HOST && host !== "localhost" && host !== "127.0.0.1") return new Response("Invalid host", { status: 403 });
-  const origin = request.headers.get("origin");
-  if (origin && origin !== `https://${MCP_HOST}` && origin !== SITE_ORIGIN) return new Response("Invalid origin", { status: 403 });
   const forwarded = request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim();
   const key = forwarded || "local";
   const now = Date.now();
@@ -86,6 +84,15 @@ function allowRequest(request: Request) {
   return null;
 }
 
+function withPublicCors(response: Response) {
+  const headers = new Headers(response.headers);
+  headers.set("Access-Control-Allow-Origin", "*");
+  headers.set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+  headers.set("Access-Control-Allow-Headers", "Content-Type, MCP-Protocol-Version, MCP-Session-Id, Last-Event-ID");
+  headers.set("Access-Control-Expose-Headers", "MCP-Session-Id");
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 export const app = Bun.serve({
   hostname: process.env.HOST ?? "127.0.0.1",
   port: PORT,
@@ -94,12 +101,13 @@ export const app = Bun.serve({
     if (path === "/healthz") return Response.json({ status: "ok" });
     if (path !== "/mcp") return new Response("Not found", { status: 404 });
     const denied = allowRequest(request);
-    if (denied) return denied;
-    if (request.method !== "POST" && request.method !== "GET" && request.method !== "DELETE") return new Response("Method not allowed", { status: 405 });
+    if (denied) return withPublicCors(denied);
+    if (request.method === "OPTIONS") return withPublicCors(new Response(null, { status: 204 }));
+    if (request.method !== "POST" && request.method !== "GET" && request.method !== "DELETE") return withPublicCors(new Response("Method not allowed", { status: 405 }));
     const server = makeServer();
     const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
     await server.connect(transport);
-    return transport.handleRequest(request);
+    return withPublicCors(await transport.handleRequest(request));
   },
 });
 
