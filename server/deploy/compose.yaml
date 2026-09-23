@@ -6,6 +6,8 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:3088:3088"
+    networks:
+      - fundraising_proxy
     environment:
       NODE_ENV: production
       HOST: 0.0.0.0
@@ -16,3 +18,8 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+
+networks:
+  fundraising_proxy:
+    external: true
+    name: fundraising_default

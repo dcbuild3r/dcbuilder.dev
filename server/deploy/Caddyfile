@@ -1,4 +1,4 @@
 mcp.dcbuilder.dev {
   encode zstd gzip
-  reverse_proxy 127.0.0.1:3088
+  reverse_proxy dcbuilder-public-mcp:3088
 }
