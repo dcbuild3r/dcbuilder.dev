@@ -96,6 +96,7 @@ function withPublicCors(response: Response) {
 export const app = Bun.serve({
   hostname: process.env.HOST ?? "127.0.0.1",
   port: PORT,
+  maxRequestBodySize: 64 * 1024,
   async fetch(request) {
     const path = new URL(request.url).pathname;
     if (path === "/healthz") return Response.json({ status: "ok" });
