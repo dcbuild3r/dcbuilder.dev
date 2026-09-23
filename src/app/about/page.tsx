@@ -5,6 +5,7 @@ import { db, affiliations as affiliationsTable } from "@/db";
 import { cachePublicData } from "@/lib/public-cache";
 import { R2_PUBLIC_URL } from "@/services/r2";
 import { withDataFallback } from "@/lib/resilient-data";
+import { ABOUT_BIO } from "@/data/about";
 
 export const metadata = {
 	title: "About",
@@ -137,18 +138,7 @@ export default async function About() {
 							/>
 						</Link>
 						<div className="space-y-6 text-lg sm:text-xl text-neutral-700 dark:text-neutral-300">
-							<p>
-								My meta-goal is to maximize the positive impact
-								I have on the world to help people and take
-								humanity to a new age of prosperity and
-								abundance.
-							</p>
-							<p>
-								After a few years of trying out different things
-								I decided that cryptography and distributed
-								systems are the domains that interest me the
-								most.
-							</p>
+							{ABOUT_BIO.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
 						</div>
 					</section>
 

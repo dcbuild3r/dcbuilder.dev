@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
+import { McpSetup } from "./McpSetup";
 
 const navLinks = [
 	{ href: "/", label: "Home" },
@@ -118,11 +119,13 @@ export function Navbar() {
 						</Link>
 					))}
 					<ThemeToggle />
+					<McpSetup />
 				</div>
 
 				{/* Mobile: Right side controls */}
 				<div className="flex md:hidden items-center gap-2">
 					<ThemeToggle />
+					<McpSetup />
 					<button
 						ref={menuButtonRef}
 						onClick={() => {
