@@ -225,6 +225,11 @@ export async function GET(request: NextRequest) {
 
 		const html = await response.text();
 		const text = stripHtml(html);
+		if (/you need to enable javascript/i.test(text) && text.length < 3000) {
+			// JS-rendered ATS page (e.g. jobs.ashbyhq.com): server fetch only sees
+			// the app shell. The DB holds the canonical description instead.
+			return NextResponse.json({ error: "JS-rendered page" }, { status: 502 });
+		}
 		const data = extractSections(text);
 
 		cache.set(target, {

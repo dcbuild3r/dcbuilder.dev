@@ -754,15 +754,15 @@ function htmlToMarkdownish(html: string): string {
 const DETAIL_SKIP_LINE = /^(you need to enable javascript|enable javascript to run this app|loading|please enable javascript)/i;
 
 const RESPONSIBILITIES_HEADING =
-  /^(key |core |primary )?(responsibilities|what you('ll| will) do|what you will own|the role|role overview|your mission|your responsibilities|key outcomes|what the job involves|day to day|day-to-day)(\s*[:\-–—])?$/i;
+  /^(key |core |primary )?(responsibilities|what you('ll| will) do|you will|in this role,? you will|your responsibilities( include)?|what you will own|(about |the )(opportunity|role|position)|role overview|your mission|key outcomes|what the job involves|day to day|day-to-day)(\s*[:\-–—])?$/i;
 const QUALIFICATIONS_HEADING =
-  /^(requirements?|qualifications?|what we('re| are) looking for|about you|who you are|your experience|your background|your profile|you('ll| will) bring|you have|you are|basic qualifications?|preferred qualifications?|minimum qualifications?|must have|nice to have|skills?( and experience)?|experience|profile)(\s*[:\-–—])?$/i;
+  /^(requirements?( for this role)?|required|qualifications?|what we('re| are) looking for|about you|who you are|your experience|your background|your profile|you('ll| will) bring|you have|you are|basic qualifications?|preferred qualifications?|minimum qualifications?|must have|nice to have|skills?( and experience)?|experience|profile)(\s*[:\-–—])?$/i;
 const BENEFITS_HEADING =
   /^(benefits?( & perks)?|what we offer|why (work (here|with us|at [\w\s&'.-]+)|join us)|perks( & benefits?)?|compensation( & benefits?)?|offer|total rewards|life at [\w\s&'.-]+)(\s*[:\-–—])?$/i;
 const DESCRIPTION_HEADING =
   /^(about the (role|position|job|team|company|opportunity|mission)|job description|position summary|overview|summary|description|introduction|the opportunity|the (role|position)|who we are|our mission|our company|about us|about [\w\s&'.-]+)(\s*[:\-–—])?$/i;
 const GENERIC_NONCONTENT_HEADING =
-  /^(location|reports to|reporting to|team|department|job type|employment type|workplace|work model|time type|requisition id|job id|posting id|apply|how to apply|interview process|hiring process|equal opportunity|eeo|diversity|contact|share|save|back to jobs|all jobs|related jobs|similar jobs|other openings|see more jobs)$/i;
+  /^(location|reports to|reporting to|team|department|job type|employment type|workplace|work model|time type|requisition id|job id|posting id|apply|how to apply|interview process|hiring process|equal opportunity|eeo|diversity|contact|share|save|back to jobs|all jobs|related jobs|similar jobs|other openings|see more jobs|pay transparency statement.*)$/i;
 
 function isHeadingLike(line: string): boolean {
   const t = line.trim().replace(/[:\-–—]+$/, "").trim();
@@ -833,10 +833,17 @@ function splitPostingSections(plain: string): DetailFields {
     if (GENERIC_NONCONTENT_HEADING.test(line) || GENERIC_NONCONTENT_HEADING.test(heading)) continue;
     if (isHeadingLike(line) && line.length <= 60) {
       const lower = line.toLowerCase();
-      if (/responsib|what you.*do|will own|day.to.day|mission|outcome/.test(lower)) current = "responsibilities";
-      else if (/requirement|qualification|looking for|about you|who you|experience|background|profile|you.*bring|nice to have|must have|skill/.test(lower))
+      const inResp = current === "responsibilities";
+      const inQual = current === "qualifications";
+      const inBen = current === "benefits";
+      if (/responsib|what you.*do|you will|opportunity|will own|day.to.day|mission|outcome/.test(lower)) current = "responsibilities";
+      else if (/requirement|qualification|looking for|about you|who you|experience|background|profile|you.*bring|nice to have|must have|required|skill/.test(lower))
         current = "qualifications";
-      else if (/benefit|perk|offer|compensation|why (join|work)|life at|total rewards/.test(lower)) current = "benefits";
+      else if (/benefit|perk|what we offer|compensation|why (join|work)|life at|total rewards/.test(lower)) current = "benefits";
+      // Unrecognized sub-heading while inside a section (e.g. "Regulatory
+      // Strategy & Government Engagement" inside responsibilities): keep it as
+      // a bolded line in the CURRENT section, don't yank back to description.
+      else if (inResp || inQual || inBen) buckets[current].push(`**${line}**`);
       else current = "description";
       continue;
     }
@@ -869,12 +876,13 @@ function ashbySalaryOf(posting: AshbyPosting): string | null {
 }
 
 function detailsFromAshby(posting: AshbyPosting): DetailFields {
-  const plain = squash(posting.descriptionPlain ?? "");
+  // NOTE: keep original newlines — the section splitter keys off line headings.
+  const rawPlain = (posting.descriptionPlain ?? "").replace(/\r/g, "");
   const html = posting.descriptionHtml ?? "";
-  const source = plain.length >= 200 ? posting.descriptionPlain! : html ? htmlToMarkdownish(html) : "";
+  const source = squash(rawPlain).length >= 200 ? rawPlain : html ? htmlToMarkdownish(html) : "";
   const split = splitPostingSections(source);
-  if (!split.description && plain.length >= 50) {
-    split.description = plain.slice(0, 12000);
+  if (!split.description && squash(rawPlain).length >= 50) {
+    split.description = squash(rawPlain).slice(0, 12000);
   }
   split.salary = ashbySalaryOf(posting);
   return split;

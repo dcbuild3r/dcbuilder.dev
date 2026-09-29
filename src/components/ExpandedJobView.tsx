@@ -112,9 +112,24 @@ export function ExpandedJobView({
 
 	const loadingLabel = "Fetching details from job link...";
 	const defaultBullet = "Details will be shared during the process.";
+	const sections: Array<{ heading: string; items: string[] }> = [
+		{ heading: "What you'll do", items: job.responsibilities ?? [] },
+		{ heading: "What we're looking for", items: job.qualifications ?? [] },
+		{ heading: "What we offer", items: job.benefits ?? [] },
+	].filter((section) => section.items.length > 0);
+	const sectionMarkdown = sections
+		.map(
+			(section) =>
+				`## ${section.heading}\n\n${section.items.map((item) => `- ${item}`).join("\n")}`,
+		)
+		.join("\n\n");
+	const descriptionParts = [
+		job.description?.trim(),
+		sectionMarkdown || undefined,
+		enrichedContent?.description?.trim(),
+	].filter(Boolean);
 	const description =
-		job.description?.trim() ||
-		enrichedContent?.description?.trim() ||
+		descriptionParts.join("\n\n") ||
 		(isEnriching ? loadingLabel : defaultBullet);
 
 	const copyToClipboard = async (text: string, type: "job" | "apply") => {
