@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
         value: 'public, s-maxage=60, stale-while-revalidate=300',
       },
     ];
-    const jobsPageHeaders = [
+    const uncachedPageHeaders = [
       ...securityHeaders,
       { key: 'Cache-Control', value: 'private, no-store' },
       { key: 'Vercel-CDN-Cache-Control', value: 'no-store' },
@@ -34,9 +34,10 @@ const nextConfig: NextConfig = {
     return [
       { source: '/:path*', headers: securityHeaders },
       { source: '/news/:path*', headers: publicPageHeaders },
-      { source: '/jobs', headers: jobsPageHeaders },
-      { source: '/jobs/:path*', headers: jobsPageHeaders },
-      { source: '/portfolio/:path*', headers: publicPageHeaders },
+      { source: '/jobs', headers: uncachedPageHeaders },
+      { source: '/jobs/:path*', headers: uncachedPageHeaders },
+      { source: '/portfolio', headers: uncachedPageHeaders },
+      { source: '/portfolio/:path*', headers: uncachedPageHeaders },
       { source: '/candidates/:path*', headers: publicPageHeaders },
       { source: '/blog/:path*', headers: publicPageHeaders },
       { source: '/about/:path*', headers: publicPageHeaders },

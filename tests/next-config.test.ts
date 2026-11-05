@@ -44,6 +44,15 @@ describe("production response hardening", () => {
     );
   });
 
+  test("does not cache portfolio data failures", async () => {
+    const rules = await nextConfig.headers?.();
+    for (const source of ["/portfolio", "/portfolio/:path*"]) {
+      const headers = new Map(rules?.find(rule => rule.source === source)?.headers.map(h => [h.key, h.value]));
+      expect(headers.get("Cache-Control")).toBe("private, no-store");
+      expect(headers.get("Vercel-CDN-Cache-Control")).toBe("no-store");
+    }
+  });
+
   test("does not cache transient jobs page failures as valid empty boards", async () => {
     const rules = await nextConfig.headers?.();
     const jobsRule = rules?.find((rule) => rule.source === "/jobs/:path*");
