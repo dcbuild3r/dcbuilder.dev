@@ -19,6 +19,7 @@ export function InvestmentCard({
   jobsUrl,
   newsUrl,
 }: InvestmentCardProps) {
+  const isExited = investment.status === "exited";
   const isDefunct = investment.status === "defunct";
   const logoVariants = getInvestmentLogoVariants(
     investment.title,
@@ -115,12 +116,17 @@ export function InvestmentCard({
             ★
           </span>
         )}
-        {isNew(investment.createdAt) && !isDefunct && (
+        {isNew(investment.createdAt) && !isDefunct && !isExited && (
           <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
             NEW
           </span>
         )}
       </h3>
+      {isExited && (
+        <span className="inline-block px-2 py-0.5 mb-2 text-xs rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+          Exited
+        </span>
+      )}
       {isDefunct && (
         <span className="inline-block px-2 py-0.5 mb-2 text-xs rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
           Ceased Operations

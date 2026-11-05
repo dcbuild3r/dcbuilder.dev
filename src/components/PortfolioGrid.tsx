@@ -10,7 +10,7 @@ import {
   SortOption,
   FilterOption,
 } from "@/types/investments";
-import { hashString, seededRandom, shuffleArray } from "@/lib/shuffle";
+import { sortPortfolioInvestments } from "@/lib/portfolio-order";
 import { getPortfolioJobCount, getPortfolioJobsUrl } from "@/lib/portfolio-jobs";
 import { getPortfolioNewsUrl } from "@/lib/portfolio-news";
 
@@ -88,77 +88,17 @@ export function PortfolioGrid({
     return result;
   }, [investments, filter, selectedCategories, jobCounts]);
 
-  // Deterministic sort (no shuffle - that happens in useEffect)
-  // Deterministic display order (stable between server/client)
-  // Defunct companies always go last
-  const displayInvestments = useMemo(() => {
-    const active = filteredInvestments.filter((i) => i.status !== "defunct");
-    const defunct = filteredInvestments.filter((i) => i.status === "defunct");
+  // Keep status groups stable under every sort and filter.
+  const displayInvestments = useMemo(
+    () => sortPortfolioInvestments(
+      filteredInvestments,
+      sortBy,
+      `${filter}|${sortBy}|${selectedCategories.join(",") || "all"}`
+    ),
+    [filteredInvestments, sortBy, filter, selectedCategories]
+  );
 
-    if (sortBy === "alphabetical") {
-      return [
-        ...active.sort((a, b) => a.title.localeCompare(b.title)),
-        ...defunct.sort((a, b) => a.title.localeCompare(b.title)),
-      ];
-    }
-    if (sortBy === "alphabetical-desc") {
-      return [
-        ...active.sort((a, b) => b.title.localeCompare(a.title)),
-        ...defunct.sort((a, b) => b.title.localeCompare(a.title)),
-      ];
-    }
-
-    // Relevance: featured first (shuffled within tier groups), then non-featured, defunct last
-    const featured = active.filter((i) => i.featured);
-    const nonFeatured = active.filter((i) => !i.featured);
-
-    const seedBase = `${filter}|${sortBy}|${
-      selectedCategories.join(",") || "all"
-    }`;
-
-    // Group featured by tier and shuffle each group
-    const featuredTierGroups: Record<number, Investment[]> = {};
-    featured.forEach((inv) => {
-      if (!featuredTierGroups[inv.tier]) featuredTierGroups[inv.tier] = [];
-      featuredTierGroups[inv.tier].push(inv);
-    });
-
-    const shuffledFeatured = Object.keys(featuredTierGroups)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .flatMap((tier) =>
-        shuffleArray(
-          featuredTierGroups[tier],
-          seededRandom(hashString(`${seedBase}|featured|tier-${tier}`))
-        )
-      );
-
-    // Group non-featured by tier and shuffle each group
-    const tierGroups: Record<number, Investment[]> = {};
-    nonFeatured.forEach((inv) => {
-      if (!tierGroups[inv.tier]) tierGroups[inv.tier] = [];
-      tierGroups[inv.tier].push(inv);
-    });
-
-    const shuffledNonFeatured = Object.keys(tierGroups)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .flatMap((tier) =>
-        shuffleArray(
-          tierGroups[tier],
-          seededRandom(hashString(`${seedBase}|tier-${tier}`))
-        )
-      );
-
-    const shuffledDefunct = shuffleArray(
-      defunct,
-      seededRandom(hashString(`${seedBase}|defunct`))
-    );
-
-    return [...shuffledFeatured, ...shuffledNonFeatured, ...shuffledDefunct];
-  }, [filteredInvestments, sortBy, filter, selectedCategories]);
-
-  // Split into active and defunct for rendering with separator
+  // Keep exited investments at the end of the main grid, before the defunct separator
   const activeInvestments = displayInvestments.filter(
     (i) => i.status !== "defunct"
   );
