@@ -10,7 +10,7 @@ export interface Investment {
 	logo: string;
 	tier: 1 | 2 | 3 | 4;
 	featured: boolean;
-	status?: "active" | "inactive" | "acquired";
+	status?: "active" | "inactive" | "acquired" | "exited" | "defunct";
 	x?: string;
 	github?: string;
 }
