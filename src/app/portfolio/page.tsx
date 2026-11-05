@@ -64,13 +64,18 @@ const getInvestmentCategories = unstable_cache(
 
 export default async function Portfolio() {
   const [investments, jobCounts, categories, news] = await Promise.all([
-    withDataFallback('portfolio.investments', getInvestments(), []),
+    withDataFallback<Awaited<ReturnType<typeof getInvestments>> | null>(
+      'portfolio.investments',
+      getInvestments(),
+      null,
+      { timeoutMs: 10_000 }
+    ),
     withDataFallback('portfolio.job-counts', getJobCountsByCompany(), {}),
     withDataFallback('portfolio.categories', getInvestmentCategories(), []),
     withDataFallback('portfolio.news', getPublicAllNews({ includeCompanyTimelineNews: true }), []),
   ]);
   const newsCounts = Object.fromEntries(
-    investments.map((investment) => [
+    (investments ?? []).map((investment) => [
       investment.title,
       filterNewsByCompany(news, investment.title).length,
     ])
@@ -97,12 +102,19 @@ export default async function Portfolio() {
           {/* Investments */}
           <section className="space-y-8">
             <h2 className="text-4xl font-bold text-center">Investments</h2>
-            <PortfolioGrid
-              investments={investments}
-              jobCounts={jobCounts}
-              newsCounts={newsCounts}
-              categories={categories}
-            />
+            {investments === null ? (
+              <div role="alert" className="text-center text-neutral-600 dark:text-neutral-400">
+                <p>Investments are temporarily unavailable.</p>
+                <a href="/portfolio" className="inline-block mt-3 underline">Try again</a>
+              </div>
+            ) : (
+              <PortfolioGrid
+                investments={investments}
+                jobCounts={jobCounts}
+                newsCounts={newsCounts}
+                categories={categories}
+              />
+            )}
           </section>
         </div>
       </main>
