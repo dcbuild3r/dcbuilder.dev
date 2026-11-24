@@ -56,6 +56,14 @@ describe("production response hardening", () => {
     );
   });
 
+  test("does not cache homepage and news outage responses at the CDN", async () => {
+    const rules = await nextConfig.headers?.();
+    for (const source of ["/", "/news"]) {
+      const rule = rules?.find((entry) => entry.source === source);
+      expect(rule?.headers).toContainEqual({ key: "Vercel-CDN-Cache-Control", value: "no-store" });
+    }
+  });
+
   test("does not cache portfolio data failures", async () => {
     const rules = await nextConfig.headers?.();
     for (const source of ["/portfolio", "/portfolio/:path*"]) {

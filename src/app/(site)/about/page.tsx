@@ -236,6 +236,8 @@ export default async function About() {
 					{affiliations.map((affiliation) => {
 						const duration = formatAffiliationDuration(affiliation.dateBegin, affiliation.dateEnd);
 						const active = isActive(affiliation.dateEnd);
+						const devpill = affiliation.title.toLowerCase() === "devpill.me";
+						const logo = devpill ? "/logos/devpill-light.png" : affiliation.logo;
 						const lightTile = LIGHT_TILE.includes(affiliation.title);
 						const dot = active ? "bg-green-600 shadow-[0_0_0_1px_#16a34a]" : "bg-neutral-400 shadow-[0_0_0_1px_#a3a3a3]";
 
@@ -256,17 +258,26 @@ export default async function About() {
 									className={`absolute left-0 top-[22px] box-border size-4 rounded-full border-[3px] border-ground min-[641px]:static min-[641px]:mt-2 min-[641px]:justify-self-center ${dot}`}
 								/>
 								<div className="flex min-w-0 flex-wrap items-start gap-x-6 gap-y-4">
-									{affiliation.logo ? (
+									{logo ? (
 										<span
 											className={`box-border flex size-28 shrink-0 rounded-3xl border ${lightTile ? "border-line bg-white p-3.5" : "border-transparent"}`}
 										>
 											<Image
-												src={affiliation.logo}
+												src={logo}
 												alt=""
 												width={112}
 												height={112}
-												className="size-full rounded-[inherit] object-contain"
+												className={`size-full rounded-[inherit] object-contain ${devpill ? "dark:hidden" : ""}`}
 											/>
+											{devpill && (
+												<Image
+													src="/logos/devpill-dark.png"
+													alt=""
+													width={112}
+													height={112}
+													className="hidden size-full rounded-[inherit] object-contain dark:block"
+												/>
+											)}
 										</span>
 									) : (
 										<div
