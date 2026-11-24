@@ -9,7 +9,7 @@ describe("pageMetadata", () => {
 		expect(m.alternates?.canonical).toBe(`${SITE_URL}/about`);
 		expect((m.openGraph as { title: string }).title).toBe("About");
 		expect((m.twitter as { title: string }).title).toBe("About");
-		expect(m.openGraph).not.toHaveProperty("images");
+		expect(m.openGraph).toHaveProperty("images", [`${SITE_URL}/about/opengraph-image`]);
 	});
 	test("article type carries publishedTime; noindex sets robots", () => {
 		const m = pageMetadata({ title: "T", path: "/blog/x", type: "article", publishedTime: "2026-01-01", noindex: true });

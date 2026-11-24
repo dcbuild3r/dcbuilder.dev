@@ -36,17 +36,9 @@ test.describe("Jobs Page", () => {
   });
 
   test("should filter by affiliation", async ({ page }) => {
-    // Find the affiliation select
-    const affiliationSelect = page.locator("#affiliation-filter");
-
-    if (await affiliationSelect.isVisible()) {
-      // Click to open and select Portfolio
-      await affiliationSelect.click();
-      await page.getByRole("option", { name: "Portfolio" }).click();
-
-      // URL should update
-      await expect(page).toHaveURL(/type=portfolio/);
-    }
+    const affiliation = page.getByRole("group", { name: "Affiliation" });
+    await affiliation.getByRole("button", { name: "Portfolio" }).click();
+    await expect(page).toHaveURL(/type=portfolio/);
   });
 
   test("should toggle Featured only filter", async ({ page }) => {

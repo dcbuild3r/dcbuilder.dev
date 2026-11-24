@@ -50,7 +50,7 @@ test.describe("Homepage", () => {
     await page.goto("/portfolio");
     // Check for the main container or controls which should always be present
     await expect(page.getByRole("combobox", { name: "Sort" })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Main/ })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Show" })).toBeVisible();
   });
 
   test("should render list items", async ({ page }) => {

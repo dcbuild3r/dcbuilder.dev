@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("home page loads and nav is visible", async ({ page }) => {
 	await page.goto("/");
 	await expect(page.getByRole("link", { name: "dcbuilder.eth" })).toBeVisible();
-	await expect(page.getByRole("link", { name: "Jobs" })).toBeVisible();
+	await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Jobs" })).toBeVisible();
 });
 
 test("jobs page renders filters", async ({ page }) => {
