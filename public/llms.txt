@@ -1,0 +1,32 @@
+# dcbuilder.dev
+
+> The public site of dcbuilder.eth. It covers research in Ethereum, programmable cryptography, digital identity, distributed systems and decentralized AI, alongside engineering, writing and angel investing.
+
+The public Model Context Protocol (MCP) server is available at https://mcp.dcbuilder.dev/mcp over Streamable HTTP. Its tools are read-only and require no account, API key or OAuth credentials.
+
+To connect Codex, run `codex mcp add dcbuilder_public --url https://mcp.dcbuilder.dev/mcp`. In another MCP client, add the same URL as a Streamable HTTP server. After connecting, use `tools/list` for the current tool schemas.
+
+## Public pages
+
+- [Home](https://dcbuilder.dev/): Research, engineering and angel investing interests.
+- [About](https://dcbuilder.dev/about): Biography, roles and affiliations.
+- [Blog](https://dcbuilder.dev/blog): Published articles. Append `/markdown` to an article URL for its plain Markdown version.
+- [Portfolio](https://dcbuilder.dev/portfolio): Public angel investments, categories and hiring status.
+- [News](https://dcbuilder.dev/news): Curated links, articles, announcements and portfolio updates.
+- [Jobs](https://dcbuilder.dev/jobs): Public job listings and application links.
+- [Candidates](https://dcbuilder.dev/candidates): Public candidate profiles, skills and availability.
+- [Sitemap](https://dcbuilder.dev/sitemap.xml): Index of public site URLs.
+
+## MCP tools
+
+- `get_site_page` takes `page` (`home` or `about`) and returns the page content and its URL.
+- `get_public_item` takes `collection` (`news`, `blog`, `candidates`, `portfolio` or `jobs`) and `id` from a search result. Use it to retrieve a single record or the full text of a published blog post.
+- `search_news` supports `q`, `company`, `category`, `type`, `hidePortfolioUpdates`, `minRelevance`, `since` and `sort`.
+- `search_blog` supports `q`, `source`, `minRelevance`, `since` and `sort`.
+- `search_candidates` supports `q`, `location`, `availability`, `experience`, `tags` and `featured`. Anonymous profiles use a public alias.
+- `search_portfolio` supports `q`, `category`, `categories`, `status`, `featured`, `hiring`, `main` and `sort`.
+- `search_jobs` supports `q`, `company`, `type`, `role`, `location`, `remote`, `featured` and `tags`. Results include the original application link when available.
+
+All search tools accept `limit` (default 20, maximum 50) and `offset` (default 0). Use `meta.hasMore` to tell whether another page is available. Dates in the `since` filter use `YYYY-MM-DD`.
+
+Use the returned `url` to cite a result. For job applications, use `applyUrl` when present.
