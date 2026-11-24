@@ -403,6 +403,41 @@ describe("getAllNews relevance mapping", () => {
     ]);
   });
 
+  test("rejects a transient source failure before caching the public feed and recovers on the next read", async () => {
+    const curatedLinks = { __table: "curated_links", date: {} };
+    const announcements = { __table: "announcements", date: {} };
+    const error = new Error("temporary database failure");
+    let available = false;
+    mock.module("../src/lib/blog", () => ({ getAllPosts: async () => [] }));
+    mock.module("@/db/schema", () => ({
+      curatedLinks, announcements, newsSourceInvestments: null, investments: null, affiliations: null, jobs: null,
+    }));
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: () => ({
+          from: (table: { __table: string }) => ({
+            orderBy: async () => {
+              if (table.__table !== "curated_links") return [];
+              if (!available) throw error;
+              return [{
+                id: "recovered-news",
+                title: "Recovered news",
+                url: "https://example.com/news",
+                date: new Date("2026-04-08T00:00:00Z"),
+                relevance: 5,
+              }];
+            },
+          }),
+        }),
+      },
+    }));
+    const { getPublicAllNews } = await import(`../src/lib/news?public-recovery=${Date.now()}`);
+    await expect(getPublicAllNews()).rejects.toThrow("temporary database failure");
+    available = true;
+    expect(await getPublicAllNews()).toMatchObject([{ id: "recovered-news" }]);
+  });
+
   test("attaches portfolio company context from X source mappings", async () => {
     const curatedLinks = { __table: "curated_links" };
     const announcements = { __table: "announcements" };

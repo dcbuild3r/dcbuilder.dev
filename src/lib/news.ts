@@ -280,7 +280,7 @@ export function isCompanyTimelineNewsItem(item: AggregatedNewsItem): boolean {
   );
 }
 
-async function getCuratedLinksWithFallback() {
+async function getCuratedLinksWithFallback(requireAvailable: boolean) {
   try {
     return await db
       .select()
@@ -313,16 +313,18 @@ async function getCuratedLinksWithFallback() {
         }));
       } catch (fallbackError) {
         console.error("[news] Curated links compatibility fallback failed:", fallbackError);
+        if (requireAvailable && !isMissingRelationError(fallbackError, "curated_links")) throw fallbackError;
         return [];
       }
     }
 
     console.error("[news] Failed to fetch curated links:", error);
+    if (requireAvailable && !isMissingRelationError(error, "curated_links")) throw error;
     return [];
   }
 }
 
-async function getAnnouncementsWithFallback() {
+async function getAnnouncementsWithFallback(requireAvailable: boolean) {
   try {
     return await db
       .select()
@@ -356,11 +358,13 @@ async function getAnnouncementsWithFallback() {
         }));
       } catch (fallbackError) {
         console.error("[news] Announcements compatibility fallback failed:", fallbackError);
+        if (requireAvailable && !isMissingRelationError(fallbackError, "announcements")) throw fallbackError;
         return [];
       }
     }
 
     console.error("[news] Failed to fetch announcements:", error);
+    if (requireAvailable && !isMissingRelationError(error, "announcements")) throw error;
     return [];
   }
 }
@@ -856,16 +860,17 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
   return contexts;
 }
 
-export async function getAllNews(
-  options: GetAllNewsOptions = {}
+async function loadNews(
+  options: GetAllNewsOptions,
+  requireAvailable: boolean,
 ): Promise<AggregatedNewsItem[]> {
   const includeCompanyTimelineNews = options.includeCompanyTimelineNews ?? false;
 
   // Fetch all data sources in parallel
   const [blogPosts, dbCuratedLinks, dbAnnouncements, portfolioCompanyContexts] = await Promise.all([
-    getAllPosts().catch(() => []),
-    getCuratedLinksWithFallback(),
-    getAnnouncementsWithFallback(),
+    requireAvailable ? getAllPosts() : getAllPosts().catch(() => []),
+    getCuratedLinksWithFallback(requireAvailable),
+    getAnnouncementsWithFallback(requireAvailable),
     getPortfolioCompanyContexts(),
   ]);
 
@@ -964,12 +969,14 @@ export async function getAllNews(
   return visibleNews;
 }
 
-// News aggregation is shared by several public pages. Keep the uncached
-// function above for newsletter generation and other freshness-sensitive
-// callers, while public pages reuse the same computed result for one minute.
+export function getAllNews(options: GetAllNewsOptions = {}) {
+  return loadNews(options, false);
+}
+
+// Reject failed reads so revalidation keeps the last successful feed.
 export const getPublicAllNews = cachePublicData(
-  ["news"],
-  async (options: GetAllNewsOptions = {}) => getAllNews(options),
+  ["news-feed"],
+  (options: GetAllNewsOptions = {}) => loadNews(options, true),
   ["news", "investments", "jobs", "blog"],
 );
 

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { CompanyNewsIconGrid } from "@/components/CompanyNewsIconGrid";
 import { NewsGrid } from "@/components/NewsGrid";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -18,8 +19,13 @@ export const metadata = pageMetadata({
 export const dynamic = "force-dynamic";
 
 export default async function NewsPage() {
-  const allNews = await withDataFallback("news.items", getPublicAllNews({ includeCompanyTimelineNews: true }), []);
-  const companyNewsCompanies = allNews.length
+  const allNews = await withDataFallback(
+    "news.items",
+    getPublicAllNews({ includeCompanyTimelineNews: true }),
+    null,
+    { timeoutMs: 8_000 },
+  );
+  const companyNewsCompanies = allNews?.length
     ? await withDataFallback("news.companies", getCompanyNewsIconCompanies(allNews), [])
     : [];
 
@@ -34,16 +40,19 @@ export default async function NewsPage() {
       <CompanyNewsIconGrid companies={companyNewsCompanies} />
 
       <div className="mt-8">
-        <Suspense
-          fallback={
-            <div className="py-8 text-center text-muted">Loading news...</div>
-          }
-        >
+        {allNews === null ? (
+          <div role="alert" className="space-y-3 py-8 text-center text-muted">
+            <p>The news feed is temporarily unavailable.</p>
+            <Link href="/news?retry=1" className="inline-block text-accent underline">Try again</Link>
+          </div>
+        ) : (
           <NewsGrid news={allNews} />
-        </Suspense>
+        )}
       </div>
 
-      <NewsTools />
+      <Suspense>
+        <NewsTools />
+      </Suspense>
     </div>
   );
 }

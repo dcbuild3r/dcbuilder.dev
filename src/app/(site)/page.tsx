@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { connection } from "next/server";
 import { HomeGpuCanvas } from "@/components/HomeGpuCanvas";
 import { DescentFigure } from "@/components/convergence/DescentFigure";
 import { buttonClass } from "@/components/ui/Button";
@@ -13,8 +14,7 @@ import { cn } from "@/lib/utils";
 import { JsonLd, pageMetadata, personJsonLd } from "@/lib/seo";
 import { SITE_TITLE } from "@/lib/site";
 
-// Cached reads (unstable_cache, 300s) keep this page off Postgres per request.
-export const revalidate = 300;
+const homeDataTimeout = { timeoutMs: 8_000 };
 
 const sectionHeading = "text-[28px] font-semibold tracking-[-0.035em] text-ink";
 const card = "rounded-2xl border border-line bg-surface";
@@ -47,11 +47,12 @@ export const metadata = {
 };
 
 export default async function Home() {
+  await connection();
   const [posts, investments, jobCounts, candidateCount] = await Promise.all([
-    withDataFallback("home.posts", getPublicAllPosts(), null),
-    withDataFallback("home.investments", getInvestments(), null),
-    withDataFallback("home.jobs", getJobCountsByCompany(), null),
-    withDataFallback("home.candidates", getCandidateCount(), null),
+    withDataFallback("home.posts", getPublicAllPosts(), null, homeDataTimeout),
+    withDataFallback("home.investments", getInvestments(), null, homeDataTimeout),
+    withDataFallback("home.jobs", getJobCountsByCompany(), null, homeDataTimeout),
+    withDataFallback("home.candidates", getCandidateCount(), null, homeDataTimeout),
   ]);
 
   const latest = posts?.slice(0, 3) ?? [];
@@ -130,33 +131,33 @@ export default async function Home() {
         </a>
       </section>
 
-      <section id="latest" className="mx-auto max-w-[1200px] scroll-mt-20 px-6 pt-[72px]">
-        {latest.length > 0 && (
-          <>
-            <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className={sectionHeading}>Latest writing</h2>
-              <Link href="/blog" className={textLink}>
-                All posts
+      <section id="latest" aria-labelledby="latest-writing" className="mx-auto max-w-[1200px] scroll-mt-20 px-6 pt-[72px]">
+        <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+          <h2 id="latest-writing" className={sectionHeading}>Latest writing</h2>
+          <Link href="/blog" className={textLink}>
+            All posts
+          </Link>
+        </div>
+        {latest.length > 0 ? (
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4">
+            {latest.map((post) => (
+              <Link key={post.slug} href={`/blog/${post.slug}`} className={cn(card, "flex flex-col gap-3 p-6")}>
+                <span className="font-mono text-xs text-muted">
+                  {formatBlogDate(post.date)} · {post.readingTime} min
+                </span>
+                <span className="text-xl font-semibold leading-tight text-ink">{post.title}</span>
+                <span className="text-[14.5px] leading-[1.55] text-body">{post.description}</span>
               </Link>
-            </div>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
-              {latest.map((post) => (
-                <Link key={post.slug} href={`/blog/${post.slug}`} className={cn(card, "flex flex-col gap-3 p-6")}>
-                  <span className="font-mono text-xs text-muted">
-                    {formatBlogDate(post.date)} · {post.readingTime} min
-                  </span>
-                  <span className="text-xl font-semibold leading-tight tracking-[-0.02em] text-ink">{post.title}</span>
-                  <span className="text-[14.5px] leading-[1.55] text-body">{post.description}</span>
-                </Link>
-              ))}
-            </div>
-          </>
+            ))}
+          </div>
+        ) : (
+          <p className="text-body">{posts === null ? "Latest posts are temporarily unavailable." : "No posts published yet."}</p>
         )}
       </section>
 
       <section className="mx-auto max-w-[1200px] px-6 pt-[72px] pb-20">
-        <div className="flex flex-wrap gap-4">
-          <div className={cn(card, "flex-[2_1_480px] p-7")}>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+          <div className={cn(card, "min-w-0 p-7")}>
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <h2 className={sectionHeading}>Portfolio</h2>
               {investments && (
@@ -197,16 +198,21 @@ export default async function Home() {
                 ))}
               </div>
             )}
+            {investments === null && <p className="text-sm text-muted">Featured investments are temporarily unavailable.</p>}
             <Link href="/portfolio" className={cn(textLink, "mt-4")}>
               See all investments
             </Link>
           </div>
 
-          <div className="flex flex-[1_1_300px] flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-4">
             <Link href="/jobs" className={cn(card, "flex flex-1 flex-col justify-between gap-6 p-7")}>
               <Eyebrow>Jobs board</Eyebrow>
               <span>
-                {openRoles !== null && <span className={cn(stat, "text-ink")}>{openRoles}</span>}
+                {openRoles === null ? (
+                  <span className="text-sm text-muted">Job count temporarily unavailable</span>
+                ) : (
+                  <span className={cn(stat, "text-ink")}>{openRoles}</span>
+                )}
                 <span className="mt-2 block text-[15px] leading-normal text-body">
                   open roles at portfolio and network companies
                 </span>
@@ -215,7 +221,11 @@ export default async function Home() {
             <Link href="/candidates" className={cn(card, "flex flex-1 flex-col justify-between gap-6 p-7")}>
               <Eyebrow>Candidates</Eyebrow>
               <span>
-                {candidateCount !== null && <span className={cn(stat, "text-ink")}>{candidateCount}</span>}
+                {candidateCount === null ? (
+                  <span className="text-sm text-muted">Candidate count temporarily unavailable</span>
+                ) : (
+                  <span className={cn(stat, "text-ink")}>{candidateCount}</span>
+                )}
                 <span className="mt-2 block text-[15px] leading-normal text-body">
                   talented builders looking for new opportunities
                 </span>
