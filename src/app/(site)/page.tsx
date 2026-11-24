@@ -19,7 +19,7 @@ export const revalidate = 300;
 const sectionHeading = "text-[28px] font-semibold tracking-[-0.035em] text-ink";
 const card = "rounded-2xl border border-line bg-surface";
 const heroHeading = "mb-[0.5em] text-[1.25em] font-bold tracking-[-0.02em] text-ink";
-const heroText = "text-[1.03em] leading-normal text-body";
+const heroText = "text-[1.03em] leading-[1.4] text-body";
 // em units: the hero scales with .home-hero-scale's viewport-driven font size.
 const heroButton = "min-h-[3.03em] gap-[0.69em] rounded-[0.83em] pl-[1.1em] pr-[1.24em] text-[0.906em]";
 const textLink = "inline-flex min-h-11 items-center text-[14.5px] font-medium text-accent";
@@ -67,15 +67,15 @@ export default async function Home() {
       <JsonLd data={personJsonLd()} />
       <section className="home-landing flex min-h-[calc(100dvh-64px)] items-center lg:min-h-[calc(100dvh-70px)]">
         <HomeGpuCanvas />
-        <div className="home-hero-scale relative z-[1] mx-auto flex w-full max-w-[75em] flex-wrap items-center justify-between gap-x-[4.5em] gap-y-[3em] px-6 pt-6 pb-[4.5em]">
-          <div className="home-hero-panel max-w-[38.75em] flex-1 basis-[22.5em] rounded-[1.75em] p-[1.75em]">
+        <div className="home-hero-scale relative z-[1] mx-auto grid w-full max-w-[81em] gap-x-[2em] gap-y-[3em] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.16fr)] px-6 pt-6 pb-[4.5em]">
+          <div className="home-hero-panel min-w-0 rounded-[1.75em] p-[1.5em]">
             <p className="mb-[1.43em] font-mono text-[0.875em] font-semibold uppercase tracking-[0.14em] text-ink">
               Researcher, engineer, angel investor
             </p>
             <h1 className="text-[clamp(2.8rem,6vw,5.4em)] font-semibold leading-[0.92] tracking-[-0.065em] text-ink">
               dcbuilder.eth
             </h1>
-            <div className="mt-[2em] flex flex-wrap gap-[0.75em]">
+            <div className="mt-[1.5em] flex flex-wrap gap-[0.75em]">
               <Link href="/blog" className={buttonClass({ className: heroButton })}>
                 <svg aria-hidden="true" className="size-[1.24em]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 20h9" />
@@ -93,7 +93,7 @@ export default async function Home() {
                 View portfolio
               </Link>
             </div>
-            <div className="mt-[2.25em] grid grid-cols-2 gap-[1.5em]">
+            <div className="mt-[1.65em] grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-[1em]">
               <HeroList title={SECTIONS.research.title} items={SECTIONS.research.items} />
               <HeroList title={SECTIONS.engineering.title} items={SECTIONS.engineering.items} />
               <section className="col-span-full">
@@ -106,10 +106,17 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="flex flex-1 basis-[20em] justify-center lg:justify-end">
-            <div className="home-kaneki-frame overflow-hidden rounded-[1.75em] p-[1em]">
-              <Image src={HERO.image} alt={HERO.alt} width={800} height={800} className="block h-auto w-full" priority draggable={false} />
-            </div>
+          <div className="home-kaneki relative mx-auto w-full max-w-[34rem] overflow-clip xl:max-w-none">
+            <Image
+              src={HERO.image}
+              alt={HERO.alt}
+              width={1254}
+              height={1254}
+              sizes="(min-width: 1280px) 55vw, (min-width: 592px) 34rem, calc(100vw - 3rem)"
+              className="home-kaneki-image absolute left-1/2 -translate-x-1/2 object-contain object-top"
+              preload
+              draggable={false}
+            />
           </div>
         </div>
         <a

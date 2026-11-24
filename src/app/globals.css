@@ -130,18 +130,22 @@ body {
   font-size: clamp(16px, min(1.111vw, 1.778dvh), 32px);
 }
 
-.home-kaneki-frame {
-  width: min(100%, 32.5em);
-  border: 1px solid rgb(255 255 255 / 0.6);
-  background: rgb(255 255 255 / 0.55);
-  box-shadow: 0 28px 90px rgb(10 10 10 / 0.18);
-  backdrop-filter: blur(24px);
+.home-kaneki {
+  /* Visible bounds of the transparent 1254px square artwork. */
+  aspect-ratio: 1186 / 1072;
 }
 
-.dark .home-kaneki-frame {
-  border-color: rgb(255 255 255 / 0.1);
-  background: rgb(15 15 15 / 0.5);
-  box-shadow: 0 28px 90px rgb(0 0 0 / 0.38);
+.home-kaneki-image {
+  top: -0.65%;
+  width: 105.73%;
+  max-width: none;
+  height: 116.98%;
+}
+
+@media (width >= 80rem) {
+  .home-kaneki {
+    aspect-ratio: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
