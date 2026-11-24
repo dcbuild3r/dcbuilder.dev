@@ -7,7 +7,7 @@ test("MCP setup opens beside the theme control and copies the public URL", async
   const dialog = page.getByRole("dialog", { name: "Connect your AI" });
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText("read only");
-  await dialog.getByRole("button", { name: "Copy mcp url" }).click();
+  await dialog.getByRole("button", { name: "Copy MCP URL" }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("https://mcp.dcbuilder.dev/mcp");
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
@@ -16,6 +16,7 @@ test("MCP setup opens beside the theme control and copies the public URL", async
 test("MCP setup is available in the mobile navigation", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Set up MCP" }).last().click();
+  await page.getByRole("button", { name: "Open menu" }).click();
+  await page.getByRole("dialog", { name: "Navigation menu" }).getByRole("button", { name: "Set up MCP" }).click();
   await expect(page.getByRole("dialog", { name: "Connect your AI" })).toBeVisible();
 });

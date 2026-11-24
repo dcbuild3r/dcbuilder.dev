@@ -14,7 +14,7 @@ export function ThemeToggle() {
 
   // Prevent hydration mismatch by rendering placeholder until mounted
   if (!mounted) {
-    return <div className="w-9 h-9" />;
+    return <div className="size-11" />;
   }
 
   const isDark = resolvedTheme === "dark";
@@ -22,7 +22,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="p-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
+      className="inline-flex size-11 cursor-pointer items-center justify-center rounded-lg text-body hover:text-accent"
       aria-label="Toggle theme"
       aria-pressed={isDark}
     >

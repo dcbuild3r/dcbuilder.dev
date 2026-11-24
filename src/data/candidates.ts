@@ -154,4 +154,4 @@ export interface Candidate {
 	createdAt?: string | Date;
 }
 
-export const DCBUILDER_TELEGRAM = "https://t.me/dc_builder";
+export const DCBUILDER_SIGNAL = "https://signal.me/#eu/BUzdJ333lbZAKVUKEPl4r9zN7asssokhqWQ1gc4Rb6ofFU3QAqBNqJZH2Ho6TQ3X";

@@ -1,4 +1,5 @@
 const HIRING_ENTITIES: Record<string, string[]> = {
+  Exo: ["Exo", "Exo Labs"],
   Monad: ["Monad Foundation", "Category Labs"],
 };
 

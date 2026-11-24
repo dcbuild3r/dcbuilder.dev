@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { Navbar } from "@/components/Navbar";
+import { SiteShell } from "@/components/SiteShell";
 
 export default function NotFound() {
 	return (
-		<>
-			<Navbar />
-			<main id="main-content" className="min-h-screen pt-24 px-6 flex items-center justify-center">
+		<SiteShell>
+			<div className="py-24 px-6 flex items-center justify-center">
 				<div className="text-center space-y-4">
 					<h1 className="text-6xl font-bold">404</h1>
 					<h2 className="text-2xl font-semibold">Page not found</h2>
@@ -20,7 +19,7 @@ export default function NotFound() {
 						Go home
 					</Link>
 				</div>
-			</main>
-		</>
+			</div>
+		</SiteShell>
 	);
 }

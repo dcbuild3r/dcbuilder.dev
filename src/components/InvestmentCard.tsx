@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { Investment } from "@/types/investments";
 import { isNew } from "@/lib/shuffle";
-import { getInvestmentLogoVariants } from "@/lib/investment-branding";
-import { DocumentIcon } from "@/components/ui/icons";
+import { getInvestmentLogoVariants, getInvestmentTile, getInvestmentLogoClass } from "@/lib/investment-branding";
+import { Badge } from "@/components/ui/badge";
+import { GitHubIcon, WebsiteIcon, XIcon } from "@/components/ui/icons";
+import { cn } from "@/lib/utils";
 
 interface InvestmentCardProps {
   investment: Investment;
@@ -13,223 +15,192 @@ interface InvestmentCardProps {
   newsUrl?: string;
 }
 
+const iconLinkClass =
+  "flex size-10 items-center justify-center rounded-[10px] text-body hover:text-accent";
+
+const CATEGORY_TINTS = [
+  "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
+  "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300",
+  "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300",
+  "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-300",
+  "bg-warm-soft text-warm",
+  "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300",
+];
+
+function categoryTint(name: string) {
+  let h = 0;
+  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 997;
+  return CATEGORY_TINTS[h % CATEGORY_TINTS.length];
+}
+
 export function InvestmentCard({
   investment,
   jobCount = 0,
   jobsUrl,
   newsUrl,
 }: InvestmentCardProps) {
-  const isExited = investment.status === "exited";
   const isDefunct = investment.status === "defunct";
+  const isExited = investment.status === "exited";
   const logoVariants = getInvestmentLogoVariants(
     investment.title,
     investment.logo
   );
-  const isUnlink = investment.title.toLowerCase() === "unlink";
-  const logoClassName = `w-28 h-28 sm:w-20 sm:h-20 object-contain rounded-lg p-2 group-hover:scale-[1.08] transition-transform duration-150 ${
-    isDefunct ? "grayscale opacity-80" : ""
-  }`;
+  const tile = getInvestmentTile(investment.title);
+  const logoClassName = cn(
+    "size-[104px] shrink-0 rounded-[20px] object-contain",
+    !tile && "border border-line bg-white p-2",
+    getInvestmentLogoClass(investment.title),
+    isDefunct && "grayscale opacity-80"
+  );
+  const hideOnError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.style.display = "none";
+  };
+  const showNew = isNew(investment.createdAt) && !isDefunct && !isExited;
 
   return (
     <article
       data-testid="investment-card"
-      className={`group relative p-6 pb-8 rounded-xl border transition-colors flex flex-col items-center text-center ${
-        isDefunct
-          ? "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
-          : investment.tier === 1
-          ? "border-neutral-300 dark:border-neutral-600 hover:border-neutral-500 dark:hover:border-neutral-400"
-          : investment.tier === 3
-          ? "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700"
-          : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
-      }`}
+      className="flex flex-col overflow-hidden rounded-[20px] border border-line bg-surface"
     >
-      <div className="w-32 h-32 sm:w-24 sm:h-24 mb-4 flex items-center justify-center">
-        {isUnlink ? (
-          <>
-            <Image
-              src="/logos/unlink-dark.jpg"
-              alt={investment.title}
-              width={120}
-              height={120}
-              className={`${logoClassName} bg-black dark:hidden`}
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.style.display = "none";
-              }}
-            />
-            <Image
-              src="/logos/unlink-light.jpg"
-              alt={investment.title}
-              width={120}
-              height={120}
-              className={`${logoClassName} hidden bg-white dark:block`}
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.style.display = "none";
-              }}
-            />
-          </>
-        ) : logoVariants ? (
-          <>
-            <Image
-              src={logoVariants.light}
-              alt={investment.title}
-              width={120}
-              height={120}
-              className={`${logoClassName} bg-white ${logoVariants.dark ? "dark:hidden" : ""}`}
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.style.display = "none";
-              }}
-            />
-            {logoVariants.dark && (
-              <Image
-                src={logoVariants.dark}
-                alt={investment.title}
-                width={120}
-                height={120}
-                className={`${logoClassName} bg-white hidden dark:block`}
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            )}
-          </>
-        ) : null}
-      </div>
-      <h3 className="font-semibold mb-2">
-        {investment.website ? (
-          <a
-            href={investment.website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:underline"
-          >
-            {investment.title}
-          </a>
-        ) : (
-          investment.title
+      <div
+        className={cn(
+          "relative flex h-[148px] items-center justify-center",
+          !tile && "bg-surface-2"
+        )}
+        style={tile ? { background: tile } : undefined}
+      >
+        {logoVariants && (
+          <Image
+            src={logoVariants.light}
+            alt=""
+            width={104}
+            height={104}
+            className={cn(logoClassName, logoVariants.dark && "dark:hidden")}
+            onError={hideOnError}
+          />
+        )}
+        {logoVariants?.dark && (
+          <Image
+            src={logoVariants.dark}
+            alt=""
+            width={104}
+            height={104}
+            className={cn(logoClassName, "hidden dark:block")}
+            onError={hideOnError}
+          />
         )}
         {investment.featured && (
-          <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
-            ★
+          <span
+            role="img"
+            aria-label="Featured"
+            title="Featured"
+            className="absolute left-3 top-2.5 flex drop-shadow-[0_1px_3px_rgb(0_0_0/0.35)]"
+          >
+            <svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="#fbbf24" stroke="#ffffff" strokeWidth="1.2" strokeLinejoin="round">
+              <path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.6 1.1 6.5L12 17.5l-5.8 3.05 1.1-6.5-4.7-4.6 6.5-.95z" />
+            </svg>
           </span>
         )}
-        {isNew(investment.createdAt) && !isDefunct && !isExited && (
-          <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
-            NEW
-          </span>
+        <div className="absolute right-3 top-2.5 flex flex-col items-end gap-1">
+          {showNew && <Badge variant="outline" className="bg-surface">NEW</Badge>}
+          {isExited && <Badge variant="outline" className="bg-surface">Exited</Badge>}
+          {isDefunct && <Badge variant="warm">Ceased Operations</Badge>}
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col px-5 pb-3 pt-4">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="min-w-0 text-xl font-semibold leading-tight tracking-[-0.02em] text-ink">
+            {investment.title}
+          </h3>
+          <div className="-mr-2.5 flex shrink-0">
+            {investment.website && (
+              <a
+                href={investment.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={iconLinkClass}
+                aria-label={`Visit ${investment.title} website`}
+              >
+                <WebsiteIcon className="size-[18px]" />
+              </a>
+            )}
+            {investment.x && (
+              <a
+                href={investment.x}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={iconLinkClass}
+                aria-label={`Visit ${investment.title} on X`}
+              >
+                <XIcon className="size-[15px]" />
+              </a>
+            )}
+            {investment.github && (
+              <a
+                href={investment.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={iconLinkClass}
+                aria-label={`Visit ${investment.title} on GitHub`}
+              >
+                <GitHubIcon className="size-[17px]" />
+              </a>
+            )}
+          </div>
+        </div>
+
+        <p className="mt-1.5 text-[14.5px] leading-[1.55] text-body">
+          {investment.description}
+        </p>
+
+        {investment.categories && investment.categories.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {investment.categories.map((c) => (
+              <span
+                key={c}
+                className={cn(
+                  "rounded-full px-2.5 py-[3px] text-[12.5px] font-medium",
+                  categoryTint(c)
+                )}
+              >
+                {c}
+              </span>
+            ))}
+          </div>
         )}
-      </h3>
-      {isExited && (
-        <span className="inline-block px-2 py-0.5 mb-2 text-xs rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-          Exited
-        </span>
-      )}
-      {isDefunct && (
-        <span className="inline-block px-2 py-0.5 mb-2 text-xs rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-          Ceased Operations
-        </span>
-      )}
-      <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-        {investment.description}
-      </p>
-      {/* Social Links */}
-      <div className="flex items-center gap-1">
-        {/* Website */}
-        {investment.website && (
-          <a
-            href={investment.website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-            title="Website"
-            aria-label={`Visit ${investment.title} website`}
-          >
-            <svg
-              className="w-5 h-5 sm:w-4 sm:h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z" />
-            </svg>
-          </a>
-        )}
-        {/* X */}
-        {investment.x && (
-          <a
-            href={investment.x}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-            title="X"
-            aria-label={`Visit ${investment.title} on X`}
-          >
-            <svg
-              className="w-5 h-5 sm:w-4 sm:h-4"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-            </svg>
-          </a>
-        )}
-        {/* GitHub */}
-        {investment.github && (
-          <a
-            href={investment.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-2.5 sm:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-            title="GitHub"
-            aria-label={`Visit ${investment.title} on GitHub`}
-          >
-            <svg
-              className="w-5 h-5 sm:w-4 sm:h-4"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-            </svg>
-          </a>
+
+        {(newsUrl || (jobCount > 0 && jobsUrl)) && (
+          <div className="mt-auto flex flex-wrap items-center gap-x-2 pt-2.5">
+            {newsUrl && (
+              <a
+                href={newsUrl}
+                className="inline-flex min-h-11 items-center"
+                aria-label={`View news for ${investment.title}`}
+              >
+                <span className="inline-flex h-[30px] items-center rounded-full border border-line-strong px-3 text-[13px] font-semibold text-ink">
+                  News
+                </span>
+              </a>
+            )}
+            {jobCount > 0 && jobsUrl && (
+              <a
+                href={jobsUrl}
+                className="inline-flex min-h-11 items-center"
+                aria-label={`View ${jobCount} job openings at ${investment.title}`}
+              >
+                <span className="inline-flex h-[30px] items-center gap-1.5 rounded-full bg-inverse pl-3 pr-2 text-[13px] font-semibold text-inverse-ink">
+                  Hiring
+                  <span className="rounded-full bg-surface px-1.5 py-0.5 text-[11px] font-bold leading-none text-ink">
+                    {jobCount}
+                  </span>
+                </span>
+              </a>
+            )}
+          </div>
         )}
       </div>
-      {/* News Button */}
-      {newsUrl && (
-        <a
-          href={newsUrl}
-          className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-[transform,box-shadow,background-color] duration-150 hover:scale-105 hover:bg-black hover:shadow-md active:scale-100 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
-          aria-label={`View news for ${investment.title}`}
-        >
-          <DocumentIcon className="size-3.5" aria-hidden="true" />
-          <span>News</span>
-        </a>
-      )}
-
-      {/* Join Button */}
-      {jobCount > 0 && jobsUrl && (
-        <a
-          href={jobsUrl}
-          className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm hover:bg-black dark:hover:bg-neutral-100 hover:shadow-md hover:scale-105 active:scale-100 transition-[transform,box-shadow,background-color] duration-150"
-          aria-label={`View ${jobCount} job openings at ${investment.title}`}
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white dark:bg-neutral-900 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-white dark:bg-neutral-900"></span>
-          </span>
-          <span>Hiring</span>
-          <span className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none">
-            {jobCount}
-          </span>
-        </a>
-      )}
     </article>
   );
 }

@@ -1,11 +1,3 @@
-/**
- * Shared utility functions for deterministic shuffling and date checks.
- * Used across CandidatesGrid, JobsGrid, and PortfolioGrid for consistent behavior.
- */
-
-/**
- * Generate a hash from a string value for seeding random number generators.
- */
 export function hashString(value: string): number {
   let hash = 0;
   for (let i = 0; i < value.length; i++) {
@@ -40,10 +32,6 @@ export function shuffleArray<T>(array: T[], random: () => number): T[] {
   return result;
 }
 
-/**
- * Check if a date is within a specified number of days from now.
- * Useful for "NEW" badges on recently created items.
- */
 export function isWithinDays(
   date: string | Date | null | undefined,
   days: number
@@ -55,10 +43,6 @@ export function isWithinDays(
   return d > cutoff;
 }
 
-/**
- * Check if item was created within the last 2 weeks (14 days).
- * Convenience wrapper for the common "NEW" badge check.
- */
 export function isNew(createdAt: string | Date | null | undefined): boolean {
   return isWithinDays(createdAt, 14);
 }

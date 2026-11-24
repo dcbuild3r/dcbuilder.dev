@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
-import { McpSetup } from "./McpSetup";
+import { McpDialog } from "./McpDialog";
+import { GitHubIcon, XIcon } from "./ui/icons";
+import { cn } from "@/lib/utils";
 
 const navLinks = [
-	{ href: "/", label: "Home" },
 	{ href: "/about", label: "About" },
 	{ href: "/blog", label: "Blog" },
 	{ href: "/news", label: "News" },
@@ -16,12 +18,33 @@ const navLinks = [
 	{ href: "/candidates", label: "Candidates" },
 ];
 
+const isActive = (pathname: string, href: string) =>
+	pathname === href || pathname.startsWith(`${href}/`);
+
+function Logo({ onClick }: { onClick?: () => void }) {
+	return (
+		<Link
+			href="/"
+			onClick={onClick}
+			className="inline-flex min-h-11 items-center gap-2.5 text-[17px] font-bold tracking-[-0.02em] text-ink"
+		>
+			<Image src="/avatar.png" alt="" width={30} height={30} className="size-[30px] rounded-full object-cover" />
+			dcbuilder.eth
+		</Link>
+	);
+}
+
+const mcpPill = "inline-flex items-center rounded-full bg-inverse font-mono text-xs font-bold text-inverse-ink";
+const iconLink = "size-11 items-center justify-center text-body hover:text-accent";
+const squareButton = "size-11 cursor-pointer items-center justify-center rounded-xl bg-surface-2 text-ink";
+const menuSocial = "inline-flex size-12 items-center justify-center rounded-[14px] border border-line text-ink";
+
 export function Navbar() {
 	const pathname = usePathname();
 	const [menuState, setMenuState] = useState(() => ({ open: false, path: pathname }));
+	const [mcpOpen, setMcpOpen] = useState(false);
 	const menuButtonRef = useRef<HTMLButtonElement>(null);
-	const firstFocusableRef = useRef<HTMLAnchorElement>(null);
-	const lastFocusableRef = useRef<HTMLAnchorElement>(null);
+	const menuRef = useRef<HTMLDivElement>(null);
 
 	const isMenuOpen = menuState.open && menuState.path === pathname;
 
@@ -33,192 +56,151 @@ export function Navbar() {
 		setMenuState((prev) => (prev.open ? { ...prev, open: false } : prev));
 	}, []);
 
-	// Prevent body scroll when menu is open and manage focus
 	useEffect(() => {
-		if (isMenuOpen) {
-			document.body.style.overflow = "hidden";
-			// Focus first link when menu opens
-			setTimeout(() => firstFocusableRef.current?.focus(), 100);
-		} else {
-			document.body.style.overflow = "";
-		}
+		if (!isMenuOpen) return;
+		document.body.style.overflow = "hidden";
+		menuRef.current?.querySelector<HTMLElement>("button")?.focus();
 		return () => {
 			document.body.style.overflow = "";
 		};
 	}, [isMenuOpen]);
 
-	// Handle keyboard navigation for focus trap
 	const handleMenuKeyDown = useCallback((e: React.KeyboardEvent) => {
 		if (e.key === "Escape") {
 			closeMenu();
 			menuButtonRef.current?.focus();
+			return;
 		}
-		// Trap focus within menu
-		if (e.key === "Tab") {
-			if (e.shiftKey && document.activeElement === firstFocusableRef.current) {
-				e.preventDefault();
-				lastFocusableRef.current?.focus();
-			} else if (!e.shiftKey && document.activeElement === lastFocusableRef.current) {
-				e.preventDefault();
-				firstFocusableRef.current?.focus();
-			}
+		if (e.key !== "Tab") return;
+		const focusable = menuRef.current?.querySelectorAll<HTMLElement>("a[href], button");
+		if (!focusable?.length) return;
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+		if (e.shiftKey && document.activeElement === first) {
+			e.preventDefault();
+			last.focus();
+		} else if (!e.shiftKey && document.activeElement === last) {
+			e.preventDefault();
+			first.focus();
 		}
 	}, [closeMenu]);
 
 	return (
-		<nav className="fixed top-0 left-0 right-0 z-50 border-b border-neutral-200/45 bg-white/45 shadow-[0_1px_0_rgba(255,255,255,0.28)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-neutral-950/35 dark:shadow-[0_1px_0_rgba(255,255,255,0.04)]">
-			<div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-				{/* Logo */}
-				<Link
-					href="/"
-					className="text-xl font-bold hover:opacity-70 transition-opacity cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
-				>
-					dcbuilder.eth
-				</Link>
+		<>
+			<header className="sticky top-0 z-[var(--z-sticky)] bg-ground/85 backdrop-blur-md">
+				<div className="mx-auto flex max-w-[1200px] items-center justify-between gap-x-6 gap-y-2 px-6 py-2.5 sm:max-lg:px-10">
+					<Logo />
 
-				{/* Desktop: Center - Social Links (centered in remaining space) */}
-				<div className="hidden md:flex flex-1 items-center justify-center gap-4">
-					<a
-						href="https://x.com/dcbuilder"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="p-2 hover:scale-110 transition-transform cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
-						aria-label="X (Twitter)"
-					>
-						<svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-							<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-						</svg>
-					</a>
-					<a
-						href="https://github.com/dcbuild3r"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="p-2 hover:scale-110 transition-transform cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
-						aria-label="GitHub"
-					>
-						<svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-							<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-						</svg>
-					</a>
-				</div>
+					<nav aria-label="Primary" className="hidden items-center gap-0.5 rounded-[26px] bg-surface-2 p-[3px] text-[14.5px] font-medium lg:flex">
+						{navLinks.map((link) => {
+							const active = isActive(pathname, link.href);
+							return (
+								<Link
+									key={link.href}
+									href={link.href}
+									aria-current={active ? "page" : undefined}
+									className={cn(
+										"inline-flex min-h-11 items-center rounded-full px-4",
+										active ? "bg-inverse font-semibold text-inverse-ink" : "text-body hover:text-accent",
+									)}
+								>
+									{link.label}
+								</Link>
+							);
+						})}
+					</nav>
 
-				{/* Desktop: Right - Navigation & Theme */}
-					<div className="hidden md:flex items-center gap-6">
-						{navLinks.map((link) => (
-							<Link
-								key={link.href}
-								href={link.href}
-								aria-current={pathname === link.href ? "page" : undefined}
-								className={`hover:opacity-70 transition-opacity cursor-pointer ${
-									pathname === link.href
-										? "font-medium"
-										: "text-neutral-600 dark:text-neutral-400"
-								} rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900`}
-							>
-							{link.label}
-						</Link>
-					))}
-					<ThemeToggle />
-					<McpSetup />
-				</div>
-
-				{/* Mobile: Right side controls */}
-				<div className="flex md:hidden items-center gap-2">
-					<ThemeToggle />
-					<McpSetup />
-					<button
-						ref={menuButtonRef}
-						onClick={() => {
-							if (isMenuOpen) {
-								closeMenu();
-							} else {
-								openMenu();
-							}
-						}}
-						className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
-						aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-						aria-expanded={isMenuOpen}
-						aria-controls="mobile-menu"
-					>
-						{isMenuOpen ? (
-							<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-								<line x1="18" y1="6" x2="6" y2="18" />
-								<line x1="6" y1="6" x2="18" y2="18" />
+					<div className="flex items-center gap-0.5">
+						<button
+							type="button"
+							aria-label="Set up MCP"
+							aria-haspopup="dialog"
+							onClick={() => setMcpOpen(true)}
+							className="hidden min-h-11 cursor-pointer items-center px-1.5 sm:inline-flex"
+						>
+							<span className={cn(mcpPill, "h-[30px] px-3")}>MCP</span>
+						</button>
+						<a href="https://x.com/dcbuilder" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" className={cn(iconLink, "hidden sm:inline-flex")}>
+							<XIcon className="size-[18px]" />
+						</a>
+						<a href="https://github.com/dcbuild3r" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className={cn(iconLink, "hidden sm:inline-flex")}>
+							<GitHubIcon className="size-[18px]" />
+						</a>
+						<ThemeToggle />
+						<button
+							ref={menuButtonRef}
+							type="button"
+							onClick={openMenu}
+							className={cn(squareButton, "inline-flex lg:hidden")}
+							aria-label="Open menu"
+							aria-haspopup="dialog"
+							aria-expanded={isMenuOpen}
+							aria-controls="mobile-menu"
+						>
+							<svg aria-hidden="true" className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+								<path d="M4 7h16M4 12h16M4 17h16" />
 							</svg>
-						) : (
-							<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-								<line x1="3" y1="12" x2="21" y2="12" />
-								<line x1="3" y1="6" x2="21" y2="6" />
-								<line x1="3" y1="18" x2="21" y2="18" />
-							</svg>
-						)}
-					</button>
+						</button>
+					</div>
 				</div>
-			</div>
+			</header>
 
-			{/* Mobile Menu Overlay */}
+			{/* Outside the header: its backdrop-filter would trap fixed positioning. */}
 			{isMenuOpen && (
 				<div
 					id="mobile-menu"
+					ref={menuRef}
 					role="dialog"
 					aria-modal="true"
 					aria-label="Navigation menu"
 					onKeyDown={handleMenuKeyDown}
-					className="mobile-nav-overlay md:hidden fixed inset-x-0 top-[var(--navbar-height)] h-[calc(100dvh-var(--navbar-height))] z-[var(--z-sticky)] overflow-y-auto overscroll-contain"
+					className="fixed inset-0 z-[var(--z-modal)] flex flex-col overflow-y-auto bg-ground px-6 pt-2.5 pb-7 lg:hidden"
 				>
-					<div className="flex flex-col items-center p-6 space-y-6">
-						{/* Nav Links - centered for easy thumb reach */}
-						<div className="flex flex-col items-center space-y-4">
-								{navLinks.map((link, index) => (
-									<Link
-										key={link.href}
-										ref={index === 0 ? firstFocusableRef : undefined}
-										href={link.href}
-										aria-current={pathname === link.href ? "page" : undefined}
-									onClick={closeMenu}
-									className={`text-xl py-2 ${
-										pathname === link.href
-											? "font-semibold"
-											: "text-neutral-600 dark:text-neutral-400"
-									} rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900`}
-								>
-									{link.label}
-								</Link>
-							))}
-						</div>
-
-						{/* Divider */}
-						<div className="w-full border-t border-neutral-200 dark:border-neutral-800" />
-
-						{/* Social Links */}
-						<div className="flex items-center gap-4">
-							<a
-								href="https://x.com/dcbuilder"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
-								aria-label="X (Twitter)"
+					<div className="flex min-h-[50px] items-center justify-between">
+						<Logo onClick={closeMenu} />
+						<button type="button" onClick={closeMenu} aria-label="Close menu" className={cn(squareButton, "inline-flex")}>
+							<svg aria-hidden="true" className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+								<path d="M6 6l12 12M18 6L6 18" />
+							</svg>
+						</button>
+					</div>
+					<nav aria-label="Menu" className="mt-3 flex flex-1 flex-col">
+						{[{ href: "/", label: "Home" }, ...navLinks].map((link) => (
+							<Link
+								key={link.href}
+								href={link.href}
+								aria-current={(link.href === "/" ? pathname === "/" : isActive(pathname, link.href)) ? "page" : undefined}
+								onClick={closeMenu}
+								className="flex min-h-14 flex-1 items-center justify-center text-center text-[34px] font-bold tracking-[-0.035em] text-ink aria-[current=page]:text-accent"
 							>
-								<svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-									<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-								</svg>
-							</a>
-							<a
-								href="https://github.com/dcbuild3r"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
-								aria-label="GitHub"
-								ref={lastFocusableRef}
-							>
-								<svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-									<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-								</svg>
-							</a>
-						</div>
+								{link.label}
+							</Link>
+						))}
+					</nav>
+					<div className="flex flex-wrap items-center justify-center gap-4 pt-3">
+						<button
+							type="button"
+							aria-label="Set up MCP"
+							aria-haspopup="dialog"
+							onClick={() => {
+								closeMenu();
+								setMcpOpen(true);
+							}}
+							className={cn(mcpPill, "h-12 cursor-pointer rounded-[14px] px-[18px] text-[13px]")}
+						>
+							MCP
+						</button>
+						<a href="https://x.com/dcbuilder" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" className={menuSocial}>
+							<XIcon className="size-[17px]" />
+						</a>
+						<a href="https://github.com/dcbuild3r" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className={menuSocial}>
+							<GitHubIcon className="size-[19px]" />
+						</a>
 					</div>
 				</div>
 			)}
-		</nav>
+
+			<McpDialog open={mcpOpen} onClose={() => setMcpOpen(false)} />
+		</>
 	);
 }

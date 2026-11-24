@@ -134,12 +134,12 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
         }));
       } catch (fallbackError) {
         console.error("[blog] Compatibility fallback failed:", fallbackError);
-        return [];
+        throw fallbackError;
       }
     }
 
     console.error("[blog] Failed to fetch all posts:", error);
-    return [];
+    throw error;
   }
 }
 
@@ -175,7 +175,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     };
   } catch (error) {
     console.error(`[blog] Failed to fetch post by slug "${slug}":`, error);
-    return null;
+    throw error;
   }
 }
 

@@ -1,3 +1,5 @@
+import { hashString } from "@/lib/shuffle";
+
 // Consistent color assignment for skills/tags based on string hash
 // Colors are Tailwind classes for both light and dark mode
 
@@ -15,17 +17,6 @@ const colors = [
   "bg-lime-100 text-lime-700 dark:bg-lime-900/40 dark:text-lime-300",
   "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300",
 ];
-
-// Simple hash function to get consistent color for a skill
-function hashString(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash);
-}
 
 export function getSkillColor(skill: string): string {
   const index = hashString(skill.toLowerCase()) % colors.length;

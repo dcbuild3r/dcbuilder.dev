@@ -13,6 +13,9 @@ import {
 import { sortPortfolioInvestments } from "@/lib/portfolio-order";
 import { getPortfolioJobCount, getPortfolioJobsUrl } from "@/lib/portfolio-jobs";
 import { getPortfolioNewsUrl } from "@/lib/portfolio-news";
+import { buttonClass } from "@/components/ui/Button";
+import { fieldClass } from "@/components/ui/field";
+import { cn } from "@/lib/utils";
 
 interface PortfolioGridProps {
   investments: Investment[];
@@ -30,6 +33,7 @@ export function PortfolioGrid({
   const [sortBy, setSortBy] = useState<SortOption>("relevance");
   const [filter, setFilter] = useState<FilterOption>("all");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [query, setQuery] = useState("");
 
   // Count investments by tier/featured
   const mainCount = useMemo(
@@ -78,6 +82,13 @@ export function PortfolioGrid({
       result = result.filter((i) => i.tier <= 3);
     }
 
+    const q = query.trim().toLowerCase();
+    if (q) {
+      result = result.filter((i) =>
+        `${i.title} ${i.description ?? ""}`.toLowerCase().includes(q)
+      );
+    }
+
     // Apply category filter (match ANY selected category)
     if (selectedCategories.length > 0) {
       result = result.filter((i) =>
@@ -86,7 +97,7 @@ export function PortfolioGrid({
     }
 
     return result;
-  }, [investments, filter, selectedCategories, jobCounts]);
+  }, [investments, filter, selectedCategories, jobCounts, query]);
 
   // Keep status groups stable under every sort and filter.
   const displayInvestments = useMemo(
@@ -106,145 +117,94 @@ export function PortfolioGrid({
     (i) => i.status === "defunct"
   );
 
+  const filters: { key: FilterOption; label: string; count: number; show: boolean }[] = [
+    { key: "main", label: "Main", count: mainCount, show: true },
+    { key: "featured", label: "Featured", count: featuredCount, show: true },
+    { key: "hiring", label: "Hiring", count: hiringCount, show: true },
+    { key: "all", label: "All", count: investments.length, show: tier4Count > 0 },
+  ];
+
+  const cardProps = (investment: Investment) => ({
+    investment,
+    newsUrl:
+      (newsCounts[investment.title] ?? 0) > 0
+        ? getPortfolioNewsUrl(investment.title)
+        : undefined,
+  });
+
   return (
-    <div className="space-y-6" data-testid="portfolio-grid">
+    <div className="space-y-4" data-testid="portfolio-grid">
       {/* Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <label
-            htmlFor="sort-select"
-            className="text-sm text-neutral-600 dark:text-neutral-400"
-          >
-            Sort by:
-          </label>
-          <select
-            id="sort-select"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="px-3 py-1.5 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-          >
-            <option value="relevance">Relevance</option>
-            <option value="alphabetical">A → Z</option>
-            <option value="alphabetical-desc">Z → A</option>
-          </select>
-        </div>
-
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <button
-            onClick={() => setFilter("main")}
-            className={`shrink-0 whitespace-nowrap px-4 py-1.5 text-sm rounded-lg border transition-colors ${
-              filter === "main"
-                ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
-                : "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            }`}
-          >
-            Main ({mainCount})
-          </button>
-          <button
-            onClick={() => setFilter("featured")}
-            className={`shrink-0 whitespace-nowrap px-4 py-1.5 text-sm rounded-lg border transition-colors ${
-              filter === "featured"
-                ? "bg-amber-500 text-white border-transparent"
-                : "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            }`}
-          >
-            ★ Featured ({featuredCount})
-          </button>
-          <button
-            onClick={() => setFilter("hiring")}
-            className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-4 py-1.5 text-sm rounded-lg border transition-colors ${
-              filter === "hiring"
-                ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
-                : "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            }`}
-          >
-            <span className="relative flex h-2 w-2">
-              <span
-                className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${
-                  filter === "hiring"
-                    ? "bg-white dark:bg-neutral-900"
-                    : "bg-neutral-900 dark:bg-white"
-                }`}
-              />
-              <span
-                className={`relative inline-flex h-2 w-2 rounded-full ${
-                  filter === "hiring"
-                    ? "bg-white dark:bg-neutral-900"
-                    : "bg-neutral-900 dark:bg-white"
-                }`}
-              />
-            </span>
-            Hiring ({hiringCount})
-          </button>
-          {tier4Count > 0 && (
-            <button
-              onClick={() => setFilter("all")}
-              className={`shrink-0 whitespace-nowrap px-4 py-1.5 text-sm rounded-lg border transition-colors ${
-                filter === "all"
-                  ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
-                  : "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              }`}
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-surface p-3">
+        <label htmlFor="portfolio-search" className="sr-only">Search investments</label>
+        <input
+          id="portfolio-search"
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search investments"
+          className={cn(fieldClass, "min-w-0 flex-[1_1_240px]")}
+        />
+        <label htmlFor="show-select" className="sr-only">Show</label>
+        <select
+          id="show-select"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as FilterOption)}
+          className={fieldClass}
+        >
+          {filters
+            .filter((f) => f.show)
+            .map((f) => (
+              <option key={f.key} value={f.key}>
+                {f.label}
+                {f.key === "hiring" ? "" : ` (${f.count})`}
+              </option>
+            ))}
+        </select>
+        {categories.length > 0 && (
+          <>
+            <label htmlFor="category-select" className="sr-only">Category</label>
+            <select
+              id="category-select"
+              value={selectedCategories[0] ?? ""}
+              onChange={(e) =>
+                setSelectedCategories(e.target.value ? [e.target.value] : [])
+              }
+              className={fieldClass}
             >
-              All ({investments.length})
-            </button>
-          )}
-        </div>
+              <option value="">All categories</option>
+              {categoriesWithCounts.map(({ category }) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
+        <label htmlFor="sort-select" className="sr-only">Sort</label>
+        <select
+          id="sort-select"
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as SortOption)}
+          className={fieldClass}
+        >
+          <option value="relevance">Sort: Relevance</option>
+          <option value="alphabetical">Sort: A → Z</option>
+          <option value="alphabetical-desc">Sort: Z → A</option>
+        </select>
       </div>
-
-      {/* Category Filters (Multi-select) */}
-      {categories.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-neutral-600 dark:text-neutral-400 mr-1">
-            Category:
-          </span>
-          {selectedCategories.length > 0 && (
-            <button
-              onClick={() => setSelectedCategories([])}
-              className="px-3 py-1 text-xs rounded-full border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            >
-              Clear ({selectedCategories.length})
-            </button>
-          )}
-          {categoriesWithCounts.map(({ category, count }) => {
-            const isSelected = selectedCategories.includes(category);
-            return (
-              <button
-                key={category}
-                onClick={() => {
-                  if (isSelected) {
-                    setSelectedCategories(
-                      selectedCategories.filter((c) => c !== category)
-                    );
-                  } else {
-                    setSelectedCategories([...selectedCategories, category]);
-                  }
-                }}
-                className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                  isSelected
-                    ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-transparent"
-                    : "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                }`}
-              >
-                {category} ({count})
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <p className="!mt-3 px-1 font-mono text-xs text-muted" aria-live="polite">
+        {displayInvestments.length} investments
+      </p>
 
       {/* Grid - Active Investments */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(320px,100%),1fr))] gap-4">
         {activeInvestments.map((investment) => (
           <InvestmentCard
             key={investment.title}
-            investment={investment}
+            {...cardProps(investment)}
             jobCount={getPortfolioJobCount(investment.title, jobCounts)}
             jobsUrl={getPortfolioJobsUrl(investment.title)}
-            newsUrl={
-              (newsCounts[investment.title] ?? 0) > 0
-                ? getPortfolioNewsUrl(investment.title)
-                : undefined
-            }
           />
         ))}
       </div>
@@ -266,29 +226,23 @@ export function PortfolioGrid({
 
       {/* Grid - Defunct Investments */}
       {defunctInvestments.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(320px,100%),1fr))] gap-4">
           {defunctInvestments.map((investment) => (
-            <InvestmentCard
-              key={investment.title}
-              investment={investment}
-              newsUrl={
-                (newsCounts[investment.title] ?? 0) > 0
-                  ? getPortfolioNewsUrl(investment.title)
-                  : undefined
-              }
-            />
+            <InvestmentCard key={investment.title} {...cardProps(investment)} />
           ))}
         </div>
       )}
 
-      {/* Show more hint when not showing all - clickable */}
       {filter === "main" && tier4Count > 0 && (
-        <button
-          onClick={() => setFilter("all")}
-          className="w-full text-center text-sm text-neutral-500 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors cursor-pointer"
-        >
-          +{tier4Count} more investments
-        </button>
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setFilter("all")}
+            className={buttonClass({ variant: "secondary" })}
+          >
+            +{tier4Count} more investments
+          </button>
+        </div>
       )}
     </div>
   );

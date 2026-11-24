@@ -25,9 +25,9 @@ test.describe("Homepage", () => {
 
   test("should render content sections", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("Research")).toBeVisible();
-    await expect(page.getByText("Engineering")).toBeVisible();
-    await expect(page.getByText("Angel Investing")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Research", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Engineering", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Angel Investing", exact: true })).toBeVisible();
   });
 
   test("mobile navigation covers the page with an opaque surface", async ({ page }) => {
@@ -39,17 +39,17 @@ test.describe("Homepage", () => {
     const menu = page.getByRole("dialog", { name: "Navigation menu" });
     await expect(menu).toBeVisible();
     await expect(menu).toHaveCSS("background-color", "rgb(255, 255, 255)");
-    await expect(menu).toHaveCSS("height", "779px");
-    await expect(page.getByRole("button", { name: "Close menu" })).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    );
+    await expect(menu).toHaveCSS("height", "844px");
+    await expect(menu.getByRole("button", { name: "Close menu" })).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeHidden();
+    await expect(page.getByRole("button", { name: "Open menu" })).toBeFocused();
   });
 
   test("should render investment container", async ({ page }) => {
     await page.goto("/portfolio");
     // Check for the main container or controls which should always be present
-    await expect(page.getByText("Sort by:")).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Sort" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Main/ })).toBeVisible();
   });
 

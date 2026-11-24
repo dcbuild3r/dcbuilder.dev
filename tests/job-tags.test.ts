@@ -11,7 +11,7 @@ describe("job tag helpers", () => {
 
   test("falls back to a readable label for dynamic slugs", () => {
     expect(formatJobTagLabel("founders-office")).toBe("Founders Office");
-    expect(getJobTagLabel("devrel", {})).toBe("Devrel");
+    expect(getJobTagLabel("devrel", {})).toBe("DevRel");
   });
 
   test("ignores empty configured labels", () => {

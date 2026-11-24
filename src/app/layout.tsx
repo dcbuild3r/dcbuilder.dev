@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Lora } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PostHogProvider } from "@/lib/posthog";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL, TWITTER_HANDLE } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -22,33 +23,30 @@ const lora = Lora({
 
 export const metadata: Metadata = {
 	title: {
-		default: "dcbuilder.eth",
-		template: "%s | dcbuilder.eth",
+		default: SITE_TITLE,
+		template: `%s | ${SITE_TITLE}`,
 	},
-	description:
-		"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
-	metadataBase: new URL("https://dcbuilder.dev"),
+	description: SITE_DESCRIPTION,
+	metadataBase: new URL(SITE_URL),
 	manifest: "/manifest.webmanifest",
 	appleWebApp: {
 		capable: true,
-		title: "dcbuilder.eth",
+		title: SITE_TITLE,
 		statusBarStyle: "black-translucent",
 	},
 	openGraph: {
-		title: "dcbuilder.eth",
-		description:
-			"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
-		url: "https://dcbuilder.dev",
-		siteName: "dcbuilder",
+		title: SITE_TITLE,
+		description: SITE_DESCRIPTION,
+		url: SITE_URL,
+		siteName: SITE_NAME,
 		locale: "en_US",
 		type: "website",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "dcbuilder.eth",
-		description:
-			"Research, Engineering, Angel Investing in cryptography, distributed systems, and AI",
-		creator: "@dcbuilder",
+		title: SITE_TITLE,
+		description: SITE_DESCRIPTION,
+		creator: TWITTER_HANDLE,
 	},
 	robots: {
 		index: true,

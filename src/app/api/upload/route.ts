@@ -3,7 +3,6 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { createId } from "@paralleldrive/cuid2";
 import { requireAuth } from "@/services/auth";
 
-// Initialize R2 client
 const r2 = new S3Client({
   region: "auto",
   endpoint: process.env.R2_ENDPOINT?.replace(/\/dcbuilder-images$/, ""),
@@ -16,7 +15,6 @@ const r2 = new S3Client({
 const BUCKET_NAME = process.env.R2_BUCKET_NAME || "dcbuilder-images";
 const PUBLIC_URL = process.env.R2_PUBLIC_URL || "";
 
-// Allowed MIME types and their extensions
 const ALLOWED_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -26,10 +24,11 @@ const ALLOWED_TYPES: Record<string, string> = {
 };
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const SAFE_FOLDER = /^[a-z0-9_-]+(?:\/[a-z0-9_-]+)*$/;
+const MAX_FOLDER_LENGTH = 64;
 
 // POST /api/upload - Upload an image to R2
 export async function POST(request: NextRequest) {
-  // Require admin auth
   const auth = await requireAuth(request, "admin:write");
   if (auth instanceof Response) return auth;
 
@@ -38,11 +37,14 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File | null;
     const folder = (formData.get("folder") as string) || "uploads";
 
+    if (folder.length > MAX_FOLDER_LENGTH || !SAFE_FOLDER.test(folder)) {
+      return Response.json({ error: "Invalid folder" }, { status: 400 });
+    }
+
     if (!file) {
       return Response.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type
     if (!ALLOWED_TYPES[file.type]) {
       return Response.json(
         { error: `Invalid file type. Allowed: ${Object.keys(ALLOWED_TYPES).join(", ")}` },
@@ -50,7 +52,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       return Response.json(
         { error: `File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB` },
@@ -58,12 +59,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique filename
     const ext = ALLOWED_TYPES[file.type];
     const filename = `${createId()}.${ext}`;
     const key = `${folder}/${filename}`;
 
-    // Read file as buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
     // Upload to R2 with cache headers (1 year for immutable assets)
@@ -77,7 +76,6 @@ export async function POST(request: NextRequest) {
       })
     );
 
-    // Return public URL
     const url = `${PUBLIC_URL}/${key}`;
 
     return Response.json({

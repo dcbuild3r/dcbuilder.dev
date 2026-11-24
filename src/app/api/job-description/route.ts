@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
+import { db, jobs } from "@/db";
+import { safeFetchText, UnsafeUrlError } from "@/lib/safe-fetch";
 
 type JobDescriptionResponse = {
 	description?: string;
@@ -13,6 +16,7 @@ type CacheEntry = {
 };
 
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24;
+const CACHE_MAX_ENTRIES = 500;
 const cache =
 	(globalThis as { __jobDescriptionCache?: Map<string, CacheEntry> })
 		.__jobDescriptionCache ?? new Map<string, CacheEntry>();
@@ -167,16 +171,6 @@ const extractSections = (text: string): JobDescriptionResponse => {
 	};
 };
 
-const isBlockedHost = (hostname: string) => {
-	const lower = hostname.toLowerCase();
-	if (lower === "localhost" || lower.endsWith(".local")) return true;
-	if (/^127\./.test(lower)) return true;
-	if (/^10\./.test(lower)) return true;
-	if (/^192\.168\./.test(lower)) return true;
-	if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(lower)) return true;
-	return false;
-};
-
 export async function GET(request: NextRequest) {
 	const { searchParams } = new URL(request.url);
 	const target = searchParams.get("url");
@@ -184,19 +178,19 @@ export async function GET(request: NextRequest) {
 		return NextResponse.json({ error: "Missing url" }, { status: 400 });
 	}
 
-	let parsed: URL;
 	try {
-		parsed = new URL(target);
-	} catch {
-		return NextResponse.json({ error: "Invalid url" }, { status: 400 });
-	}
-
-	if (!["http:", "https:"].includes(parsed.protocol)) {
-		return NextResponse.json({ error: "Unsupported protocol" }, { status: 400 });
-	}
-
-	if (isBlockedHost(parsed.hostname)) {
-		return NextResponse.json({ error: "Blocked host" }, { status: 400 });
+		// Only fetch links of stored jobs so the endpoint can't be aimed at arbitrary URLs.
+		const [job] = await db
+			.select({ id: jobs.id })
+			.from(jobs)
+			.where(eq(jobs.link, target))
+			.limit(1);
+		if (!job) {
+			return NextResponse.json({ error: "Unknown job link" }, { status: 404 });
+		}
+	} catch (error) {
+		console.error("[job-description] Could not verify job link:", error);
+		return NextResponse.json({ error: "Job descriptions are temporarily unavailable" }, { status: 503 });
 	}
 
 	const cached = cache.get(target);
@@ -204,16 +198,10 @@ export async function GET(request: NextRequest) {
 		return NextResponse.json(cached.data);
 	}
 
-	const controller = new AbortController();
-	const timeout = setTimeout(() => controller.abort(), 12000);
-
 	try {
-		const response = await fetch(target, {
-			headers: {
-				"user-agent":
-					"Mozilla/5.0 (compatible; JobDescriptionFetcher/1.0; +https://dcbuilder.dev)",
-			},
-			signal: controller.signal,
+		const response = await safeFetchText(target, {
+			"user-agent":
+				"Mozilla/5.0 (compatible; JobDescriptionFetcher/1.0; +https://dcbuilder.dev)",
 		});
 
 		if (!response.ok) {
@@ -223,10 +211,17 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		const html = await response.text();
-		const text = stripHtml(html);
+		const text = stripHtml(response.text);
+		if (/you need to enable javascript/i.test(text) && text.length < 3000) {
+			// JS-rendered ATS page (e.g. jobs.ashbyhq.com): server fetch only sees
+			// the app shell. The DB holds the canonical description instead.
+			return NextResponse.json({ error: "JS-rendered page" }, { status: 502 });
+		}
 		const data = extractSections(text);
 
+		if (cache.size >= CACHE_MAX_ENTRIES) {
+			cache.delete(cache.keys().next().value!);
+		}
 		cache.set(target, {
 			data,
 			expiresAt: Date.now() + CACHE_TTL_MS,
@@ -234,10 +229,11 @@ export async function GET(request: NextRequest) {
 
 		return NextResponse.json(data);
 	} catch (error) {
+		if (error instanceof UnsafeUrlError) {
+			return NextResponse.json({ error: error.message }, { status: 400 });
+		}
 		const message =
 			error instanceof Error ? error.message : "Failed to fetch job description";
 		return NextResponse.json({ error: message }, { status: 502 });
-	} finally {
-		clearTimeout(timeout);
 	}
 }

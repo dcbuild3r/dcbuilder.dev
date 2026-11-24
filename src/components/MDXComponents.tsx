@@ -71,7 +71,7 @@ export const mdxComponents: MDXComponents = {
 					href={href}
 					target="_blank"
 					rel="noopener noreferrer"
-					className="text-blue-600 dark:text-blue-400 hover:underline"
+					className="text-accent hover:underline"
 					{...props}
 				>
 					{children}
@@ -81,7 +81,7 @@ export const mdxComponents: MDXComponents = {
 		return (
 			<Link
 				href={href || ""}
-				className="text-blue-600 dark:text-blue-400 hover:underline"
+				className="text-accent hover:underline"
 				{...props}
 			>
 				{children}
@@ -139,7 +139,7 @@ export const mdxComponents: MDXComponents = {
 
 		return (
 			<pre
-				className="my-6 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-x-auto"
+				className="my-6 p-4 bg-surface-2 rounded-lg overflow-x-auto"
 				{...props}
 			>
 				{children}
@@ -152,7 +152,7 @@ export const mdxComponents: MDXComponents = {
 		if (isInline) {
 			return (
 				<code
-					className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-sm"
+					className="px-1.5 py-0.5 bg-surface-2 rounded text-sm"
 					{...props}
 				>
 					{children}
@@ -164,10 +164,7 @@ export const mdxComponents: MDXComponents = {
 
 	// Style blockquotes
 	blockquote: ({ children, ...props }) => (
-		<blockquote
-			className="my-6 pl-4 border-l-4 border-neutral-300 dark:border-neutral-600 italic"
-			{...props}
-		>
+		<blockquote {...props}>
 			{children}
 		</blockquote>
 	),
@@ -188,7 +185,7 @@ export const mdxComponents: MDXComponents = {
 	// Style horizontal rules
 	hr: (props) => (
 		<hr
-			className="my-8 border-neutral-200 dark:border-neutral-700"
+			className="my-8 border-line"
 			{...props}
 		/>
 	),

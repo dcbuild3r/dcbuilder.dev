@@ -69,7 +69,7 @@ export function trackCandidateSocialClick(
 }
 
 export function trackCandidateContactClick(
-	props: CandidateEventProperties & { contact_type: "email" | "telegram" | "calendly" }
+	props: CandidateEventProperties & { contact_type: "email" | "telegram" | "signal" | "calendly" }
 ) {
 	posthog.capture("candidate_contact_click", props);
 }

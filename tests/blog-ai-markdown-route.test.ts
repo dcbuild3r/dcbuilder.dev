@@ -13,7 +13,7 @@ mock.module("@/lib/blog", () => ({
 			: null,
 }));
 
-const { GET } = await import("../src/app/blog/[slug]/markdown/route");
+const { GET } = await import("../src/app/(site)/blog/[slug]/markdown/route");
 
 describe("blog Markdown endpoint", () => {
 	test("returns a published article as fetchable Markdown", async () => {

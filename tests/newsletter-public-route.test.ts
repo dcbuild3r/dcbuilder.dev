@@ -40,7 +40,7 @@ describe("newsletter public archive routes", () => {
     }));
 
     const { default: NewsletterViewPage } = await import(
-      `../src/app/newsletters/[id]/page?newsletter-public-route=${Date.now()}`
+      `../src/app/(site)/newsletters/[id]/page?newsletter-public-route=${Date.now()}`
     );
 
     await expect(
@@ -90,7 +90,7 @@ describe("newsletter public archive routes", () => {
     }));
 
     const { default: NewsletterViewPage } = await import(
-      `../src/app/newsletters/[id]/page?newsletter-public-render=${Date.now()}`
+      `../src/app/(site)/newsletters/[id]/page?newsletter-public-render=${Date.now()}`
     );
     const markup = renderToStaticMarkup(
       await NewsletterViewPage({
