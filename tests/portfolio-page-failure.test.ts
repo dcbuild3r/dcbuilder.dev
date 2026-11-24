@@ -10,7 +10,7 @@ test("a failed investment read shows an unavailable state instead of an empty po
       orderBy: async () => { throw new Error("database unavailable"); },
       groupBy: async () => [],
     }) }) },
-    investments: {}, jobs: {}, investmentCategories: {},
+    investments: {}, jobs: {}, investmentCategories: {}, candidates: {},
   }));
   mock.module("next/cache", () => ({ unstable_cache: (loader: unknown) => loader }));
   mock.module("@/lib/news", () => ({ getPublicAllNews: async () => [] }));
@@ -19,7 +19,7 @@ test("a failed investment read shows an unavailable state instead of an empty po
   const originalError = console.error;
   console.error = () => {};
   try {
-    const { default: Portfolio } = await import("../src/app/portfolio/page");
+    const { default: Portfolio } = await import("../src/app/(site)/portfolio/page");
     const markup = renderToStaticMarkup(await Portfolio());
     expect(markup).toContain("Investments are temporarily unavailable.");
     expect(markup).toContain("Try again");

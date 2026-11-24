@@ -31,7 +31,7 @@ export function parsePaginationParams(
 
 export type AuthResult =
   | { valid: true; keyId: string; name: string; permissions: string[] }
-  | { valid: false; error: string };
+  | { valid: false; error: string; status: 401 | 403 };
 
 export function extractRequestToken(request: NextRequest | Request): string | null {
   const bearerToken = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim();
@@ -46,7 +46,7 @@ export async function validateApiKey(
   const apiKey = extractRequestToken(request);
 
   if (!apiKey) {
-    return { valid: false, error: "Missing API key" };
+    return { valid: false, error: "Missing API key", status: 401 };
   }
 
   let key;
@@ -59,20 +59,19 @@ export async function validateApiKey(
     key = result;
   } catch (error) {
     console.error("[api-auth] Database error during API key validation:", error);
-    return { valid: false, error: "Authentication service unavailable" };
+    return { valid: false, error: "Authentication service unavailable", status: 401 };
   }
 
   if (!key) {
-    return { valid: false, error: "Invalid API key" };
+    return { valid: false, error: "Invalid API key", status: 401 };
   }
 
-  // Check permissions if required
   if (requiredPermission) {
     const hasPermission =
       key.permissions?.includes("*") ||
       key.permissions?.includes(requiredPermission);
     if (!hasPermission) {
-      return { valid: false, error: "Insufficient permissions" };
+      return { valid: false, error: "Insufficient permissions", status: 403 };
     }
   }
 
@@ -88,9 +87,8 @@ export async function validateApiKey(
   return { valid: true, keyId: key.id, name: key.name, permissions: key.permissions ?? [] };
 }
 
-// Helper to create unauthorized response
-export function unauthorizedResponse(error: string) {
-  return Response.json({ error }, { status: 401 });
+export function unauthorizedResponse(error: string, status: 401 | 403) {
+  return Response.json({ error }, { status });
 }
 
 // Helper to check auth and return early if invalid
@@ -100,7 +98,7 @@ export async function requireAuth(
 ): Promise<AuthResult | Response> {
   const auth = await validateApiKey(request, permission);
   if (!auth.valid) {
-    return unauthorizedResponse(auth.error);
+    return unauthorizedResponse(auth.error, auth.status);
   }
   return auth;
 }

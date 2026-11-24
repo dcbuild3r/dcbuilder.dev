@@ -610,6 +610,105 @@ describe("getAllNews relevance mapping", () => {
     });
   });
 
+  test("uses the starter Alex Cheema mapping for Exo founder posts", async () => {
+    const curatedLinks = { __table: "curated_links" };
+    const announcements = { __table: "announcements" };
+    const investments = {
+      __table: "investments",
+      id: {},
+      title: {},
+      logo: {},
+      website: {},
+    };
+    const jobs = {
+      __table: "jobs",
+      company: {},
+    };
+
+    mock.module("../src/lib/blog", () => ({
+      getAllPosts: async () => [],
+    }));
+
+    mock.module("@/db/schema", () => ({
+      curatedLinks,
+      announcements,
+      newsSourceInvestments: null,
+      investments,
+      affiliations: null,
+      jobs,
+    }));
+
+    mock.module("@/db", () => ({
+      ...dbTableExportPlaceholders,
+      db: {
+        select: () => ({
+          from: (table: { __table: string }) => {
+            if (table.__table === "curated_links") {
+              return {
+                orderBy: async () => [
+                  {
+                    id: "alex-cheema-exo-x",
+                    title: "The personal AI era: Apple vs NVIDIA on local hardware",
+                    url: "https://x.com/alexocheema/status/2061550254961639454",
+                    source: "Alex Cheema",
+                    sourceImage: null,
+                    date: new Date("2026-06-01T00:00:00.000Z"),
+                    description: "Curated summary",
+                    category: "ai",
+                    featured: false,
+                    relevance: 8,
+                  },
+                ],
+              };
+            }
+
+            if (table.__table === "announcements") {
+              return { orderBy: async () => [] };
+            }
+
+            if (table.__table === "investments") {
+              return {
+                where: async () => [
+                  {
+                    id: "exo-id",
+                    title: "Exo",
+                    logo: "https://r2.example/exo.png",
+                    website: "https://exolabs.net/",
+                  },
+                ],
+              };
+            }
+
+            return {
+              where: () => ({
+                groupBy: async () => [
+                  { company: "Exo", count: 1 },
+                  { company: "Exo Labs", count: 2 },
+                ],
+              }),
+            };
+          },
+        }),
+      },
+    }));
+
+    const { getAllNews } = await import(`../src/lib/news?news-alex-cheema-exo=${Date.now()}`);
+    const generalNews = await getAllNews();
+    const news = await getAllNews({ includeCompanyTimelineNews: true });
+
+    expect(generalNews).toHaveLength(0);
+    expect(news).toHaveLength(1);
+    expect(news[0].source).toBe("Alex Cheema");
+    expect(news[0].portfolioCompany).toMatchObject({
+      title: "Exo",
+      logo: "https://r2.example/exo.png",
+      website: "https://exolabs.net/",
+      jobsUrl: "/jobs?company=Exo&company=Exo%20Labs",
+      jobCount: 3,
+      sourceIsCompanyAccount: false,
+    });
+  });
+
   test("uses starter mappings when the mapping table is missing in the database", async () => {
     const curatedLinks = { __table: "curated_links" };
     const announcements = { __table: "announcements" };

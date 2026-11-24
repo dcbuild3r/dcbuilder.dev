@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { db, newsletterSendEvents } from "@/db";
+import { isFreshWebhookTimestamp } from "@/lib/webhook-timestamp";
 
 interface ResendWebhookPayload {
   type: string;
@@ -52,6 +53,9 @@ export async function POST(request: NextRequest) {
   const svixSignature = request.headers.get("svix-signature");
   if (!svixId || !svixTimestamp || !svixSignature) {
     return NextResponse.json({ error: "Missing signature headers" }, { status: 401 });
+  }
+  if (!isFreshWebhookTimestamp(svixTimestamp)) {
+    return NextResponse.json({ error: "Stale or invalid timestamp" }, { status: 401 });
   }
   if (!verifySvixSignature(resendWebhookSecret, svixId, svixTimestamp, body, svixSignature)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });

@@ -131,5 +131,8 @@ export interface Job {
 	tags?: JobTag[];
 	tier?: JobTier;
 	description?: string;
+	responsibilities?: string[];
+	qualifications?: string[];
+	benefits?: string[];
 	createdAt?: string | Date;
 }

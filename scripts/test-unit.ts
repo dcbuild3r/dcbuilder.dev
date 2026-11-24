@@ -1,4 +1,4 @@
-const glob = new Bun.Glob("tests/*.test.ts");
+const glob = new Bun.Glob("tests/*.test.{ts,tsx}");
 const files = Array.from(glob.scanSync({ cwd: process.cwd() })).sort();
 
 let failed = false;

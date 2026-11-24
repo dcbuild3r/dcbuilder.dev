@@ -63,6 +63,12 @@ const KNOX_COMPANY = {
 const STARTER_SOURCE_INVESTMENT_MAPPINGS = [
   {
     sourceType: "x_handle",
+    sourceValue: "alexocheema",
+    sourceKind: "person",
+    investmentTitle: "Exo",
+  },
+  {
+    sourceType: "x_handle",
     sourceValue: "benjamintfels",
     sourceKind: "person",
     investmentTitle: "Octet",
@@ -857,7 +863,7 @@ export async function getAllNews(
 
   // Fetch all data sources in parallel
   const [blogPosts, dbCuratedLinks, dbAnnouncements, portfolioCompanyContexts] = await Promise.all([
-    getAllPosts(),
+    getAllPosts().catch(() => []),
     getCuratedLinksWithFallback(),
     getAnnouncementsWithFallback(),
     getPortfolioCompanyContexts(),

@@ -1,56 +1,22 @@
-import { afterEach, describe, expect, mock, test } from "bun:test";
-
-type ElementLike = {
-	type?: unknown;
-	props?: {
-		alt?: unknown;
-		children?: unknown;
-		src?: unknown;
-		style?: Record<string, unknown>;
-	};
-};
-
-function isElementLike(value: unknown): value is ElementLike {
-	return typeof value === "object" && value !== null && "props" in value;
-}
-
-function findImageByAlt(node: unknown, alt: string): ElementLike | null {
-	if (!isElementLike(node)) return null;
-
-	if (node.type === "img" && node.props?.alt === alt) {
-		return node;
-	}
-
-	const children = node.props?.children;
-	if (Array.isArray(children)) {
-		for (const child of children) {
-			const match = findImageByAlt(child, alt);
-			if (match) return match;
-		}
-		return null;
-	}
-
-	return findImageByAlt(children, alt);
-}
-
-function containsText(node: unknown, text: string): boolean {
-	if (node === text) return true;
-	if (!isElementLike(node)) return false;
-
-	const children = node.props?.children;
-	if (Array.isArray(children)) {
-		return children.some((child) => containsText(child, text));
-	}
-
-	return containsText(children, text);
-}
+import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
+import { load } from "cheerio";
+import type { ReactElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 describe("candidate opengraph image", () => {
+	const pngHeader = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+	function mockProfileImage() {
+		return spyOn(globalThis, "fetch").mockResolvedValue(
+			new Response(pngHeader, { headers: { "Content-Type": "image/png" } })
+		);
+	}
+
 	afterEach(() => {
 		mock.restore();
 	});
 
 	test("masks square candidate profile images directly as circles", async () => {
+		mockProfileImage();
 		mock.module("next/og", () => ({
 			ImageResponse: function ImageResponse(element: unknown, options: unknown) {
 				return { element, options };
@@ -75,21 +41,17 @@ describe("candidate opengraph image", () => {
 			params: Promise.resolve({ id: "square-image-candidate" }),
 		});
 
-		const candidateImage = findImageByAlt(
-			(response as { element: unknown }).element,
-			"Square Image Candidate"
-		);
-
-		expect(candidateImage).not.toBeNull();
-		expect(candidateImage?.props?.style).toMatchObject({
-			width: 240,
-			height: 240,
-			borderRadius: 120,
-			objectFit: "cover",
-		});
+		const markup = renderToStaticMarkup((response as unknown as { element: ReactElement }).element);
+		const image = load(markup)('img[alt="Square Image Candidate"]');
+		expect(image).toHaveLength(1);
+		expect(image.attr("style")).toContain("border-radius:84px");
+		expect(image.attr("style")).toContain("object-fit:cover");
+		expect(image.attr("width")).toBe("168");
+		expect(image.attr("height")).toBe("168");
 	});
 
 	test("renders Atakan's custom image when the database is unavailable", async () => {
+		const fetchImage = mockProfileImage();
 		mock.module("next/og", () => ({
 			ImageResponse: function ImageResponse(element: unknown, options: unknown) {
 				return { element, options };
@@ -108,12 +70,14 @@ describe("candidate opengraph image", () => {
 		const response = await CandidateOpenGraphImage({
 			params: Promise.resolve({ id: "atakan-yavuzarslan" }),
 		});
-		const element = (response as { element: unknown }).element;
-
-		expect(containsText(element, "Atakan Yavuzarslan")).toBe(true);
-		expect(containsText(element, "Web3 & AI Partnerships / BD Director")).toBe(true);
-		expect(findImageByAlt(element, "Atakan Yavuzarslan")?.props).toMatchObject({
-			src: "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/images/695070cb-069a-46f0-aa0d-d34c94cb50bd.png",
-		});
+		const markup = renderToStaticMarkup((response as unknown as { element: ReactElement }).element);
+		const $ = load(markup);
+		expect($("body").text()).toContain("Atakan Yavuzarslan");
+		expect($("body").text()).toContain("Web3 & AI Partnerships / BD Director");
+		expect($('img[alt="Atakan Yavuzarslan"]').attr("src")).toStartWith("data:image/png;base64,");
+		expect(fetchImage).toHaveBeenCalledWith(
+			"https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/images/695070cb-069a-46f0-aa0d-d34c94cb50bd.png",
+			expect.any(Object)
+		);
 	});
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buttonClass } from "@/components/ui/Button";
 import { getRecommendedLinks, OTHER_CONTENT_I_LIKE } from "@/lib/recommendations";
 
 function ExternalIcon() {
@@ -20,16 +21,16 @@ function LinkItem({ item }: { item: { name: string; url: string; description: st
       href={item.url}
       target={isExternal ? "_blank" : undefined}
       rel={isExternal ? "noopener noreferrer" : undefined}
-      className="group flex items-start gap-3 rounded-lg border border-neutral-200 dark:border-neutral-700/60 p-3 hover:border-neutral-400 dark:hover:border-neutral-500 hover:bg-neutral-100/50 dark:hover:bg-neutral-800/40 transition-colors"
+      className="group flex items-start gap-3 rounded-2xl border border-line p-3 transition-colors hover:border-line-strong hover:bg-surface-2/60"
     >
       <div className="min-w-0 flex-1">
-        <span className="font-semibold text-sm text-neutral-900 dark:text-neutral-100 underline underline-offset-2 decoration-neutral-300 dark:decoration-neutral-600 group-hover:decoration-neutral-500 dark:group-hover:decoration-neutral-400 transition-colors">
+        <span className="text-sm font-semibold text-ink underline decoration-line-strong underline-offset-2 transition-colors group-hover:decoration-muted">
           {item.name}
         </span>
         {isExternal && <ExternalIcon />}
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">{item.description}</p>
+        <p className="mt-0.5 text-sm text-muted">{item.description}</p>
       </div>
-      <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-500 dark:group-hover:text-neutral-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-line-strong transition-colors group-hover:text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="9 18 15 12 9 6" />
       </svg>
     </a>
@@ -41,11 +42,11 @@ export function Recommendations() {
   const recommendedLinks = getRecommendedLinks();
 
   return (
-    <section className="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 sm:p-6 bg-neutral-50 dark:bg-neutral-900/40">
+    <section className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Recommendations</h2>
-          <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+          <h2 className="text-xl font-semibold text-ink">Recommendations</h2>
+          <p className="mt-2 text-sm text-body">
             Newsletters, podcasts, and other content I follow and enjoy.
           </p>
         </div>
@@ -55,7 +56,7 @@ export function Recommendations() {
           aria-expanded={isOpen}
           aria-controls="recommendations-panel"
           onClick={() => setIsOpen((v) => !v)}
-          className="group inline-flex items-center justify-center rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-5 py-2.5 text-sm font-semibold tracking-wide text-neutral-900 dark:text-neutral-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all"
+          className={buttonClass({ variant: "secondary" })}
         >
           {isOpen ? "Hide" : "Show"}
         </button>
@@ -64,7 +65,7 @@ export function Recommendations() {
       {isOpen && (
         <div id="recommendations-panel" className="mt-6 space-y-6">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">
+            <h3 className="mb-2 font-mono text-[11.5px] font-medium uppercase tracking-[0.16em] text-muted">
               Recommended newsletters &amp; links
             </h3>
             <div className="space-y-2">
@@ -75,7 +76,7 @@ export function Recommendations() {
           </div>
 
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">
+            <h3 className="mb-2 font-mono text-[11.5px] font-medium uppercase tracking-[0.16em] text-muted">
               Other content I like
             </h3>
             <div className="space-y-2">

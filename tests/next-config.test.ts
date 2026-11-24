@@ -24,6 +24,18 @@ describe("next image config", () => {
       ]),
     );
   });
+
+  test("does not let the CDN cache transient blog responses", async () => {
+    const headerRules = await nextConfig.headers?.();
+    const blogRule = headerRules?.find((rule) => rule.source === "/blog");
+
+    expect(blogRule?.headers).toEqual(
+      expect.arrayContaining([
+        { key: "Cache-Control", value: "private, no-store" },
+        { key: "Vercel-CDN-Cache-Control", value: "no-store" },
+      ]),
+    );
+  });
 });
 
 describe("production response hardening", () => {

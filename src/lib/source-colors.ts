@@ -1,3 +1,5 @@
+import { hashString } from "@/lib/shuffle";
+
 // Source display names and colors for blog posts
 
 // Map internal source names to display names
@@ -28,27 +30,15 @@ const fallbackColors = [
   "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
 ];
 
-function hashString(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash);
-}
-
 export function getSourceDisplay(source: string): string {
   return sourceDisplayMap[source] || source;
 }
 
 export function getSourceColor(source: string): string {
-  // Check for specific source colors first
   if (sourceColors[source]) {
     return sourceColors[source];
   }
 
-  // Fall back to hash-based color for unknown sources
   const index = hashString(source.toLowerCase()) % fallbackColors.length;
   return fallbackColors[index];
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { fieldClass } from "@/components/ui/field";
+import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect, useCallback } from "react";
 
 interface Option {
@@ -13,6 +15,7 @@ interface CustomSelectProps {
 	onChange: (value: string) => void;
 	options: Option[];
 	className?: string;
+	triggerClassName?: string;
 	searchable?: boolean;
 }
 
@@ -22,6 +25,7 @@ export function CustomSelect({
 	onChange,
 	options,
 	className = "",
+	triggerClassName,
 	searchable = false,
 }: CustomSelectProps) {
 	const [isOpen, setIsOpen] = useState(false);
@@ -152,7 +156,7 @@ export function CustomSelect({
 					aria-haspopup="listbox"
 					aria-expanded={isOpen}
 					aria-controls={id ? `${id}-listbox` : undefined}
-				className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+				className={cn("w-full flex items-center justify-between gap-2", fieldClass, triggerClassName)}
 			>
 				<span className="truncate">{selectedOption?.label ?? value}</span>
 				<svg
@@ -182,11 +186,11 @@ export function CustomSelect({
 						tabIndex={searchable ? undefined : -1}
 						aria-labelledby={id}
 						aria-activedescendant={focusedIndex >= 0 && id ? `${id}-option-${focusedIndex}` : undefined}
-						className="absolute z-[var(--z-dropdown)] mt-1 w-full min-w-[200px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg max-h-[60vh] sm:max-h-60 overflow-y-auto"
+						className="absolute z-[var(--z-dropdown)] mt-1 w-full min-w-[200px] bg-surface text-ink border border-line-strong rounded-xl shadow-lg max-h-[60vh] sm:max-h-60 overflow-y-auto"
 					>
 						{/* Search input */}
 						{searchable && (
-							<div className="sticky top-0 p-2 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700">
+							<div className="sticky top-0 p-2 bg-surface border-b border-line">
 								<input
 									ref={searchInputRef}
 									type="text"
@@ -196,13 +200,13 @@ export function CustomSelect({
 										setFocusedIndex(0);
 									}}
 									placeholder="Search..."
-									className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+									className={`w-full ${fieldClass} bg-ground`}
 									onClick={(e) => e.stopPropagation()}
 								/>
 							</div>
 						)}
 						{filteredOptions.length === 0 ? (
-							<div className="px-4 py-3 text-sm text-neutral-500">
+							<div className="px-4 py-3 text-sm text-muted">
 								No results found
 							</div>
 						) : (
@@ -220,10 +224,10 @@ export function CustomSelect({
 									onMouseEnter={() => setFocusedIndex(index)}
 									className={`w-full px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm text-left transition-colors ${!searchable ? "first:rounded-t-xl" : ""} last:rounded-b-xl ${
 										option.value === value
-											? "bg-neutral-100 dark:bg-neutral-800 font-medium"
+											? "bg-surface-2 font-medium"
 											: index === focusedIndex
-												? "bg-neutral-50 dark:bg-neutral-800/50"
-												: "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+												? "bg-surface-2/60"
+												: "hover:bg-surface-2/60"
 									}`}
 								>
 									{option.label}

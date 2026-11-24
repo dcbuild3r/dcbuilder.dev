@@ -39,7 +39,8 @@ const nextConfig: NextConfig = {
       { source: '/portfolio', headers: uncachedPageHeaders },
       { source: '/portfolio/:path*', headers: uncachedPageHeaders },
       { source: '/candidates/:path*', headers: publicPageHeaders },
-      { source: '/blog/:path*', headers: publicPageHeaders },
+      { source: '/blog', headers: uncachedPageHeaders },
+      { source: '/blog/:path*', headers: uncachedPageHeaders },
       { source: '/about/:path*', headers: publicPageHeaders },
       { source: '/newsletters/:path*', headers: publicPageHeaders },
     ];

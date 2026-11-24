@@ -8,6 +8,8 @@ export type CandidateOpenGraphData = {
 	summary: string | null;
 	skills: string[];
 	image: string | null;
+	location?: string | null;
+	experience?: string | null;
 	createdAt: Date | null;
 };
 
@@ -42,6 +44,8 @@ export async function getCandidateOpenGraphData(
 						summary: row.summary,
 						skills: row.skills ?? [],
 						image: row.image,
+						location: row.location,
+						experience: row.experience,
 						createdAt: row.createdAt,
 					}
 				: null

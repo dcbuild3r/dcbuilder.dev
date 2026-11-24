@@ -2,22 +2,28 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /**
- * Badge variants using CVA (Class Variance Authority) for type-safe styling.
- * Provides consistent badge styles across the application.
+ * Pill/badge variants. Primary set: neutral, outline, accent, warm, solid.
+ * Legacy names (default, hot, top, new, featured, success, info, warning, muted) map onto them.
  */
 const badgeVariants = cva(
-	"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap transition-colors",
+	"inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap",
 	{
 		variants: {
 			variant: {
-				default: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
-				hot: "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_0_10px_rgba(251,146,60,0.5)]",
-				top: "bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.5)]",
-				new: "bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new",
-				success: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-				info: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-				warning: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-				muted: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
+				neutral: "bg-surface-2 text-body",
+				outline: "border border-line-strong text-body",
+				accent: "bg-accent-soft text-accent-ink",
+				warm: "bg-warm-soft text-warm",
+				solid: "bg-inverse text-inverse-ink",
+				default: "bg-surface-2 text-body",
+				muted: "bg-surface-2 text-muted",
+				hot: "bg-warm-soft text-warm",
+				top: "bg-inverse text-inverse-ink",
+				new: "border border-line-strong text-body",
+				featured: "bg-accent-soft text-accent-ink",
+				success: "bg-accent-soft text-accent-ink",
+				info: "bg-accent-soft text-accent-ink",
+				warning: "bg-warm-soft text-warm",
 			},
 			size: {
 				sm: "px-1.5 py-0.5 text-xs",
@@ -26,7 +32,7 @@ const badgeVariants = cva(
 			},
 		},
 		defaultVariants: {
-			variant: "default",
+			variant: "neutral",
 			size: "md",
 		},
 	}
@@ -36,22 +42,19 @@ export interface BadgeProps
 	extends React.HTMLAttributes<HTMLSpanElement>,
 		VariantProps<typeof badgeVariants> {}
 
-/**
- * A versatile badge component for status indicators, tags, and labels.
- */
+/** Pill for status indicators, tags, and labels. */
 export function Badge({ className, variant, size, ...props }: BadgeProps) {
 	return (
 		<span className={cn(badgeVariants({ variant, size }), className)} {...props} />
 	);
 }
 
-/**
- * Pre-configured badges for common use cases
- */
+export { Badge as Pill };
+
 export function HotBadge({ className, ...props }: Omit<BadgeProps, "variant">) {
 	return (
 		<Badge variant="hot" className={className} {...props}>
-			🔥 HOT
+			HOT
 		</Badge>
 	);
 }
@@ -59,7 +62,7 @@ export function HotBadge({ className, ...props }: Omit<BadgeProps, "variant">) {
 export function TopBadge({ className, ...props }: Omit<BadgeProps, "variant">) {
 	return (
 		<Badge variant="top" className={className} {...props}>
-			✨ TOP
+			TOP
 		</Badge>
 	);
 }

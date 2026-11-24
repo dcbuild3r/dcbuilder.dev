@@ -11,6 +11,7 @@ import {
 import { asc, desc, eq, sql } from "drizzle-orm";
 import type { Job, Company, RelationshipCategory, JobTag, JobTier } from "@/data/jobs";
 import { normalizeJobTags } from "@/lib/job-tags";
+import { getJobCompanyLogo } from "@/lib/job-company-branding";
 import { getFeaturedPortfolioJobCompanies } from "@/lib/portfolio-jobs";
 import { isMissingColumnError, isMissingRelationError } from "@/lib/db-schema-compat";
 import { cachePublicData } from "@/lib/public-cache";
@@ -54,6 +55,9 @@ type JobRow = {
   category: string;
   featured: boolean | null;
   description: string | null;
+  responsibilities: string[] | null;
+  qualifications: string[] | null;
+  benefits: string[] | null;
   companyWebsite: string | null;
   companyX: string | null;
   companyGithub: string | null;
@@ -95,6 +99,9 @@ const optionalJobColumnFallbacks = {
   tags: "ARRAY[]::text[]",
   featured: "FALSE",
   description: "NULL",
+  responsibilities: "ARRAY[]::text[]",
+  qualifications: "ARRAY[]::text[]",
+  benefits: "ARRAY[]::text[]",
   company_website: "NULL",
   company_x: "NULL",
   company_github: "NULL",
@@ -110,7 +117,7 @@ function mapJobRowToJob(
 ): Job {
   const company: Company = {
     name: job.company,
-    logo: job.companyLogo || undefined,
+    logo: getJobCompanyLogo(job.company, job.companyLogo),
     website: job.companyWebsite || "",
     category: job.category as RelationshipCategory,
     x: job.companyX || undefined,
@@ -131,6 +138,9 @@ function mapJobRowToJob(
     tags: normalizeJobTags(job.tags) as JobTag[],
     tier: 3 as JobTier, // Default tier
     description: job.description || undefined,
+    responsibilities: job.responsibilities || undefined,
+    qualifications: job.qualifications || undefined,
+    benefits: job.benefits || undefined,
     createdAt: job.createdAt,
   };
 }
@@ -180,6 +190,9 @@ export async function getJobRowsFromDB(options: JobReadOptions = {}): Promise<Jo
         category: jobsTable.category,
         featured: jobsTable.featured,
         description: jobsTable.description,
+        responsibilities: jobsTable.responsibilities,
+        qualifications: jobsTable.qualifications,
+        benefits: jobsTable.benefits,
         companyWebsite: jobsTable.companyWebsite,
         companyX: jobsTable.companyX,
         companyGithub: jobsTable.companyGithub,
@@ -293,6 +306,9 @@ function isJobsSchemaCompatibilityError(error: unknown) {
     isMissingColumnError(error, "tags") ||
     isMissingColumnError(error, "featured") ||
     isMissingColumnError(error, "description") ||
+    isMissingColumnError(error, "responsibilities") ||
+    isMissingColumnError(error, "qualifications") ||
+    isMissingColumnError(error, "benefits") ||
     isMissingColumnError(error, "company_website") ||
     isMissingColumnError(error, "company_x") ||
     isMissingColumnError(error, "company_github") ||
@@ -379,6 +395,9 @@ function jobSelectColumns(availableColumns: Set<string>) {
     selectColumn(availableColumns, "category", "category", "'network'"),
     selectColumn(availableColumns, "featured", "featured", optionalJobColumnFallbacks.featured),
     selectColumn(availableColumns, "description", "description", optionalJobColumnFallbacks.description),
+    selectColumn(availableColumns, "responsibilities", "responsibilities", optionalJobColumnFallbacks.responsibilities),
+    selectColumn(availableColumns, "qualifications", "qualifications", optionalJobColumnFallbacks.qualifications),
+    selectColumn(availableColumns, "benefits", "benefits", optionalJobColumnFallbacks.benefits),
     selectColumn(availableColumns, "company_website", "companyWebsite", optionalJobColumnFallbacks.company_website),
     selectColumn(availableColumns, "company_x", "companyX", optionalJobColumnFallbacks.company_x),
     selectColumn(availableColumns, "company_github", "companyGithub", optionalJobColumnFallbacks.company_github),

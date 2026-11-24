@@ -7,128 +7,67 @@ struct Params {
   time: f32,
   aspect: f32,
   pointer: vec2f,
-  velocity: vec2f,
   energy: f32,
   theme: f32,
+  click: vec2f,
+  clickAge: f32,
+  press: f32,
 }
 
 @group(0) @binding(0) var<uniform> params: Params;
 
-fn hash21(p: vec2f) -> f32 {
-  let q = fract(p * vec2f(123.34, 456.21));
-  return fract((q.x + 45.32) * (q.y + 45.32) * (q.x + q.y));
-}
-
-fn noise(p: vec2f) -> f32 {
-  let i = floor(p);
-  let f = fract(p);
-  let u = f * f * (3.0 - 2.0 * f);
-  return mix(
-    mix(hash21(i), hash21(i + vec2f(1.0, 0.0)), u.x),
-    mix(hash21(i + vec2f(0.0, 1.0)), hash21(i + vec2f(1.0, 1.0)), u.x),
-    u.y
-  );
-}
-
-fn fbm(input: vec2f) -> f32 {
-  var p = input;
-  var value = 0.0;
-  var amplitude = 0.5;
-  for (var octave = 0; octave < 5; octave += 1) {
-    value += amplitude * noise(p);
-    p = mat2x2f(1.62, 1.18, -1.18, 1.62) * p + vec2f(0.17, 0.31);
-    amplitude *= 0.5;
-  }
-  return value;
-}
-
-fn rotate(p: vec2f, angle: f32) -> vec2f {
-  let c = cos(angle);
-  let s = sin(angle);
-  return mat2x2f(c, -s, s, c) * p;
+fn palette(t: f32, theme: f32) -> vec3f {
+  let darkA = vec3f(0.02, 0.02, 0.022);
+  let darkB = vec3f(0.4, 0.05, 0.05);
+  let darkC = vec3f(0.6, 0.58, 0.56);
+  let lightA = vec3f(0.957, 0.945, 0.918);
+  let lightB = vec3f(0.66, 0.65, 0.63);
+  let lightC = vec3f(0.8, 0.22, 0.13);
+  let base = mix(lightA, darkA, theme);
+  let cool = mix(lightB, darkB, theme);
+  let warm = mix(lightC, darkC, theme);
+  return mix(mix(base, cool, smoothstep(0.08, 0.7, t)), warm, smoothstep(0.68, 1.0, t));
 }
 
 @fragment fn fs_main(@location(0) uv: vec2f) -> @location(0) vec4f {
   var p = uv * 2.0 - 1.0;
   p.x *= params.aspect;
 
-  let pointer = (vec2f(params.pointer.x, params.pointer.y) * 2.0 - 1.0) * vec2f(params.aspect, 1.0);
-  let pointerDelta = p - pointer;
-  let pointerDistance = length(pointerDelta);
-  let speed = min(length(params.velocity) * 2.2, 1.0);
-  let velocityDirection = normalize(params.velocity + vec2f(0.0001, 0.0));
-  let perpendicular = vec2f(-velocityDirection.y, velocityDirection.x);
-  let alongWake = dot(pointerDelta, velocityDirection);
-  let acrossWake = dot(pointerDelta, perpendicular);
-  let behindPointer = 1.0 - smoothstep(-0.08, 0.48, alongWake);
-  let wake = exp(-abs(acrossWake) * 7.5) * exp(-abs(alongWake) * 2.1) * behindPointer * params.energy * speed;
-  let swirl = perpendicular * exp(-pointerDistance * 3.4) * params.energy * speed * 0.2;
-  let ripple = sin(pointerDistance * 34.0 - params.time * 5.2) * exp(-pointerDistance * 3.7) * params.energy;
-  let radial = pointerDelta / max(pointerDistance, 0.025);
-  let liquidDisplacement = params.velocity * wake * 0.28 + swirl + radial * ripple * 0.065;
-  let pointerPull = (pointer - p) * exp(-pointerDistance * 2.8) * params.energy * 0.12;
-  let t = params.time * 0.11;
-  var flow = rotate(p + pointerPull + liquidDisplacement, 0.16 * sin(t * 0.9));
-
-  let warpA = fbm(flow * 1.35 + vec2f(t * 0.21, -t * 0.13));
-  let warpB = fbm(flow * 1.7 + vec2f(-t * 0.17, t * 0.19) + warpA);
-  flow += (vec2f(warpA, warpB) - 0.5) * 0.58;
-
-  let acrossScreen = fract(params.time * 0.026);
-  let downScreen = fract(params.time * 0.019 + 0.36);
-  let diagonal = fract(params.time * 0.016 + 0.7);
-  let sourceA = vec2f(
-    mix(-params.aspect * 1.45, params.aspect * 1.45, acrossScreen),
-    sin(params.time * 0.17) * 0.58
+  let pointer = vec2f(
+    (params.pointer.x * 2.0 - 1.0) * params.aspect,
+    params.pointer.y * 2.0 - 1.0
   );
-  let sourceB = vec2f(
-    cos(params.time * 0.14 + 1.7) * params.aspect * 0.62,
-    mix(1.45, -1.45, downScreen)
-  );
-  let sourceC = vec2f(
-    mix(params.aspect * 1.35, -params.aspect * 1.35, diagonal),
-    mix(-1.18, 1.18, diagonal) + sin(params.time * 0.2) * 0.22
-  );
+  let pointerDistance = distance(p, pointer);
+  let pull = exp(-pointerDistance * 2.6) * params.energy * (1.0 + params.press * 1.6);
 
-  let localA = flow - sourceA;
-  let localB = flow - sourceB;
-  let localC = flow - sourceC;
-  let distanceA = length(localA * vec2f(0.58, 1.15));
-  let distanceB = length(localB * vec2f(0.82, 0.62));
-  let distanceC = length(localC * vec2f(0.68, 0.9));
-  let radius = min(distanceA, min(distanceB, distanceC));
-  let angle = atan2(localA.y + localB.y * 0.35, localA.x + localB.x * 0.35);
-  let spiral = angle * 1.75 - radius * 8.2 + t * 1.4 + warpB * 4.3;
-  let folds = sin(spiral) * 0.5 + 0.5;
-  let turbulent = fbm(flow * 3.7 - vec2f(t * 0.12, t * 0.08));
-  let plumeA = smoothstep(1.02, 0.18, distanceA + turbulent * 0.4 - folds * 0.16);
-  let plumeB = smoothstep(0.92, 0.16, distanceB + warpA * 0.38 - folds * 0.12);
-  let plumeC = smoothstep(0.8, 0.12, distanceC + turbulent * 0.3 - folds * 0.14);
-  let body = max(max(plumeA, plumeB * 0.88), max(plumeC * 0.74, wake * 0.72));
-  let feather = smoothstep(0.22, 0.82, turbulent + folds * 0.28) * body;
+  let t = params.time * 0.2;
+  // Domain warp: two rounds of swirling offsets make the bands fold over each other.
+  var q = p * 2.1;
+  q += 0.42 * vec2f(sin(q.y * 1.7 + t * 1.3), cos(q.x * 1.9 - t * 1.1));
+  q += 0.24 * vec2f(cos(q.y * 3.3 - t * 1.7), sin(q.x * 2.9 + t * 1.5));
+  let waveA = sin(q.x * 2.35 + sin(q.y * 1.65 - t) + t * 1.2);
+  let waveB = cos(q.y * 2.7 - cos(q.x * 1.4 + t) - t * 0.75);
+  let waveC = sin(length(q - vec2f(1.5, -0.3)) * 4.1 - t * 1.4);
+  let waveD = sin(q.x * 5.3 - q.y * 4.1 + t * 2.1) * cos(q.y * 4.7 + t * 1.6);
 
-  let paperLight = vec3f(0.955, 0.938, 0.9);
-  let paperDark = vec3f(0.045, 0.043, 0.04);
-  let paper = mix(paperLight, paperDark, params.theme);
-  let soot = mix(vec3f(0.055, 0.048, 0.043), vec3f(0.72, 0.69, 0.63), params.theme);
-  let ochre = vec3f(0.67, 0.36, 0.1);
-  let vermilion = vec3f(0.64, 0.055, 0.025);
+  // A click sends one expanding ring; holding and dragging keeps emitting rings from the pointer.
+  let clickPos = vec2f((params.click.x * 2.0 - 1.0) * params.aspect, params.click.y * 2.0 - 1.0);
+  let clickDistance = distance(p, clickPos);
+  let ring = sin((clickDistance - params.clickAge * 0.9) * 16.0)
+    * exp(-abs(clickDistance - params.clickAge * 0.9) * 3.2)
+    * exp(-params.clickAge * 1.1);
+  let drag = sin(pointerDistance * 18.0 - params.time * 7.0) * exp(-pointerDistance * 2.4) * params.press;
 
-  let redCore = body * smoothstep(0.34, 0.78, folds + turbulent * 0.44) * smoothstep(0.92, 0.14, radius);
-  let goldEdge = feather * (1.0 - redCore) * smoothstep(0.23, 0.72, folds);
-  let blackWash = body * smoothstep(0.42, 0.82, 1.0 - folds + warpA * 0.25);
-  let contour = pow(1.0 - abs(fract((turbulent + folds * 0.48 - radius * 0.18) * 16.0) * 2.0 - 1.0), 18.0) * body;
+  let field = 0.5 + 0.17 * waveA + 0.15 * waveB + 0.09 * waveC + 0.06 * waveD
+    + pull * 0.22 + ring * 0.38 + drag * 0.18;
 
-  var color = paper;
-  color = mix(color, ochre, goldEdge * 0.78);
-  color = mix(color, vermilion, redCore * 0.92);
-  color = mix(color, soot, blackWash * 0.9);
-  color = mix(color, soot, contour * 0.46);
+  let contour = pow(1.0 - abs(fract(field * 7.0) * 2.0 - 1.0), 8.0);
+  let halo = exp(-pointerDistance * 3.4) * params.energy;
+  var color = palette(clamp(field + halo * 0.16, 0.0, 1.0), params.theme);
+  color += contour * mix(vec3f(0.1, 0.09, 0.08), vec3f(0.26, 0.22, 0.22), params.theme) * 0.34;
 
-  let grain = hash21(uv * vec2f(1900.0, 1100.0) + floor(params.time * 12.0));
-  color += (grain - 0.5) * mix(0.035, 0.018, params.theme);
-  let paperVignette = smoothstep(1.32, 0.18, length((uv - 0.5) * vec2f(1.0, 0.76)));
-  color *= mix(0.94, 1.025, paperVignette);
+  let vignette = smoothstep(1.35, 0.18, length((uv - 0.5) * vec2f(1.0, 0.78)));
+  color *= mix(0.82, 1.06, vignette);
   return vec4f(color, 1.0);
 }
 `;
@@ -143,8 +82,13 @@ export function HomeGpuCanvas() {
 
     let disposed = false;
     let isVisible = true;
-    let pointer = { x: 0.68, y: 0.42, velocityX: 0, velocityY: 0, energy: 0 };
-    let previousPointer = { x: pointer.x, y: pointer.y, time: performance.now() };
+    let pointer = { x: 0.68, y: 0.42, energy: 0 };
+    let click = { x: 0.5, y: 0.5, at: -100 };
+    let pressed = false;
+    let press = 0;
+    let now = 0;
+    // The hero content sits on top of the canvas, so listen on the whole section.
+    const target: HTMLElement = canvas.closest<HTMLElement>(".home-landing") ?? canvas;
     let cleanupGpu: (() => void) | undefined;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -152,28 +96,34 @@ export function HomeGpuCanvas() {
       const bounds = canvas.getBoundingClientRect();
       const x = (event.clientX - bounds.left) / bounds.width;
       const y = (event.clientY - bounds.top) / bounds.height;
-      const elapsed = Math.max(event.timeStamp - previousPointer.time, 8);
-      const velocityX = Math.max(-1, Math.min(1, ((x - previousPointer.x) / elapsed) * 28));
-      const velocityY = Math.max(-1, Math.min(1, ((y - previousPointer.y) / elapsed) * 28));
-      pointer = {
-        x,
-        y,
-        velocityX: pointer.velocityX * 0.35 + velocityX * 0.65,
-        velocityY: pointer.velocityY * 0.35 + velocityY * 0.65,
-        energy: event.pointerType === "touch" ? 0.8 : 1,
-      };
-      previousPointer = { x, y, time: event.timeStamp };
+      // Energy builds with distance travelled, so a small nudge barely registers and a sweep saturates.
+      const travelled = Math.hypot((x - pointer.x) * bounds.width, (y - pointer.y) * bounds.height);
+      const cap = event.pointerType === "touch" ? 0.65 : 1;
+      pointer = { x, y, energy: Math.min(cap, pointer.energy + travelled / 600) };
     };
     const onPointerLeave = () => {
       pointer = { ...pointer, energy: 0 };
+      pressed = false;
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      onPointerMove(event);
+      pointer.energy = Math.max(pointer.energy, 0.6);
+      pressed = true;
+      click = { x: pointer.x, y: pointer.y, at: now };
+    };
+    const onPointerUp = () => {
+      pressed = false;
     };
 
     const observer = new IntersectionObserver(([entry]) => {
       isVisible = entry?.isIntersecting ?? false;
     });
     observer.observe(canvas);
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    document.documentElement.addEventListener("pointerleave", onPointerLeave, { passive: true });
+    target.addEventListener("pointermove", onPointerMove, { passive: true });
+    target.addEventListener("pointerleave", onPointerLeave, { passive: true });
+    target.addEventListener("pointerdown", onPointerDown, { passive: true });
+    window.addEventListener("pointerup", onPointerUp, { passive: true });
+    window.addEventListener("pointercancel", onPointerUp, { passive: true });
 
     void (async () => {
       try {
@@ -187,15 +137,17 @@ export function HomeGpuCanvas() {
         const output = surface(gpu, canvas, { dpr: [1, 1.5] });
         const getTheme = () => (document.documentElement.classList.contains("dark") ? 1 : 0);
         const field = effect(gpu, SHADER, {
-          label: "home-ink-on-paper",
+          label: "home-credible-field",
           set: {
             params: {
               time: 0,
               aspect: output.size[0] / Math.max(output.size[1], 1),
               pointer: [pointer.x, pointer.y],
-              velocity: [0, 0],
               energy: 0,
               theme: getTheme(),
+              click: [click.x, click.y],
+              clickAge: 100,
+              press: 0,
             },
           },
         });
@@ -217,15 +169,17 @@ export function HomeGpuCanvas() {
           ? undefined
           : frameLoop(gpu, (currentFrame) => {
               if (!isVisible || document.hidden) return;
-              pointer.energy *= 0.975;
-              pointer.velocityX *= 0.94;
-              pointer.velocityY *= 0.94;
+              now = gpuClock.time;
+              if (!pressed) pointer.energy += (0 - pointer.energy) * 0.03;
+              press += ((pressed ? 1 : 0) - press) * 0.12;
               field.set({
                 params: {
                   time: gpuClock.time,
                   pointer: [pointer.x, pointer.y],
-                  velocity: [pointer.velocityX, pointer.velocityY],
                   energy: pointer.energy,
+                  click: [click.x, click.y],
+                  clickAge: gpuClock.time - click.at,
+                  press,
                 },
               });
               currentFrame.pass(output, field);
@@ -246,8 +200,11 @@ export function HomeGpuCanvas() {
     return () => {
       disposed = true;
       observer.disconnect();
-      window.removeEventListener("pointermove", onPointerMove);
-      document.documentElement.removeEventListener("pointerleave", onPointerLeave);
+      target.removeEventListener("pointermove", onPointerMove);
+      target.removeEventListener("pointerleave", onPointerLeave);
+      target.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
       cleanupGpu?.();
     };
   }, []);

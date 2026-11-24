@@ -1,9 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useId } from "react";
+import { useState, useEffect, useId } from "react";
 import Image from "next/image";
 import Markdown from "react-markdown";
 import { Job } from "@/data/jobs";
+import { ModalShell, useModalClose } from "@/components/ui/ModalShell";
+import { Pill } from "@/components/ui/badge";
+import { buttonClass } from "@/components/ui/Button";
+import { PLACEHOLDER_LOGO } from "@/components/jobs/JobRow";
 import { getJobTagLabel, normalizeJobTags } from "@/lib/job-tags";
 import { isNew } from "@/lib/shuffle";
 
@@ -20,6 +24,73 @@ type JobDescriptionContent = {
 };
 
 const jobDescriptionCache = new Map<string, JobDescriptionContent>();
+
+const chip = "inline-flex min-h-11 items-center gap-2 rounded-full bg-surface-2 px-4 text-sm font-medium text-ink hover:opacity-85";
+const iconLink = "flex size-11 items-center justify-center rounded-full bg-surface text-ink hover:opacity-85";
+const iconProps = {
+	className: "size-4",
+	viewBox: "0 0 24 24",
+	fill: "none",
+	stroke: "currentColor",
+	strokeWidth: 2,
+	"aria-hidden": true,
+} as const;
+
+const CheckIcon = () => (
+	<svg {...iconProps} className="size-4 text-accent">
+		<polyline points="20 6 9 17 4 12" />
+	</svg>
+);
+
+function CopyButton({
+	copied,
+	onCopy,
+	label,
+	icon,
+	iconOnly,
+}: {
+	copied: boolean;
+	onCopy: () => void;
+	label: string;
+	icon: React.ReactNode;
+	iconOnly?: boolean;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onCopy}
+			aria-label={iconOnly ? label : undefined}
+			className={iconOnly ? "flex size-11 items-center justify-center rounded-full bg-surface text-body hover:text-ink" : chip}
+		>
+			{copied ? <CheckIcon /> : icon}
+			{!iconOnly && <span>{copied ? "Copied!" : label}</span>}
+		</button>
+	);
+}
+
+const linkIcon = (
+	<svg {...iconProps}>
+		<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+		<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+	</svg>
+);
+
+function CloseButton() {
+	const close = useModalClose();
+	return (
+		<button
+			type="button"
+			onClick={close}
+			aria-label="Close"
+			className="flex size-11 items-center justify-center rounded-full bg-surface text-body hover:text-ink"
+		>
+			<svg {...iconProps} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+				<line x1="18" y1="6" x2="6" y2="18" />
+				<line x1="6" y1="6" x2="18" y2="18" />
+			</svg>
+		</button>
+	);
+}
 
 // Expanded Job View Component
 export function ExpandedJobView({
@@ -40,36 +111,16 @@ export function ExpandedJobView({
 	tagLabels: Record<string, string>;
 }) {
 	const isHot = job.tags?.includes("hot");
-	const dialogRef = useRef<HTMLDivElement>(null);
 	const [copiedLink, setCopiedLink] = useState<"job" | "apply" | null>(null);
 	const [enrichedContent, setEnrichedContent] =
 		useState<JobDescriptionContent | null>(null);
 	const [isEnriching, setIsEnriching] = useState(false);
-	const [isClosing, setIsClosing] = useState(false);
-	const [isOpen, setIsOpen] = useState(false);
 	const titleId = useId();
 	const descriptionId = useId();
 	const displayTags = normalizeJobTags(job.tags).filter(
 		(tag) => !["hot", "top", "new"].includes(tag),
 	);
 
-	useEffect(() => {
-		// Trigger open animation after mount
-		requestAnimationFrame(() => setIsOpen(true));
-	}, []);
-
-	useEffect(() => {
-		if (isOpen) {
-			dialogRef.current?.focus();
-		}
-	}, [isOpen]);
-
-	const handleClose = useCallback(() => {
-		setIsClosing(true);
-		setTimeout(() => {
-			onClose();
-		}, 300);
-	}, [onClose]);
 	// Only enrich if we have no description at all
 	const missingSections = !job.description;
 
@@ -112,9 +163,24 @@ export function ExpandedJobView({
 
 	const loadingLabel = "Fetching details from job link...";
 	const defaultBullet = "Details will be shared during the process.";
+	const sections: Array<{ heading: string; items: string[] }> = [
+		{ heading: "What you'll do", items: job.responsibilities ?? [] },
+		{ heading: "What we're looking for", items: job.qualifications ?? [] },
+		{ heading: "What we offer", items: job.benefits ?? [] },
+	].filter((section) => section.items.length > 0);
+	const sectionMarkdown = sections
+		.map(
+			(section) =>
+				`## ${section.heading}\n\n${section.items.map((item) => `- ${item}`).join("\n")}`,
+		)
+		.join("\n\n");
+	const descriptionParts = [
+		job.description?.trim(),
+		sectionMarkdown || undefined,
+		enrichedContent?.description?.trim(),
+	].filter(Boolean);
 	const description =
-		job.description?.trim() ||
-		enrichedContent?.description?.trim() ||
+		descriptionParts.join("\n\n") ||
 		(isEnriching ? loadingLabel : defaultBullet);
 
 	const copyToClipboard = async (text: string, type: "job" | "apply") => {
@@ -127,380 +193,142 @@ export function ExpandedJobView({
 		}
 	};
 
-	const handleDialogKeyDown = useCallback((e: React.KeyboardEvent) => {
-		if (e.key === "Escape") {
-			handleClose();
-			return;
-		}
-		if (e.key !== "Tab") return;
-
-		const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
-			'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
-		);
-		if (!focusable || focusable.length === 0) return;
-
-		const first = focusable[0];
-		const last = focusable[focusable.length - 1];
-		if (e.shiftKey && document.activeElement === first) {
-			e.preventDefault();
-			last.focus();
-		} else if (!e.shiftKey && document.activeElement === last) {
-			e.preventDefault();
-			first.focus();
-		}
-	}, [handleClose]);
-
 	return (
-		<div
-			className={`fixed inset-0 z-50 min-h-screen flex sm:items-center sm:justify-center backdrop-blur-sm transition-colors duration-300 ${
-				isClosing ? "bg-black/0" : isOpen ? "bg-black/50" : "bg-black/0"
-			}`}
-			onClick={handleClose}
-		>
-			<div
-				ref={dialogRef}
-				role="dialog"
-				aria-modal="true"
-				aria-labelledby={titleId}
-				aria-describedby={descriptionId}
-				tabIndex={-1}
-				onKeyDown={handleDialogKeyDown}
-				className={`fixed inset-0 sm:relative sm:inset-auto w-full h-[100dvh] sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto sm:rounded-2xl bg-white dark:bg-neutral-900 shadow-2xl transition-[transform,opacity] duration-300 ${
-					isClosing
-						? "translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0 ease-out"
-						: isOpen
-							? "translate-y-0 sm:scale-100 sm:opacity-100 ease-out"
-							: "translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0 ease-in"
-				} ${
-					isHot
-						? "sm:ring-2 sm:ring-orange-400 sm:dark:ring-orange-500"
-						: "sm:ring-1 sm:ring-neutral-200 sm:dark:ring-neutral-700"
-				}`}
-				onClick={(e) => e.stopPropagation()}
-			>
-				{/* Header Section - with drag handle inside */}
-				<div
-					className={`p-6 sm:p-8 ${
-						isHot
-							? "bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30"
-							: "bg-neutral-50 dark:bg-neutral-800/50"
-					}`}
-				>
-					{/* Mobile: Copy link and close buttons */}
-					<div className="sm:hidden flex items-center justify-end gap-2 mb-4 -mt-2">
-						<button
-							onClick={() => copyToClipboard(jobUrl, "job")}
-							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors active:scale-90"
-							aria-label="Copy link"
-						>
-							{copiedLink === "job" ? (
-								<svg className="w-6 h-6 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-									<polyline points="20 6 9 17 4 12" />
-								</svg>
-							) : (
-								<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-									<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-									<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-								</svg>
-							)}
-						</button>
-						<button
-							onClick={handleClose}
-							className="p-2.5 rounded-full bg-white/80 dark:bg-neutral-800/80 hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors active:scale-90"
-							aria-label="Close"
-						>
-							<svg
-								className="w-6 h-6"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2.5"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<line x1="18" y1="6" x2="6" y2="18" />
-								<line x1="6" y1="6" x2="18" y2="18" />
-							</svg>
-						</button>
-					</div>
-
-					{/* Desktop: Copy link and close buttons */}
-					<div className="hidden sm:flex absolute top-4 right-4 z-10 gap-2">
-						<button
-							onClick={() => copyToClipboard(jobUrl, "job")}
-							className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors active:scale-90"
-							aria-label="Copy link"
-						>
-							{copiedLink === "job" ? (
-								<svg className="w-6 h-6 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-									<polyline points="20 6 9 17 4 12" />
-								</svg>
-							) : (
-								<svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-									<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-									<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-								</svg>
-							)}
-						</button>
-						<button
-							onClick={handleClose}
-							className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 transition-colors active:scale-90"
-							aria-label="Close"
-						>
-							<svg
-								className="w-6 h-6"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<line x1="18" y1="6" x2="6" y2="18" />
-								<line x1="6" y1="6" x2="18" y2="18" />
-							</svg>
-						</button>
-					</div>
-
-					<div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
-						{/* Company Logo */}
-						<div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-xl overflow-hidden bg-white p-2 ring-2 ring-neutral-200 dark:ring-neutral-700 hover:scale-[1.08] transition-transform duration-150">
-							<Image
-								src={job.company.logo || "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg"}
-								alt={job.company.name}
-								width={96}
-								height={96}
-								className="object-contain w-full h-full"
-								onError={(e) => {
-									e.currentTarget.onerror = null;
-									e.currentTarget.src = "https://pub-a22f31a467534add843b6cf22cf4f443.r2.dev/candidates/anonymous-placeholder.svg";
-								}}
-							/>
-						</div>
-
-						<div className="flex-1">
-							{/* 1. Title */}
-							<h2 id={titleId} className="text-xl sm:text-3xl font-bold mb-1">
-								{job.title}
-								{job.featured && (
-									<span className="ml-2 text-lg text-amber-600 dark:text-amber-400">★</span>
-								)}
-							</h2>
-							{/* 2. Company */}
-							<p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 mb-2">
-								{job.company.name}
-							</p>
-							{/* 3. Location + 4. Type, Team, Comp (as text, not tag-like) */}
-							<p className="text-sm text-neutral-500 dark:text-neutral-400 mb-3">
-								{job.location}
-								{job.remote && " · Remote OK"}
-								{job.type && ` · ${jobTypeLabels[job.type] ?? job.type}`}
-								{job.department && ` · ${job.department}`}
-								{job.salary && ` · ${job.salary}`}
-							</p>
-							{/* 5. HOT/NEW/TOP badges + 6. Network/Portfolio */}
-							<div className="flex flex-wrap justify-center sm:justify-start gap-2">
-								{isHot && (
-									<span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-[0_0_10px_rgba(251,146,60,0.5)]">
-										🔥 HOT
-									</span>
-								)}
-								{job.tags?.includes("top") && (
-									<span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-500 to-purple-500 text-white">
-										TOP
-									</span>
-								)}
-								{isNew(job.createdAt) && (
-									<span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 animate-pulse-new">
-										NEW
-									</span>
-								)}
-								<span
-									className={`px-3 py-1 text-sm rounded-full ${
-										job.company.category === "portfolio"
-											? "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400"
-											: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-									}`}
-								>
-									{job.company.category === "portfolio" ? "Portfolio" : "Network"}
-								</span>
-							</div>
-						</div>
-					</div>
+		<ModalShell open onClose={onClose} labelledBy={titleId} describedBy={descriptionId} className="sm:rounded-[20px]">
+			<div className="relative bg-surface-2 p-6 pt-9 sm:p-8">
+				<div className="absolute right-4 top-4 z-[2] flex gap-2">
+					<CopyButton
+						iconOnly
+						label="Copy link"
+						copied={copiedLink === "job"}
+						onCopy={() => copyToClipboard(jobUrl, "job")}
+						icon={linkIcon}
+					/>
+					<CloseButton />
 				</div>
 
-				{/* Content Section */}
-				<div className="p-6 sm:p-8 space-y-6 sm:space-y-8">
-					{/* Tags - exclude hot, top, new as they're shown in header */}
-					{displayTags.length > 0 && (
-						<div>
-							<h3 className="text-lg font-semibold mb-3">Tags</h3>
-							<div className="flex flex-wrap gap-2">
-								{displayTags.map((tag) => (
-									<span
-										key={tag}
-										className="px-3 py-1.5 text-sm rounded-full bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
-									>
-										{getJobTagLabel(tag, tagLabels)}
-									</span>
-								))}
-							</div>
-						</div>
-					)}
+				<div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:gap-6 sm:text-left">
+					<Image
+						src={job.company.logo || PLACEHOLDER_LOGO}
+						alt={job.company.name}
+						width={96}
+						height={96}
+						className="size-20 shrink-0 rounded-[18px] bg-white object-contain sm:size-24"
+						onError={(e) => {
+							e.currentTarget.onerror = null;
+							e.currentTarget.src = PLACEHOLDER_LOGO;
+						}}
+					/>
 
-					{/* Description */}
-					<div>
-						<h3 className="text-lg font-semibold mb-3">About the Role</h3>
-						<div id={descriptionId} className="prose-jd">
-							<Markdown>{description}</Markdown>
-						</div>
-					</div>
-
-					{/* Actions Section - scrollable with content */}
-					<div className="pt-6 border-t border-neutral-200 dark:border-neutral-700 space-y-4">
-						{/* Apply Button */}
-						<a
-							href={job.link}
-							target="_blank"
-							rel="noopener noreferrer"
-							onClick={onApplyClick}
-							className="block w-full px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors text-center"
-						>
-							Apply Now →
-						</a>
-
-						{/* Copy Buttons - with labels */}
-						<div className="flex flex-wrap justify-center gap-2">
-							<button
-								onClick={() => copyToClipboard(jobUrl, "job")}
-								className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-							>
-								{copiedLink === "job" ? (
-									<>
-										<svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-											<polyline points="20 6 9 17 4 12" />
-										</svg>
-										<span className="text-green-600 dark:text-green-400">Copied!</span>
-									</>
-								) : (
-									<>
-										<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-											<rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-											<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-										</svg>
-										<span>Copy link</span>
-									</>
-								)}
-							</button>
-							<button
-								onClick={() => copyToClipboard(job.link, "apply")}
-								className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-							>
-								{copiedLink === "apply" ? (
-									<>
-										<svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-											<polyline points="20 6 9 17 4 12" />
-										</svg>
-										<span className="text-green-600 dark:text-green-400">Copied!</span>
-									</>
-								) : (
-									<>
-										<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-											<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-											<polyline points="15 3 21 3 21 9" />
-											<line x1="10" y1="14" x2="21" y2="3" />
-										</svg>
-										<span>Copy apply link</span>
-									</>
-								)}
-							</button>
+					<div className="flex-1">
+						<h2 id={titleId} className="mb-1 text-[clamp(22px,3.2vw,30px)] font-bold leading-tight tracking-[-0.025em] text-ink sm:pr-24">
+							{job.title}
+						</h2>
+						<p className="mb-2 text-base text-body sm:text-lg">{job.company.name}</p>
+						<p className="mb-3 font-mono text-xs leading-relaxed text-muted">
+							{job.location}
+							{job.remote && " · Remote OK"}
+							{job.type && ` · ${jobTypeLabels[job.type] ?? job.type}`}
+							{job.department && ` · ${job.department}`}
+							{job.salary && ` · ${job.salary}`}
+						</p>
+						<div className="flex flex-wrap justify-center gap-2 sm:justify-start">
+							{isHot && <Pill size="lg" className="bg-gradient-to-r from-orange-500 to-amber-500 font-semibold text-white shadow-[0_0_10px_rgb(251_146_60/0.5)]">Hot</Pill>}
+							{job.featured && <Pill variant="warm" size="lg">Featured</Pill>}
+							{job.tags?.includes("top") && <Pill variant="solid" size="lg">Top</Pill>}
+							{isNew(job.createdAt) && <Pill variant="outline" size="lg">New</Pill>}
+							<Pill variant={job.company.category === "portfolio" ? "accent" : "neutral"} size="lg">
+								{job.company.category === "portfolio" ? "Portfolio" : "Network"}
+							</Pill>
 						</div>
 
-						{/* Other Jobs & Careers - with labels */}
-						<div className="flex flex-wrap justify-center gap-2">
-							{otherJobsCount > 0 && (
-								<button
-									onClick={onViewOtherJobs}
-									className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-								>
-									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-										<rect x="3" y="3" width="7" height="7" />
-										<rect x="14" y="3" width="7" height="7" />
-										<rect x="14" y="14" width="7" height="7" />
-										<rect x="3" y="14" width="7" height="7" />
-									</svg>
-									<span>{otherJobsCount} more {otherJobsCount === 1 ? "job" : "jobs"}</span>
-								</button>
-							)}
-							{job.company.careers && (
-								<a
-									href={job.company.careers}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-								>
-									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-										<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-										<circle cx="12" cy="7" r="4" />
-									</svg>
-									<span>Careers page</span>
-								</a>
-							)}
-						</div>
-
-						{/* Company Links - with labels */}
-						<div className="flex flex-wrap justify-center gap-2">
+						<div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
 							<a
-								href={job.company.website}
+								href={job.link}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+								onClick={onApplyClick}
+								className={buttonClass({ variant: "primary", size: "lg", className: "rounded-full" })}
 							>
-								<svg
-									className="w-4 h-4"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<circle cx="12" cy="12" r="10" />
-									<line x1="2" y1="12" x2="22" y2="12" />
-									<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-								</svg>
-								<span>Website</span>
+								Apply Now ↗
+							</a>
+							<a href={job.company.website} target="_blank" rel="noopener noreferrer" aria-label="Website" className={iconLink}>
+								<svg {...iconProps}><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
 							</a>
 							{job.company.x && (
-								<a
-									href={job.company.x}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-								>
-									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-										<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-									</svg>
-									<span>X</span>
+								<a href={job.company.x} target="_blank" rel="noopener noreferrer" aria-label="X" className={iconLink}>
+									<svg {...iconProps} fill="currentColor" stroke="none"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
 								</a>
 							)}
 							{job.company.github && (
-								<a
-									href={job.company.github}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-								>
-									<svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-										<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-									</svg>
-									<span>GitHub</span>
+								<a href={job.company.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className={iconLink}>
+									<svg {...iconProps} fill="currentColor" stroke="none"><path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .5z" /></svg>
 								</a>
 							)}
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+
+			<div className="space-y-6 p-6 sm:space-y-8 sm:p-8">
+				{displayTags.length > 0 && (
+					<div>
+						<h3 className="mb-3 text-lg font-semibold text-ink">Tags</h3>
+						<div className="flex flex-wrap gap-2">
+							{displayTags.map((tag) => (
+								<Pill key={tag} size="lg">
+									{getJobTagLabel(tag, tagLabels)}
+								</Pill>
+							))}
+						</div>
+					</div>
+				)}
+
+				<div>
+					<h3 className="mb-3 text-lg font-semibold text-ink">About the Role</h3>
+					<div id={descriptionId} className="prose-jd">
+						<Markdown>{description}</Markdown>
+					</div>
+				</div>
+
+				<div className="border-t border-line pt-6">
+					<div className="flex flex-wrap gap-2">
+						<CopyButton
+							label="Copy link"
+							copied={copiedLink === "job"}
+							onCopy={() => copyToClipboard(jobUrl, "job")}
+							icon={
+								<svg {...iconProps}>
+									<rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+									<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+								</svg>
+							}
+						/>
+						<CopyButton
+							label="Copy apply link"
+							copied={copiedLink === "apply"}
+							onCopy={() => copyToClipboard(job.link, "apply")}
+							icon={
+								<svg {...iconProps}>
+									<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+									<polyline points="15 3 21 3 21 9" />
+									<line x1="10" y1="14" x2="21" y2="3" />
+								</svg>
+							}
+						/>
+						{otherJobsCount > 0 && (
+							<button type="button" onClick={onViewOtherJobs} className={chip}>
+								{otherJobsCount} more {otherJobsCount === 1 ? "job" : "jobs"}
+							</button>
+						)}
+						{job.company.careers && (
+							<a href={job.company.careers} target="_blank" rel="noopener noreferrer" className={chip}>
+								Careers page
+							</a>
+						)}
+					</div>
+				</div>
+			</div>
+		</ModalShell>
 	);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { fieldClass } from "@/components/ui/field";
 
 const OPTIONS = [
   { value: "news", label: "News digest" },
@@ -56,11 +57,11 @@ export function NewsletterSignup() {
   };
 
   return (
-    <section className="rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 sm:p-6 bg-neutral-50 dark:bg-neutral-900/40">
+    <section className="rounded-2xl bg-accent-soft p-5 sm:p-7">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Newsletter</h2>
-          <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+          <h2 className="text-xl font-semibold tracking-[-0.03em] text-ink">Newsletter</h2>
+          <p className="mt-2 text-[15px] leading-snug text-body">
             Subscribe to news digests and performance updates for jobs and candidates.
           </p>
         </div>
@@ -70,7 +71,7 @@ export function NewsletterSignup() {
           aria-expanded={isOpen}
           aria-controls="newsletter-signup-form"
           onClick={() => setIsOpen((value) => !value)}
-          className="group inline-flex items-center justify-center rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-5 py-2.5 text-sm font-semibold tracking-wide text-neutral-900 dark:text-neutral-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all"
+          className="group inline-flex items-center justify-center min-h-11 rounded-full bg-accent px-5 text-sm font-medium text-white transition-opacity hover:opacity-85"
         >
           {isOpen ? "Hide Subscribe Form" : "Subscribe"}
         </button>
@@ -79,27 +80,27 @@ export function NewsletterSignup() {
       {isOpen && (
         <form id="newsletter-signup-form" className="mt-4 space-y-4" onSubmit={onSubmit}>
           <label className="block">
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">Email</span>
+            <span className="text-sm text-body">Email</span>
             <input
               type="email"
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
-              className="mt-1 w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+              className={`mt-1 w-full ${fieldClass}`}
             />
           </label>
 
           <fieldset className="space-y-2">
-            <legend className="text-sm text-neutral-700 dark:text-neutral-300">Newsletter types</legend>
+            <legend className="text-sm text-body">Newsletter types</legend>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               {OPTIONS.map((option) => (
-                <label key={option.value} className="inline-flex items-center gap-2 text-sm">
+                <label key={option.value} className="inline-flex min-h-11 items-center gap-2 text-sm text-body">
                   <input
                     type="checkbox"
                     checked={selected.includes(option.value)}
                     onChange={() => toggleOption(option.value)}
-                    className="h-4 w-4 rounded border-neutral-300 dark:border-neutral-700"
+                    className="size-4 rounded border-line-strong accent-[var(--accent)]"
                   />
                   <span>{option.label}</span>
                 </label>
@@ -110,7 +111,7 @@ export function NewsletterSignup() {
           <button
             type="submit"
             disabled={status === "submitting" || selected.length === 0}
-            className="inline-flex items-center justify-center rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className="min-h-11 rounded-full bg-inverse px-5 text-sm font-medium text-inverse-ink disabled:opacity-50"
           >
             {status === "submitting" ? "Subscribing..." : "Subscribe"}
           </button>
@@ -121,8 +122,8 @@ export function NewsletterSignup() {
         <p
           className={`mt-3 text-sm ${
             status === "error"
-              ? "text-red-600 dark:text-red-400"
-              : "text-green-700 dark:text-green-400"
+              ? "text-warm"
+              : "text-accent-ink"
           }`}
         >
           {message}

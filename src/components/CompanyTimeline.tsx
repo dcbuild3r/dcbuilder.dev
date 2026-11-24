@@ -4,7 +4,9 @@ import { useMemo, useState } from "react";
 import type { AggregatedNewsItem } from "@/lib/news";
 import { type NewsCategory, categoryLabels } from "@/data/news";
 import { CustomSelect } from "@/components/CustomSelect";
-import { GitHubIcon, WebsiteIcon, XIcon } from "@/components/ui/icons";
+import { Badge } from "@/components/ui/badge";
+import { fieldClass } from "@/components/ui/field";
+import { CloseIcon, GitHubIcon, WebsiteIcon, XIcon } from "@/components/ui/icons";
 import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
 
 interface CompanyTimelineProps {
@@ -146,20 +148,20 @@ export function CompanyTimeline({
       <div className="mb-6 space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+            <p className="font-mono text-[11.5px] font-medium uppercase tracking-[0.16em] text-muted">
               Timeline
             </p>
-            <h2 id="company-timeline-heading" className="text-2xl font-bold">
+            <h2 id="company-timeline-heading" className="text-2xl font-semibold tracking-tight text-ink">
               {activeCompany} milestones
             </h2>
             {company?.description && (
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600 dark:text-neutral-400">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-body">
                 {company.description}
               </p>
             )}
           </div>
           {events.length > 0 && (
-            <p className="text-sm text-neutral-500">
+            <p className="font-mono text-xs text-muted">
               {visibleEvents.length} of {events.length}{" "}
               {events.length === 1 ? "event" : "events"}
             </p>
@@ -167,12 +169,12 @@ export function CompanyTimeline({
         </div>
 
         {company && (
-          <div className="flex flex-col gap-4 border-y border-neutral-100 py-4 dark:border-neutral-900 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-4 border-y border-line py-4 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-wrap gap-2">
               {company.categories.map((category) => (
                 <span
                   key={category}
-                  className="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 dark:border-neutral-800 dark:text-neutral-400"
+                  className="rounded-full border border-line-strong px-3 py-1 text-xs font-medium text-body"
                 >
                   {category}
                 </span>
@@ -186,7 +188,7 @@ export function CompanyTimeline({
                   rel="noopener noreferrer"
                   title="Website"
                   aria-label={`Visit ${activeCompany} website`}
-                  className="flex size-12 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-white sm:size-14"
+                  className="flex size-12 items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink sm:size-14"
                 >
                   <WebsiteIcon className="size-7 sm:size-8" />
                 </a>
@@ -198,7 +200,7 @@ export function CompanyTimeline({
                   rel="noopener noreferrer"
                   title="X"
                   aria-label={`Visit ${activeCompany} on X`}
-                  className="flex size-12 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-white sm:size-14"
+                  className="flex size-12 items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink sm:size-14"
                 >
                   <XIcon className="size-7 sm:size-8" />
                 </a>
@@ -210,7 +212,7 @@ export function CompanyTimeline({
                   rel="noopener noreferrer"
                   title="GitHub"
                   aria-label={`Visit ${activeCompany} on GitHub`}
-                  className="flex size-12 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-white sm:size-14"
+                  className="flex size-12 items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink sm:size-14"
                 >
                   <GitHubIcon className="size-7 sm:size-8" />
                 </a>
@@ -221,7 +223,7 @@ export function CompanyTimeline({
       </div>
 
       {events.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-neutral-200 px-4 py-5 text-sm text-neutral-500 dark:border-neutral-800">
+        <div className="rounded-2xl border border-dashed border-line-strong px-4 py-5 text-sm text-muted">
           No indexed company events yet.
         </div>
       ) : (
@@ -231,7 +233,7 @@ export function CompanyTimeline({
               <div className="space-y-1.5">
                 <label
                   htmlFor="timeline-search"
-                  className="text-sm text-neutral-600 dark:text-neutral-400"
+                  className="text-sm text-body"
                 >
                   Search:
                 </label>
@@ -245,7 +247,7 @@ export function CompanyTimeline({
                       setSelectedYear("all");
                     }}
                     placeholder={`Search ${activeCompany} news...`}
-                    className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 pr-9 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:ring-neutral-600"
+                    className={`${fieldClass} w-full pr-10`}
                   />
                   {searchQuery && (
                     <button
@@ -254,10 +256,10 @@ export function CompanyTimeline({
                         setSearchQuery("");
                         setSelectedYear("all");
                       }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-1.5 py-0.5 text-sm text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
+                      className="absolute right-0 top-0 flex size-11 items-center justify-center text-muted hover:text-ink"
                       aria-label="Clear timeline search"
                     >
-                      x
+                      <CloseIcon className="size-4" />
                     </button>
                   )}
                 </div>
@@ -266,7 +268,7 @@ export function CompanyTimeline({
               <div className="space-y-1.5">
                 <label
                   htmlFor="timeline-category-filter"
-                  className="text-sm text-neutral-600 dark:text-neutral-400"
+                  className="text-sm text-body"
                 >
                   Category:
                 </label>
@@ -289,10 +291,10 @@ export function CompanyTimeline({
               </div>
 
               <div className="space-y-1.5">
-                <span className="block text-sm text-neutral-600 dark:text-neutral-400">
+                <span className="block text-sm text-body">
                   Sort:
                 </span>
-                <div className="inline-flex rounded-lg border border-neutral-200 bg-white p-1 dark:border-neutral-700 dark:bg-neutral-900">
+                <div className="inline-flex rounded-full border border-line-strong bg-surface p-1">
                   {[
                     ["newest", "Newest"],
                     ["oldest", "Oldest"],
@@ -305,10 +307,10 @@ export function CompanyTimeline({
                         type="button"
                         aria-pressed={isSelected}
                         onClick={() => setSortOrder(value as TimelineSortOrder)}
-                        className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                        className={`min-h-9 rounded-full px-4 text-sm font-medium transition-colors ${
                           isSelected
-                            ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-950"
-                            : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                            ? "bg-inverse text-inverse-ink"
+                            : "text-body hover:text-ink"
                         }`}
                       >
                         {label}
@@ -326,16 +328,16 @@ export function CompanyTimeline({
               >
                 <span
                   aria-hidden="true"
-                  className="absolute left-1 right-1 top-1/2 h-px -translate-y-1/2 bg-neutral-200 dark:bg-neutral-800"
+                  className="absolute left-1 right-1 top-1/2 h-px -translate-y-1/2 bg-line"
                 />
                 <button
                   type="button"
                   aria-pressed={selectedYear === "all"}
                   onClick={() => setSelectedYear("all")}
-                  className={`relative z-10 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                  className={`relative z-10 min-h-9 rounded-full border px-3 text-xs font-medium transition-colors ${
                     selectedYear === "all"
-                      ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-950"
-                      : "border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:border-neutral-600 dark:hover:text-white"
+                      ? "border-inverse bg-inverse text-inverse-ink"
+                      : "border-line-strong bg-surface text-body hover:text-ink"
                   }`}
                 >
                   All years
@@ -352,17 +354,17 @@ export function CompanyTimeline({
                       className="group relative z-10 flex min-w-16 flex-col items-center gap-1"
                     >
                       <span
-                        className={`size-3 rounded-full border-2 border-white transition-colors dark:border-neutral-950 ${
+                        className={`size-3 rounded-full border-2 border-ground transition-colors ${
                           isSelected
-                            ? "bg-neutral-900 dark:bg-white"
-                            : "bg-neutral-300 group-hover:bg-neutral-500 dark:bg-neutral-700 dark:group-hover:bg-neutral-400"
+                            ? "bg-inverse"
+                            : "bg-line-strong group-hover:bg-muted"
                         }`}
                       />
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
                           isSelected
-                            ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-950"
-                            : "bg-white text-neutral-500 group-hover:text-neutral-900 dark:bg-neutral-950 dark:text-neutral-500 dark:group-hover:text-white"
+                            ? "bg-inverse text-inverse-ink"
+                            : "bg-ground text-muted group-hover:text-ink"
                         }`}
                       >
                         {year}
@@ -374,38 +376,35 @@ export function CompanyTimeline({
             </div>
           </div>
 
-          <ol className="relative space-y-4 border-l border-neutral-200 pl-5 dark:border-neutral-800">
+          <ol className="relative space-y-4 border-l border-line pl-5">
             {visibleEvents.map((event, index) => (
               <li key={event.id} className="relative">
                 <span
-                  className={`absolute -left-[29px] top-1.5 size-3 rounded-full border-2 border-white dark:border-neutral-950 ${
+                  className={`absolute -left-[29px] top-1.5 size-3 rounded-full border-2 border-ground ${
                     index === 0
-                      ? "bg-neutral-900 dark:bg-white"
-                      : "bg-neutral-300 dark:bg-neutral-700"
+                      ? "bg-inverse"
+                      : "bg-line-strong"
                   }`}
                 />
                 <a
                   href={event.url}
                   target={event.type === "blog" ? undefined : "_blank"}
                   rel={event.type === "blog" ? undefined : "noopener noreferrer"}
-                  className="group block rounded-lg border border-neutral-200 p-4 transition-colors hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600 sm:p-4"
+                  className="group block rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-line-strong"
                 >
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
-                    <time dateTime={event.date}>{formatDate(event.date)}</time>
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                    <time className="font-mono" dateTime={event.date}>{formatDate(event.date)}</time>
                     {getTimelineBadges(event).map((badge) => (
-                      <span
-                        key={badge}
-                        className="rounded-full bg-neutral-100 px-2 py-0.5 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
-                      >
+                      <Badge key={badge} variant="neutral">
                         {badge}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
-                  <h3 className="mt-3 text-base font-semibold leading-6 transition-colors group-hover:text-neutral-600 dark:group-hover:text-neutral-300">
+                  <h3 className="mt-3 text-base font-semibold leading-6 text-ink transition-colors group-hover:text-accent">
                     {event.title}
                   </h3>
                   {event.description && (
-                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-neutral-600 dark:text-neutral-400 sm:line-clamp-2">
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-body sm:line-clamp-2">
                       {event.description}
                     </p>
                   )}

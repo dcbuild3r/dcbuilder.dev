@@ -12,15 +12,13 @@ test.describe("Portfolio Page", () => {
     await expect(
       page.getByRole("heading", { name: "Investments" })
     ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Disclaimer" })
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Disclaimer" })).toBeVisible();
   });
 
   test("should render investment container", async ({ page }) => {
     // Check for the main container or controls which should always be present
-    await expect(page.getByText("Sort by:")).toBeVisible();
-    await expect(page.getByRole("button", { name: /Main/ })).toBeVisible();
+    await expect(page.getByLabel("Sort")).toBeVisible();
+    await expect(page.getByLabel("Show")).toBeVisible();
   });
 
   test("should display investment cards or empty state", async ({ page }) => {
@@ -36,32 +34,23 @@ test.describe("Portfolio Page", () => {
   });
 
   test("should filter by Featured", async ({ page }) => {
-    // Click Featured filter
-    await page.getByRole("button", { name: /Featured/ }).click();
-
-    // Verify the button is now selected (has active styling)
-    const featuredButton = page.getByRole("button", { name: /Featured/ });
-    await expect(featuredButton).toHaveClass(/bg-amber/);
+    await page.getByLabel("Show").selectOption("featured");
+    await expect(page.getByLabel("Show")).toHaveValue("featured");
   });
 
   test("should toggle between Main and All views", async ({ page }) => {
-    // Click All to show all investments
-    const allButton = page.getByRole("button", { name: /All/ });
-    if (await allButton.isVisible()) {
-      await allButton.click();
-      await expect(allButton).toHaveClass(/bg-neutral-900|bg-white/);
+    const show = page.getByLabel("Show");
+    if ((await show.locator('option[value="all"]').count()) > 0) {
+      await show.selectOption("all");
+      await expect(show).toHaveValue("all");
     }
-
-    // Click Main to filter
-    await page.getByRole("button", { name: /Main/ }).click();
-    await expect(page.getByRole("button", { name: /Main/ })).toHaveClass(
-      /bg-neutral-900|bg-white/
-    );
+    await show.selectOption("main");
+    await expect(show).toHaveValue("main");
   });
 
   test("should sort investments alphabetically", async ({ page }) => {
     // Select alphabetical sort
-    await page.getByRole("combobox").selectOption("alphabetical");
+    await page.getByLabel("Sort").selectOption("alphabetical");
 
     // Verify sort was applied (cards may or may not exist in test DB)
     const cards = page.locator('[data-testid="investment-card"]');
@@ -76,7 +65,7 @@ test.describe("Portfolio Page", () => {
 
   test("should sort investments reverse alphabetically", async ({ page }) => {
     // Select reverse alphabetical sort
-    await page.getByRole("combobox").selectOption("alphabetical-desc");
+    await page.getByLabel("Sort").selectOption("alphabetical-desc");
 
     // Verify sort was applied (cards may or may not exist in test DB)
     const cards = page.locator('[data-testid="investment-card"]');

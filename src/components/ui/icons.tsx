@@ -49,6 +49,24 @@ export function LinkedInIcon({ className, ...props }: IconProps) {
 	);
 }
 
+export function SignalIcon({ className, ...props }: IconProps) {
+	return (
+		<svg
+			className={cn("size-5", className)}
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			{...props}
+		>
+			<path d="M12 3a9 9 0 0 0-7.7 13.66L3 21l4.34-1.3A9 9 0 1 0 12 3z" strokeDasharray="2.6 2.6" />
+			<path d="M12 6.5a5.5 5.5 0 0 0-4.7 8.35L6.5 17.5l2.65-.8A5.5 5.5 0 1 0 12 6.5z" fill="currentColor" stroke="none" />
+		</svg>
+	);
+}
+
 export function TelegramIcon({ className, ...props }: IconProps) {
 	return (
 		<svg

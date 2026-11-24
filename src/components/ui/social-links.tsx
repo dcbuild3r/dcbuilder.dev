@@ -30,11 +30,10 @@ interface SocialLinksProps {
 	className?: string;
 }
 
-const linkBaseStyles =
-	"text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors";
-const compactLinkStyles = "p-2.5 sm:p-2";
+const linkBaseStyles = "text-muted hover:text-ink transition-colors";
+const compactLinkStyles = "inline-flex size-11 items-center justify-center";
 const expandedLinkStyles =
-	"flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700";
+	"flex min-h-11 items-center gap-2 rounded-[10px] bg-surface-2 px-4 text-ink hover:bg-line";
 
 /**
  * Reusable social links component with consistent styling and accessibility.
@@ -52,7 +51,7 @@ export function SocialLinks({
 	const linkStyles = isCompact
 		? cn(linkBaseStyles, compactLinkStyles)
 		: expandedLinkStyles;
-	const iconSize = isCompact ? "size-5 sm:size-4" : "size-5";
+	const iconSize = isCompact ? "size-[18px]" : "size-5";
 
 	return (
 		<div
@@ -158,7 +157,7 @@ export function SocialLinks({
 					onClick={onCVClick}
 					className={cn(
 						linkStyles,
-						!isCompact && "bg-blue-600 text-white hover:bg-blue-700"
+						!isCompact && "bg-accent text-white hover:opacity-85"
 					)}
 					title="CV / Resume"
 					aria-label={`CV or resume for ${displayName}`}

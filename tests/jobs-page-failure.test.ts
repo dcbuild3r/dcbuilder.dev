@@ -38,7 +38,7 @@ describe("jobs page data failures", () => {
 
     try {
       const { default: JobsPage } = await import(
-        `../src/app/jobs/page?jobs-page-failure=${Date.now()}`
+        `../src/app/(site)/jobs/page?jobs-page-failure=${Date.now()}`
       );
       const markup = renderToStaticMarkup(await JobsPage());
 
