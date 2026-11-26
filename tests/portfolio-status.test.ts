@@ -21,6 +21,26 @@ const portfolio = [
 ];
 
 describe("portfolio status ordering", () => {
+  test("relevance shows the featured order before other featured investments", () => {
+    const titles = [
+      "Lighter", "Prime Intellect", "Lucis", "Monad", "Exo", "Morpho", "Friend",
+      "Octet", "v12.sh", "Accountable", "Runner", "Phylax", "OWN",
+    ];
+    const featured = titles.map((title, index) =>
+      investment(title, "active", { featured: true, tier: index < 6 ? 1 : 2 })
+    );
+    const megaEth = investment("MegaETH", "active", { featured: true, tier: 1 });
+    const sealgate = investment("Sealgate", "active", { tier: 2 });
+    const investments = [megaEth, sealgate, ...featured.reverse()];
+
+    expect(sortPortfolioInvestments(investments, "relevance", "all").map(i => i.title)).toEqual([
+      ...titles, "MegaETH", "Sealgate",
+    ]);
+    expect(sortPortfolioInvestments(
+      investments.filter(i => i.featured), "relevance", "featured"
+    ).map(i => i.title)).toEqual([...titles, "MegaETH"]);
+  });
+
   test("relevance places Berachain after Pragma and before Mode", () => {
     const sorted = sortPortfolioInvestments(
       [...portfolio, investment("Berachain", "active", { tier: 3 }), investment("Pragma", "active")],
