@@ -53,6 +53,7 @@ const INVESTMENT_TILES: Record<string, string> = {
   knox: "#ffffff",
   lighter: "#07060c",
   lucis: "#1d2120",
+  mega: "#d43338",
   megaeth: "#dfd9d9",
   "mind palace": "#000000",
   mizu: "#0d1808",

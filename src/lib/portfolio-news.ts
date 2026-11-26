@@ -1,7 +1,7 @@
+import { normalizeCompanyFilterValue } from "@/lib/company-news";
+
 export function getPortfolioNewsSlug(companyTitle: string): string {
-  return companyTitle
-    .trim()
-    .toLowerCase()
+  return normalizeCompanyFilterValue(companyTitle)
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }

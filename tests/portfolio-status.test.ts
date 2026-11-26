@@ -29,31 +29,32 @@ describe("portfolio status ordering", () => {
     const featured = titles.map((title, index) =>
       investment(title, "active", { featured: true, tier: index < 6 ? 1 : 2 })
     );
-    const megaEth = investment("MegaETH", "active", { featured: true, tier: 1 });
+    const mega = investment("Mega", "active", { featured: true, tier: 1 });
+    const praxis = investment("Praxis", "active", { featured: true, tier: 2 });
     const sealgate = investment("Sealgate", "active", { tier: 2 });
-    const investments = [megaEth, sealgate, ...featured.reverse()];
+    const investments = [praxis, mega, sealgate, ...featured.reverse()];
 
     expect(sortPortfolioInvestments(investments, "relevance", "all").map(i => i.title)).toEqual([
-      ...titles, "MegaETH", "Sealgate",
+      ...titles, "Mega", "Praxis", "Sealgate",
     ]);
     expect(sortPortfolioInvestments(
       investments.filter(i => i.featured), "relevance", "featured"
-    ).map(i => i.title)).toEqual([...titles, "MegaETH"]);
+    ).map(i => i.title)).toEqual([...titles, "Mega", "Praxis"]);
   });
 
-  test("relevance places Berachain after Pragma and before Mode", () => {
+  test("relevance applies the requested positions in non-featured investments", () => {
+    const positions = ["Agora", "Berachain", "Inco", "Pragma", "Rhinestone", "Ritual", "Sorella"];
     const sorted = sortPortfolioInvestments(
-      [...portfolio, investment("Berachain", "active", { tier: 3 }), investment("Pragma", "active")],
+      [...portfolio, ...positions.map(title => investment(title, "active"))],
       "relevance",
       "all"
     );
-    const lastActive = sorted.findIndex(i => i.status === "exited") - 1;
+    const titles = sorted.map(i => i.title);
 
-    expect(sorted.slice(lastActive - 1, lastActive + 2).map(i => i.title)).toEqual([
-      "Pragma",
-      "Berachain",
-      "Mode",
-    ]);
+    expect(titles.slice(0, 3)).toEqual(["Active featured", "Ritual", "Sorella"]);
+    expect(titles.indexOf("Agora")).toBe(titles.indexOf("Rhinestone") + 1);
+    expect(titles.indexOf("Pragma")).toBe(titles.indexOf("Inco") - 1);
+    expect(titles.indexOf("Berachain")).toBe(titles.indexOf("Mode") - 1);
   });
 
   for (const sort of ["relevance", "alphabetical", "alphabetical-desc"] satisfies SortOption[]) {

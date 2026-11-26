@@ -11,6 +11,7 @@ describe("portfolio job helpers", () => {
       "Category Labs",
     ]);
     expect(getPortfolioJobCompanies("Morpho")).toEqual(["Morpho"]);
+    expect(getPortfolioJobCompanies("Mega")).toEqual(["Mega", "MegaETH"]);
   });
 
   test("returns job companies for featured portfolio investments only", () => {

@@ -1,7 +1,6 @@
 import type { Investment, SortOption } from "@/types/investments";
 import { hashString, seededRandom, shuffleArray } from "@/lib/shuffle";
 
-const activeTailOrder = ["Pragma", "Berachain"];
 const featuredOrder = [
   "Lighter",
   "Prime Intellect",
@@ -17,7 +16,30 @@ const featuredOrder = [
   "Phylax",
   "OWN",
 ];
-const featuredRanks = new Map(featuredOrder.map((title, index) => [title, index]));
+const featuredRanks = new Map([
+  ...featuredOrder.map((title, index) => [title, index - featuredOrder.length] as const),
+  ["Praxis", 1],
+]);
+const nonFeaturedRanks = new Map([
+  ["Ritual", -2],
+  ["Sorella", -1],
+  ["Berachain", 1],
+]);
+
+function compareRank(ranks: ReadonlyMap<string, number>) {
+  return (a: Investment, b: Investment) =>
+    (ranks.get(a.title) ?? 0) - (ranks.get(b.title) ?? 0);
+}
+
+function placeBeside(investments: Investment[], title: string, anchor: string, side: "before" | "after") {
+  const index = investments.findIndex((investment) => investment.title === title);
+  const anchorIndex = investments.findIndex((investment) => investment.title === anchor);
+  if (index === -1 || anchorIndex === -1) return;
+
+  const [investment] = investments.splice(index, 1);
+  const insertionIndex = anchorIndex - Number(index < anchorIndex) + Number(side === "after");
+  investments.splice(insertionIndex, 0, investment);
+}
 
 // Status groups take precedence over every user-selected sort.
 export function sortPortfolioInvestments(
@@ -66,11 +88,7 @@ export function sortPortfolioInvestments(
         seededRandom(hashString(`${seedBase}|featured|tier-${tier}`))
       )
     );
-  const relevanceFeatured = shuffledFeatured.sort(
-    (a, b) =>
-      (featuredRanks.get(a.title) ?? featuredOrder.length) -
-      (featuredRanks.get(b.title) ?? featuredOrder.length)
-  );
+  const relevanceFeatured = shuffledFeatured.sort(compareRank(featuredRanks));
 
   // Group non-featured by tier and shuffle each group
   const tierGroups: Record<number, Investment[]> = {};
@@ -99,12 +117,12 @@ export function sortPortfolioInvestments(
     seededRandom(hashString(`${seedBase}|defunct`))
   );
 
-  const relevanceActive = [...relevanceFeatured, ...shuffledNonFeatured].sort(
-    (a, b) => activeTailOrder.indexOf(a.title) - activeTailOrder.indexOf(b.title)
-  );
+  const relevanceNonFeatured = shuffledNonFeatured.sort(compareRank(nonFeaturedRanks));
+  placeBeside(relevanceNonFeatured, "Agora", "Rhinestone", "after");
+  placeBeside(relevanceNonFeatured, "Pragma", "Inco", "before");
   const relevanceExited = shuffledExited.sort(
     (a, b) => Number(b.title === "Mode") - Number(a.title === "Mode")
   );
 
-  return [...relevanceActive, ...relevanceExited, ...shuffledDefunct];
+  return [...relevanceFeatured, ...relevanceNonFeatured, ...relevanceExited, ...shuffledDefunct];
 }

@@ -1,7 +1,26 @@
 import { describe, expect, test } from 'bun:test';
 import { buildCompanyNewsApiPayload } from '../src/lib/company-news-api';
+import { newsItemMatchesCompany } from '../src/lib/company-news';
+import { getPortfolioNewsUrl } from '../src/lib/portfolio-news';
 
 describe('company news API payload', () => {
+  test('keeps the MegaETH timeline URL and matches its historical news to Mega', () => {
+    const item = {
+      id: 'megaeth-update',
+      type: 'announcement' as const,
+      title: 'Network update',
+      url: 'https://x.com/megaeth',
+      date: '2026-11-26',
+      postedAt: '2026-11-26T00:00:00.000Z',
+      category: 'general' as const,
+      relevance: 5,
+      company: 'MegaETH',
+    };
+
+    expect(getPortfolioNewsUrl('Mega')).toBe('/news/megaeth');
+    expect(newsItemMatchesCompany(item, 'Mega')).toBe(true);
+  });
+
   test('returns the complete company timeline through stable pagination', () => {
     const events = Array.from({ length: 5 }, (_, index) => ({
       id: `lighter-${index + 1}`,

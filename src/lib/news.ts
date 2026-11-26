@@ -5,6 +5,7 @@ import { desc, inArray, sql } from "drizzle-orm";
 import { NewsCategory } from "@/data/news";
 import { isMissingColumnError, isMissingRelationError } from "@/lib/db-schema-compat";
 import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
+import { normalizeCompanyFilterValue } from "@/lib/company-news";
 import { cachePublicData } from "@/lib/public-cache";
 import {
   getPortfolioJobCompanies,
@@ -90,6 +91,12 @@ const STARTER_SOURCE_INVESTMENT_MAPPINGS = [
     sourceValue: "succinctlabs",
     sourceKind: "company",
     investmentTitle: "Succinct",
+  },
+  {
+    sourceType: "x_handle",
+    sourceValue: "megaeth",
+    sourceKind: "company",
+    investmentTitle: "Mega",
   },
   {
     sourceType: "x_handle",
@@ -378,7 +385,7 @@ function normalizeHost(value: string): string {
 }
 
 function normalizeCompanyTitle(value: string | null | undefined): string {
-  return (value ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+  return normalizeCompanyFilterValue(value ?? "");
 }
 
 function normalizeTitleMention(value: string): string {
@@ -448,7 +455,7 @@ async function getPortfolioCompanyContexts(): Promise<PortfolioCompanyNewsContex
     title: string,
     company: PortfolioCompanyNewsContext
   ) => {
-    const key = normalizeTitleMention(title);
+    const key = normalizeTitleMention(normalizeCompanyTitle(title));
     if (key.replace(/\s/g, "").length < 5) return;
     if (contexts.titleMentions.some((mention) => mention.key === key)) return;
 
