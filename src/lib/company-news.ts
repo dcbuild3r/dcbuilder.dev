@@ -1,8 +1,9 @@
-import { AggregatedNewsItem } from "@/lib/news";
+import type { AggregatedNewsItem } from "@/lib/news";
 import { compareNewsByDateAndRelevance } from "@/lib/news-sorting";
 
 export function normalizeCompanyFilterValue(value: string): string {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
+  const normalized = value.trim().replace(/\s+/g, " ").toLowerCase();
+  return normalized === "mega" ? "megaeth" : normalized;
 }
 
 export function newsItemMatchesCompany(
