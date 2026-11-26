@@ -1,6 +1,8 @@
 import type { Investment, SortOption } from "@/types/investments";
 import { hashString, seededRandom, shuffleArray } from "@/lib/shuffle";
 
+const activeTailOrder = ["Pragma", "Berachain"];
+
 // Status groups take precedence over every user-selected sort.
 export function sortPortfolioInvestments(
   investments: Investment[],
@@ -76,5 +78,12 @@ export function sortPortfolioInvestments(
     seededRandom(hashString(`${seedBase}|defunct`))
   );
 
-  return [...shuffledFeatured, ...shuffledNonFeatured, ...shuffledExited, ...shuffledDefunct];
+  const relevanceActive = [...shuffledFeatured, ...shuffledNonFeatured].sort(
+    (a, b) => activeTailOrder.indexOf(a.title) - activeTailOrder.indexOf(b.title)
+  );
+  const relevanceExited = shuffledExited.sort(
+    (a, b) => Number(b.title === "Mode") - Number(a.title === "Mode")
+  );
+
+  return [...relevanceActive, ...relevanceExited, ...shuffledDefunct];
 }

@@ -21,6 +21,21 @@ const portfolio = [
 ];
 
 describe("portfolio status ordering", () => {
+  test("relevance places Berachain after Pragma and before Mode", () => {
+    const sorted = sortPortfolioInvestments(
+      [...portfolio, investment("Berachain", "active", { tier: 3 }), investment("Pragma", "active")],
+      "relevance",
+      "all"
+    );
+    const lastActive = sorted.findIndex(i => i.status === "exited") - 1;
+
+    expect(sorted.slice(lastActive - 1, lastActive + 2).map(i => i.title)).toEqual([
+      "Pragma",
+      "Berachain",
+      "Mode",
+    ]);
+  });
+
   for (const sort of ["relevance", "alphabetical", "alphabetical-desc"] satisfies SortOption[]) {
     test(`${sort} keeps all active investments before exits and ceased operations last`, () => {
       const sorted = sortPortfolioInvestments(portfolio, sort, "all");
