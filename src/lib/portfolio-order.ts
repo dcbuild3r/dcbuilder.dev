@@ -2,6 +2,22 @@ import type { Investment, SortOption } from "@/types/investments";
 import { hashString, seededRandom, shuffleArray } from "@/lib/shuffle";
 
 const activeTailOrder = ["Pragma", "Berachain"];
+const featuredOrder = [
+  "Lighter",
+  "Prime Intellect",
+  "Lucis",
+  "Monad",
+  "Exo",
+  "Morpho",
+  "Friend",
+  "Octet",
+  "v12.sh",
+  "Accountable",
+  "Runner",
+  "Phylax",
+  "OWN",
+];
+const featuredRanks = new Map(featuredOrder.map((title, index) => [title, index]));
 
 // Status groups take precedence over every user-selected sort.
 export function sortPortfolioInvestments(
@@ -30,11 +46,11 @@ export function sortPortfolioInvestments(
     ];
   }
 
-  // Relevance: featured first (shuffled within tier groups), then non-featured, followed by exited and defunct
+  // Relevance: featured first, then non-featured, followed by exited and defunct.
   const featured = active.filter((i) => i.featured);
   const nonFeatured = active.filter((i) => !i.featured);
 
-  // Group featured by tier and shuffle each group
+  // Shuffle featured investments of the same tier before applying the featured order.
   const featuredTierGroups: Record<number, Investment[]> = {};
   featured.forEach((inv) => {
     if (!featuredTierGroups[inv.tier]) featuredTierGroups[inv.tier] = [];
@@ -50,6 +66,11 @@ export function sortPortfolioInvestments(
         seededRandom(hashString(`${seedBase}|featured|tier-${tier}`))
       )
     );
+  const relevanceFeatured = shuffledFeatured.sort(
+    (a, b) =>
+      (featuredRanks.get(a.title) ?? featuredOrder.length) -
+      (featuredRanks.get(b.title) ?? featuredOrder.length)
+  );
 
   // Group non-featured by tier and shuffle each group
   const tierGroups: Record<number, Investment[]> = {};
@@ -78,7 +99,7 @@ export function sortPortfolioInvestments(
     seededRandom(hashString(`${seedBase}|defunct`))
   );
 
-  const relevanceActive = [...shuffledFeatured, ...shuffledNonFeatured].sort(
+  const relevanceActive = [...relevanceFeatured, ...shuffledNonFeatured].sort(
     (a, b) => activeTailOrder.indexOf(a.title) - activeTailOrder.indexOf(b.title)
   );
   const relevanceExited = shuffledExited.sort(
