@@ -1,6 +1,6 @@
 "use client";
 
-import { categoryLabels, type NewsCategory } from "@/data/news";
+import { getNewsCategoryLabel, type NewsCategory } from "@/data/news";
 import { CustomSelect } from "@/components/CustomSelect";
 import { CloseIcon } from "@/components/ui/icons";
 import { fieldClass } from "@/components/ui/field";
@@ -85,7 +85,7 @@ export function NewsFilterCard({
 					onChange={(value) => onCategoryChange(value as "all" | NewsCategory)}
 					options={[
 						{ value: "all", label: "All categories" },
-						...categories.map((category) => ({ value: category, label: categoryLabels[category] })),
+						...categories.map((category) => ({ value: category, label: getNewsCategoryLabel(category) })),
 					]}
 					className="min-w-40"
 					triggerClassName={pillSelect}

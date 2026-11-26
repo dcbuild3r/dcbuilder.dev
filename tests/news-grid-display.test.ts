@@ -1,3 +1,4 @@
+import { getNewsCategoryLabel } from "../src/data/news";
 import { describe, expect, test } from "bun:test";
 import {
 	getNewsDisplayCompany,
@@ -16,6 +17,15 @@ function portfolioCompany(title: string, sourceIsCompanyAccount = true) {
 }
 
 describe("news grid metadata display", () => {
+	test("labels editorial categories while preserving established acronyms", () => {
+		for (const [category, label] of [
+			["security", "Security"], ["robotics", "Robotics"], ["open_source", "Open source"],
+			["defi", "DeFi"], ["ai", "AI"], ["x_post", "X Post"],
+		]) {
+			expect(getNewsCategoryLabel(category)).toBe(label);
+		}
+	});
+
 	test("hides exact source and portfolio company duplicates", () => {
 		for (const company of ["Zenith", "Movement", "Morpho", "Inco", "Monad"]) {
 			expect(

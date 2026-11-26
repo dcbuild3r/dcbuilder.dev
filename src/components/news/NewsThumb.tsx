@@ -104,7 +104,7 @@ export function NewsThumb({ item, failedImageKeys, markImageFailed }: NewsThumbP
 						src={getNormalizedLogoSrc(company.logo)}
 						alt={company.title}
 						{...imageProps}
-						className="h-full w-full object-contain"
+						className="h-full w-full object-contain rounded-sm dark:bg-logo-backdrop"
 						unoptimized
 						onError={() => markImageFailed(imageKey)}
 					/>
@@ -186,7 +186,7 @@ export function NewsThumb({ item, failedImageKeys, markImageFailed }: NewsThumbP
 						alt={item.company || "Company"}
 						{...imageProps}
 						unoptimized
-						className="size-[68px] rounded-lg object-contain"
+						className="size-[68px] rounded-lg object-contain dark:bg-logo-backdrop"
 						onError={() => markImageFailed(imageKey)}
 					/>
 				);
