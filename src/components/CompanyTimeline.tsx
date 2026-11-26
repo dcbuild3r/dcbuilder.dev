@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { AggregatedNewsItem } from "@/lib/news";
-import { type NewsCategory, categoryLabels } from "@/data/news";
+import { type NewsCategory, getNewsCategoryLabel } from "@/data/news";
 import { CustomSelect } from "@/components/CustomSelect";
 import { Badge } from "@/components/ui/badge";
 import { fieldClass } from "@/components/ui/field";
@@ -55,7 +55,7 @@ function getTimelineBadges(event: AggregatedNewsItem) {
     badges.push("Blog");
   }
 
-  const categoryLabel = categoryLabels[event.category];
+  const categoryLabel = getNewsCategoryLabel(event.category);
   if (categoryLabel && !badges.includes(categoryLabel)) {
     badges.push(categoryLabel);
   }
@@ -72,7 +72,7 @@ function eventMatchesSearch(event: AggregatedNewsItem, query: string) {
     event.company,
     event.source,
     event.platform,
-    categoryLabels[event.category],
+    getNewsCategoryLabel(event.category),
     ...getTimelineBadges(event),
   ]
     .filter(Boolean)
@@ -283,7 +283,7 @@ export function CompanyTimeline({
                     { value: "all", label: "All Categories" },
                     ...categories.map((category) => ({
                       value: category,
-                      label: categoryLabels[category],
+                      label: getNewsCategoryLabel(category),
                     })),
                   ]}
                   className="min-w-[180px]"

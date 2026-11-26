@@ -5,17 +5,8 @@
 
 export type NewsSource = "curated" | "blog" | "announcement";
 
-export type NewsCategory =
-	| "crypto"
-	| "ai"
-	| "infrastructure"
-	| "defi"
-	| "research"
-	| "product"
-	| "funding"
-	| "general"
-	| "x_post";
-
+// Editors can add categories directly in the news admin.
+export type NewsCategory = string;
 export interface CuratedLink {
 	id: string;
 	type: "curated";
@@ -57,7 +48,7 @@ export type NewsItem =
 			readingTime?: string;
 	  };
 
-export const categoryLabels: Record<NewsCategory, string> = {
+export const categoryLabels: Partial<Record<NewsCategory, string>> = {
 	crypto: "Crypto",
 	ai: "AI",
 	infrastructure: "Infrastructure",
@@ -68,3 +59,11 @@ export const categoryLabels: Record<NewsCategory, string> = {
 	general: "General",
 	x_post: "X Post",
 };
+
+export function getNewsCategoryLabel(category: NewsCategory): string {
+	const label = Object.hasOwn(categoryLabels, category) && categoryLabels[category];
+	if (label) return label;
+
+	const words = category.replace(/[_-]+/g, " ").trim();
+	return words ? words[0].toUpperCase() + words.slice(1) : "General";
+}

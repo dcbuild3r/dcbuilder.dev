@@ -3,7 +3,7 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { AggregatedNewsItem } from "@/lib/news";
-import { categoryLabels } from "@/data/news";
+import { getNewsCategoryLabel } from "@/data/news";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { renderInlineNewsMarkdown } from "@/components/news-inline-markdown";
@@ -60,7 +60,7 @@ function PortfolioCompanyMeta({
 				width={24}
 				height={24}
 				sizes="24px"
-				className="h-full w-full object-contain"
+				className="h-full w-full object-contain rounded-sm dark:bg-logo-backdrop"
 				unoptimized
 				onError={() => markImageFailed(imageKey)}
 			/>
@@ -189,7 +189,7 @@ export function NewsRow({
 							<span className="rounded-full bg-purple-500 px-2.5 py-0.5 font-semibold text-white">Portfolio</span>
 						)}
 						<span className="rounded-full bg-purple-100 px-2.5 py-0.5 font-medium text-purple-700 dark:bg-purple-500/20 dark:text-purple-300">
-							{categoryLabels[item.category]}
+							{getNewsCategoryLabel(item.category)}
 						</span>
 						{clicksLoaded && clickCount > 0 && <span>{clickCount} clicks</span>}
 						{item.readingTime && <span>{item.readingTime}</span>}

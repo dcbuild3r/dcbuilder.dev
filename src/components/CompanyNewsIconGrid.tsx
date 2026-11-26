@@ -51,7 +51,7 @@ export function CompanyNewsIconGrid({
                 width={32}
                 height={32}
                 sizes="32px"
-                className="size-8 rounded-full object-contain"
+                className="size-8 rounded-full object-contain dark:bg-logo-backdrop"
                 unoptimized
               />
               <span>{company.name}</span>

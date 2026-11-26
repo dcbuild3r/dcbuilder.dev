@@ -88,7 +88,7 @@ export default async function CompanyNewsPage({
       width={88}
       height={88}
       sizes="(min-width: 640px) 88px, 72px"
-      className="h-full w-full object-contain"
+      className="h-full w-full object-contain rounded-sm dark:bg-logo-backdrop"
       unoptimized
     />
   ) : null;
