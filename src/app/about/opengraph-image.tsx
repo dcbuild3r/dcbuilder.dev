@@ -6,8 +6,7 @@ export const contentType = OG_CONTENT_TYPE;
 
 export default function Image() {
 	return renderOg({
-		kind: "section",
-		eyebrow: "About",
+		kind: "about",
 		title: "Dominik Clemente",
 		description: "Research, engineering, and angel investing in cryptography, distributed systems, and AI.",
 	});

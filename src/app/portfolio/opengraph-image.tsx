@@ -7,7 +7,7 @@ export const contentType = OG_CONTENT_TYPE;
 export default function Image() {
 	return renderOg({
 		kind: "section",
-		eyebrow: "Portfolio",
+		label: "Portfolio",
 		title: "Portfolio",
 		description: "Supporting teams building in programmable cryptography, distributed systems, digital identity, AI, scalability and privacy.",
 	});
