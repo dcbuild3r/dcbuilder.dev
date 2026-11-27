@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, TWITTER_HANDLE } from "@/lib/site";
 
-const SECTION_IMAGES = new Set(["/about", "/blog", "/candidates", "/jobs", "/news", "/portfolio"]);
+const SOCIAL_IMAGE_PATHS = new Set(["/", "/about", "/blog", "/candidates", "/jobs", "/news", "/portfolio"]);
 
 interface PageMetadataInput {
 	title: string;
@@ -23,7 +23,7 @@ export function pageMetadata({
 	noindex,
 }: PageMetadataInput): Metadata {
 	const url = `${SITE_URL}${path === "/" ? "" : path}`;
-	const images = SECTION_IMAGES.has(path) ? [`${url}/opengraph-image`] : undefined;
+	const images = SOCIAL_IMAGE_PATHS.has(path) ? [`${url}/opengraph-image`] : undefined;
 	return {
 		title,
 		description,

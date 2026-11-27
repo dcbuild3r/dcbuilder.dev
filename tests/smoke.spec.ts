@@ -1,4 +1,20 @@
 import { test, expect } from "@playwright/test";
+import { load } from "cheerio";
+import { SITE_URL } from "../src/lib/site";
+
+test("homepage exposes its social card to crawlers", async ({ request }) => {
+	const response = await request.get("/", { headers: { "User-Agent": "Twitterbot/1.0" } });
+	expect(response.ok()).toBe(true);
+	const html = load(await response.text());
+	const imageUrl = `${SITE_URL}/opengraph-image`;
+
+	expect(html('head meta[property="og:image"]').attr("content")).toBe(imageUrl);
+	expect(html('head meta[name="twitter:image"]').attr("content")).toBe(imageUrl);
+
+	const image = await request.get(new URL(imageUrl).pathname);
+	expect(image.ok()).toBe(true);
+	expect(image.headers()["content-type"]).toBe("image/png");
+});
 
 test("home page loads and nav is visible", async ({ page }) => {
 	await page.goto("/");

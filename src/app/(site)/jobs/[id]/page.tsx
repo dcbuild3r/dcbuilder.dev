@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { getPublicJobById } from "@/lib/data";
 import { withDataFallback } from "@/lib/resilient-data";
-import { pageMetadata, summarize } from "@/lib/seo";
+import { pageMetadata, summarize, withImage } from "@/lib/seo";
+import { SITE_URL } from "@/lib/site";
 
 interface Props {
 	params: Promise<{ id: string }>;
@@ -17,11 +18,14 @@ export async function generateMetadata({ params }: Props) {
 
 	const description = summarize(job.description || `${job.title} position at ${job.company}`);
 
-	return pageMetadata({
-		title: `${job.title} at ${job.company}`,
-		description,
-		path: `/jobs?job=${job.id}`,
-	});
+	return withImage(
+		pageMetadata({
+			title: `${job.title} at ${job.company}`,
+			description,
+			path: `/jobs?job=${job.id}`,
+		}),
+		`${SITE_URL}/jobs/${job.id}/opengraph-image`,
+	);
 }
 
 export default async function JobPage({ params }: Props) {

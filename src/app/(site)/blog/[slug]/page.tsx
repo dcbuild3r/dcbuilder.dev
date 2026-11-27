@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props) {
 		path,
 		type: "article",
 		publishedTime: post.date,
-	}), post.image || `${SITE_URL}${path}/opengraph-image`);
+	}), `${SITE_URL}${path}/opengraph-image`);
 
 	return {
 		...metadata,
