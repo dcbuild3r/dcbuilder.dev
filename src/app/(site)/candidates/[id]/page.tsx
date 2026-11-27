@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { getPublicCandidateById } from "@/lib/data";
 import { getCandidateOpenGraphData } from "@/lib/candidate-open-graph";
 import { withDataFallback } from "@/lib/resilient-data";
-import { pageMetadata, summarize } from "@/lib/seo";
+import { pageMetadata, summarize, withImage } from "@/lib/seo";
+import { SITE_URL } from "@/lib/site";
 
 interface Props {
 	params: Promise<{ id: string }>;
@@ -16,11 +17,14 @@ export async function generateMetadata({ params }: Props) {
 		return { title: "Candidate Not Found" };
 	}
 
-	return pageMetadata({
-		title: `${candidate.name} | Candidates`,
-		description: summarize(candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`),
-		path: `/candidates?candidate=${candidate.id}`,
-	});
+	return withImage(
+		pageMetadata({
+			title: `${candidate.name} | Candidates`,
+			description: summarize(candidate.summary || `${candidate.name} - ${candidate.title || "Candidate"}`),
+			path: `/candidates?candidate=${candidate.id}`,
+		}),
+		`${SITE_URL}/candidates/${candidate.id}/opengraph-image`,
+	);
 }
 
 export default async function CandidatePage({ params }: Props) {
