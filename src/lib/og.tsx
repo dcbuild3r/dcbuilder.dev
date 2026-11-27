@@ -37,12 +37,6 @@ const SOFT = "#404040";
 const EYEBROW = "#5c5c5c";
 const TEAL = "#2563eb";
 const LINE = "#e5e5e5";
-const TINTS = [
-	{ background: "#dbeafe", color: "#1d4ed8" },
-	{ background: "#f3e8ff", color: "#7e22ce" },
-	{ background: "#fce7f3", color: "#be185d" },
-];
-const AMBER = { background: "#fef3c7", color: "#b45309" };
 const NEUTRAL = { background: "#f5f5f5", color: INK };
 const MONO = "'JetBrains Mono'";
 
@@ -121,20 +115,11 @@ function Card({ style, children }: { style?: React.CSSProperties; children: Reac
 	);
 }
 
-// Top row shared by every card but the site one: eyebrow (and badges) left, section mark right.
-function TopRow({ eyebrow, badges = [], avatar, label }: { eyebrow: string; badges?: string[]; avatar: string; label: string }) {
+// Top row shared by every card but the site one: eyebrow left, section mark right.
+function TopRow({ eyebrow, avatar, label }: { eyebrow: string; avatar: string; label: string }) {
 	return (
 		<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32 }}>
-			<div style={{ display: "flex", alignItems: "center", gap: 24, minWidth: 0 }}>
-				<Eyebrow>{eyebrow}</Eyebrow>
-				{badges.length > 0 && (
-					<div style={{ display: "flex", gap: 10 }}>
-						{badges.map((b) => (
-							<Badge key={b} label={b} />
-						))}
-					</div>
-				)}
-			</div>
+			<Eyebrow>{eyebrow}</Eyebrow>
 			<Mark avatar={avatar} label={label} />
 		</div>
 	);
@@ -158,6 +143,7 @@ function Eyebrow({ children }: { children: string }) {
 				fontWeight: 500,
 				textTransform: "uppercase",
 				letterSpacing: "0.14em",
+				whiteSpace: "nowrap",
 				color: EYEBROW,
 			}}
 		>
@@ -173,15 +159,6 @@ function Mark({ avatar, label }: { avatar: string; label: string }) {
 			{/* eslint-disable-next-line @next/next/no-img-element */}
 			<img src={avatar} alt="" width={64} height={64} style={{ borderRadius: "50%", objectFit: "cover" }} />
 			<div style={{ display: "flex", fontSize: 44, fontWeight: 600, lineHeight: 1, letterSpacing: "-0.035em" }}>{label}</div>
-		</div>
-	);
-}
-
-function Badge({ label }: { label: string }) {
-	const palette = label.toLowerCase() === "new" ? TINTS[0] : AMBER;
-	return (
-		<div style={{ display: "flex", padding: "8px 20px", borderRadius: 999, fontSize: 22, fontWeight: 600, ...palette }}>
-			{label}
 		</div>
 	);
 }
@@ -221,7 +198,6 @@ function Tile({ src, label, round }: { src?: string; label: string; round?: bool
 
 function EntityCard(props: {
 	eyebrow: string;
-	badges: string[];
 	title: string;
 	subtitle: string;
 	tile: React.ReactNode;
@@ -231,7 +207,7 @@ function EntityCard(props: {
 }) {
 	return (
 		<Card>
-			<TopRow eyebrow={props.eyebrow} badges={props.badges} avatar={props.avatar} label={props.label} />
+			<TopRow eyebrow={props.eyebrow} avatar={props.avatar} label={props.label} />
 			<div style={{ display: "flex", alignItems: "center", gap: 40 }}>
 				{props.tile}
 				<div style={{ display: "flex", flexDirection: "column", gap: 12, minWidth: 0, maxWidth: 864 }}>
@@ -254,7 +230,7 @@ function EntityCard(props: {
 					)}
 				</div>
 			</div>
-			<div style={{ display: "block", lineClamp: 2, minHeight: 40, fontFamily: MONO, fontSize: 30, lineHeight: 1.35, color: SOFT }}>
+			<div style={{ display: "block", lineClamp: 2, minHeight: 48, fontFamily: MONO, fontSize: 36, lineHeight: 1.3, color: SOFT }}>
 				{props.meta.join(" · ")}
 			</div>
 		</Card>
@@ -357,7 +333,6 @@ async function build(spec: OgSpec) {
 			return (
 				<EntityCard
 					eyebrow={`Open role · ${spec.affiliation}`}
-					badges={spec.badges}
 					title={spec.title}
 					subtitle={spec.company}
 					tile={<Tile src={logo} label={spec.company} />}
@@ -372,7 +347,6 @@ async function build(spec: OgSpec) {
 			return (
 				<EntityCard
 					eyebrow="Candidate"
-					badges={spec.badges}
 					title={spec.name}
 					subtitle={spec.title}
 					tile={<Tile src={photo} label={spec.name} round />}
