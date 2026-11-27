@@ -7,7 +7,6 @@ export const contentType = OG_CONTENT_TYPE;
 export default function Image() {
 	return renderOg({
 		kind: "section",
-		label: "News",
 		title: "News",
 		description: "Curated articles, my blog posts, and site announcements.",
 	});

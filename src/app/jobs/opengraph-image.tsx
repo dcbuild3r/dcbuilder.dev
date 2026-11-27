@@ -7,7 +7,6 @@ export const contentType = OG_CONTENT_TYPE;
 export default function Image() {
 	return renderOg({
 		kind: "section",
-		label: "Jobs",
 		title: "Open roles",
 		description: "Roles at portfolio companies and in the dcbuilder network.",
 	});
