@@ -10,6 +10,7 @@ export type CandidateOpenGraphData = {
 	image: string | null;
 	location?: string | null;
 	experience?: string | null;
+	availability?: string | null;
 	createdAt: Date | null;
 };
 
@@ -46,6 +47,7 @@ export async function getCandidateOpenGraphData(
 						image: row.image,
 						location: row.location,
 						experience: row.experience,
+						availability: row.availability,
 						createdAt: row.createdAt,
 					}
 				: null

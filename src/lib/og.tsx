@@ -25,6 +25,8 @@ export type OgSpec =
 			kind: "candidate";
 			name: string;
 			title: string;
+			/** Availability label shown after "Candidate" in the eyebrow. */
+			status?: string;
 			imageUrl?: string;
 			meta: string[];
 			skills: string[];
@@ -37,13 +39,7 @@ const SOFT = "#404040";
 const EYEBROW = "#5c5c5c";
 const TEAL = "#2563eb";
 const LINE = "#e5e5e5";
-const TINTS = [
-	{ background: "#dbeafe", color: "#1d4ed8" },
-	{ background: "#f3e8ff", color: "#7e22ce" },
-	{ background: "#fce7f3", color: "#be185d" },
-];
-const AMBER = { background: "#fef3c7", color: "#b45309" };
-const BRAND_GRADIENT = "linear-gradient(135deg, #8b5cf6, #3b82f6 55%, #38bdf8)";
+const NEUTRAL = { background: "#f5f5f5", color: INK };
 const MONO = "'JetBrains Mono'";
 
 const memo = new Map<string, Promise<Buffer>>();
@@ -95,10 +91,6 @@ function fonts() {
 	]);
 }
 
-function slugPath(label: string) {
-	return label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
-
 const FRAME = {
 	width: "100%",
 	height: "100%",
@@ -110,20 +102,27 @@ const FRAME = {
 	color: INK,
 } as const;
 
-// White card with the rainbow base stripe, plus the brand circle in the top-right corner unless `plain`.
-// Decor sits outside the padded frame: Satori resolves absolute offsets against the content box.
-function Card({ plain, style, children }: { plain?: boolean; style?: React.CSSProperties; children: React.ReactNode }) {
+// White card with the rainbow base stripe.
+// The stripe sits outside the padded frame: Satori resolves absolute offsets against the content box.
+function Card({ style, children }: { style?: React.CSSProperties; children: React.ReactNode }) {
 	return (
 		<div style={{ position: "relative", width: "100%", height: "100%", display: "flex", background: "#ffffff", overflow: "hidden" }}>
-			{!plain && (
-				<div style={{ position: "absolute", right: -150, top: -150, width: 430, height: 430, borderRadius: 215, backgroundImage: BRAND_GRADIENT }} />
-			)}
 			<div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 12, display: "flex" }}>
 				{["#3b82f6", "#8b5cf6", "#ec4899", "#f97316", "#f59e0b"].map((c) => (
 					<div key={c} style={{ flex: 1, background: c }} />
 				))}
 			</div>
 			<div style={{ ...FRAME, ...style }}>{children}</div>
+		</div>
+	);
+}
+
+// Top row shared by every card but the site one: eyebrow left, section mark right.
+function TopRow({ eyebrow, avatar, label }: { eyebrow: string; avatar: string; label: string }) {
+	return (
+		<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32 }}>
+			<Eyebrow>{eyebrow}</Eyebrow>
+			<Mark avatar={avatar} label={label} />
 		</div>
 	);
 }
@@ -142,10 +141,11 @@ function Eyebrow({ children }: { children: string }) {
 			style={{
 				display: "flex",
 				fontFamily: MONO,
-				fontSize: 22,
+				fontSize: 28,
 				fontWeight: 500,
 				textTransform: "uppercase",
-				letterSpacing: "0.16em",
+				letterSpacing: "0.14em",
+				whiteSpace: "nowrap",
 				color: EYEBROW,
 			}}
 		>
@@ -154,59 +154,13 @@ function Eyebrow({ children }: { children: string }) {
 	);
 }
 
-function Footer({ avatar, path, small }: { avatar: string; path: string; small?: boolean }) {
+// Section mark: the avatar next to the section name.
+function Mark({ avatar, label }: { avatar: string; label: string }) {
 	return (
-		<div style={{ display: "flex", alignItems: "center", gap: small ? 14 : 16 }}>
+		<div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 18 }}>
 			{/* eslint-disable-next-line @next/next/no-img-element */}
-			<img src={avatar} alt="" width={small ? 48 : 52} height={small ? 48 : 52} style={{ borderRadius: "50%", objectFit: "cover" }} />
-			{small ? (
-				<div style={{ display: "flex", fontSize: 26, fontWeight: 600, letterSpacing: "-0.02em" }}>{`dcbuilder.dev${path ? `/${path}` : ""}`}</div>
-			) : (
-				<>
-					<div style={{ display: "flex", fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em" }}>dcbuilder.eth</div>
-					<div style={{ display: "flex", fontFamily: MONO, fontSize: 22, color: EYEBROW, marginLeft: 16 }}>{`dcbuilder.dev${path ? `/${path}` : ""}`}</div>
-				</>
-			)}
-		</div>
-	);
-}
-
-function Badge({ label }: { label: string }) {
-	const palette = label.toLowerCase() === "new" ? TINTS[0] : AMBER;
-	return (
-		<div style={{ display: "flex", padding: "8px 20px", borderRadius: 999, fontSize: 22, fontWeight: 600, ...palette }}>
-			{label}
-		</div>
-	);
-}
-
-function Pills({ items, maxWidth }: { items: string[]; maxWidth: number }) {
-	const shown: string[] = [];
-	let used = 0;
-	for (const item of items) {
-		const w = 38 + item.length * 12.5 + (shown.length ? 10 : 0);
-		if (used + w > maxWidth) break;
-		shown.push(item);
-		used += w;
-	}
-	return (
-		<div style={{ display: "flex", gap: 10, flexWrap: "nowrap", overflow: "hidden" }}>
-			{shown.map((item, i) => (
-				<div
-					key={item}
-					style={{
-						display: "flex",
-						padding: "6px 18px",
-						borderRadius: 999,
-						fontSize: 22,
-						fontWeight: 500,
-						whiteSpace: "nowrap",
-						...TINTS[i % TINTS.length],
-					}}
-				>
-					{item}
-				</div>
-			))}
+			<img src={avatar} alt="" width={64} height={64} style={{ borderRadius: "50%", objectFit: "cover" }} />
+			<div style={{ display: "flex", fontSize: 44, fontWeight: 600, lineHeight: 1, letterSpacing: "-0.035em" }}>{label}</div>
 		</div>
 	);
 }
@@ -246,25 +200,16 @@ function Tile({ src, label, round }: { src?: string; label: string; round?: bool
 
 function EntityCard(props: {
 	eyebrow: string;
-	badges: string[];
 	title: string;
 	subtitle: string;
 	tile: React.ReactNode;
 	meta: string[];
-	pills: string[];
 	avatar: string;
-	path: string;
+	label: string;
 }) {
 	return (
 		<Card>
-			<div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-				<Eyebrow>{props.eyebrow}</Eyebrow>
-				<div style={{ display: "flex", gap: 10 }}>
-					{props.badges.map((b) => (
-						<Badge key={b} label={b} />
-					))}
-				</div>
-			</div>
+			<TopRow eyebrow={props.eyebrow} avatar={props.avatar} label={props.label} />
 			<div style={{ display: "flex", alignItems: "center", gap: 40 }}>
 				{props.tile}
 				<div style={{ display: "flex", flexDirection: "column", gap: 12, minWidth: 0, maxWidth: 864 }}>
@@ -287,16 +232,8 @@ function EntityCard(props: {
 					)}
 				</div>
 			</div>
-			<div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32 }}>
-				<div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 740 }}>
-					{props.meta.length > 0 && (
-						<div style={{ display: "block", lineClamp: 2, fontFamily: MONO, fontSize: 24, lineHeight: 1.4, color: SOFT }}>
-							{props.meta.join(" · ")}
-						</div>
-					)}
-					<Pills items={props.pills} maxWidth={740} />
-				</div>
-				<Footer avatar={props.avatar} path={props.path} small />
+			<div style={{ display: "block", lineClamp: 2, minHeight: 48, fontFamily: MONO, fontSize: 36, lineHeight: 1.3, color: SOFT }}>
+				{props.meta.join(" · ")}
 			</div>
 		</Card>
 	);
@@ -312,7 +249,7 @@ function Headline({ title, description }: { title: string; description?: string 
 					maxWidth: 1000,
 					fontSize: postTitleSize(title.length),
 					fontWeight: 600,
-					lineHeight: 0.98,
+					lineHeight: 0.96,
 					letterSpacing: "-0.06em",
 				}}
 			>
@@ -333,27 +270,24 @@ async function build(spec: OgSpec) {
 		case "site": {
 			const kaneki = await pngDataUri("kaneki.png");
 			return (
-				<Card plain style={{ flexDirection: "row", gap: 48 }}>
+				<Card style={{ flexDirection: "row", gap: 48 }}>
 					<div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-						<div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+						<div style={{ display: "flex", alignItems: "center", gap: 20 }}>
 							{/* eslint-disable-next-line @next/next/no-img-element */}
-							<img src={avatar} alt="" width={52} height={52} style={{ borderRadius: "50%", objectFit: "cover" }} />
-							<div style={{ display: "flex", fontFamily: MONO, fontSize: 22, fontWeight: 500, color: EYEBROW }}>dcbuilder.dev</div>
+							<img src={avatar} alt="" width={72} height={72} style={{ borderRadius: "50%", objectFit: "cover" }} />
+							<div style={{ display: "flex", fontFamily: MONO, fontSize: 32, fontWeight: 500, color: EYEBROW }}>dcbuilder.dev</div>
 						</div>
 						<div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
 							<div style={{ display: "flex", fontSize: 86, fontWeight: 600, lineHeight: 0.95, letterSpacing: "-0.055em" }}>
 								dcbuilder.eth
 							</div>
 							<div style={{ display: "flex", gap: 12 }}>
-								{["Research", "Engineering", "Angel Investing"].map((label, i) => (
-									<div key={label} style={{ display: "flex", padding: "8px 20px", borderRadius: 999, fontSize: 24, fontWeight: 500, whiteSpace: "nowrap", ...TINTS[i] }}>
+								{["Research", "Engineering", "Angel Investing"].map((label) => (
+									<div key={label} style={{ display: "flex", padding: "8px 20px", borderRadius: 999, fontSize: 26, fontWeight: 500, whiteSpace: "nowrap", ...NEUTRAL }}>
 										{label}
 									</div>
 								))}
 							</div>
-						</div>
-						<div style={{ display: "flex", maxWidth: 620, fontSize: 26, lineHeight: 1.35, color: SOFT }}>
-							Ethereum, Programmable Cryptography, Digital Identity, Distributed Systems, Decentralized AI
 						</div>
 					</div>
 					<div
@@ -361,18 +295,17 @@ async function build(spec: OgSpec) {
 							flexShrink: 0,
 							alignSelf: "center",
 							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
+							boxSizing: "border-box",
 							width: 470,
 							height: 470,
-							borderRadius: 56,
-							backgroundImage: BRAND_GRADIENT,
+							padding: 38,
+							borderRadius: 235,
+							border: `1px solid ${LINE}`,
+							background: "#ffffff",
 						}}
 					>
-						<div style={{ display: "flex", boxSizing: "border-box", width: 410, height: 410, padding: 10, borderRadius: 205, background: "#ffffff" }}>
-							{/* eslint-disable-next-line @next/next/no-img-element */}
-							<img src={kaneki} alt="" width={390} height={390} style={{ objectFit: "contain" }} />
-						</div>
+						{/* eslint-disable-next-line @next/next/no-img-element */}
+						<img src={kaneki} alt="" width={392} height={392} style={{ objectFit: "contain" }} />
 					</div>
 				</Card>
 			);
@@ -380,9 +313,8 @@ async function build(spec: OgSpec) {
 		case "section":
 			return (
 				<Card>
-					<Eyebrow>{spec.eyebrow}</Eyebrow>
+					<TopRow eyebrow={spec.eyebrow} avatar={avatar} label={spec.eyebrow} />
 					<Headline title={spec.title} description={spec.description} />
-					<Footer avatar={avatar} path={slugPath(spec.eyebrow)} />
 				</Card>
 			);
 		case "post": {
@@ -393,9 +325,8 @@ async function build(spec: OgSpec) {
 			].filter(Boolean).join(" · ");
 			return (
 				<Card>
-					<Eyebrow>{date}</Eyebrow>
+					<TopRow eyebrow={date} avatar={avatar} label="Blog" />
 					<Headline title={spec.title} description={spec.description} />
-					<Footer avatar={avatar} path="blog" />
 				</Card>
 			);
 		}
@@ -404,14 +335,12 @@ async function build(spec: OgSpec) {
 			return (
 				<EntityCard
 					eyebrow={`Open role · ${spec.affiliation}`}
-					badges={spec.badges}
 					title={spec.title}
 					subtitle={spec.company}
 					tile={<Tile src={logo} label={spec.company} />}
 					meta={spec.meta}
-					pills={spec.tags}
 					avatar={avatar}
-					path="jobs"
+					label="Jobs"
 				/>
 			);
 		}
@@ -419,15 +348,13 @@ async function build(spec: OgSpec) {
 			const photo = await inlineImage(spec.imageUrl);
 			return (
 				<EntityCard
-					eyebrow="Candidate"
-					badges={spec.badges}
+					eyebrow={spec.status ? `Candidate · ${spec.status}` : "Candidate"}
 					title={spec.name}
 					subtitle={spec.title}
 					tile={<Tile src={photo} label={spec.name} round />}
 					meta={spec.meta}
-					pills={spec.skills}
 					avatar={avatar}
-					path="candidates"
+					label="Candidates"
 				/>
 			);
 		}

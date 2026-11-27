@@ -30,6 +30,7 @@ describe("candidate opengraph image", () => {
 				title: "Protocol Engineer",
 				skills: ["Rust", "TypeScript"],
 				image: "https://example.com/square-profile.png",
+				availability: "looking",
 				createdAt: new Date("2026-01-01T00:00:00.000Z"),
 			}),
 		}));
@@ -48,6 +49,7 @@ describe("candidate opengraph image", () => {
 		expect(image.attr("style")).toContain("object-fit:cover");
 		expect(image.attr("width")).toBe("168");
 		expect(image.attr("height")).toBe("168");
+		expect(markup).toContain("Candidate · Actively Looking");
 	});
 
 	test("renders Atakan's custom image when the database is unavailable", async () => {

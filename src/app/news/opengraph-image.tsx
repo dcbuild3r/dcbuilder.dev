@@ -9,6 +9,6 @@ export default function Image() {
 		kind: "section",
 		eyebrow: "News",
 		title: "News",
-		description: "Curated news and announcements from across the portfolio.",
+		description: "Curated articles, my blog posts, and site announcements.",
 	});
 }

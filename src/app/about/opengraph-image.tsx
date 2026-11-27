@@ -8,7 +8,7 @@ export default function Image() {
 	return renderOg({
 		kind: "section",
 		eyebrow: "About",
-		title: "About dcbuilder",
+		title: "Dominik Clemente",
 		description: "Research, engineering, and angel investing in cryptography, distributed systems, and AI.",
 	});
 }
