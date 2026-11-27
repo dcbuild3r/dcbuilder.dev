@@ -43,6 +43,7 @@ const TINTS = [
 	{ background: "#fce7f3", color: "#be185d" },
 ];
 const AMBER = { background: "#fef3c7", color: "#b45309" };
+const NEUTRAL = { background: "#f5f5f5", color: INK };
 const BRAND_GRADIENT = "linear-gradient(135deg, #8b5cf6, #3b82f6 55%, #38bdf8)";
 const MONO = "'JetBrains Mono'";
 
@@ -142,10 +143,10 @@ function Eyebrow({ children }: { children: string }) {
 			style={{
 				display: "flex",
 				fontFamily: MONO,
-				fontSize: 22,
+				fontSize: 28,
 				fontWeight: 500,
 				textTransform: "uppercase",
-				letterSpacing: "0.16em",
+				letterSpacing: "0.14em",
 				color: EYEBROW,
 			}}
 		>
@@ -180,28 +181,30 @@ function Badge({ label }: { label: string }) {
 	);
 }
 
-function Pills({ items, maxWidth }: { items: string[]; maxWidth: number }) {
+// `large` is the neutral 28px set used on job cards; the default is the tinted 22px set.
+function Pills({ items, maxWidth, large }: { items: string[]; maxWidth: number; large?: boolean }) {
+	const gap = large ? 12 : 10;
 	const shown: string[] = [];
 	let used = 0;
 	for (const item of items) {
-		const w = 38 + item.length * 12.5 + (shown.length ? 10 : 0);
+		const w = (large ? 46 + item.length * 16 : 38 + item.length * 12.5) + (shown.length ? gap : 0);
 		if (used + w > maxWidth) break;
 		shown.push(item);
 		used += w;
 	}
 	return (
-		<div style={{ display: "flex", gap: 10, flexWrap: "nowrap", overflow: "hidden" }}>
+		<div style={{ display: "flex", gap, flexWrap: "nowrap", overflow: "hidden" }}>
 			{shown.map((item, i) => (
 				<div
 					key={item}
 					style={{
 						display: "flex",
-						padding: "6px 18px",
+						padding: large ? "8px 22px" : "6px 18px",
 						borderRadius: 999,
-						fontSize: 22,
+						fontSize: large ? 28 : 22,
 						fontWeight: 500,
 						whiteSpace: "nowrap",
-						...TINTS[i % TINTS.length],
+						...(large ? NEUTRAL : TINTS[i % TINTS.length]),
 					}}
 				>
 					{item}
@@ -252,12 +255,13 @@ function EntityCard(props: {
 	tile: React.ReactNode;
 	meta: string[];
 	pills: string[];
+	largeMeta?: boolean;
 	avatar: string;
 	path: string;
 }) {
 	return (
 		<Card>
-			<div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+			<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24 }}>
 				<Eyebrow>{props.eyebrow}</Eyebrow>
 				<div style={{ display: "flex", gap: 10 }}>
 					{props.badges.map((b) => (
@@ -290,11 +294,20 @@ function EntityCard(props: {
 			<div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32 }}>
 				<div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 740 }}>
 					{props.meta.length > 0 && (
-						<div style={{ display: "block", lineClamp: 2, fontFamily: MONO, fontSize: 24, lineHeight: 1.4, color: SOFT }}>
+						<div
+							style={{
+								display: "block",
+								lineClamp: 2,
+								fontFamily: MONO,
+								fontSize: props.largeMeta ? 30 : 24,
+								lineHeight: props.largeMeta ? 1.35 : 1.4,
+								color: SOFT,
+							}}
+						>
 							{props.meta.join(" · ")}
 						</div>
 					)}
-					<Pills items={props.pills} maxWidth={740} />
+					<Pills items={props.pills} maxWidth={740} large={props.largeMeta} />
 				</div>
 				<Footer avatar={props.avatar} path={props.path} small />
 			</div>
@@ -312,7 +325,7 @@ function Headline({ title, description }: { title: string; description?: string 
 					maxWidth: 1000,
 					fontSize: postTitleSize(title.length),
 					fontWeight: 600,
-					lineHeight: 0.98,
+					lineHeight: 0.96,
 					letterSpacing: "-0.06em",
 				}}
 			>
@@ -335,25 +348,22 @@ async function build(spec: OgSpec) {
 			return (
 				<Card plain style={{ flexDirection: "row", gap: 48 }}>
 					<div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-						<div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+						<div style={{ display: "flex", alignItems: "center", gap: 20 }}>
 							{/* eslint-disable-next-line @next/next/no-img-element */}
-							<img src={avatar} alt="" width={52} height={52} style={{ borderRadius: "50%", objectFit: "cover" }} />
-							<div style={{ display: "flex", fontFamily: MONO, fontSize: 22, fontWeight: 500, color: EYEBROW }}>dcbuilder.dev</div>
+							<img src={avatar} alt="" width={72} height={72} style={{ borderRadius: "50%", objectFit: "cover" }} />
+							<div style={{ display: "flex", fontFamily: MONO, fontSize: 32, fontWeight: 500, color: EYEBROW }}>dcbuilder.dev</div>
 						</div>
 						<div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
 							<div style={{ display: "flex", fontSize: 86, fontWeight: 600, lineHeight: 0.95, letterSpacing: "-0.055em" }}>
 								dcbuilder.eth
 							</div>
 							<div style={{ display: "flex", gap: 12 }}>
-								{["Research", "Engineering", "Angel Investing"].map((label, i) => (
-									<div key={label} style={{ display: "flex", padding: "8px 20px", borderRadius: 999, fontSize: 24, fontWeight: 500, whiteSpace: "nowrap", ...TINTS[i] }}>
+								{["Research", "Engineering", "Angel Investing"].map((label) => (
+									<div key={label} style={{ display: "flex", padding: "8px 20px", borderRadius: 999, fontSize: 26, fontWeight: 500, whiteSpace: "nowrap", ...NEUTRAL }}>
 										{label}
 									</div>
 								))}
 							</div>
-						</div>
-						<div style={{ display: "flex", maxWidth: 620, fontSize: 26, lineHeight: 1.35, color: SOFT }}>
-							Ethereum, Programmable Cryptography, Digital Identity, Distributed Systems, Decentralized AI
 						</div>
 					</div>
 					<div
@@ -361,18 +371,17 @@ async function build(spec: OgSpec) {
 							flexShrink: 0,
 							alignSelf: "center",
 							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
+							boxSizing: "border-box",
 							width: 470,
 							height: 470,
-							borderRadius: 56,
-							backgroundImage: BRAND_GRADIENT,
+							padding: 38,
+							borderRadius: 235,
+							border: `1px solid ${LINE}`,
+							background: "#ffffff",
 						}}
 					>
-						<div style={{ display: "flex", boxSizing: "border-box", width: 410, height: 410, padding: 10, borderRadius: 205, background: "#ffffff" }}>
-							{/* eslint-disable-next-line @next/next/no-img-element */}
-							<img src={kaneki} alt="" width={390} height={390} style={{ objectFit: "contain" }} />
-						</div>
+						{/* eslint-disable-next-line @next/next/no-img-element */}
+						<img src={kaneki} alt="" width={392} height={392} style={{ objectFit: "contain" }} />
 					</div>
 				</Card>
 			);
@@ -410,6 +419,7 @@ async function build(spec: OgSpec) {
 					tile={<Tile src={logo} label={spec.company} />}
 					meta={spec.meta}
 					pills={spec.tags}
+					largeMeta
 					avatar={avatar}
 					path="jobs"
 				/>

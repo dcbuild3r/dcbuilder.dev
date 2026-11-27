@@ -9,6 +9,6 @@ export default function Image() {
 		kind: "section",
 		eyebrow: "Portfolio",
 		title: "Portfolio",
-		description: "Angel investments in cryptography, infrastructure, and AI.",
+		description: "Supporting teams building in programmable cryptography, distributed systems, digital identity, AI, scalability and privacy.",
 	});
 }
