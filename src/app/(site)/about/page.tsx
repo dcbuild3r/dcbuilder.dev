@@ -242,12 +242,9 @@ export default async function About() {
 						const dot = active ? "bg-green-600 shadow-[0_0_0_1px_#16a34a]" : "bg-neutral-400 shadow-[0_0_0_1px_#a3a3a3]";
 
 						return (
-							<a
+							<article
 								key={affiliation.title}
-								href={affiliation.website || "#"}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="relative block py-5 pl-8 hover:text-accent min-[641px]:grid min-[641px]:grid-cols-[132px_48px_minmax(0,1fr)] min-[641px]:items-start min-[641px]:pl-0"
+								className="relative block py-5 pl-8 min-[641px]:grid min-[641px]:grid-cols-[132px_48px_minmax(0,1fr)] min-[641px]:items-start min-[641px]:pl-0"
 							>
 								<span className="block whitespace-pre-line pb-1.5 pt-0 font-mono text-xs leading-[1.6] text-muted min-[641px]:pb-0 min-[641px]:pt-1.5 min-[641px]:text-right">
 									{affiliation.dateBegin} – {affiliation.dateEnd}
@@ -291,14 +288,50 @@ export default async function About() {
 									<div className="min-w-0 flex-[1_1_320px]">
 										<div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
 											<h3 className="text-xl font-semibold leading-[1.3] tracking-[-0.015em] text-ink">
-												{affiliation.title}
+												{affiliation.website ? (
+													<a
+														href={affiliation.website}
+														target="_blank"
+														rel="noopener noreferrer"
+														className="hover:text-accent after:absolute after:inset-0"
+													>
+														{affiliation.title}
+													</a>
+												) : (
+													affiliation.title
+												)}
 											</h3>
 											<span className="text-lg font-medium text-body">{affiliation.role}</span>
 										</div>
-										<p className="mt-2 text-[15px] leading-relaxed text-body">{affiliation.description}</p>
+										<p className="mt-2 text-[15px] leading-relaxed text-body">
+											{affiliation.description}
+											{affiliation.title === "Convergence Labs" && (
+												<>
+													{" We build "}
+													<a
+												href="https://portal.convergencelabs.xyz/"
+														target="_blank"
+														rel="noopener noreferrer"
+														className="relative z-10 underline underline-offset-2 hover:text-accent"
+													>
+														Portal
+													</a>
+													{" and "}
+													<a
+												href="https://epicenter.convergencelabs.xyz/"
+														target="_blank"
+														rel="noopener noreferrer"
+														className="relative z-10 underline underline-offset-2 hover:text-accent"
+													>
+														Epicenter
+													</a>
+													.
+												</>
+											)}
+										</p>
 									</div>
 								</div>
-							</a>
+							</article>
 						);
 					})}
 				</div>
