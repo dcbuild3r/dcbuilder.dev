@@ -96,10 +96,6 @@ function fonts() {
 	]);
 }
 
-function slugPath(label: string) {
-	return label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
-
 const FRAME = {
 	width: "100%",
 	height: "100%",
@@ -155,19 +151,13 @@ function Eyebrow({ children }: { children: string }) {
 	);
 }
 
-function Footer({ avatar, path, small }: { avatar: string; path: string; small?: boolean }) {
+// Bottom-right mark: the avatar next to the section name.
+function Footer({ avatar, label }: { avatar: string; label: string }) {
 	return (
-		<div style={{ display: "flex", alignItems: "center", gap: small ? 14 : 16 }}>
+		<div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 18 }}>
 			{/* eslint-disable-next-line @next/next/no-img-element */}
-			<img src={avatar} alt="" width={small ? 48 : 52} height={small ? 48 : 52} style={{ borderRadius: "50%", objectFit: "cover" }} />
-			{small ? (
-				<div style={{ display: "flex", fontSize: 26, fontWeight: 600, letterSpacing: "-0.02em" }}>{`dcbuilder.dev${path ? `/${path}` : ""}`}</div>
-			) : (
-				<>
-					<div style={{ display: "flex", fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em" }}>dcbuilder.eth</div>
-					<div style={{ display: "flex", fontFamily: MONO, fontSize: 22, color: EYEBROW, marginLeft: 16 }}>{`dcbuilder.dev${path ? `/${path}` : ""}`}</div>
-				</>
-			)}
+			<img src={avatar} alt="" width={64} height={64} style={{ borderRadius: "50%", objectFit: "cover" }} />
+			<div style={{ display: "flex", fontSize: 44, fontWeight: 600, lineHeight: 1, letterSpacing: "-0.035em" }}>{label}</div>
 		</div>
 	);
 }
@@ -181,32 +171,19 @@ function Badge({ label }: { label: string }) {
 	);
 }
 
-// `large` is the neutral 28px set used on job cards; the default is the tinted 22px set.
-function Pills({ items, maxWidth, large }: { items: string[]; maxWidth: number; large?: boolean }) {
-	const gap = large ? 12 : 10;
+function Pills({ items, maxWidth }: { items: string[]; maxWidth: number }) {
 	const shown: string[] = [];
 	let used = 0;
 	for (const item of items) {
-		const w = (large ? 46 + item.length * 16 : 38 + item.length * 12.5) + (shown.length ? gap : 0);
+		const w = 46 + item.length * 16 + (shown.length ? 12 : 0);
 		if (used + w > maxWidth) break;
 		shown.push(item);
 		used += w;
 	}
 	return (
-		<div style={{ display: "flex", gap, flexWrap: "nowrap", overflow: "hidden" }}>
-			{shown.map((item, i) => (
-				<div
-					key={item}
-					style={{
-						display: "flex",
-						padding: large ? "8px 22px" : "6px 18px",
-						borderRadius: 999,
-						fontSize: large ? 28 : 22,
-						fontWeight: 500,
-						whiteSpace: "nowrap",
-						...(large ? NEUTRAL : TINTS[i % TINTS.length]),
-					}}
-				>
+		<div style={{ display: "flex", gap: 12, flexWrap: "nowrap", overflow: "hidden" }}>
+			{shown.map((item) => (
+				<div key={item} style={{ display: "flex", padding: "8px 22px", borderRadius: 999, fontSize: 28, fontWeight: 500, whiteSpace: "nowrap", ...NEUTRAL }}>
 					{item}
 				</div>
 			))}
@@ -255,12 +232,12 @@ function EntityCard(props: {
 	tile: React.ReactNode;
 	meta: string[];
 	pills: string[];
-	largeMeta?: boolean;
+	plain?: boolean;
 	avatar: string;
-	path: string;
+	label: string;
 }) {
 	return (
-		<Card>
+		<Card plain={props.plain}>
 			<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24 }}>
 				<Eyebrow>{props.eyebrow}</Eyebrow>
 				<div style={{ display: "flex", gap: 10 }}>
@@ -294,22 +271,13 @@ function EntityCard(props: {
 			<div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32 }}>
 				<div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 740 }}>
 					{props.meta.length > 0 && (
-						<div
-							style={{
-								display: "block",
-								lineClamp: 2,
-								fontFamily: MONO,
-								fontSize: props.largeMeta ? 30 : 24,
-								lineHeight: props.largeMeta ? 1.35 : 1.4,
-								color: SOFT,
-							}}
-						>
+						<div style={{ display: "block", lineClamp: 2, fontFamily: MONO, fontSize: 30, lineHeight: 1.35, color: SOFT }}>
 							{props.meta.join(" · ")}
 						</div>
 					)}
-					<Pills items={props.pills} maxWidth={740} large={props.largeMeta} />
+					{props.pills.length > 0 && <Pills items={props.pills} maxWidth={740} />}
 				</div>
-				<Footer avatar={props.avatar} path={props.path} small />
+				<Footer avatar={props.avatar} label={props.label} />
 			</div>
 		</Card>
 	);
@@ -391,7 +359,9 @@ async function build(spec: OgSpec) {
 				<Card>
 					<Eyebrow>{spec.eyebrow}</Eyebrow>
 					<Headline title={spec.title} description={spec.description} />
-					<Footer avatar={avatar} path={slugPath(spec.eyebrow)} />
+					<div style={{ display: "flex", justifyContent: "flex-end" }}>
+						<Footer avatar={avatar} label={spec.eyebrow} />
+					</div>
 				</Card>
 			);
 		case "post": {
@@ -404,7 +374,9 @@ async function build(spec: OgSpec) {
 				<Card>
 					<Eyebrow>{date}</Eyebrow>
 					<Headline title={spec.title} description={spec.description} />
-					<Footer avatar={avatar} path="blog" />
+					<div style={{ display: "flex", justifyContent: "flex-end" }}>
+						<Footer avatar={avatar} label="Blog" />
+					</div>
 				</Card>
 			);
 		}
@@ -418,10 +390,10 @@ async function build(spec: OgSpec) {
 					subtitle={spec.company}
 					tile={<Tile src={logo} label={spec.company} />}
 					meta={spec.meta}
-					pills={spec.tags}
-					largeMeta
+					pills={[]}
+					plain
 					avatar={avatar}
-					path="jobs"
+					label="Jobs"
 				/>
 			);
 		}
@@ -437,7 +409,7 @@ async function build(spec: OgSpec) {
 					meta={spec.meta}
 					pills={spec.skills}
 					avatar={avatar}
-					path="candidates"
+					label="Candidates"
 				/>
 			);
 		}
