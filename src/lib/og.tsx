@@ -9,7 +9,8 @@ export type OgBadge = "Hot" | "Featured" | "New";
 
 export type OgSpec =
 	| { kind: "site" }
-	| { kind: "section"; eyebrow: string; title: string; description?: string }
+	| { kind: "about"; title: string; description?: string }
+	| { kind: "section"; label: string; title: string; description?: string }
 	| { kind: "post"; title: string; description?: string; date: string; readingMinutes?: number }
 	| {
 			kind: "job";
@@ -117,7 +118,7 @@ function Card({ style, children }: { style?: React.CSSProperties; children: Reac
 	);
 }
 
-// Top row shared by every card but the site one: eyebrow left, section mark right.
+// Detail cards pair page-specific context with the section mark.
 function TopRow({ eyebrow, avatar, label }: { eyebrow: string; avatar: string; label: string }) {
 	return (
 		<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32 }}>
@@ -155,11 +156,11 @@ function Eyebrow({ children }: { children: string }) {
 }
 
 // Section mark: the avatar next to the section name.
-function Mark({ avatar, label }: { avatar: string; label: string }) {
+function Mark({ avatar, label, size = 64 }: { avatar: string; label: string; size?: number }) {
 	return (
 		<div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 18 }}>
 			{/* eslint-disable-next-line @next/next/no-img-element */}
-			<img src={avatar} alt="" width={64} height={64} style={{ borderRadius: "50%", objectFit: "cover" }} />
+			<img src={avatar} alt="" width={size} height={size} style={{ borderRadius: "50%", objectFit: "cover" }} />
 			<div style={{ display: "flex", fontSize: 44, fontWeight: 600, lineHeight: 1, letterSpacing: "-0.035em" }}>{label}</div>
 		</div>
 	);
@@ -310,10 +311,20 @@ async function build(spec: OgSpec) {
 				</Card>
 			);
 		}
+		case "about":
+			return (
+				<Card style={{ justifyContent: "center", gap: 32 }}>
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img src={avatar} alt="" width={224} height={224} style={{ alignSelf: "flex-start", flexShrink: 0, borderRadius: 36, objectFit: "cover" }} />
+					<Headline title={spec.title} description={spec.description} />
+				</Card>
+			);
 		case "section":
 			return (
 				<Card>
-					<TopRow eyebrow={spec.eyebrow} avatar={avatar} label={spec.eyebrow} />
+					<div style={{ display: "flex", justifyContent: "flex-end" }}>
+						<Mark avatar={avatar} label={spec.label} size={88} />
+					</div>
 					<Headline title={spec.title} description={spec.description} />
 				</Card>
 			);
