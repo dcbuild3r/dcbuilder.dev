@@ -44,7 +44,6 @@ const TINTS = [
 ];
 const AMBER = { background: "#fef3c7", color: "#b45309" };
 const NEUTRAL = { background: "#f5f5f5", color: INK };
-const BRAND_GRADIENT = "linear-gradient(135deg, #8b5cf6, #3b82f6 55%, #38bdf8)";
 const MONO = "'JetBrains Mono'";
 
 const memo = new Map<string, Promise<Buffer>>();
@@ -107,20 +106,36 @@ const FRAME = {
 	color: INK,
 } as const;
 
-// White card with the rainbow base stripe, plus the brand circle in the top-right corner unless `plain`.
-// Decor sits outside the padded frame: Satori resolves absolute offsets against the content box.
-function Card({ plain, style, children }: { plain?: boolean; style?: React.CSSProperties; children: React.ReactNode }) {
+// White card with the rainbow base stripe.
+// The stripe sits outside the padded frame: Satori resolves absolute offsets against the content box.
+function Card({ style, children }: { style?: React.CSSProperties; children: React.ReactNode }) {
 	return (
 		<div style={{ position: "relative", width: "100%", height: "100%", display: "flex", background: "#ffffff", overflow: "hidden" }}>
-			{!plain && (
-				<div style={{ position: "absolute", right: -150, top: -150, width: 430, height: 430, borderRadius: 215, backgroundImage: BRAND_GRADIENT }} />
-			)}
 			<div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 12, display: "flex" }}>
 				{["#3b82f6", "#8b5cf6", "#ec4899", "#f97316", "#f59e0b"].map((c) => (
 					<div key={c} style={{ flex: 1, background: c }} />
 				))}
 			</div>
 			<div style={{ ...FRAME, ...style }}>{children}</div>
+		</div>
+	);
+}
+
+// Top row shared by every card but the site one: eyebrow (and badges) left, section mark right.
+function TopRow({ eyebrow, badges = [], avatar, label }: { eyebrow: string; badges?: string[]; avatar: string; label: string }) {
+	return (
+		<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32 }}>
+			<div style={{ display: "flex", alignItems: "center", gap: 24, minWidth: 0 }}>
+				<Eyebrow>{eyebrow}</Eyebrow>
+				{badges.length > 0 && (
+					<div style={{ display: "flex", gap: 10 }}>
+						{badges.map((b) => (
+							<Badge key={b} label={b} />
+						))}
+					</div>
+				)}
+			</div>
+			<Mark avatar={avatar} label={label} />
 		</div>
 	);
 }
@@ -151,8 +166,8 @@ function Eyebrow({ children }: { children: string }) {
 	);
 }
 
-// Bottom-right mark: the avatar next to the section name.
-function Footer({ avatar, label }: { avatar: string; label: string }) {
+// Section mark: the avatar next to the section name.
+function Mark({ avatar, label }: { avatar: string; label: string }) {
 	return (
 		<div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 18 }}>
 			{/* eslint-disable-next-line @next/next/no-img-element */}
@@ -167,26 +182,6 @@ function Badge({ label }: { label: string }) {
 	return (
 		<div style={{ display: "flex", padding: "8px 20px", borderRadius: 999, fontSize: 22, fontWeight: 600, ...palette }}>
 			{label}
-		</div>
-	);
-}
-
-function Pills({ items, maxWidth }: { items: string[]; maxWidth: number }) {
-	const shown: string[] = [];
-	let used = 0;
-	for (const item of items) {
-		const w = 46 + item.length * 16 + (shown.length ? 12 : 0);
-		if (used + w > maxWidth) break;
-		shown.push(item);
-		used += w;
-	}
-	return (
-		<div style={{ display: "flex", gap: 12, flexWrap: "nowrap", overflow: "hidden" }}>
-			{shown.map((item) => (
-				<div key={item} style={{ display: "flex", padding: "8px 22px", borderRadius: 999, fontSize: 28, fontWeight: 500, whiteSpace: "nowrap", ...NEUTRAL }}>
-					{item}
-				</div>
-			))}
 		</div>
 	);
 }
@@ -231,21 +226,12 @@ function EntityCard(props: {
 	subtitle: string;
 	tile: React.ReactNode;
 	meta: string[];
-	pills: string[];
-	plain?: boolean;
 	avatar: string;
 	label: string;
 }) {
 	return (
-		<Card plain={props.plain}>
-			<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24 }}>
-				<Eyebrow>{props.eyebrow}</Eyebrow>
-				<div style={{ display: "flex", gap: 10 }}>
-					{props.badges.map((b) => (
-						<Badge key={b} label={b} />
-					))}
-				</div>
-			</div>
+		<Card>
+			<TopRow eyebrow={props.eyebrow} badges={props.badges} avatar={props.avatar} label={props.label} />
 			<div style={{ display: "flex", alignItems: "center", gap: 40 }}>
 				{props.tile}
 				<div style={{ display: "flex", flexDirection: "column", gap: 12, minWidth: 0, maxWidth: 864 }}>
@@ -268,16 +254,8 @@ function EntityCard(props: {
 					)}
 				</div>
 			</div>
-			<div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32 }}>
-				<div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 740 }}>
-					{props.meta.length > 0 && (
-						<div style={{ display: "block", lineClamp: 2, fontFamily: MONO, fontSize: 30, lineHeight: 1.35, color: SOFT }}>
-							{props.meta.join(" · ")}
-						</div>
-					)}
-					{props.pills.length > 0 && <Pills items={props.pills} maxWidth={740} />}
-				</div>
-				<Footer avatar={props.avatar} label={props.label} />
+			<div style={{ display: "block", lineClamp: 2, minHeight: 40, fontFamily: MONO, fontSize: 30, lineHeight: 1.35, color: SOFT }}>
+				{props.meta.join(" · ")}
 			</div>
 		</Card>
 	);
@@ -314,7 +292,7 @@ async function build(spec: OgSpec) {
 		case "site": {
 			const kaneki = await pngDataUri("kaneki.png");
 			return (
-				<Card plain style={{ flexDirection: "row", gap: 48 }}>
+				<Card style={{ flexDirection: "row", gap: 48 }}>
 					<div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
 						<div style={{ display: "flex", alignItems: "center", gap: 20 }}>
 							{/* eslint-disable-next-line @next/next/no-img-element */}
@@ -357,11 +335,8 @@ async function build(spec: OgSpec) {
 		case "section":
 			return (
 				<Card>
-					<Eyebrow>{spec.eyebrow}</Eyebrow>
+					<TopRow eyebrow={spec.eyebrow} avatar={avatar} label={spec.eyebrow} />
 					<Headline title={spec.title} description={spec.description} />
-					<div style={{ display: "flex", justifyContent: "flex-end" }}>
-						<Footer avatar={avatar} label={spec.eyebrow} />
-					</div>
 				</Card>
 			);
 		case "post": {
@@ -372,11 +347,8 @@ async function build(spec: OgSpec) {
 			].filter(Boolean).join(" · ");
 			return (
 				<Card>
-					<Eyebrow>{date}</Eyebrow>
+					<TopRow eyebrow={date} avatar={avatar} label="Blog" />
 					<Headline title={spec.title} description={spec.description} />
-					<div style={{ display: "flex", justifyContent: "flex-end" }}>
-						<Footer avatar={avatar} label="Blog" />
-					</div>
 				</Card>
 			);
 		}
@@ -390,8 +362,6 @@ async function build(spec: OgSpec) {
 					subtitle={spec.company}
 					tile={<Tile src={logo} label={spec.company} />}
 					meta={spec.meta}
-					pills={[]}
-					plain
 					avatar={avatar}
 					label="Jobs"
 				/>
@@ -407,7 +377,6 @@ async function build(spec: OgSpec) {
 					subtitle={spec.title}
 					tile={<Tile src={photo} label={spec.name} round />}
 					meta={spec.meta}
-					pills={spec.skills}
 					avatar={avatar}
 					label="Candidates"
 				/>
