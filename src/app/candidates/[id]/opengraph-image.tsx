@@ -1,3 +1,4 @@
+import { availabilityLabels } from "@/data/candidates";
 import { getCandidateOpenGraphData } from "@/lib/candidate-open-graph";
 import { OG_CONTENT_TYPE, OG_SIZE, renderOg } from "@/lib/og";
 import { isNew } from "@/lib/shuffle";
@@ -17,10 +18,15 @@ export default async function Image({ params }: { params: Promise<{ id: string }
 	if (has("top")) badges.push("Top");
 	if (isNew(candidate?.createdAt)) badges.push("New");
 
+	// Only the two "available" states are worth advertising on a share card.
+	const availability = candidate?.availability;
+	const status = availability === "looking" || availability === "open" ? availabilityLabels[availability] : undefined;
+
 	return renderOg({
 		kind: "candidate",
 		name: candidate?.name || "Candidate",
 		title: candidate?.title || "",
+		status,
 		imageUrl: candidate?.image || undefined,
 		meta: [candidate?.location, candidate?.experience].filter((v): v is string => !!v),
 		skills: skills.filter((s) => !["hot", "top"].includes(s.toLowerCase())),

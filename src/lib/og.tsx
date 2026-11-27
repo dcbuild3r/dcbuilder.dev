@@ -25,6 +25,8 @@ export type OgSpec =
 			kind: "candidate";
 			name: string;
 			title: string;
+			/** Availability label shown after "Candidate" in the eyebrow. */
+			status?: string;
 			imageUrl?: string;
 			meta: string[];
 			skills: string[];
@@ -346,7 +348,7 @@ async function build(spec: OgSpec) {
 			const photo = await inlineImage(spec.imageUrl);
 			return (
 				<EntityCard
-					eyebrow="Candidate"
+					eyebrow={spec.status ? `Candidate · ${spec.status}` : "Candidate"}
 					title={spec.name}
 					subtitle={spec.title}
 					tile={<Tile src={photo} label={spec.name} round />}

@@ -20,6 +20,7 @@ const specs: Record<string, OgSpec> = {
 		kind: "candidate",
 		name: "Eric Woolsey",
 		title: "Protocol Engineer",
+		status: "Actively Looking",
 		imageUrl: "http://127.0.0.1:1/missing.png",
 		meta: ["Canada"],
 		skills: ["Rust", "TypeScript"],
