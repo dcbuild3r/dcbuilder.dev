@@ -10,7 +10,7 @@ export type OgBadge = "Hot" | "Featured" | "New";
 export type OgSpec =
 	| { kind: "site" }
 	| { kind: "about"; title: string; description?: string }
-	| { kind: "section"; label: string; title: string; description?: string }
+	| { kind: "section"; title: string; description?: string }
 	| { kind: "post"; title: string; description?: string; date: string; readingMinutes?: number }
 	| {
 			kind: "job";
@@ -118,12 +118,11 @@ function Card({ style, children }: { style?: React.CSSProperties; children: Reac
 	);
 }
 
-// Detail cards pair page-specific context with the section mark.
-function TopRow({ eyebrow, avatar, label }: { eyebrow: string; avatar: string; label: string }) {
+function TopRow({ eyebrow, children }: { eyebrow?: string; children: React.ReactNode }) {
 	return (
-		<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32 }}>
-			<Eyebrow>{eyebrow}</Eyebrow>
-			<Mark avatar={avatar} label={label} />
+		<div style={{ display: "flex", alignItems: "center", justifyContent: eyebrow ? "space-between" : "flex-end", gap: 32 }}>
+			{eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
+			{children}
 		</div>
 	);
 }
@@ -155,12 +154,15 @@ function Eyebrow({ children }: { children: string }) {
 	);
 }
 
-// Section mark: the avatar next to the section name.
-function Mark({ avatar, label, size = 64 }: { avatar: string; label: string; size?: number }) {
+function Portrait({ avatar, size = 112 }: { avatar: string; size?: number }) {
+	// eslint-disable-next-line @next/next/no-img-element
+	return <img src={avatar} alt="" width={size} height={size} style={{ flexShrink: 0, borderRadius: "50%", objectFit: "cover" }} />;
+}
+
+function Mark({ avatar, label }: { avatar: string; label: string }) {
 	return (
 		<div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 18 }}>
-			{/* eslint-disable-next-line @next/next/no-img-element */}
-			<img src={avatar} alt="" width={size} height={size} style={{ borderRadius: "50%", objectFit: "cover" }} />
+			<Portrait avatar={avatar} size={64} />
 			<div style={{ display: "flex", fontSize: 44, fontWeight: 600, lineHeight: 1, letterSpacing: "-0.035em" }}>{label}</div>
 		</div>
 	);
@@ -210,7 +212,9 @@ function EntityCard(props: {
 }) {
 	return (
 		<Card>
-			<TopRow eyebrow={props.eyebrow} avatar={props.avatar} label={props.label} />
+			<TopRow eyebrow={props.eyebrow}>
+				<Mark avatar={props.avatar} label={props.label} />
+			</TopRow>
 			<div style={{ display: "flex", alignItems: "center", gap: 40 }}>
 				{props.tile}
 				<div style={{ display: "flex", flexDirection: "column", gap: 12, minWidth: 0, maxWidth: 864 }}>
@@ -322,9 +326,9 @@ async function build(spec: OgSpec) {
 		case "section":
 			return (
 				<Card>
-					<div style={{ display: "flex", justifyContent: "flex-end" }}>
-						<Mark avatar={avatar} label={spec.label} size={88} />
-					</div>
+					<TopRow>
+						<Portrait avatar={avatar} />
+					</TopRow>
 					<Headline title={spec.title} description={spec.description} />
 				</Card>
 			);
@@ -336,7 +340,9 @@ async function build(spec: OgSpec) {
 			].filter(Boolean).join(" · ");
 			return (
 				<Card>
-					<TopRow eyebrow={date} avatar={avatar} label="Blog" />
+					<TopRow eyebrow={date}>
+						<Portrait avatar={avatar} />
+					</TopRow>
 					<Headline title={spec.title} description={spec.description} />
 				</Card>
 			);

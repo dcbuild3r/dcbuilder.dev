@@ -6,7 +6,7 @@ const long = "A very long title about verifiable computation, zero knowledge pro
 const specs: Record<string, OgSpec> = {
 	site: { kind: "site" },
 	about: { kind: "about", title: "Dominik Clemente", description: "Research, engineering, and angel investing." },
-	section: { kind: "section", label: "Blog", title: "Writing", description: "Notes." },
+	section: { kind: "section", title: "Writing", description: "Notes." },
 	post: { kind: "post", title: long, description: long, date: "Jul 22, 2026", readingMinutes: 20 },
 	job: {
 		kind: "job",
